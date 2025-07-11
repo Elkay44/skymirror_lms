@@ -134,9 +134,16 @@ export default function CourseModulesPage() {
       try {
         await reorderModules(courseId, orderUpdates);
         toast.success('Module order saved!');
+        
+        // Give the database time to update and then refresh the data
+        setTimeout(() => {
+          fetchModules();
+        }, 500);
       } catch (err: any) {
         console.error('Failed to reorder modules:', err);
         toast.error('Failed to save new order. Reverting changes.');
+        
+        // Reset modules to previous order
         setModules(originalModules);
       }
     }

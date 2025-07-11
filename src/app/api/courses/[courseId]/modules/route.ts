@@ -8,19 +8,35 @@ export async function GET(
   request: Request,
   { params }: { params: { courseId: string } }
 ) {
+  console.log(`🔍 GET /api/courses/${params.courseId}/modules - Fetching modules`);
+  const startTime = Date.now();
+  
   try {
     const { courseId } = params;
+    console.log(`📋 Processing request for course: ${courseId}`);
+    
+    // Authentication
+    console.log('🔐 Checking authentication...');
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
     if (!userId) {
+      console.log('❌ Authentication failed: No user session');
       return NextResponse.json(
         { error: 'You must be logged in to view course modules' },
         { status: 401 }
       );
     }
+    console.log(`✅ User authenticated: ${userId}`);
+    
+    // Add cache control headers to prevent stale data
+    const headers = new Headers();
+    headers.set('Cache-Control', 'no-store, max-age=0');
+    headers.set('Pragma', 'no-cache');
+    headers.set('Expires', '0');
 
     // Check if the course exists and if the user has access
+    console.log(`🔎 Looking up course: ${courseId}...`);
     const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
@@ -28,14 +44,20 @@ export async function GET(
           select: { id: true }
         }
       }
+    }).catch(err => {
+      console.error(`❌ Database error when finding course:`, err);
+      return null;
     });
 
     if (!course) {
+      console.log(`❌ Course not found: ${courseId}`);
       return NextResponse.json(
         { error: 'Course not found' },
-        { status: 404 }
+        { status: 404, headers }
       );
     }
+    console.log(`✅ Found course: ${courseId} (Published: ${course.isPublished})`);
+    
 
     // Check if the user is the instructor
     // Convert both IDs to strings for comparison
@@ -50,43 +72,90 @@ export async function GET(
     }
 
     // Fetch all modules for the course with lessons
-    const modules = await prisma.module.findMany({
-      where: { courseId },
-      orderBy: { order: 'asc' },  // Order by the 'order' field defined in the schema
-      include: {
-        lessons: {
-          orderBy: { order: 'asc' },  // Order by the 'order' field defined in the schema
-          include: {
-            progress: {
-              where: {
-                userId: isInstructor ? undefined : userId ? Number(userId) : undefined
-              },
-              select: {
-                completed: true,
-                completedAt: true,
+    console.log(`🔎 Fetching modules for course: ${courseId}...`);
+    try {
+      console.log('🔧 Using explicit field selection to avoid removed type field');
+      const modules = await prisma.module.findMany({
+        where: { courseId },
+        orderBy: { order: 'asc' },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          courseId: true,
+          order: true,
+          createdAt: true,
+          updatedAt: true,
+          lessons: {
+            orderBy: { order: 'asc' },
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              moduleId: true,
+              order: true,
+              videoUrl: true,
+              duration: true,
+              content: true,
+              createdAt: true,
+              updatedAt: true,
+              progress: {
+                where: {
+                  userId: isInstructor ? undefined : userId ? Number(userId) : undefined
+                },
+                select: {
+                  completed: true,
+                  completedAt: true,
+                },
               },
             },
           },
         },
-      },
-    });
-
-    // Map order to order for client-side compatibility
-    const modulesWithOrder = modules.map(module => ({
-      ...module,
-      lessons: module.lessons?.map(lesson => ({
-        ...lesson,
-        order: lesson.order
-      }))
-    }));
+      });
+      
+      console.log(`✅ Found ${modules.length} modules`);
+      
+      // Fix TypeScript errors by using proper type annotations
+      const modulesWithOrder = modules.map((module: any) => ({
+        ...module,
+        lessons: module.lessons?.map((lesson: any) => ({
+          ...lesson,
+          order: lesson.order
+        }))
+      }));
+      
+      const executionTime = Date.now() - startTime;
+      console.log(`⏱ Module fetch completed in ${executionTime}ms`);
+      
+      return NextResponse.json({ 
+        data: modulesWithOrder,
+        total: modulesWithOrder.length,
+        executionTimeMs: executionTime 
+      }, { headers });
+    } catch (dbError) {
+      console.error(`❌ Error fetching modules from database:`, dbError);
+      return NextResponse.json(
+        { error: 'Database error when fetching modules', details: dbError instanceof Error ? dbError.message : 'Unknown error' },
+        { status: 500, headers }
+      );
+    }
+  } catch (error) {
+    const executionTime = Date.now() - startTime;
+    console.error(`❌ Critical error in modules API (${executionTime}ms):`, error);
+    
+    // Create fresh headers for the error response
+    const errorHeaders = new Headers();
+    errorHeaders.set('Cache-Control', 'no-store, max-age=0');
+    errorHeaders.set('Pragma', 'no-cache');
     
     return NextResponse.json({ 
-      data: modulesWithOrder,
-      total: modulesWithOrder.length 
+      error: 'Failed to fetch modules', 
+      details: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString() 
+    }, { 
+      status: 500,
+      headers: errorHeaders
     });
-  } catch (error) {
-    console.error('Error fetching modules:', error);
-    return NextResponse.json({ error: 'Failed to fetch modules' }, { status: 500 });
   }
 }
 

@@ -22,10 +22,21 @@ async function safeParseJSON(response: Response): Promise<any> {
 
 export async function getModules(courseId: string): Promise<Module[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/${courseId}/modules`, {
+    // Add timestamp to prevent browser caching
+    const timestamp = new Date().getTime();
+    const url = `${API_BASE_URL}/${courseId}/modules?t=${timestamp}`;
+    
+    console.log(`Fetching modules from: ${url}`);
+    
+    const response = await fetch(url, {
       // Include credentials to ensure the session cookie is sent
       credentials: 'include',
       cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     });
     
     if (!response.ok) {
@@ -36,6 +47,7 @@ export async function getModules(courseId: string): Promise<Module[]> {
     }
     
     const data = await safeParseJSON(response);
+    console.log(`Received ${data?.data?.length || 0} modules from server`);
     return data.data || [];
   } catch (error) {
     console.error('Error in getModules:', error);
