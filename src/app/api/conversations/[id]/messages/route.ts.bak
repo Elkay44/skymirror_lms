@@ -1,0 +1,130 @@
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/prisma';
+
+/**
+ * POST /api/conversations/[id]/messages
+ * Send a new message in a conversation
+ */
+export async function POST(req: Request, context: { params: { id: string } }) {
+  const { params } = context;
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    const conversationId = params.id;
+    const { content, attachments = [] } = await req.json();
+    
+    if (!content && attachments.length === 0) {
+      return NextResponse.json(
+        { error: 'Message content or attachments are required' },
+        { status: 400 }
+      );
+    }
+    
+    // Get the conversation and verify the user is part of it
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        mentorship: {
+          include: {
+            mentor: {
+              select: { userId: true }
+            },
+            student: {
+              select: { userId: true }
+            }
+          }
+        }
+      }
+    });
+    
+    if (!conversation) {
+      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+    }
+    
+    // Check user is part of this conversation's mentorship
+    const userIsMentor = conversation.mentorship.mentor.userId === session.user.id;
+    const userIsStudent = conversation.mentorship.student.userId === session.user.id;
+    
+    if (!userIsMentor && !userIsStudent) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+    
+    // Determine the recipient based on sender
+    const receiverId = userIsMentor 
+      ? conversation.mentorship.student.userId 
+      : conversation.mentorship.mentor.userId;
+    
+    // Create the message
+    const message = await prisma.message.create({
+      data: {
+        conversationId,
+        senderId: session.user.id,
+        receiverId,
+        content: content || '',
+        isRead: false,
+        attachments: attachments.length > 0 ? {
+          createMany: {
+            data: attachments.map((att: any) => ({
+              fileName: att.fileName,
+              fileUrl: att.fileUrl,
+              fileType: att.fileType,
+              fileSize: att.fileSize
+            }))
+          }
+        } : undefined
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            image: true
+          }
+        },
+        attachments: true
+      }
+    });
+    
+    // Update conversation last activity
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { lastActivity: new Date() }
+    });
+    
+    // Format the response
+    const formattedMessage = {
+      id: message.id,
+      content: message.content,
+      senderId: message.senderId,
+      sender: {
+        id: message.sender.id,
+        name: message.sender.name,
+        image: message.sender.image
+      },
+      isFromCurrentUser: true,
+      attachments: message.attachments.map(att => ({
+        id: att.id,
+        fileName: att.fileName,
+        fileUrl: att.fileUrl,
+        fileType: att.fileType,
+        fileSize: att.fileSize
+      })),
+      sentAt: message.sentAt,
+      isRead: message.isRead
+    };
+    
+    return NextResponse.json(formattedMessage);
+  } catch (error) {
+    console.error(`Error sending message:`, error);
+    return NextResponse.json(
+      { error: 'Failed to send message' },
+      { status: 500 }
+    );
+  }
+}

@@ -1,0 +1,357 @@
+'use client';
+
+import { ReactNode, useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import NotificationList from '../notifications/NotificationList';
+import { BookOpen, BarChart2, MessageSquare, HelpCircle, Award, Settings, Home } from 'lucide-react';
+
+interface DashboardLayoutProps {
+  children: ReactNode;
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const { data: session } = useSession();
+  const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  
+  // Close the mobile menu when navigating
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 transition-opacity lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        ></div>
+      )}
+      
+      {/* Sidebar for desktop and mobile */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      } lg:static lg:h-screen lg:z-auto`}>
+        <div className="flex flex-col h-full">
+          {/* Logo and close button */}
+          <div className="p-4 border-b flex items-center justify-between">
+            <Link href="/dashboard">
+              <div className="flex items-center space-x-2">
+                <Image
+                  src="/logo.svg"
+                  alt="Skymirror Academy"
+                  width={40}
+                  height={40}
+                />
+                <span className="text-xl font-bold text-gray-900">
+                  SkyMirror LMS
+                </span>
+              </div>
+            </Link>
+            
+            {/* Close button - mobile only */}
+            <button
+              className="lg:hidden -mr-1 flex h-10 w-10 items-center justify-center rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <span className="sr-only">Close sidebar</span>
+              <svg className="h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            <Link href="/dashboard" 
+              className={`flex items-center p-3 rounded-lg transition-colors ${
+                pathname === '/dashboard' 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}>
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span>Dashboard</span>
+            </Link>
+
+            <Link href="/my-courses" 
+              className={`flex items-center p-3 rounded-lg transition-colors ${
+                pathname === '/my-courses' || pathname?.startsWith('/courses/') 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}>
+              <BookOpen className="w-5 h-5 mr-3" />
+              <span>My Courses</span>
+            </Link>
+            
+            {/* Quizzes */}
+            <Link href="/dashboard/quizzes" 
+              className={`flex items-center p-3 rounded-lg transition-colors ${
+                pathname?.startsWith('/dashboard/quizzes') 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}>
+              <Award className="w-5 h-5 mr-3" />
+              <span>My Quizzes</span>
+            </Link>
+            
+            {/* Forums */}
+            <Link href="/dashboard/forums" 
+              className={`flex items-center p-3 rounded-lg transition-colors ${
+                pathname?.startsWith('/dashboard/forums') 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}>
+              <MessageSquare className="w-5 h-5 mr-3" />
+              <span>Discussion Forums</span>
+            </Link>
+            
+            {/* Analytics */}
+            <Link href="/dashboard/analytics" 
+              className={`flex items-center p-3 rounded-lg transition-colors ${
+                pathname === '/dashboard/analytics' 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}>
+              <BarChart2 className="w-5 h-5 mr-3" />
+              <span>Learning Analytics</span>
+            </Link>
+            
+            {/* Help & Support */}
+            <Link href="/help" 
+              className={`flex items-center p-3 rounded-lg transition-colors ${
+                pathname === '/help' 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}>
+              <HelpCircle className="w-5 h-5 mr-3" />
+              <span>Help & Support</span>
+            </Link>
+            
+            {/* Settings */}
+            <Link href="/settings" 
+              className={`flex items-center p-3 rounded-lg transition-colors ${
+                pathname === '/settings' 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}>
+              <Settings className="w-5 h-5 mr-3" />
+              <span>Settings</span>
+            </Link>
+
+            <Link href="/courses" 
+              className={`flex items-center p-3 rounded-lg transition-colors ${
+                pathname === '/courses' 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}>
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span>Explore Courses</span>
+            </Link>
+
+            <Link href="/achievements" 
+              className={`flex items-center p-3 rounded-lg transition-colors ${
+                pathname === '/achievements' 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}>
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              </svg>
+              <span>Achievements</span>
+            </Link>
+
+            <Link href="/learning-path" 
+              className={`flex items-center p-3 rounded-lg transition-colors ${
+                pathname === '/learning-path' 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}>
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+              <span>Learning Path</span>
+            </Link>
+
+            <Link href="/certificates" 
+              className={`flex items-center p-3 rounded-lg transition-colors ${
+                pathname === '/certificates' 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}>
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              </svg>
+              <span>Certificates</span>
+            </Link>
+
+            <Link href="/forum" 
+              className={`flex items-center p-3 rounded-lg transition-colors ${
+                pathname === '/forum' 
+                  ? 'bg-indigo-50 text-indigo-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}>
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+              </svg>
+              <span>Forum</span>
+            </Link>
+          </nav>
+
+          {/* User Profile Section */}
+          <div className="p-4 border-t relative">
+            <div 
+              className="flex items-center space-x-3 cursor-pointer"
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+            >
+              <div className="flex-shrink-0">
+                {session?.user?.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt={session.user.name || 'User'}
+                    width={40}
+                    height={40}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-medium">
+                    {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || 'U'}
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 truncate">
+                  {session?.user?.name || 'User'}
+                </p>
+                <p className="text-sm text-gray-500 truncate">
+                  {session?.user?.email}
+                </p>
+              </div>
+              <div className="flex-shrink-0 text-right">
+                <p className="text-sm font-semibold text-indigo-600">Level {session?.user?.level || 1}</p>
+                <p className="text-xs text-gray-500">{session?.user?.points || 0} points</p>
+              </div>
+            </div>
+            
+            {/* Dropdown menu */}
+            {userMenuOpen && (
+              <div className="absolute bottom-full left-0 right-0 mb-1 bg-white rounded-t-lg shadow-lg border border-gray-200 overflow-hidden">
+                <div className="p-2">
+                  <Link 
+                    href="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                  >
+                    Your Profile
+                  </Link>
+                  <Link 
+                    href="/settings"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                  >
+                    Settings
+                  </Link>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col lg:pl-64">
+        {/* Mobile Header */}
+        <div className="sticky top-0 z-10 flex items-center justify-between bg-white border-b border-gray-200 px-4 py-3 lg:hidden">
+          <button
+            className="text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 p-2"
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <span className="sr-only">Open menu</span>
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+
+          <div className="flex-1 flex justify-center">
+            <h1 className="text-xl font-bold text-indigo-600">SkyMirror Academy</h1>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {/* Notifications */}
+            <NotificationList />
+            
+            <div className="relative">
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center focus:outline-none"
+              >
+                {session?.user?.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt={session.user.name || 'User'}
+                    width={32}
+                    height={32}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
+                    {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || 'U'}
+                  </div>
+                )}
+              </button>
+              
+              {/* Mobile dropdown menu */}
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                  <Link 
+                    href="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Your Profile
+                  </Link>
+                  <Link 
+                    href="/settings"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Settings
+                  </Link>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Page Content */}
+        <main className="flex-1 pb-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            {children}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

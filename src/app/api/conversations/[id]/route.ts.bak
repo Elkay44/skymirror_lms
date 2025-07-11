@@ -1,0 +1,211 @@
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/prisma';
+
+/**
+ * GET /api/conversations/[id]
+ * Get details of a specific conversation and its messages
+ */
+export async function GET(req: Request, context: { params: { id: string } }) {
+  const { params } = context;
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    const conversationId = params.id;
+    const { searchParams } = new URL(req.url);
+    const messagesOnly = searchParams.get('messagesOnly') === 'true';
+    const page = parseInt(searchParams.get('page') || '0');
+    const pageSize = parseInt(searchParams.get('pageSize') || '20');
+    
+    // Get the conversation with details
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        mentorship: {
+          include: {
+            mentor: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    image: true
+                  }
+                }
+              }
+            },
+            student: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    image: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    if (!conversation) {
+      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+    }
+    
+    // Verify the user is part of this conversation's mentorship
+    const userIsMentor = conversation.mentorship.mentor.user.id === session.user.id;
+    const userIsStudent = conversation.mentorship.student.user.id === session.user.id;
+    
+    if (!userIsMentor && !userIsStudent) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+    
+    // Get messages with pagination
+    const messages = await prisma.message.findMany({
+      where: { conversationId },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            image: true
+          }
+        },
+        attachments: true
+      },
+      orderBy: { sentAt: 'desc' },
+      skip: page * pageSize,
+      take: pageSize
+    });
+    
+    // Mark unread messages as read
+    await prisma.message.updateMany({
+      where: {
+        conversationId,
+        senderId: { not: session.user.id },
+        isRead: false,
+        NOT: {
+          readBy: {
+            some: {
+              id: session.user.id
+            }
+          }
+        }
+      },
+      data: {
+        isRead: true
+      }
+    });
+    
+    // Connect read messages to the current user
+    for (const message of messages) {
+      if (!message.isRead && message.senderId !== session.user.id) {
+        await prisma.message.update({
+          where: { id: message.id },
+          data: {
+            readBy: {
+              connect: {
+                id: session.user.id
+              }
+            }
+          }
+        });
+      }
+    }
+    
+    if (messagesOnly) {
+      return NextResponse.json({
+        messages: messages.map(msg => ({
+          id: msg.id,
+          content: msg.content,
+          senderId: msg.senderId,
+          sender: {
+            id: msg.sender.id,
+            name: msg.sender.name,
+            image: msg.sender.image
+          },
+          isFromCurrentUser: msg.senderId === session.user.id,
+          attachments: msg.attachments.map(att => ({
+            id: att.id,
+            fileName: att.fileName,
+            fileUrl: att.fileUrl,
+            fileType: att.fileType,
+            fileSize: att.fileSize
+          })),
+          sentAt: msg.sentAt,
+          isRead: msg.isRead
+        })),
+        page,
+        hasMore: messages.length === pageSize
+      });
+    }
+    
+    // Format the full conversation response
+    const otherParty = userIsMentor
+      ? {
+          id: conversation.mentorship.student.user.id,
+          name: conversation.mentorship.student.user.name,
+          image: conversation.mentorship.student.user.image,
+          role: 'student'
+        }
+      : {
+          id: conversation.mentorship.mentor.user.id,
+          name: conversation.mentorship.mentor.user.name,
+          image: conversation.mentorship.mentor.user.image,
+          role: 'mentor'
+        };
+    
+    const formattedConversation = {
+      id: conversation.id,
+      topic: conversation.topic,
+      lastActivity: conversation.lastActivity,
+      mentorship: {
+        id: conversation.mentorship.id,
+        status: conversation.mentorship.status
+      },
+      userRole: userIsMentor ? 'mentor' : 'student',
+      otherParty,
+      messages: messages.map(msg => ({
+        id: msg.id,
+        content: msg.content,
+        senderId: msg.senderId,
+        sender: {
+          id: msg.sender.id,
+          name: msg.sender.name,
+          image: msg.sender.image
+        },
+        isFromCurrentUser: msg.senderId === session.user.id,
+        attachments: msg.attachments.map(att => ({
+          id: att.id,
+          fileName: att.fileName,
+          fileUrl: att.fileUrl,
+          fileType: att.fileType,
+          fileSize: att.fileSize
+        })),
+        sentAt: msg.sentAt,
+        isRead: msg.isRead
+      })),
+      pagination: {
+        page,
+        pageSize,
+        hasMore: messages.length === pageSize
+      },
+      createdAt: conversation.createdAt
+    };
+    
+    return NextResponse.json(formattedConversation);
+  } catch (error) {
+    console.error(`Error fetching conversation:`, error);
+    return NextResponse.json(
+      { error: 'Failed to fetch conversation details' },
+      { status: 500 }
+    );
+  }
+}

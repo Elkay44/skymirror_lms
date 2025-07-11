@@ -1,0 +1,24 @@
+// This is a simplified Prisma schema for development purposes
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Only essential models for user registration
+model User {
+  id              String    @id @default(cuid())
+  name            String?
+  email           String    @unique
+  hashedPassword  String?
+  emailVerified   DateTime?
+  image           String?
+  role            String    @default("STUDENT") // Using string instead of enum for better compatibility
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  points          Int       @default(0)
+  level           Int       @default(1)
+}

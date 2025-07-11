@@ -1,0 +1,261 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/prisma';
+
+// GET /api/admin/showcase/[projectId] - Get a specific showcase project (admin only)
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { projectId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    const { projectId } = params;
+    
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    // Only admins can access this endpoint
+    if (session.user.role !== 'Admin') {
+      return NextResponse.json(
+        { error: 'Only administrators can access this endpoint' },
+        { status: 403 }
+      );
+    }
+    
+    // Get the showcase project
+    const project = await prisma.showcaseProject.findUnique({
+      where: { id: projectId },
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+        course: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        submission: {
+          select: {
+            id: true,
+            status: true,
+            updatedAt: true,
+            submissionUrl: true, // Changed from repositoryUrl which doesn't exist in the model
+          },
+        },
+      },
+    });
+    
+    if (!project) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+    
+    // Format the response
+    const formattedProject = {
+      id: project.id,
+      title: project.title,
+      description: project.description,
+      studentId: project.studentId,
+      studentName: project.student?.name || '',
+      studentImage: project.student?.image || null,
+      courseId: project.courseId,
+      courseTitle: project.course?.title || '',
+      submissionId: project.submissionId,
+      repositoryUrl: project.repositoryUrl,
+      demoUrl: project.demoUrl,
+      imageUrl: project.imageUrl,
+      featured: project.featured,
+      category: project.category,
+      tags: project.tags,
+      showcasedAt: project.showcasedAt,
+      viewCount: project.viewCount,
+    };
+    
+    return NextResponse.json({ project: formattedProject });
+  } catch (error) {
+    console.error('Error fetching showcase project:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch showcase project' },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH /api/admin/showcase/[projectId] - Update a showcase project (admin only)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { projectId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    const { projectId } = params;
+    
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    // Only admins can access this endpoint
+    if (session.user.role !== 'Admin') {
+      return NextResponse.json(
+        { error: 'Only administrators can update showcase projects' },
+        { status: 403 }
+      );
+    }
+    
+    // Check if the project exists
+    const existingProject = await prisma.showcaseProject.findUnique({
+      where: { id: projectId },
+    });
+    
+    if (!existingProject) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+    
+    const data = await request.json();
+    const { 
+      title, 
+      description, 
+      featured, 
+      category, 
+      tags,
+      imageUrl,
+      demoUrl,
+      repositoryUrl,
+    } = data;
+    
+    // Update the showcase project
+    const updatedProject = await prisma.showcaseProject.update({
+      where: { id: projectId },
+      data: {
+        title: title !== undefined ? title : undefined,
+        description: description !== undefined ? description : undefined,
+        featured: featured !== undefined ? featured : undefined,
+        category: category !== undefined ? category : undefined,
+        tags: tags !== undefined ? tags : undefined,
+        imageUrl: imageUrl !== undefined ? imageUrl : undefined,
+        demoUrl: demoUrl !== undefined ? demoUrl : undefined,
+        repositoryUrl: repositoryUrl !== undefined ? repositoryUrl : undefined,
+      },
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+        course: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+    });
+    
+    // If the featured status changed to true, notify the student
+    if (featured === true && !existingProject.featured) {
+      await prisma.notification.create({
+        data: {
+          userId: updatedProject.studentId,
+          type: 'SHOWCASE',
+          title: 'Your project is now featured!',
+          message: `Congratulations! Your project "${updatedProject.title}" is now featured on the SkyMirror Academy showcase.`,
+          relatedId: updatedProject.id,
+          relatedType: 'SHOWCASE_PROJECT',
+        },
+      });
+    }
+    
+    // Format the response
+    const formattedProject = {
+      id: updatedProject.id,
+      title: updatedProject.title,
+      description: updatedProject.description,
+      studentId: updatedProject.studentId,
+      studentName: updatedProject.student?.name || '',
+      studentImage: updatedProject.student?.image || null,
+      courseId: updatedProject.courseId,
+      courseTitle: updatedProject.course?.title || '',
+      submissionId: updatedProject.submissionId,
+      repositoryUrl: updatedProject.repositoryUrl,
+      demoUrl: updatedProject.demoUrl,
+      imageUrl: updatedProject.imageUrl,
+      featured: updatedProject.featured,
+      category: updatedProject.category,
+      tags: updatedProject.tags,
+      showcasedAt: updatedProject.showcasedAt,
+      viewCount: updatedProject.viewCount,
+    };
+    
+    return NextResponse.json({ project: formattedProject });
+  } catch (error) {
+    console.error('Error updating showcase project:', error);
+    return NextResponse.json(
+      { error: 'Failed to update showcase project' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/admin/showcase/[projectId] - Remove a project from the showcase (admin only)
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { projectId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    const { projectId } = params;
+    
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    // Only admins can access this endpoint
+    if (session.user.role !== 'Admin') {
+      return NextResponse.json(
+        { error: 'Only administrators can remove projects from the showcase' },
+        { status: 403 }
+      );
+    }
+    
+    // Check if the project exists
+    const existingProject = await prisma.showcaseProject.findUnique({
+      where: { id: projectId },
+    });
+    
+    if (!existingProject) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+    
+    // Delete the showcase project
+    await prisma.showcaseProject.delete({
+      where: { id: projectId },
+    });
+    
+    // Notify the student that their project was removed
+    await prisma.notification.create({
+      data: {
+        userId: existingProject.studentId,
+        type: 'SHOWCASE',
+        title: 'Project removed from showcase',
+        message: `Your project "${existingProject.title}" has been removed from the SkyMirror Academy showcase.`,
+        relatedType: 'NOTIFICATION',
+      },
+    });
+    
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error removing project from showcase:', error);
+    return NextResponse.json(
+      { error: 'Failed to remove project from showcase' },
+      { status: 500 }
+    );
+  }
+}

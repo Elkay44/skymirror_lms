@@ -1,0 +1,309 @@
+// This is a simplified Prisma schema for development purposes
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// User model for authentication and profile
+model User {
+  id              String        @id @default(cuid())
+  name            String?
+  email           String        @unique
+  hashedPassword  String?
+  emailVerified   DateTime?
+  image           String?
+  role            String        @default("STUDENT") // STUDENT, INSTRUCTOR, ADMIN
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  points          Int           @default(0)
+  level           Int           @default(1)
+  bio             String?
+  location        String?
+  enrollments     Enrollment[]
+  progress        Progress[]
+  createdCourses  Course[]      @relation("CourseInstructor")
+  
+  // Mentorship relations
+  mentorProfile   MentorProfile?
+  studentProfile  StudentProfile?
+  sentMessages    Message[]     @relation("MessageSender")
+  receivedMessages Message[]    @relation("MessageReceiver")
+  readMessages    Message[]     @relation("MessageReadBy")
+}
+
+// Course model
+model Course {
+  id            String        @id @default(cuid())
+  title         String
+  description   String?
+  imageUrl      String?
+  difficulty    String        @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
+  isPublished   Boolean       @default(false)
+  price         Int?          @default(0) // Price in cents, 0 = free
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  instructor    User          @relation("CourseInstructor", fields: [instructorId], references: [id])
+  instructorId  String
+  modules       Module[]
+  enrollments   Enrollment[]
+  tags          String?       // Comma-separated tags
+  careerPaths   CareerPath[]  // Associated career paths
+}
+
+// Module model (sections within a course)
+model Module {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  position    Int         // Order in the course
+  course      Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    String
+  lessons     Lesson[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+// Lesson model (content within modules)
+model Lesson {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  content     String?     // Can store HTML or markdown content
+  videoUrl    String?     // URL to video content if any
+  duration    Int?        // Duration in minutes
+  position    Int         // Order in the module
+  module      Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId    String
+  progress    Progress[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+// Enrollment model (tracks user enrollment in courses)
+model Enrollment {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  String
+  status    String    @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+  enrolledAt DateTime  @default(now())
+  completedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  
+  @@unique([userId, courseId]) // A user can only enroll once in a course
+}
+
+// Progress model (tracks lesson completion)
+model Progress {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  lesson    Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId  String
+  completed Boolean   @default(false)
+  completedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  
+  @@unique([userId, lessonId]) // Track unique progress per lesson per user
+}
+
+// =================== MENTORSHIP SYSTEM MODELS ===================
+
+// Mentor profile for users who can mentor others
+model MentorProfile {
+  id               String       @id @default(cuid())
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String       @unique
+  bio              String?      // Detailed mentor bio
+  specialties      String?      // Comma-separated specialties
+  yearsExperience  Int          @default(0)
+  availableHours   Int          @default(5) // Hours available per week
+  rating           Float        @default(5.0)
+  reviewCount      Int          @default(0)
+  isAvailable      Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  
+  // Relationships
+  mentorships      Mentorship[] @relation("MentorRelation")
+  careerPaths      CareerPath[]
+  reviews          MentorReview[]
+}
+
+// Student profile with additional mentorship-related data
+model StudentProfile {
+  id               String       @id @default(cuid())
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String       @unique
+  careerGoals      String?      // Career objectives
+  areasOfInterest  String?      // Comma-separated interests
+  learningStyle    String?      // Preferred learning style
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  
+  // Relationships
+  mentorships      Mentorship[] @relation("StudentRelation")
+  milestoneProgress MilestoneProgress[]
+  activeCareerPath CareerPath?  @relation(fields: [careerPathId], references: [id])
+  careerPathId     String?
+}
+
+// Mentorship relationship between mentor and student
+model Mentorship {
+  id               String       @id @default(cuid())
+  mentor           MentorProfile @relation("MentorRelation", fields: [mentorId], references: [id])
+  mentorId         String
+  student          StudentProfile @relation("StudentRelation", fields: [studentId], references: [id])
+  studentId        String
+  status           String        @default("PENDING") // PENDING, ACTIVE, PAUSED, COMPLETED, DECLINED
+  startDate        DateTime?
+  endDate          DateTime?
+  notes            String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  
+  // Relationships
+  conversations    Conversation[]
+  checkIns         CheckIn[]
+  
+  @@unique([mentorId, studentId])
+}
+
+// Conversation model for messaging
+model Conversation {
+  id               String       @id @default(cuid())
+  mentorship       Mentorship   @relation(fields: [mentorshipId], references: [id], onDelete: Cascade)
+  mentorshipId     String
+  topic            String?
+  lastActivity     DateTime     @default(now())
+  createdAt        DateTime     @default(now())
+  
+  // Relationships
+  messages         Message[]
+}
+
+// Message model
+model Message {
+  id               String       @id @default(cuid())
+  conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId   String
+  sender           User         @relation("MessageSender", fields: [senderId], references: [id])
+  senderId         String
+  receiver         User         @relation("MessageReceiver", fields: [receiverId], references: [id])
+  receiverId       String
+  content          String
+  readBy           User[]       @relation("MessageReadBy")
+  isRead           Boolean      @default(false)
+  attachments      Attachment[]
+  sentAt           DateTime     @default(now())
+}
+
+// Attachment model for messages
+model Attachment {
+  id               String       @id @default(cuid())
+  message          Message      @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId        String
+  fileName         String
+  fileUrl          String
+  fileType         String
+  fileSize         Int
+  uploadedAt       DateTime     @default(now())
+}
+
+// Regular check-ins between mentor and student
+model CheckIn {
+  id               String       @id @default(cuid())
+  mentorship       Mentorship   @relation(fields: [mentorshipId], references: [id], onDelete: Cascade)
+  mentorshipId     String
+  scheduledFor     DateTime
+  completedAt      DateTime?
+  summary          String?
+  nextSteps        String?
+  progress         String?      // STUCK, SLOW, STEADY, FAST, BREAKTHROUGH
+  mood             String?      // FRUSTRATED, CONFUSED, NEUTRAL, MOTIVATED, EXCITED
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+// Career path model
+model CareerPath {
+  id               String       @id @default(cuid())
+  name             String
+  description      String?
+  estimatedTime    String?      // e.g. "6 months"
+  creator          MentorProfile @relation(fields: [creatorId], references: [id])
+  creatorId        String
+  isPublic         Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  
+  // Relationships
+  milestones       Milestone[]
+  students         StudentProfile[]
+  relatedCourses   Course[]
+}
+
+// Milestone model for career paths
+model Milestone {
+  id               String       @id @default(cuid())
+  careerPath       CareerPath   @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
+  careerPathId     String
+  title            String
+  description      String?
+  position         Int          // Order in the career path
+  estimatedHours   Int?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  
+  // Relationships
+  resources        Resource[]
+  progress         MilestoneProgress[]
+}
+
+// Resources for milestones
+model Resource {
+  id               String       @id @default(cuid())
+  milestone        Milestone    @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  milestoneId      String
+  title            String
+  description      String?
+  url              String?
+  type             String       @default("ARTICLE") // ARTICLE, VIDEO, COURSE, BOOK, TOOL, EXERCISE, OTHER
+  createdAt        DateTime     @default(now())
+}
+
+// Track student progress on milestones
+model MilestoneProgress {
+  id               String       @id @default(cuid())
+  student          StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId        String
+  milestone        Milestone    @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  milestoneId      String
+  completed        Boolean      @default(false)
+  completedAt      DateTime?
+  notes            String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  
+  @@unique([studentId, milestoneId])
+}
+
+// Reviews for mentors
+model MentorReview {
+  id               String       @id @default(cuid())
+  mentor           MentorProfile @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  mentorId         String
+  studentId        String
+  rating           Int          // 1-5
+  comment          String?
+  createdAt        DateTime     @default(now())
+  
+  @@unique([mentorId, studentId])
+}

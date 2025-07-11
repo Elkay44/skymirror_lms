@@ -1,0 +1,9 @@
+export { BasicInfoStep } from './BasicInfoStep';
+export { MediaStep } from './MediaStep';
+export { StructureStep } from './StructureStep';
+export { CurriculumStep } from './CurriculumStep';
+export { PricingStep } from './PricingStep';
+export { SeoStep } from './SeoStep';
+export { FinalStep } from './FinalStep';
+export { FormNavigation } from './FormNavigation';
+export { CourseForm } from './CourseForm';

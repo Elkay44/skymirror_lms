@@ -1,0 +1,110 @@
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+
+export async function GET(req: NextRequest, { params }: { params: { courseId: string } }) {
+  try {
+    const courseId = params.courseId;
+    
+    // Get the current user session
+    const session = await getServerSession(authOptions);
+    
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    // Get the user's role
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email || '' },
+      include: { role: true },
+    });
+    
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    
+    // Check authorization based on role
+    if (user.role.name === 'instructor') {
+      // Instructors can only see certificates for courses they teach
+      const course = await prisma.course.findUnique({
+        where: {
+          id: courseId,
+          instructorId: user.id,
+        },
+      });
+      
+      if (!course) {
+        return NextResponse.json({ error: 'Course not found or not authorized' }, { status: 404 });
+      }
+    } else if (user.role.name === 'student') {
+      // Students can only see their own certificates
+      // This endpoint is primarily for instructors, but we'll allow students to view
+      // certificate information for courses they're enrolled in
+      const enrollment = await prisma.enrollment.findFirst({
+        where: {
+          userId: user.id,
+          courseId,
+        },
+      });
+      
+      if (!enrollment) {
+        return NextResponse.json({ error: 'Not enrolled in this course' }, { status: 403 });
+      }
+    } else if (user.role.name === 'mentor') {
+      // Mentors can see certificates for courses of students they mentor
+      const mentorRelationship = await prisma.mentorRelationship.findFirst({
+        where: {
+          mentorId: user.id,
+          student: {
+            enrollments: {
+              some: {
+                courseId,
+              },
+            },
+          },
+        },
+      });
+      
+      if (!mentorRelationship) {
+        return NextResponse.json({ error: 'Not authorized to view these certificates' }, { status: 403 });
+      }
+    } else {
+      // Any other role is not authorized
+      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+    }
+    
+    // Get certificates for this course
+    const certificates = await prisma.certification.findMany({
+      where: {
+        courseId,
+        ...(user.role.name === 'student' ? { studentId: user.id } : {}),
+      },
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            walletAddress: true,
+          },
+        },
+        course: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+          },
+        },
+      },
+      orderBy: {
+        issuedAt: 'desc',
+      },
+    });
+    
+    return NextResponse.json({ certificates });
+  } catch (error) {
+    console.error('Error fetching course certificates:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
