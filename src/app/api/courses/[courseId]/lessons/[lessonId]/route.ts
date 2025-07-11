@@ -15,6 +15,7 @@ export async function GET(
     const { courseId, lessonId } = params;
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
+    const userRole = session?.user?.role;
 
     // Check if the user is logged in
     if (!userId) {
@@ -24,16 +25,49 @@ export async function GET(
       );
     }
 
-    // First check if the user is enrolled in the course
-    const enrollment = await prisma.enrollment.findFirst({
-      where: {
-        userId,
-        courseId,
-        status: { in: ['ACTIVE', 'COMPLETED'] },
-      },
-    });
+    console.log(`Lesson access request - User ID: ${userId}, Role: ${userRole}, Course: ${courseId}, Lesson: ${lessonId}`);
 
-    if (!enrollment) {
+    let hasAccess = false;
+
+    // Check if user is an instructor for this course or an admin
+    if (userRole === 'INSTRUCTOR' || userRole === 'ADMIN') {
+      if (userRole === 'ADMIN') {
+        hasAccess = true;
+        console.log('Admin access granted to lesson');
+      } else {
+        // Check if instructor teaches this course
+        const course = await prisma.course.findUnique({
+          where: {
+            id: courseId,
+            instructorId: parseInt(userId.toString(), 10)
+          }
+        });
+        
+        if (course) {
+          hasAccess = true;
+          console.log('Instructor access granted - owns course');
+        }
+      }
+    }
+    
+    // If not an instructor/admin with access, check enrollment
+    if (!hasAccess) {
+      const enrollment = await prisma.enrollment.findFirst({
+        where: {
+          userId: Number(userId),
+          courseId,
+          status: { in: ['ACTIVE', 'COMPLETED'] },
+        },
+      });
+      
+      if (enrollment) {
+        hasAccess = true;
+        console.log('Student access granted - enrolled in course');
+      }
+    }
+    
+    if (!hasAccess) {
+      console.log('Access denied - user not enrolled and not authorized');
       return NextResponse.json(
         { error: 'You must be enrolled in this course to view lesson content' },
         { status: 403 }
@@ -44,8 +78,8 @@ export async function GET(
     const lesson = await prisma.lesson.findUnique({
       where: {
         id: lessonId,
-        module: {
-          courseId,
+        moduleId: {
+          not: null,
         },
       },
       include: {
@@ -53,12 +87,13 @@ export async function GET(
           select: {
             id: true,
             title: true,
-            position: true,
+            order: true, // Using order instead of position
+            courseId: true, // Include courseId for validation
           },
         },
         progress: {
           where: {
-            userId,
+            userId: Number(userId),
           },
           select: {
             completed: true,
@@ -67,6 +102,15 @@ export async function GET(
         },
       },
     });
+    
+    // Verify the lesson belongs to the requested course
+    if (lesson && lesson.module?.courseId !== courseId) {
+      console.log('Lesson does not belong to requested course');
+      return NextResponse.json(
+        { error: 'Lesson not found in this course' },
+        { status: 404 }
+      );
+    }
 
     if (!lesson) {
       return NextResponse.json(
@@ -83,11 +127,11 @@ export async function GET(
       content: lesson.content,
       videoUrl: lesson.videoUrl,
       duration: lesson.duration ? `${lesson.duration} min` : 'Unknown',
-      position: lesson.position,
-      moduleId: lesson.module.id,
-      moduleName: lesson.module.title,
-      completed: lesson.progress[0]?.completed || false,
-      completedAt: lesson.progress[0]?.completedAt,
+      order: lesson.order, // Using order instead of position
+      moduleId: lesson.moduleId || '', // Handle potential null
+      moduleName: lesson.module?.title || 'Unknown Module',
+      completed: lesson.progress?.[0]?.completed || false,
+      completedAt: lesson.progress?.[0]?.completedAt,
     };
 
     return NextResponse.json(transformedLesson);

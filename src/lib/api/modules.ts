@@ -216,27 +216,51 @@ export async function reorderModules(
   updates: Array<{ id: string; order: number }>
 ): Promise<void> {
   try {
-    const response = await fetch(`${API_BASE_URL}/${courseId}/modules/reorder`, {
+    console.log(`Reordering modules for course ${courseId}:`, JSON.stringify(updates));
+    
+    // Use the new simplified API endpoint
+    const response = await fetch('/api/modules/reorder', {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ updates }),
+      body: JSON.stringify({ 
+        courseId,
+        updates 
+      }),
       credentials: 'include',
+      cache: 'no-store'
     });
-
+    
+    console.log(`Reorder response status: ${response.status}`);
+    
     if (!response.ok) {
       let errorMessage = `Failed to reorder modules: ${response.status}`;
+      
       try {
-        const errorData = await safeParseJSON(response);
-        if (errorData && errorData.message) {
-          errorMessage = errorData.message;
+        const responseText = await response.text();
+        console.log('Raw response text:', responseText);
+        
+        if (responseText) {
+          try {
+            const errorData = JSON.parse(responseText);
+            if (errorData && errorData.error) {
+              errorMessage = `${errorMessage} - ${errorData.error}`;
+            }
+          } catch (jsonError) {
+            console.log('Error parsing JSON from response:', jsonError);
+          }
         }
-      } catch (parseError) {
-        // If we can't parse the error response, use the default message
+      } catch (textError) {
+        console.log('Error reading response text:', textError);
       }
+      
       throw new Error(errorMessage);
     }
+    
+    // Success - log the result
+    const result = await response.json();
+    console.log('Module reordering successful:', result);
   } catch (error) {
     console.error("Error in reorderModules:", error);
     throw error;

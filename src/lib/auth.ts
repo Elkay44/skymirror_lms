@@ -86,54 +86,88 @@ const authOptions: AuthOptions = {
       // Enhanced authorization logic with proper error handling and rate limiting
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Email and password are required');
+          console.error('Missing credentials: email or password is missing');
+          return null; // Return null instead of throwing for consistent error handling
         }
         
         try {
-          console.log('Authorizing with credentials:', { 
+          // Debug mode for development testing
+          if ((credentials as any).debug === true && process.env.NODE_ENV !== 'production') {
+            console.log('DEBUG MODE: Using test authentication');
+            return {
+              id: '999',
+              email: 'test@example.com',
+              name: 'Test User',
+              role: (credentials as any).role || 'INSTRUCTOR',
+              points: 100,
+              level: 5,
+              image: null
+            };
+          }
+          
+          // Log auth attempt but never expose password
+          console.log('Auth attempt:', { 
             email: credentials.email,
-            // TypeScript doesn't recognize role in the credentials type, so we use the any cast
-            role: (credentials as any).role
+            role: (credentials as any).role || 'Unknown',
+            hasPassword: !!credentials.password
           });
           
-          // Find user by email
+          // Find the user in the database
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email }
+            where: { email: credentials.email },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              hashedPassword: true,
+              role: true,
+              points: true,
+              level: true,
+              image: true
+            }
           });
-
+          
+          // Detailed logging for authentication issues
           if (!user) {
-            console.error('User not found with email:', credentials.email);
+            console.error('Authentication failed: User not found:', credentials.email);
+            return null;
+          }
+
+          // Verify the role if specified in credentials
+          const requestedRole = (credentials as any).role;
+          if (requestedRole && user.role && user.role !== requestedRole) {
+            console.warn(`User ${credentials.email} attempted to sign in as ${requestedRole} but is assigned ${user.role}`);
+            // We'll log this discrepancy but still allow login - role enforcement happens elsewhere
+            console.log('Role mismatch but continuing with authentication');
+          }
+          
+          // Check if the user has a password set
+          if (!user.hashedPassword) {
+            console.error('Authentication failed: User has no password set:', credentials.email);
+            // In development, provide more helpful error info
+            if (process.env.NODE_ENV !== 'production') {
+              console.log('DEBUG: This user needs to set a password or use password reset');
+            }
             return null;
           }
           
-          if (!user.hashedPassword) {
-            console.error('User found but has no password set:', user.email);
-            // Create a temporary password hash for testing purposes only
-            // REMOVE THIS IN PRODUCTION - this is just to help with development testing
-            if (process.env.NODE_ENV !== 'production') {
-              console.log('DEV MODE: Allowing login without password verification');
-              // In development, we'll let users without passwords log in
-              // This helps when you have test users created without passwords
-              return {
-                id: user.id.toString(), // Convert to string as NextAuth expects
-                email: user.email,
-                name: user.name || '',
-                role: user.role || 'STUDENT',
-                points: user.points || 0,
-                level: user.level || 1,
-                image: user.image || null
-              };
-            } else {
-              return null; // In production, reject users without passwords
-            }
-          }
-
-          // Verify password
+          // Verify password with detailed logging
+          console.log('Verifying password for user:', user.email);
           const isValidPassword = await bcrypt.compare(credentials.password, user.hashedPassword);
+          
           if (!isValidPassword) {
-            console.error('Invalid password for user:', user.email);
-            return null; // Return null instead of throwing to show standard error message
+            console.error('Authentication failed: Invalid password for user:', credentials.email);
+            // Log detailed diagnostics in development
+            if (process.env.NODE_ENV !== 'production') {
+              console.log('DEBUG: Password verification failed');
+              // Don't log actual passwords, just diagnostic info
+              console.log('DEBUG: Password hash exists and is', user.hashedPassword.length, 'characters long');
+            }
+            return null;
           }
+          
+          // Log successful auth
+          console.log('Authentication successful for:', credentials.email, 'with role:', user.role);
           
           // Check if user has a valid role, but don't block login - just assign a default role
           const validRoles = ['STUDENT', 'INSTRUCTOR', 'MENTOR', 'ADMIN'];

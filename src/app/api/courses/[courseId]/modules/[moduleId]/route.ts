@@ -39,6 +39,7 @@ export async function GET(
     const { courseId, moduleId } = params;
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
+    const userRole = session?.user?.role;
 
     if (!userId) {
       return NextResponse.json(
@@ -47,15 +48,49 @@ export async function GET(
       );
     }
 
-    // Check enrollment
-    const enrollment = await prisma.enrollment.findFirst({
-      where: { 
-        userId: Number(userId), 
-        courseId, 
-        status: { in: ['ACTIVE', 'COMPLETED'] } 
-      },
-    });
-    if (!enrollment) {
+    console.log(`Module access request - User ID: ${userId}, Role: ${userRole}, Course: ${courseId}, Module: ${moduleId}`);
+    
+    let hasAccess = false;
+
+    // Check if user is an instructor for this course or an admin
+    if (userRole === 'INSTRUCTOR' || userRole === 'ADMIN') {
+      if (userRole === 'ADMIN') {
+        hasAccess = true;
+        console.log('Admin access granted');
+      } else {
+        // Check if instructor teaches this course
+        const course = await prisma.course.findUnique({
+          where: {
+            id: courseId,
+            instructorId: parseInt(userId.toString(), 10)
+          }
+        });
+        
+        if (course) {
+          hasAccess = true;
+          console.log('Instructor access granted - owns course');
+        }
+      }
+    }
+    
+    // If not an instructor/admin with access, check enrollment
+    if (!hasAccess) {
+      const enrollment = await prisma.enrollment.findFirst({
+        where: { 
+          userId: Number(userId), 
+          courseId, 
+          status: { in: ['ACTIVE', 'COMPLETED'] } 
+        },
+      });
+      
+      if (enrollment) {
+        hasAccess = true;
+        console.log('Student access granted - enrolled in course');
+      }
+    }
+    
+    if (!hasAccess) {
+      console.log('Access denied - user not enrolled and not authorized');
       return NextResponse.json(
         { error: 'You must be enrolled in this course to view module content' },
         { status: 403 }

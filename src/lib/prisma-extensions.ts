@@ -40,6 +40,7 @@ export type ExtendedPrismaClient = PrismaClient & {
   projectSubmission: any;
   projectResource: any;
   page: any;
+  module: any; // Adding module model for reordering functionality
   certification: any;
   modulePrerequisite: any;
   lessonPrerequisite: any;

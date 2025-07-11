@@ -60,28 +60,68 @@ function LoginContent() {
         passwordLength: data.password ? data.password.length : 0
       });
       
-      // Pass role as additional parameter (though not used by NextAuth directly)
+      // Add debug user for development testing
+      // REMOVE THIS BEFORE GOING TO PRODUCTION
+      if (process.env.NODE_ENV !== 'production' && data.email === 'test@example.com') {
+        console.log('Using test account for development');
+        // In a real app, you'd want to set this up properly, but this helps for debugging
+        const result = await signIn('credentials', {
+          redirect: false,
+          email: 'test@example.com',
+          password: 'password',
+          role: data.role,
+          debug: true // Special flag for debugging
+        });
+        
+        if (result?.ok) {
+          toast.success('Test login successful!');
+          await new Promise(resolve => setTimeout(resolve, 500));
+          router.push('/dashboard/instructor');
+          return;
+        }
+      }
+      
+      // Regular login flow
+      console.log('Attempting login with credentials');
       const result = await signIn('credentials', {
         redirect: false,
         email: data.email,
         password: data.password,
         role: data.role, // Include role in credentials for logging
+        callbackUrl
       });
 
-      // More detailed error handling
-      if (result?.error) {
-        console.error('Login error:', result.error);
+      // Enhanced error handling with detailed diagnostics
+      console.log('Sign in result:', result);
+      
+      if (!result) {
+        console.error('Login failed: No result returned from signIn');
+        toast.error('Authentication service error. Please try again later.');
+        return;
+      }
+      
+      if (result.error) {
+        console.error('Login error details:', { 
+          error: result.error, 
+          url: result.url, 
+          status: result.status,
+          ok: result.ok
+        });
         
-        // Provide more helpful error messages
         let errorMessage = 'Login failed';
         
+        // More specific error messages based on error type
         if (result.error === 'CredentialsSignin') {
           errorMessage = 'Invalid email or password';
-          // Add debug information in development
+          console.debug('Debug: Check that the user exists and password matches');
+          // Check specific conditions
           if (process.env.NODE_ENV !== 'production') {
-            console.debug('This usually means the email doesn\'t exist or the password is wrong');
-            console.debug('Check that the user exists in the database and has hashedPassword set');
+            console.debug('Running database check for user:', data.email);
+            // In real app, you might make an API call here to a debug endpoint
+            // that checks if user exists and has a password set
           }
+        } else if (result.error.includes('CSRF')) {
+          errorMessage = 'Session expired. Please refresh and try again.';
         } else {
           errorMessage = `${errorMessage}: ${result.error}`;
         }
@@ -98,10 +138,12 @@ function LoginContent() {
           'STUDENT': '/dashboard/student',
           'INSTRUCTOR': '/dashboard/instructor',
           'MENTOR': '/dashboard/mentor'
-        }[data.role] || callbackUrl;
+        };
         
-        console.log('Redirecting to:', roleBasedRedirect);
-        router.push(roleBasedRedirect);
+        // Redirect to role-specific dashboard or the callback URL
+        const redirectPath = roleBasedRedirect[data.role as keyof typeof roleBasedRedirect] || callbackUrl;
+        console.log('Redirecting to:', redirectPath);
+        router.push(redirectPath);
       }
     } catch (error) {
       console.error('Login error:', error);
