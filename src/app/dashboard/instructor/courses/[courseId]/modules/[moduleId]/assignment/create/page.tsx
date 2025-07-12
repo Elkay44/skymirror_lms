@@ -35,10 +35,11 @@ export default function CreateAssignmentPage() {
   
   const [assignmentData, setAssignmentData] = useState({
     title: '',
+    description: '', // Added to match backend schema
     instructions: '',
     dueDate: '', // ISO date string
     maxScore: 100,
-    submissionType: 'TEXT', // TEXT, FILE, URL, MIXED
+    submissionType: 'TEXT', // TEXT, FILE, LINK, MULTIPLE_FILES
     allowLateSubmissions: true,
     isPublished: false,
     allowGroupSubmissions: false,
@@ -105,14 +106,16 @@ export default function CreateAssignmentPage() {
       // Transform the data to match API schema
       const apiData = {
         title: assignmentData.title,
+        description: assignmentData.description || '', // Include description field
         instructions: assignmentData.instructions,
         dueDate: assignmentData.dueDate,
         maxScore: assignmentData.maxScore,
-        submissionType: assignmentData.submissionType,
+        // Map MIXED to MULTIPLE_FILES if that's the selected value
+        submissionType: assignmentData.submissionType === 'MIXED' ? 'MULTIPLE_FILES' : assignmentData.submissionType,
         allowLateSubmissions: assignmentData.allowLateSubmissions,
         isPublished: assignmentData.isPublished,
-        allowGroupSubmissions: assignmentData.allowGroupSubmissions,
-        maxGroupSize: assignmentData.allowGroupSubmissions ? assignmentData.maxGroupSize : undefined
+        // Exclude fields not in the backend schema
+        // allowGroupSubmissions and maxGroupSize aren't in backend schema
       };
       
       const response = await axios.post(

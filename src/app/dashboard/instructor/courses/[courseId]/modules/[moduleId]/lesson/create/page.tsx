@@ -96,8 +96,24 @@ export default function CreateLessonPage() {
       router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}`);
       router.refresh();
     } catch (error) {
-      console.error(error);
-      toast.error('Failed to create lesson');
+      console.error('Error creating lesson:', error);
+      
+      // Extract the specific error message if available
+      let errorMessage = 'Failed to create lesson';
+      if (axios.isAxiosError(error) && error.response) {
+        // Get the error details from the response
+        const responseData = error.response.data;
+        if (responseData.error) {
+          errorMessage += `: ${responseData.error}`;
+        }
+        if (responseData.message) {
+          errorMessage += `: ${responseData.message}`;
+        }
+        
+        console.error('Server response:', responseData);
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

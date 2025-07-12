@@ -63,15 +63,17 @@ export async function GET(
 ) {
   try {
     const { courseId, moduleId } = params;
-    const session = await getServerSession(authOptions);
-    const userId = session?.user?.id;
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    // Get session
+    const session = await getServerSession(authOptions);
+
+    // Check if user is authenticated
+    if (!session || !session.user || !session.user.id) {
+      return NextResponse.json({ error: 'Not authenticated or invalid session' }, { status: 401 });
     }
+
+    // Get user ID from session (guaranteed to exist after the check above)
+    const userId = session.user.id;
 
     // Check if user is instructor or enrolled in the course
     const course = await prisma.course.findUnique({
@@ -171,6 +173,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { courseId: string; moduleId: string } }
 ) {
+  console.log(`[ASSIGNMENT_CREATE] Starting request for course: ${params.courseId}, module: ${params.moduleId}`);
   try {
     const { courseId, moduleId } = params;
     const session = await getServerSession(authOptions);
@@ -215,6 +218,14 @@ export async function POST(
 
     // Parse and validate request
     const body = await request.json();
+    console.log(`[ASSIGNMENT_CREATE] Received data:`, body);
+    
+    // Log request data for debugging
+    const requestSubmissionType = body?.submissionType;
+    if (requestSubmissionType && !['TEXT', 'FILE', 'LINK', 'MULTIPLE_FILES'].includes(requestSubmissionType)) {
+      console.warn(`[ASSIGNMENT_CREATE] Invalid submissionType: ${requestSubmissionType}`);
+    }
+    
     const validationResult = createAssignmentSchema.safeParse(body);
 
     if (!validationResult.success) {
@@ -237,10 +248,20 @@ export async function POST(
       rubric
     } = validationResult.data;
 
-    // Use a transaction to create assignment, resources, and rubric items
-    const result = await prisma.$transaction(async (tx) => {
+    // Create assignment first, then add related items
+    let createdAssignment;
+    let assignmentResources = [];
+    let assignmentRubricItems = [];
+    
+    try {
       // Create assignment
-      const assignment = await tx.assignment.create({
+      console.log('[ASSIGNMENT_CREATE] Creating assignment with data:', {
+        title,
+        moduleId,
+        submissionType,
+      });
+      
+      createdAssignment = await prisma.assignment.create({
         data: {
           title,
           description: description || null,
@@ -250,88 +271,120 @@ export async function POST(
           maxScore,
           submissionType,
           allowLateSubmissions,
-          module: { connect: { id: moduleId } },
+          moduleId: moduleId, // Direct field assignment instead of Prisma relation syntax
         }
       });
+      
+      console.log('[ASSIGNMENT_CREATE] Assignment created:', createdAssignment);
 
       // Create resources if any
       if (resources && resources.length > 0) {
-        await tx.assignmentResource.createMany({
-          data: resources.map((resource, index) => ({
-            assignmentId: assignment.id,
-            title: resource.title,
-            url: resource.url,
-            type: resource.type,
-            order: index
-          }))
-        });
+        for (const [index, resource] of resources.entries()) {
+          const createdResource = await prisma.assignmentResource.create({
+            data: {
+              assignmentId: createdAssignment.id,
+              title: resource.title,
+              url: resource.url,
+              type: resource.type,
+              order: index
+            }
+          });
+          assignmentResources.push(createdResource);
+        }
       }
 
       // Create rubric items if any
       if (rubric && rubric.length > 0) {
         for (let i = 0; i < rubric.length; i++) {
           const rubricItem = rubric[i];
-          const createdRubricItem = await tx.rubricItem.create({
+          const createdRubricItem = await prisma.rubricItem.create({
             data: {
-              assignmentId: assignment.id,
+              assignmentId: createdAssignment.id,
               title: rubricItem.title,
               description: rubricItem.description || null,
               points: rubricItem.points,
               order: i
             }
           });
+          assignmentRubricItems.push(createdRubricItem);
 
           // Create criteria levels if any
           if (rubricItem.criteriaLevels && rubricItem.criteriaLevels.length > 0) {
-            await tx.criteriaLevel.createMany({
-              data: rubricItem.criteriaLevels.map((level) => ({
-                rubricItemId: createdRubricItem.id,
-                level: level.level,
-                description: level.description,
-                points: level.points
-              }))
-            });
+            for (const level of rubricItem.criteriaLevels) {
+              await prisma.criteriaLevel.create({
+                data: {
+                  rubricItemId: createdRubricItem.id,
+                  level: level.level,
+                  description: level.description,
+                  points: level.points
+                }
+              });
+            }
           }
         }
       }
 
-      return await tx.assignment.findUnique({
-        where: { id: assignment.id },
-        include: {
-          resources: {
-            orderBy: { order: 'asc' }
-          },
-          rubricItems: {
-            orderBy: { order: 'asc' },
-            include: {
-              criteriaLevels: {
-                orderBy: { points: 'desc' }
-              }
-            }
-          }
-        }
-      });
-    });
-
-    // Ensure assignment was properly created
-    if (!result || typeof result !== 'object') {
-      throw new Error('Transaction did not return a valid assignment object');
+      // Assemble the complete result with the resources and rubric items we've created
+      const completeResult = {
+        ...createdAssignment,
+        resources: assignmentResources,
+        rubricItems: assignmentRubricItems
+      };
+      
+      return completeResult;
+    } catch (error) {
+      console.error('[ASSIGNMENT_CREATE] Error creating assignment:', error);
+      throw error; // Re-throw to be caught by the outer try/catch
     }
 
-    // Log activity
-    await logAssignmentActivity(userId.toString(), 'create_assignment', result.id, { title });
+    // Log activity if assignment was created successfully
+    if (createdAssignment && typeof createdAssignment === 'object') {
+      // Use optional chaining to safely access userId
+      if (userId) {
+        // Use non-null assertion operator since we've already checked userId exists
+        await logAssignmentActivity(userId!.toString(), 'create_assignment', createdAssignment.id, { title });
+      } else {
+        console.log('[ASSIGNMENT_CREATE] No userId available for activity logging');
+      }
 
-    // Revalidate paths
-    revalidatePath(`/courses/${courseId}`);
-    revalidatePath(`/courses/${courseId}/modules/${moduleId}`);
+      // Revalidate paths
+      revalidatePath(`/courses/${courseId}`);
+      revalidatePath(`/courses/${courseId}/modules/${moduleId}`);
 
-    return NextResponse.json({
-      data: result
-    });
+      return NextResponse.json({
+        data: createdAssignment
+      });
+    } else {
+      throw new Error('Failed to create a valid assignment object');
+    }
   } catch (error: any) {
-    console.error('[ASSIGNMENT_CREATE]', error);
+    console.error('[ASSIGNMENT_CREATE] Error details:', error);
+    
+    if (error instanceof Error) {
+      console.error('[ASSIGNMENT_CREATE] Error name:', error.name);
+      console.error('[ASSIGNMENT_CREATE] Error message:', error.message);
+      console.error('[ASSIGNMENT_CREATE] Error stack:', error.stack);
+      
+      // Check for specific error types
+      if (error.name === 'PrismaClientKnownRequestError') {
+        // @ts-ignore
+        const prismaError = error as { code: string; meta?: any };
+        console.error('[ASSIGNMENT_CREATE] Prisma error code:', prismaError.code);
+        console.error('[ASSIGNMENT_CREATE] Prisma error meta:', prismaError.meta);
+      }
+      
+      return NextResponse.json(
+        { 
+          error: 'Failed to create assignment', 
+          message: error.message,
+          name: error.name
+        },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json(
-      { error: error.message || 'Failed to create assignment' },
+      { error: 'Failed to create assignment' },
       { status: 500 }
     );
   }

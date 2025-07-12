@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module Content API Tester</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    .container {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .result {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    .tab {
+      overflow: hidden;
+      border: 1px solid #ccc;
+      background-color: #f1f1f1;
+      border-radius: 4px 4px 0 0;
+    }
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 10px 16px;
+      transition: 0.3s;
+      font-size: 14px;
+      color: #333;
+    }
+    .tab button:hover {
+      background-color: #ddd;
+    }
+    .tab button.active {
+      background-color: #3498db;
+      color: white;
+    }
+    .tabcontent {
+      display: none;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-top: none;
+      border-radius: 0 0 4px 4px;
+      animation: fadeEffect 1s;
+    }
+    @keyframes fadeEffect {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+    .log-container {
+      background-color: #f0f8ff;
+      border: 1px solid #b8daff;
+      padding: 10px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .log-entry {
+      margin-bottom: 5px;
+      padding: 3px;
+      border-bottom: 1px solid #e9f4ff;
+    }
+    .success {
+      background-color: #d4edda;
+      border-color: #c3e6cb;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      color: #155724;
+    }
+    .error {
+      background-color: #f8d7da;
+      border-color: #f5c6cb;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Module Content API Tester</h1>
+    <p>Use this tool to test the module content creation API endpoints. Make sure you are logged in to your application before testing.</p>
+    
+    <div class="log-container">
+      <h3>Test Log</h3>
+      <div id="logEntries"></div>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="tab">
+      <button class="tablinks active" onclick="openTab(event, 'Module')">1. Module</button>
+      <button class="tablinks" onclick="openTab(event, 'Lesson')">2. Lesson</button>
+      <button class="tablinks" onclick="openTab(event, 'Page')">3. Page</button>
+      <button class="tablinks" onclick="openTab(event, 'Quiz')">4. Quiz</button>
+      <button class="tablinks" onclick="openTab(event, 'Assignment')">5. Assignment</button>
+      <button class="tablinks" onclick="openTab(event, 'Project')">6. Project</button>
+      <button class="tablinks" onclick="openTab(event, 'GetAll')">7. Get All</button>
+    </div>
+    
+    <div id="Module" class="tabcontent" style="display: block;">
+      <h2>1. Create Module</h2>
+      <form id="moduleForm">
+        <div>
+          <label for="courseId">Course ID:</label>
+          <input type="text" id="courseId" placeholder="Enter a valid course ID" required>
+        </div>
+        <div>
+          <label for="moduleTitle">Module Title:</label>
+          <input type="text" id="moduleTitle" value="Test Module" required>
+        </div>
+        <div>
+          <label for="moduleDescription">Description:</label>
+          <textarea id="moduleDescription">This is a test module created for API testing.</textarea>
+        </div>
+        <button type="submit">Create Module</button>
+      </form>
+      <div id="moduleResult" class="result"></div>
+    </div>
+    
+    <div id="Lesson" class="tabcontent">
+      <h2>2. Create Lesson</h2>
+      <form id="lessonForm">
+        <div>
+          <label for="lessonTitle">Lesson Title:</label>
+          <input type="text" id="lessonTitle" value="Test Lesson" required>
+        </div>
+        <div>
+          <label for="lessonDescription">Description:</label>
+          <textarea id="lessonDescription">This is a test lesson created for API testing.</textarea>
+        </div>
+        <div>
+          <label for="lessonContent">Content:</label>
+          <textarea id="lessonContent">This is the lesson content with all the important information.</textarea>
+        </div>
+        <div>
+          <label for="lessonVideoUrl">Video URL (optional):</label>
+          <input type="text" id="lessonVideoUrl" placeholder="https://example.com/video.mp4">
+        </div>
+        <button type="submit">Create Lesson</button>
+      </form>
+      <div id="lessonResult" class="result"></div>
+    </div>
+    
+    <div id="Page" class="tabcontent">
+      <h2>3. Create Page</h2>
+      <form id="pageForm">
+        <div>
+          <label for="pageTitle">Page Title:</label>
+          <input type="text" id="pageTitle" value="Test Page" required>
+        </div>
+        <div>
+          <label for="pageDescription">Description:</label>
+          <textarea id="pageDescription">This is a test page created for API testing.</textarea>
+        </div>
+        <div>
+          <label for="pageContent">Content:</label>
+          <textarea id="pageContent">This is the page content with all the important information.</textarea>
+        </div>
+        <div>
+          <label for="pageIsPublished">Published:</label>
+          <select id="pageIsPublished">
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+        <button type="submit">Create Page</button>
+      </form>
+      <div id="pageResult" class="result"></div>
+    </div>
+    
+    <div id="Quiz" class="tabcontent">
+      <h2>4. Create Quiz</h2>
+      <form id="quizForm">
+        <div>
+          <label for="quizTitle">Quiz Title:</label>
+          <input type="text" id="quizTitle" value="Test Quiz" required>
+        </div>
+        <div>
+          <label for="quizDescription">Description:</label>
+          <textarea id="quizDescription">This is a test quiz created for API testing.</textarea>
+        </div>
+        <div>
+          <label for="quizInstructions">Instructions:</label>
+          <textarea id="quizInstructions">Complete all questions to pass the quiz.</textarea>
+        </div>
+        <div>
+          <label for="quizTimeLimit">Time Limit (minutes):</label>
+          <input type="number" id="quizTimeLimit" value="15" min="1">
+        </div>
+        <div>
+          <label for="quizPassingScore">Passing Score (%):</label>
+          <input type="number" id="quizPassingScore" value="70" min="0" max="100">
+        </div>
+        <button type="submit">Create Quiz</button>
+      </form>
+      <div id="quizResult" class="result"></div>
+    </div>
+    
+    <div id="Assignment" class="tabcontent">
+      <h2>5. Create Assignment</h2>
+      <form id="assignmentForm">
+        <div>
+          <label for="assignmentTitle">Assignment Title:</label>
+          <input type="text" id="assignmentTitle" value="Test Assignment" required>
+        </div>
+        <div>
+          <label for="assignmentDescription">Description:</label>
+          <textarea id="assignmentDescription">This is a test assignment created for API testing.</textarea>
+        </div>
+        <div>
+          <label for="assignmentInstructions">Instructions:</label>
+          <textarea id="assignmentInstructions">Complete and submit your work according to the requirements.</textarea>
+        </div>
+        <div>
+          <label for="assignmentMaxScore">Max Score:</label>
+          <input type="number" id="assignmentMaxScore" value="100" min="0">
+        </div>
+        <div>
+          <label for="assignmentSubmissionType">Submission Type:</label>
+          <select id="assignmentSubmissionType">
+            <option value="TEXT">Text</option>
+            <option value="FILE">File</option>
+            <option value="LINK">Link</option>
+            <option value="MULTIPLE_FILES">Multiple Files</option>
+          </select>
+        </div>
+        <button type="submit">Create Assignment</button>
+      </form>
+      <div id="assignmentResult" class="result"></div>
+    </div>
+    
+    <div id="Project" class="tabcontent">
+      <h2>6. Create Project</h2>
+      <form id="projectForm">
+        <div>
+          <label for="projectTitle">Project Title:</label>
+          <input type="text" id="projectTitle" value="Test Project" required>
+        </div>
+        <div>
+          <label for="projectDescription">Description:</label>
+          <textarea id="projectDescription">This is a test project created for API testing.</textarea>
+        </div>
+        <div>
+          <label for="projectInstructions">Instructions:</label>
+          <textarea id="projectInstructions">Complete the project based on the requirements.</textarea>
+        </div>
+        <div>
+          <label for="projectDifficulty">Difficulty:</label>
+          <select id="projectDifficulty">
+            <option value="BEGINNER">Beginner</option>
+            <option value="EASY">Easy</option>
+            <option value="MEDIUM" selected>Medium</option>
+            <option value="HARD">Hard</option>
+            <option value="ADVANCED">Advanced</option>
+          </select>
+        </div>
+        <div>
+          <label for="projectEstimatedHours">Estimated Hours:</label>
+          <input type="number" id="projectEstimatedHours" value="5" min="1">
+        </div>
+        <button type="submit">Create Project</button>
+      </form>
+      <div id="projectResult" class="result"></div>
+    </div>
+    
+    <div id="GetAll" class="tabcontent">
+      <h2>7. Get All Content</h2>
+      <p>Click the buttons below to retrieve all content for the module:</p>
+      <div>
+        <button onclick="getModuleDetails()">Get Module Details</button>
+        <button onclick="getModuleLessons()">Get Lessons</button>
+        <button onclick="getModulePages()">Get Pages</button>
+        <button onclick="getModuleQuizzes()">Get Quizzes</button>
+        <button onclick="getModuleAssignments()">Get Assignments</button>
+        <button onclick="getModuleProjects()">Get Projects</button>
+      </div>
+      <div id="getAllResult" class="result"></div>
+    </div>
+  </div>
+
+  <script>
+    let moduleId = '';
+    let courseId = '';
+    const baseUrl = '/api';
+    
+    // Helper function to log actions
+    function logAction(message, isError = false) {
+      const logEntries = document.getElementById('logEntries');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry' + (isError ? ' error' : '');
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logEntries.prepend(entry);
+    }
+    
+    // Function to open tabs
+    function openTab(evt, tabName) {
+      const tabcontents = document.getElementsByClassName('tabcontent');
+      for (let i = 0; i < tabcontents.length; i++) {
+        tabcontents[i].style.display = 'none';
+      }
+      
+      const tablinks = document.getElementsByClassName('tablinks');
+      for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(' active', '');
+      }
+      
+      document.getElementById(tabName).style.display = 'block';
+      evt.currentTarget.className += ' active';
+    }
+    
+    // Function to make API requests
+    async function makeRequest(url, method = 'GET', body = null) {
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          ...(body ? { body: JSON.stringify(body) } : {}),
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${data.error || 'Unknown error'}`);
+        }
+        
+        return { success: true, data };
+      } catch (error) {
+        logAction(`Error: ${error.message}`, true);
+        return { success: false, error: error.message };
+      }
+    }
+    
+    // 1. Create Module
+    document.getElementById('moduleForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      courseId = document.getElementById('courseId').value.trim();
+      if (!courseId) {
+        logAction('Course ID is required', true);
+        return;
+      }
+      
+      const moduleData = {
+        title: document.getElementById('moduleTitle').value,
+        description: document.getElementById('moduleDescription').value,
+      };
+      
+      logAction(`Creating module in course ${courseId}...`);
+      const result = await makeRequest(`${baseUrl}/courses/${courseId}/modules`, 'POST', moduleData);
+      
+      const resultElement = document.getElementById('moduleResult');
+      if (result.success) {
+        moduleId = result.data.id;
+        logAction(`✅ Module created successfully with ID: ${moduleId}`);
+        resultElement.innerHTML = `<div class="success">Module created successfully!</div><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+        
+        // Update course ID field in all forms
+        document.querySelector('.tablinks[onclick*="Lesson"]').disabled = false;
+      } else {
+        resultElement.innerHTML = `<div class="error">Failed to create module</div><pre>${result.error}</pre>`;
+      }
+    });
+    
+    // 2. Create Lesson
+    document.getElementById('lessonForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!courseId || !moduleId) {
+        logAction('You must create a module first', true);
+        return;
+      }
+      
+      const lessonData = {
+        title: document.getElementById('lessonTitle').value,
+        description: document.getElementById('lessonDescription').value,
+        content: document.getElementById('lessonContent').value,
+        videoUrl: document.getElementById('lessonVideoUrl').value || undefined,
+      };
+      
+      logAction(`Creating lesson in module ${moduleId}...`);
+      const result = await makeRequest(`${baseUrl}/courses/${courseId}/modules/${moduleId}/lessons`, 'POST', lessonData);
+      
+      const resultElement = document.getElementById('lessonResult');
+      if (result.success) {
+        logAction(`✅ Lesson created successfully with ID: ${result.data.id}`);
+        resultElement.innerHTML = `<div class="success">Lesson created successfully!</div><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+      } else {
+        resultElement.innerHTML = `<div class="error">Failed to create lesson</div><pre>${result.error}</pre>`;
+      }
+    });
+    
+    // 3. Create Page
+    document.getElementById('pageForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!courseId || !moduleId) {
+        logAction('You must create a module first', true);
+        return;
+      }
+      
+      const pageData = {
+        title: document.getElementById('pageTitle').value,
+        description: document.getElementById('pageDescription').value,
+        content: document.getElementById('pageContent').value,
+        isPublished: document.getElementById('pageIsPublished').value === 'true',
+      };
+      
+      logAction(`Creating page in module ${moduleId}...`);
+      const result = await makeRequest(`${baseUrl}/courses/${courseId}/modules/${moduleId}/pages`, 'POST', pageData);
+      
+      const resultElement = document.getElementById('pageResult');
+      if (result.success) {
+        logAction(`✅ Page created successfully with ID: ${result.data.id}`);
+        resultElement.innerHTML = `<div class="success">Page created successfully!</div><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+      } else {
+        resultElement.innerHTML = `<div class="error">Failed to create page</div><pre>${result.error}</pre>`;
+      }
+    });
+    
+    // 4. Create Quiz
+    document.getElementById('quizForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!courseId || !moduleId) {
+        logAction('You must create a module first', true);
+        return;
+      }
+      
+      const quizData = {
+        title: document.getElementById('quizTitle').value,
+        description: document.getElementById('quizDescription').value,
+        instructions: document.getElementById('quizInstructions').value,
+        timeLimit: parseInt(document.getElementById('quizTimeLimit').value),
+        passingScore: parseInt(document.getElementById('quizPassingScore').value),
+      };
+      
+      logAction(`Creating quiz in module ${moduleId}...`);
+      const result = await makeRequest(`${baseUrl}/courses/${courseId}/modules/${moduleId}/quizzes`, 'POST', quizData);
+      
+      const resultElement = document.getElementById('quizResult');
+      if (result.success) {
+        logAction(`✅ Quiz created successfully!`);
+        resultElement.innerHTML = `<div class="success">Quiz created successfully!</div><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+      } else {
+        resultElement.innerHTML = `<div class="error">Failed to create quiz</div><pre>${result.error}</pre>`;
+      }
+    });
+    
+    // 5. Create Assignment
+    document.getElementById('assignmentForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!courseId || !moduleId) {
+        logAction('You must create a module first', true);
+        return;
+      }
+      
+      const assignmentData = {
+        title: document.getElementById('assignmentTitle').value,
+        description: document.getElementById('assignmentDescription').value,
+        instructions: document.getElementById('assignmentInstructions').value,
+        maxScore: parseInt(document.getElementById('assignmentMaxScore').value),
+        submissionType: document.getElementById('assignmentSubmissionType').value,
+      };
+      
+      logAction(`Creating assignment in module ${moduleId}...`);
+      const result = await makeRequest(`${baseUrl}/courses/${courseId}/modules/${moduleId}/assignments`, 'POST', assignmentData);
+      
+      const resultElement = document.getElementById('assignmentResult');
+      if (result.success) {
+        logAction(`✅ Assignment created successfully!`);
+        resultElement.innerHTML = `<div class="success">Assignment created successfully!</div><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+      } else {
+        resultElement.innerHTML = `<div class="error">Failed to create assignment</div><pre>${result.error}</pre>`;
+      }
+    });
+    
+    // 6. Create Project
+    document.getElementById('projectForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!courseId || !moduleId) {
+        logAction('You must create a module first', true);
+        return;
+      }
+      
+      const projectData = {
+        title: document.getElementById('projectTitle').value,
+        description: document.getElementById('projectDescription').value,
+        instructions: document.getElementById('projectInstructions').value,
+        difficulty: document.getElementById('projectDifficulty').value,
+        estimatedHours: parseInt(document.getElementById('projectEstimatedHours').value),
+      };
+      
+      logAction(`Creating project in module ${moduleId}...`);
+      const result = await makeRequest(`${baseUrl}/courses/${courseId}/modules/${moduleId}/projects`, 'POST', projectData);
+      
+      const resultElement = document.getElementById('projectResult');
+      if (result.success) {
+        logAction(`✅ Project created successfully!`);
+        resultElement.innerHTML = `<div class="success">Project created successfully!</div><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+      } else {
+        resultElement.innerHTML = `<div class="error">Failed to create project</div><pre>${result.error}</pre>`;
+      }
+    });
+    
+    // 7. Get All Content
+    async function getModuleDetails() {
+      if (!courseId || !moduleId) {
+        logAction('You must create a module first', true);
+        return;
+      }
+      
+      logAction(`Getting module details for ${moduleId}...`);
+      const result = await makeRequest(`${baseUrl}/courses/${courseId}/modules/${moduleId}`);
+      
+      const resultElement = document.getElementById('getAllResult');
+      if (result.success) {
+        logAction(`✅ Retrieved module details successfully`);
+        resultElement.innerHTML = `<h3>Module Details</h3><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+      } else {
+        resultElement.innerHTML = `<div class="error">Failed to get module details</div><pre>${result.error}</pre>`;
+      }
+    }
+    
+    async function getModuleLessons() {
+      if (!courseId || !moduleId) {
+        logAction('You must create a module first', true);
+        return;
+      }
+      
+      logAction(`Getting lessons for module ${moduleId}...`);
+      const result = await makeRequest(`${baseUrl}/courses/${courseId}/modules/${moduleId}/lessons`);
+      
+      const resultElement = document.getElementById('getAllResult');
+      if (result.success) {
+        logAction(`✅ Retrieved lessons successfully`);
+        resultElement.innerHTML = `<h3>Module Lessons</h3><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+      } else {
+        resultElement.innerHTML = `<div class="error">Failed to get lessons</div><pre>${result.error}</pre>`;
+      }
+    }
+    
+    async function getModulePages() {
+      if (!courseId || !moduleId) {
+        logAction('You must create a module first', true);
+        return;
+      }
+      
+      logAction(`Getting pages for module ${moduleId}...`);
+      const result = await makeRequest(`${baseUrl}/courses/${courseId}/modules/${moduleId}/pages`);
+      
+      const resultElement = document.getElementById('getAllResult');
+      if (result.success) {
+        logAction(`✅ Retrieved pages successfully`);
+        resultElement.innerHTML = `<h3>Module Pages</h3><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+      } else {
+        resultElement.innerHTML = `<div class="error">Failed to get pages</div><pre>${result.error}</pre>`;
+      }
+    }
+    
+    async function getModuleQuizzes() {
+      if (!courseId || !moduleId) {
+        logAction('You must create a module first', true);
+        return;
+      }
+      
+      logAction(`Getting quizzes for module ${moduleId}...`);
+      const result = await makeRequest(`${baseUrl}/courses/${courseId}/modules/${moduleId}/quizzes`);
+      
+      const resultElement = document.getElementById('getAllResult');
+      if (result.success) {
+        logAction(`✅ Retrieved quizzes successfully`);
+        resultElement.innerHTML = `<h3>Module Quizzes</h3><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+      } else {
+        resultElement.innerHTML = `<div class="error">Failed to get quizzes</div><pre>${result.error}</pre>`;
+      }
+    }
+    
+    async function getModuleAssignments() {
+      if (!courseId || !moduleId) {
+        logAction('You must create a module first', true);
+        return;
+      }
+      
+      logAction(`Getting assignments for module ${moduleId}...`);
+      const result = await makeRequest(`${baseUrl}/courses/${courseId}/modules/${moduleId}/assignments`);
+      
+      const resultElement = document.getElementById('getAllResult');
+      if (result.success) {
+        logAction(`✅ Retrieved assignments successfully`);
+        resultElement.innerHTML = `<h3>Module Assignments</h3><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+      } else {
+        resultElement.innerHTML = `<div class="error">Failed to get assignments</div><pre>${result.error}</pre>`;
+      }
+    }
+    
+    async function getModuleProjects() {
+      if (!courseId || !moduleId) {
+        logAction('You must create a module first', true);
+        return;
+      }
+      
+      logAction(`Getting projects for module ${moduleId}...`);
+      const result = await makeRequest(`${baseUrl}/courses/${courseId}/modules/${moduleId}/projects`);
+      
+      const resultElement = document.getElementById('getAllResult');
+      if (result.success) {
+        logAction(`✅ Retrieved projects successfully`);
+        resultElement.innerHTML = `<h3>Module Projects</h3><pre>${JSON.stringify(result.data, null, 2)}</pre>`;
+      } else {
+        resultElement.innerHTML = `<div class="error">Failed to get projects</div><pre>${result.error}</pre>`;
+      }
+    }
+  </script>
+</body>
+</html>

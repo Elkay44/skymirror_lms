@@ -37,7 +37,18 @@ export async function GET(
 ) {
   try {
     const { courseId, moduleId } = params;
+    
+    console.log(`[MODULE_GET] Request for course: ${courseId}, module: ${moduleId}`);
+    
     const session = await getServerSession(authOptions);
+    
+    // Log session details for debugging
+    console.log(`[MODULE_GET] Session:`, {
+      hasSession: !!session,
+      userId: session?.user?.id || 'No user ID',
+      userRole: session?.user?.role || 'No role'
+    });
+    
     const userId = session?.user?.id;
     const userRole = session?.user?.role;
 
@@ -122,24 +133,31 @@ export async function GET(
       },
     });
     
-    // Fetch forums for this module
-    const forums = await prisma.forum.findMany({
-      where: {
-        moduleId: moduleId,
-      },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: {
-          select: {
-            posts: true
+    // Fetch forums for this module with error handling
+    let forums: any[] = [];
+    try {
+      forums = await prisma.forum.findMany({
+        where: {
+          moduleId: moduleId,
+        },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: {
+              posts: true
+            }
           }
         }
-      }
-    });
+      });
+      console.log(`[MODULE_GET] Found ${forums.length} forums for module`);
+    } catch (forumError) {
+      console.error('[MODULE_GET] Error fetching forums:', forumError);
+      // Continue with empty forums array instead of failing the entire request
+    }
     if (!module) {
       return NextResponse.json(
         { error: 'Module not found' },
@@ -149,27 +167,66 @@ export async function GET(
 
     // Construct response with module data and forums
     // Map forum results to ensure they match the expected ModuleResponse type
-    const mappedForums = forums.map(forum => ({
-      id: forum.id,
-      title: forum.title,
-      description: forum.description,
-      createdAt: forum.createdAt,
-      updatedAt: forum.updatedAt,
-      _count: forum._count
-    }));
+    // Add error handling to the forum mapping to prevent issues with malformed data
+    const mappedForums = forums.map(forum => {
+      try {
+        return {
+          id: forum.id || 'unknown-id',
+          title: forum.title || 'Untitled Forum',
+          description: forum.description,
+          isActive: true,
+          createdAt: forum.createdAt || new Date(),
+          updatedAt: forum.updatedAt || new Date(),
+          _count: forum._count || { posts: 0 },
+          posts: forum._count?.posts || 0
+        };
+      } catch (mappingError) {
+        console.error('[MODULE_GET] Error mapping forum data:', mappingError);
+        // Return a fallback object if mapping fails
+        return {
+          id: 'error-mapping',
+          title: 'Forum Data Error',
+          description: 'There was an error processing this forum data',
+          isActive: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          _count: { posts: 0 },
+          posts: 0
+        };
+      }
+    });
     
+    // Construct response with module data and forums
     const response: ModuleResponse = {
       id: module.id,
       title: module.title,
       description: module.description,
-      lessons: module.lessons,
+      lessons: module.lessons || [],
       resources: module.resources || [],
-      forums: mappedForums,
+      forums: mappedForums || [],
     };
     
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error fetching module:', error);
+    console.error('[MODULE_GET] Error fetching module details:', error);
+    
+    // Provide more detailed error information
+    if (error instanceof Error) {
+      console.error('[MODULE_GET] Error name:', error.name);
+      console.error('[MODULE_GET] Error message:', error.message);
+      console.error('[MODULE_GET] Error stack:', error.stack);
+      
+      // Return more specific error message to help with debugging
+      return NextResponse.json(
+        { 
+          error: 'Failed to fetch module details', 
+          message: error.message,
+          name: error.name
+        },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch module details' },
       { status: 500 }

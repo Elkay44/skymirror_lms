@@ -116,11 +116,12 @@ export default function CreateProjectPage() {
         estimatedHours: projectData.estimatedHours,
         technologies: projectData.technologies,
         requirements: projectData.requirements,
-        resources: projectData.resources ? [{
-          title: 'Project Resources',
-          url: projectData.resources,
+        // Fix resources format to match the API schema
+        resources: projectData.resources ? projectData.resources.split(',').map(url => ({
+          title: 'Project Resource',
+          url: url.trim(),
           type: 'LINK'
-        }] : [],
+        })).filter(res => res.url !== '') : [],
         allowTeamSubmissions: projectData.allowTeamSubmissions,
         maxTeamSize: projectData.maxTeamSize,
         githubTemplateUrl: projectData.githubTemplateUrl

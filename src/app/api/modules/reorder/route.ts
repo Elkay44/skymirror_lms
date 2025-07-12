@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 // Simple endpoint that doesn't rely on dynamic segments
 export async function PATCH(request: NextRequest) {
@@ -98,6 +99,28 @@ export async function PATCH(request: NextRequest) {
     // Calculate execution time
     const executionTime = Date.now() - requestStartTime;
     console.log(`⏱️ Module reorder API completed in ${executionTime}ms with ${updateSuccessCount}/${updates.length} successful updates`);
+    
+    // Revalidate cache paths to ensure fresh data
+    if (updateSuccessCount > 0) {
+      console.log(`🔄 Revalidating cache for course ${courseId}...`);
+      try {
+        // Revalidate the instructor modules page
+        revalidatePath(`/dashboard/instructor/courses/${courseId}/modules`);
+        
+        // Revalidate the course page if published
+        if (course.isPublished) {
+          revalidatePath(`/courses/${courseId}`);
+        }
+        
+        // Revalidate the API endpoints
+        revalidatePath(`/api/courses/${courseId}/modules`);
+        
+        console.log('✅ Cache revalidation complete');
+      } catch (cacheError) {
+        console.error('❌ Cache revalidation error:', cacheError);
+        // Continue anyway since the database update was successful
+      }
+    }
 
     return NextResponse.json({
       success: updateSuccessCount > 0,

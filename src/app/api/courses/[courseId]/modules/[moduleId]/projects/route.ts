@@ -167,16 +167,42 @@ export async function POST(
     }
 
     // Parse and validate request
-    const body = await request.json();
-    const validationResult = createProjectSchema.safeParse(body);
+    // Parse and validate request
+    let validationData;
+    try {
+      const body = await request.json();
+      
+      // Log the received data for debugging
+      console.log('[PROJECT_CREATE] Received data:', JSON.stringify(body, null, 2));
+      
+      const validationResult = createProjectSchema.safeParse(body);
 
-    if (!validationResult.success) {
+      if (!validationResult.success) {
+        // Log detailed validation errors
+        console.error('[PROJECT_CREATE] Validation failed:', JSON.stringify(validationResult.error.format(), null, 2));
+        
+        return NextResponse.json(
+          { 
+            error: 'Invalid input', 
+            details: validationResult.error.format(),
+            receivedData: body  // Include the received data in the error response
+          },
+          { status: 400 }
+        );
+      }
+      
+      // Log successful validation
+      console.log('[PROJECT_CREATE] Validation successful');
+      validationData = validationResult.data;
+    } catch (parseError) {
+      console.error('[PROJECT_CREATE] Error parsing request body:', parseError);
       return NextResponse.json(
-        { error: 'Invalid input', details: validationResult.error.errors },
+        { error: 'Failed to parse request body', details: parseError instanceof Error ? parseError.message : 'Unknown error' },
         { status: 400 }
       );
     }
 
+    // Use validationData instead of validationResult.data
     const { 
       title, 
       description, 
@@ -194,41 +220,55 @@ export async function POST(
       allowTeamSubmissions = false,
       maxTeamSize = 3,
       githubTemplateUrl
-    } = validationResult.data;
+    } = validationData;
 
-    // Create project
-    const project = await prisma.project.create({
-      data: {
-        title,
-        description: description || null,
-        instructions: instructions || null,
-        dueDate: dueDate ? new Date(dueDate) : null,
-        isPublished,
-        maxScore: maxScore || null,
-        skills: skillsRequired ? JSON.stringify(skillsRequired) : null,
-        // Additional fields
-        difficulty,
-        estimatedHours: estimatedHours || null,
-        technologies: technologies || null,
-        requirements: requirements || null,
-        allowTeamSubmissions,
-        maxTeamSize: allowTeamSubmissions ? maxTeamSize : null,
-        githubRepoUrl: githubTemplateUrl || null,
-        module: { connect: { id: moduleId } },
-      }
+    // Create project using standard Prisma client instead of raw SQL extension
+    // Log what we're about to create
+    console.log('[PROJECT_CREATE] About to create project with data:', {
+      title,
+      description: description || null,
+      instructions: instructions || null,
+      dueDate: dueDate ? new Date(dueDate) : null,
+      isPublished,
+      moduleId,
+      courseId
+    });
+    
+    const project = await prisma.$transaction(async (tx) => {
+      // Use standard Prisma create - not our extensions
+      return tx.project.create({
+        data: {
+          title,
+          description: description || null,
+          instructions: instructions || null,
+          dueDate: dueDate ? new Date(dueDate) : null,
+          isPublished,
+          // Use proper relation syntax since we're using standard Prisma
+          module: { connect: { id: moduleId } },
+          course: { connect: { id: courseId } },
+          // Standard fields from schema
+          pointsValue: maxScore || 10,
+          isRequiredForCertification: true
+        }
+      });
     });
 
-    // Create resources if any
+    // Create resources if any using standard Prisma client
     if (resources && resources.length > 0) {
-      await prisma.projectResource.createMany({
-        data: resources.map((resource, index) => ({
-          projectId: project.id,
-          title: resource.title,
-          url: resource.url,
-          type: resource.type,
-          order: index
-        }))
-      });
+      console.log(`[PROJECT_CREATE] Creating ${resources.length} project resources`);
+      
+      for (let i = 0; i < resources.length; i++) {
+        const resource = resources[i];
+        await prisma.projectResource.create({
+          data: {
+            title: resource.title,
+            url: resource.url,
+            type: resource.type,
+            order: i,
+            project: { connect: { id: project.id } } // Use proper relation syntax
+          }
+        });
+      }
     }
 
     // Log activity

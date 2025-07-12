@@ -73,42 +73,84 @@ export async function GET(
     const sort = url.searchParams.get('sort') || 'createdAt';
     const order = url.searchParams.get('order') || 'desc';
 
-    // Get total count for pagination
-    const totalCount = await prisma.forumPost.count({
-      where: { forumId: forumId }
+    console.log('[FORUM_POSTS_GET] Fetching posts for forum:', {
+      forumId,
+      page,
+      limit,
+      sort,
+      order
     });
-
+    
+    // When using raw SQL extensions, we need to handle this differently
+    // First, get the raw posts without relations
+    const rawPosts = await prisma.forumPost.findMany({
+      where: { forumId: forumId },
+      // Note: orderBy might not work properly with raw SQL extensions
+      // We'll handle sorting in memory if needed
+      // skip and take also might not work as expected with raw SQL
+    });
+    
+    // Get total count
+    const totalCount = rawPosts.length;
+    
     // Calculate total pages
     const totalPages = Math.ceil(totalCount / limit);
-
-    // Fetch forum posts with pagination, sorting, and user information
-    const posts = await prisma.forumPost.findMany({
-      where: { forumId: forumId },
-      orderBy: {
-        [sort]: order
-      },
-      include: {
-        author: {
+    
+    // Apply pagination manually
+    const paginatedPosts = rawPosts
+      .sort((a, b) => {
+        // Sort based on the selected sort field and order
+        if (sort === 'createdAt') {
+          return order === 'desc' 
+            ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        }
+        // Add other sort options as needed
+        return 0;
+      })
+      .slice(offset, offset + limit);
+    
+    // Fetch author information for each post
+    const postsWithAuthors = await Promise.all(
+      paginatedPosts.map(async (post) => {
+        // Fetch author details
+        const author = await prisma.user.findUnique({
+          where: { id: Number(post.authorId) },
           select: {
             id: true,
             name: true,
             email: true,
             image: true
           }
-        },
-        _count: {
-          select: {
-            comments: true,
-            likes: true
+        });
+        
+        // Get comment count - since we're using raw SQL we need to find a different way
+        // to count comments and likes
+        const comments = await prisma.forumPostComment.findMany({
+          where: { postId: post.id }
+        });
+        const commentCount = comments.length;
+        
+        // Get like count
+        const likes = await prisma.forumPostLike.findMany({
+          where: { postId: post.id }
+        });
+        const likeCount = likes.length;
+        
+        // Return enriched post
+        return {
+          ...post,
+          author,
+          _count: {
+            comments: commentCount,
+            likes: likeCount
           }
-        }
-      },
-      skip: offset,
-      take: limit,
-    });
+        };
+      })
+    );
 
     return NextResponse.json({
-      posts,
+      posts: postsWithAuthors,
       pagination: {
         total: totalCount,
         pages: totalPages,
@@ -224,7 +266,14 @@ export async function POST(
       );
     }
 
-    // Create the forum post
+    // Create the forum post with direct field assignment instead of Prisma relation syntax
+    // This is because we're using raw SQL in our Prisma extensions
+    console.log('[FORUM_POST_CREATE] Creating post with data:', {
+      title,
+      forumId,
+      authorId: Number(userId)
+    });
+    
     const post = await prisma.forumPost.create({
       data: {
         title,
@@ -232,22 +281,26 @@ export async function POST(
         isPinned: isPinned || false,
         isLocked: isLocked || false,
         viewCount: 0,
-        forum: { connect: { id: forumId } },
-        author: { connect: { id: Number(userId) } }
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true
-          }
-        }
+        forumId: forumId, // Direct field assignment
+        authorId: Number(userId) // Direct field assignment
       }
     });
+    
+    // Fetch the author details separately since our raw SQL extension doesn't support include
+    const author = await prisma.user.findUnique({
+      where: { id: Number(userId) },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true
+      }
+    });
+    
+    // Combine the post and author data
+    const postWithAuthor = { ...post, author };
 
-    return NextResponse.json(post);
+    return NextResponse.json(postWithAuthor);
   } catch (error) {
     console.error('Error creating forum post:', error);
     return NextResponse.json(

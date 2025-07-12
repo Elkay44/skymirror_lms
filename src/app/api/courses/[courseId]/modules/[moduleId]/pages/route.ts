@@ -234,9 +234,9 @@ export async function POST(
         content: content || "",
         order: nextOrder,
         moduleId,
-        type: 'PAGE', // Assuming the schema now supports page type
+        // Note: Removed 'type' field which doesn't exist in the schema
         duration: 0,
-        isPublished: isPublished || true,
+        // Note: Removed 'isPublished' field which doesn't exist in the schema
       },
     });
 

@@ -100,6 +100,12 @@ export async function GET(
     }
 
     // Transform to match expected page format
+    // Initialize empty content blocks array
+    const contentBlocks: any[] = [];
+    
+    // In a production app, we'd fetch content blocks from a separate table
+    // For now, we'll create default blocks from the page content
+    
     const transformedPage = {
       id: page.id,
       moduleId,
@@ -108,7 +114,7 @@ export async function GET(
       description: page.description || '',
       order: page.order,
       isPublished: true, // Default to true for now
-      contentBlocks: contentBlocks.length > 0 ? contentBlocks : [
+      contentBlocks: [
         {
           id: `block-${page.id}`,
           type: 'text' as const,
@@ -229,7 +235,6 @@ export async function PATCH(
           description: description !== undefined ? description : undefined,
           content: content !== undefined ? content : undefined,
           order: order !== undefined ? order : undefined,
-          isPublished: isPublished !== undefined ? isPublished : undefined,
           type: 'PAGE', // Ensure it's marked as a page
         },
       });
@@ -286,8 +291,8 @@ export async function PATCH(
       slug: updatedPage.title.toLowerCase().replace(/\s+/g, '-'),
       description: updatedPage.description || '',
       order: updatedPage.order,
-      isPublished: updatedPage.isPublished ?? true,
-      contentBlocks: updatedContentBlocks.length > 0 ? updatedContentBlocks : [
+      isPublished: true, // Hard-coding to true since isPublished is not in Lesson model
+      contentBlocks: updatedContentBlocks && updatedContentBlocks.length > 0 ? updatedContentBlocks : [
         {
           id: `block-${updatedPage.id}`,
           type: 'text' as const,
