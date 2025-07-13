@@ -93,6 +93,16 @@ export type ExtendedPrismaClient = PrismaClient & {
     update: (args: any) => Promise<any>;
     delete: (args: any) => Promise<any>;
   };
+  // Page content block model
+  pageContentBlock: {
+    findUnique: (args: any) => Promise<any>;
+    findFirst: (args: any) => Promise<any>;
+    findMany: (args: any) => Promise<any[]>;
+    create: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+    deleteMany: (args: any) => Promise<any>;
+  };
   // Course version custom implementation
   courseVersion: {
     findUnique: (args: any) => Promise<any>;
@@ -375,6 +385,20 @@ export function extendPrismaClient(prismaClient: PrismaClient): ExtendedPrismaCl
     create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "ProjectSubmission" ${formatInsertClause(args.data)} RETURNING *`,
     update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "ProjectSubmission" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
     delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "ProjectSubmission" WHERE id = ${args.where.id} RETURNING *`
+  };
+
+  // Add pageContentBlock model implementation
+  (prismaClient as any).pageContentBlock = {
+    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "PageContentBlock" WHERE id = ${args.where.id} LIMIT 1`,
+    findFirst: (args: any) => {
+      const whereClause = args.where ? `WHERE ${formatWhereClause(args.where)}` : '';
+      return (prismaClient as any).$queryRaw`SELECT * FROM "PageContentBlock" ${whereClause} LIMIT 1`;
+    },
+    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "PageContentBlock" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''} ${args.orderBy ? `ORDER BY ${formatOrderByClause(args.orderBy)}` : ''}`,
+    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "PageContentBlock" ${formatInsertClause(args.data)} RETURNING *`,
+    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "PageContentBlock" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
+    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "PageContentBlock" WHERE id = ${args.where.id} RETURNING *`,
+    deleteMany: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "PageContentBlock" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''} RETURNING *`
   };
 
   return prismaClient as ExtendedPrismaClient;
