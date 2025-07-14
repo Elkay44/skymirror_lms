@@ -2,12 +2,33 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Tooltip } from '@/components/ui/tooltip';
 import { 
-  Plus, ArrowLeft, Loader2, LayoutGrid, MessageCircle, 
-  FileText, Settings, Users, BookOpen, GraduationCap, CheckCircle2, 
-  BarChart4, Trash2, Copy, Eye, GripVertical, Video, FileCheck2, Code,
-  Clock, Calendar, ListChecks
+  ArrowLeft, 
+  Eye, 
+  FileText, 
+  LayoutGrid, 
+  Loader2, 
+  MessageCircle,
+  BarChart4,
+  Plus,
+  Settings, 
+  Trash,
+  Trash2,
+  BookOpen,
+  ClipboardList,
+  HelpCircle, 
+  GraduationCap, 
+  CheckCircle2, 
+  Copy, 
+  GripVertical, 
+  Video, 
+  FileCheck2, 
+  Code,
+  Clock, 
+  Calendar, 
+  ListChecks
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
@@ -20,9 +41,15 @@ import {
   ModulePage, 
   ContentBlock, 
   ContentBlockType,
-  Project,
   GetModulePagesResponse
 } from '@/types/module';
+// Use relative paths for module imports to avoid resolution issues
+import { Project } from '../../../../../../../types/project';
+import { Page } from '../../../../../../../types/page';
+import { Lesson } from '../../../../../../../types/lesson';
+import { Assignment } from '../../../../../../../types/assignment';
+import { Quiz } from '../../../../../../../types/quiz';
+import { ForumTopic } from '../../../../../../../types/forum';
 import { 
   getModule
 } from '@/lib/api/modules';
@@ -35,7 +62,11 @@ import {
   deleteContentBlock,
   getModulePage
 } from '@/lib/api/module-pages';
-import { getModuleProjects } from '@/lib/api/projects';
+import { getModuleProjects } from '../../../../../../../lib/api/projects';
+import { getModuleLessons } from '../../../../../../../lib/api/lessons';
+import { getModuleAssignments } from '../../../../../../../lib/api/assignments';
+import { getModuleQuizzes } from '../../../../../../../lib/api/quizzes';
+import { getModuleTopics } from '../../../../../../../lib/api/forums';
 
 // DND Kit imports for drag and drop functionality
 import {
@@ -69,12 +100,25 @@ export default function ModuleDetailsPage() {
   const [activePage, setActivePage] = useState<ModulePage | null>(null);
   const [blocks, setBlocks] = useState<ContentBlock[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
+  const [quizzes, setQuizzes] = useState<any[]>([]);
+  const [forumTopics, setForumTopics] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isBlockEditorOpen, setIsBlockEditorOpen] = useState(false);
   const [editingBlock, setEditingBlock] = useState<ContentBlock | undefined>(undefined);
   const [selectedBlockType, setSelectedBlockType] = useState<ContentBlockType>('text');
-  const [activeTab, setActiveTab] = useState('content');
+  const [activeTab, setActiveTab] = useState('pages');
   const [isSorting, setIsSorting] = useState(false);
+
+  const tabs = [
+    { id: 'pages', label: 'Pages' },
+    { id: 'lessons', label: 'Lessons' },
+    { id: 'assignments', label: 'Assignments' },
+    { id: 'quizzes', label: 'Quizzes' },
+    { id: 'projects', label: 'Projects' },
+    { id: 'forum', label: 'Discussion' },
+  ];
 
   // Initialize sensors for drag and drop
   const sensors = useSensors(
@@ -92,11 +136,23 @@ export default function ModuleDetailsPage() {
     try {
       setIsLoading(true);
       
-      // Fetch module details
-      const [moduleData, pagesResponse, projectsData] = await Promise.all([
+      // Fetch module details and all content types
+      const [
+        moduleData, 
+        pagesResponse, 
+        projectsData,
+        lessonsData,
+        assignmentsData,
+        quizzesData,
+        forumTopicsData
+      ] = await Promise.all([
         getModule(courseId, moduleId),
         getModulePages(courseId, moduleId),
-        getModuleProjects(courseId, moduleId)
+        getModuleProjects(courseId, moduleId).catch(() => []),
+        getModuleLessons(courseId, moduleId).catch(() => []),
+        getModuleAssignments(courseId, moduleId).catch(() => []),
+        getModuleQuizzes(courseId, moduleId).catch(() => []),
+        getModuleTopics(courseId, moduleId).catch(() => [])
       ]);
       
       setModule(moduleData);
@@ -105,8 +161,12 @@ export default function ModuleDetailsPage() {
       const pages = pagesResponse.data;
       setPages(pages);
       
-      // Set projects
-      setProjects(projectsData);
+      // Set all content types
+      setProjects(projectsData as Project[]);
+      setLessons(lessonsData as Lesson[]);
+      setAssignments(Array.isArray(assignmentsData) ? assignmentsData as Assignment[] : []);
+      setQuizzes(Array.isArray(quizzesData) ? quizzesData as Quiz[] : []);
+      setForumTopics(Array.isArray(forumTopicsData) ? forumTopicsData as ForumTopic[] : []);
       
       // Set first page as active if available
       if (pages.length > 0) {
@@ -321,22 +381,28 @@ export default function ModuleDetailsPage() {
         {/* Module tabs and content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="bg-muted/50 p-1">
-            <TabsTrigger value="content" className="flex items-center gap-1">
-              <LayoutGrid size={16} /> Content
+            <TabsTrigger value="pages" className="flex items-center gap-1">
+              <LayoutGrid size={16} /> Pages ({pages.length})
+            </TabsTrigger>
+            <TabsTrigger value="lessons" className="flex items-center gap-1">
+              <BookOpen size={16} /> Lessons ({lessons.length})
+            </TabsTrigger>
+            <TabsTrigger value="assignments" className="flex items-center gap-1">
+              <ClipboardList size={16} /> Assignments ({assignments.length})
+            </TabsTrigger>
+            <TabsTrigger value="quizzes" className="flex items-center gap-1">
+              <HelpCircle size={16} /> Quizzes ({quizzes.length})
             </TabsTrigger>
             <TabsTrigger value="projects" className="flex items-center gap-1">
               <FileText size={16} /> Projects ({projects.length})
             </TabsTrigger>
-            <TabsTrigger value="discussions" className="flex items-center gap-1">
-              <MessageCircle size={16} /> Discussions
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-1">
-              <BarChart4 size={16} /> Analytics
+            <TabsTrigger value="forum" className="flex items-center gap-1">
+              <MessageCircle size={16} /> Discussion ({forumTopics.length})
             </TabsTrigger>
           </TabsList>
           
-          {/* Content Tab */}
-          <TabsContent value="content" className="p-0 border-0">
+          {/* Pages Tab */}
+          <TabsContent value="pages" className="p-0 border-0">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               {/* Sidebar with pages */}
               <div className="md:col-span-3 space-y-4">
@@ -489,89 +555,338 @@ export default function ModuleDetailsPage() {
           {/* Projects Tab */}
           <TabsContent value="projects" className="p-0 border-0">
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium">Module Projects</h3>
-                <Button 
-                  onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/project/create`)}
-                  size="sm"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Project
-                </Button>
-              </div>
-              
-              {projects.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No projects</h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Get started by creating a new project.
-                  </p>
-                  <div className="mt-6">
-                    <Button
-                      onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/project/create`)}
-                    >
-                      <Plus className="-ml-1 mr-2 h-5 w-5" />
-                      New Project
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-medium">Projects</h2>
+                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/projects/new`)}>
+                      <Plus className="mr-1 h-4 w-4" /> Add Project
                     </Button>
                   </div>
-                </div>
-              ) : (
-                <div className="grid gap-4">
-                  {projects.map((project) => (
-                    <Card key={project.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-medium">{project.title}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {project.description || 'No description'}
-                            </p>
-                            {project.dueDate && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Due: {new Date(project.dueDate).toLocaleDateString()}
-                              </p>
-                            )}
+                </CardContent>
+              </Card>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {projects.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+                      <FileText className="h-12 w-12 text-muted-foreground mb-3" />
+                      <h3 className="text-lg font-medium mb-2">No projects yet</h3>
+                      <p className="text-muted-foreground text-sm mb-4">Create projects to give hands-on practice to students</p>
+                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/projects/new`)}>
+                        <Plus className="mr-1 h-4 w-4" /> Create Project
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  projects.map((project) => (
+                    <Card key={project.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                      <CardContent className="p-0">
+                        <div className="bg-primary/5 p-4 border-b">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-medium">{project.title}</h3>
+                            <Button variant="ghost" size="icon" asChild>
+                              <Link href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/projects/${project.id}`}>
+                                <Eye className="h-4 w-4" />
+                              </Link>
+                            </Button>
                           </div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/projects/${project.id}`)}
-                          >
-                            View
-                          </Button>
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                            {project.description || 'No description available'}
+                          </p>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center">
+                                <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <span>Due {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : 'Not set'}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <ListChecks className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <span>{(project as any)._count?.submissions || 0} Submissions</span>
+                              </div>
+                            </div>
+                            <Badge variant={project.isPublished ? 'default' : 'outline'}>
+                              {project.isPublished ? 'Published' : 'Draft'}
+                            </Badge>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
-                </div>
-              )}
+                  ))
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Lessons Tab */}
+          <TabsContent value="lessons" className="p-0 border-0">
+            <div className="space-y-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-medium">Lessons</h2>
+                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lessons/new`)}>
+                      <Plus className="mr-1 h-4 w-4" /> Add Lesson
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {lessons.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+                      <BookOpen className="h-12 w-12 text-muted-foreground mb-3" />
+                      <h3 className="text-lg font-medium mb-2">No lessons yet</h3>
+                      <p className="text-muted-foreground text-sm mb-4">Create lessons to teach students course material</p>
+                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lessons/new`)}>
+                        <Plus className="mr-1 h-4 w-4" /> Create Lesson
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  lessons.map((lesson) => (
+                    <Card key={lesson.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                      <CardContent className="p-0">
+                        <div className="bg-primary/5 p-4 border-b">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-medium">{lesson.title}</h3>
+                            <Button variant="ghost" size="icon" asChild>
+                              <Link href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lessons/${lesson.id}`}>
+                                <Eye className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                            {lesson.description || 'No description available'}
+                          </p>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center">
+                                <Video className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <span>{lesson.videoUrl ? 'Video lesson' : 'Text lesson'}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <span>{lesson.duration ? `${lesson.duration} min` : 'No duration set'}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Assignments Tab */}
+          <TabsContent value="assignments" className="p-0 border-0">
+            <div className="space-y-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-medium">Assignments</h2>
+                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/assignments/new`)}>
+                      <Plus className="mr-1 h-4 w-4" /> Add Assignment
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {assignments.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+                      <ClipboardList className="h-12 w-12 text-muted-foreground mb-3" />
+                      <h3 className="text-lg font-medium mb-2">No assignments yet</h3>
+                      <p className="text-muted-foreground text-sm mb-4">Create assignments to assess student learning</p>
+                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/assignments/new`)}>
+                        <Plus className="mr-1 h-4 w-4" /> Create Assignment
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  assignments.map((assignment) => (
+                    <Card key={assignment.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                      <CardContent className="p-0">
+                        <div className="bg-primary/5 p-4 border-b">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-medium">{assignment.title}</h3>
+                            <Button variant="ghost" size="icon" asChild>
+                              <Link href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/assignments/${assignment.id}`}>
+                                <Eye className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                            {assignment.description || 'No description available'}
+                          </p>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center">
+                                <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <span>Due {assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString() : 'Not set'}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <ListChecks className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <span>{(assignment as any)._count?.submissions || 0} Submissions</span>
+                              </div>
+                            </div>
+                            <Badge variant={assignment.isPublished ? 'default' : 'outline'}>
+                              {assignment.isPublished ? 'Published' : 'Draft'}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Quizzes Tab */}
+          <TabsContent value="quizzes" className="p-0 border-0">
+            <div className="space-y-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-medium">Quizzes</h2>
+                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/quizzes/new`)}>
+                      <Plus className="mr-1 h-4 w-4" /> Add Quiz
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {quizzes.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+                      <HelpCircle className="h-12 w-12 text-muted-foreground mb-3" />
+                      <h3 className="text-lg font-medium mb-2">No quizzes yet</h3>
+                      <p className="text-muted-foreground text-sm mb-4">Create quizzes to test student knowledge</p>
+                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/quizzes/new`)}>
+                        <Plus className="mr-1 h-4 w-4" /> Create Quiz
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  quizzes.map((quiz) => (
+                    <Card key={quiz.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                      <CardContent className="p-0">
+                        <div className="bg-primary/5 p-4 border-b">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-medium">{quiz.title}</h3>
+                            <Button variant="ghost" size="icon" asChild>
+                              <Link href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/quizzes/${quiz.id}`}>
+                                <Eye className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                            {quiz.description || 'No description available'}
+                          </p>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center">
+                                <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <span>{quiz.timeLimit ? `${quiz.timeLimit} min` : 'No time limit'}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <GraduationCap className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <span>Pass: {quiz.passingScore || 60}%</span>
+                              </div>
+                            </div>
+                            <Badge variant={quiz.isPublished ? 'default' : 'outline'}>
+                              {quiz.isPublished ? 'Published' : 'Draft'}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
             </div>
           </TabsContent>
           
-          {/* Discussions Tab */}
-          <TabsContent value="discussions" className="p-0 border-0">
-            <ModuleDiscussions courseId={courseId} moduleId={moduleId} />
-          </TabsContent>
-          
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" className="p-0 border-0">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <h2 className="text-xl font-semibold">Module Analytics</h2>
-                    <p className="text-muted-foreground text-sm">Track student engagement and performance</p>
+          {/* Forum/Discussion Tab */}
+          <TabsContent value="forum" className="p-0 border-0">
+            <div className="space-y-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-medium">Discussion Forum</h2>
+                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/forum/new-topic`)}>
+                      <Plus className="mr-1 h-4 w-4" /> Start Discussion
+                    </Button>
                   </div>
-                </div>
-                
-                <div className="text-center py-12">
-                  <BarChart4 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground mb-2">Analytics data will appear here once students start engaging with this module</p>
-                  <p className="text-xs text-muted-foreground">You'll be able to track completion rates, time spent, quiz scores, and more</p>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {forumTopics.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+                      <MessageCircle className="h-12 w-12 text-muted-foreground mb-3" />
+                      <h3 className="text-lg font-medium mb-2">No discussions yet</h3>
+                      <p className="text-muted-foreground text-sm mb-4">Start a discussion to engage with your students</p>
+                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/forum/new-topic`)}>
+                        <Plus className="mr-1 h-4 w-4" /> Start Discussion
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  forumTopics.map((topic) => (
+                    <Card key={topic.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                      <CardContent className="p-0">
+                        <div className="bg-primary/5 p-4 border-b">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-medium">{topic.title}</h3>
+                            <Button variant="ghost" size="icon" asChild>
+                              <Link href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/forum/topics/${topic.id}`}>
+                                <Eye className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                            {topic.description || 'No description available'}
+                          </p>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center">
+                                <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <span>Last activity: {topic.lastActivity ? new Date(topic.lastActivity).toLocaleDateString() : 'None'}</span>
+                              </div>
+                              <div className="flex items-center">
+                                <MessageCircle className="h-4 w-4 mr-1 text-muted-foreground" />
+                                <span>{topic.postCount || 0} Posts</span>
+                              </div>
+                            </div>
+                            {topic.isPinned && (
+                              <Badge variant="default">Pinned</Badge>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

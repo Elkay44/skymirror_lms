@@ -2,6 +2,30 @@
  * Types for forum system
  */
 
+// Forum Topic - Main container for discussions within a module
+export interface ForumTopic {
+  id: string;
+  title: string;
+  description: string | null;
+  isPinned: boolean;
+  isLocked: boolean;
+  moduleId: string;
+  courseId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  authorId: number;
+  postCount: number;
+  lastActivity: Date | null;
+  posts?: ForumPost[];
+}
+
+// Request to create a forum topic
+export interface CreateForumTopicRequest {
+  title: string;
+  description?: string;
+  isPinned?: boolean;
+}
+
 // Post types
 export type ForumPostType = 'DISCUSSION' | 'QUESTION' | 'ANNOUNCEMENT';
 
