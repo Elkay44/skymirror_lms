@@ -2,6 +2,7 @@
   "name": "skymirror-lms",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
@@ -10,7 +11,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "prisma:seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.828.0",
@@ -42,6 +44,7 @@
     "lucide-react": "^0.511.0",
     "next": "^15.1.8",
     "next-auth": "^4.22.3",
+    "next-themes": "^0.4.6",
     "openai": "^3.3.0",
     "react": "^18.2.0",
     "react-day-picker": "^9.7.0",
@@ -78,7 +81,7 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^29.5.14",
-    "@types/node": "20.17.50",
+    "@types/node": "^20.17.50",
     "@types/react": "18.3.22",
     "@types/react-dom": "^18",
     "@types/testing-library__jest-dom": "^5.14.9",
@@ -96,7 +99,8 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "5.8.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   }
 }

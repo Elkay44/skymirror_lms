@@ -31,13 +31,13 @@ export default function InstructorDashboard() {
   });
 
   useEffect(() => {
-    // Redirect if not authenticated or not an instructor
+    // Redirect if not authenticated or not an instructor/admin
     if (status === 'unauthenticated') {
       router.push('/login?callbackUrl=/instructor');
       return;
     }
 
-    if (status === 'authenticated' && session?.user?.role !== 'INSTRUCTOR') {
+    if (status === 'authenticated' && session?.user?.role !== 'INSTRUCTOR' && session?.user?.role !== 'ADMIN') {
       router.push('/dashboard');
       return;
     }
@@ -61,7 +61,7 @@ export default function InstructorDashboard() {
       }
     };
 
-    if (status === 'authenticated' && session?.user?.role === 'INSTRUCTOR') {
+    if (status === 'authenticated' && (session?.user?.role === 'INSTRUCTOR' || session?.user?.role === 'ADMIN')) {
       fetchInstructorData();
     }
   }, [session, status, router]);

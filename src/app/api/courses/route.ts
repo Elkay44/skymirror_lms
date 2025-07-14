@@ -188,14 +188,36 @@ export async function GET(req: NextRequest) {
     // Build the where clause based on filters and user role
     let whereClause: any = {};
     
+    // For non-authenticated users or regular students, only show published courses
+    if (!session?.user?.role || session.user.role === 'STUDENT') {
+      whereClause.isPublished = true;
+      whereClause.status = 'PUBLISHED';
+    } else if (session.user.role === 'INSTRUCTOR') {
+      // For instructors, show their own courses regardless of status, but only published courses from others
+      whereClause.OR = [
+        { instructorId: toNumber(session.user.id) },
+        { isPublished: true, status: 'PUBLISHED' }
+      ];
+    }
+    // Admins can see all courses
+    
     // Filter by search query
     if (search) {
-      whereClause.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { shortDescription: { contains: search, mode: 'insensitive' } },
-        { tags: { contains: search, mode: 'insensitive' } }
-      ];
+      const searchConditions = {
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+          { shortDescription: { contains: search, mode: 'insensitive' } },
+          { tags: { contains: search, mode: 'insensitive' } }
+        ]
+      };
+      
+      whereClause = {
+        AND: [
+          whereClause,
+          searchConditions
+        ]
+      };
     }
     
     // Filter by single category or multiple categories
