@@ -100,10 +100,10 @@ export default function ModuleDetailsPage() {
   const [activePage, setActivePage] = useState<ModulePage | null>(null);
   const [blocks, setBlocks] = useState<ContentBlock[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [lessons, setLessons] = useState<any[]>([]);
-  const [assignments, setAssignments] = useState<any[]>([]);
-  const [quizzes, setQuizzes] = useState<any[]>([]);
-  const [forumTopics, setForumTopics] = useState<any[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [forumTopics, setForumTopics] = useState<ForumTopic[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isBlockEditorOpen, setIsBlockEditorOpen] = useState(false);
   const [editingBlock, setEditingBlock] = useState<ContentBlock | undefined>(undefined);
@@ -165,7 +165,8 @@ export default function ModuleDetailsPage() {
       setProjects(projectsData as Project[]);
       setLessons(lessonsData as Lesson[]);
       setAssignments(Array.isArray(assignmentsData) ? assignmentsData as Assignment[] : []);
-      setQuizzes(Array.isArray(quizzesData) ? quizzesData as Quiz[] : []);
+      // Quiz API returns a wrapper object with data and total properties
+      setQuizzes(quizzesData && 'data' in quizzesData ? quizzesData.data as Quiz[] : []);
       setForumTopics(Array.isArray(forumTopicsData) ? forumTopicsData as ForumTopic[] : []);
       
       // Set first page as active if available

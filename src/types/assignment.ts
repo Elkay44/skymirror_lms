@@ -1,4 +1,5 @@
-import { User } from './user';
+// Import User type from the correct location
+import { User } from '@/types/user';
 
 // Resource Type Enum
 export type ResourceType = 'LINK' | 'FILE' | 'VIDEO';
@@ -39,6 +40,9 @@ export interface RubricItem {
   updatedAt: Date;
 }
 
+// Submission type enum
+export type SubmissionType = 'TEXT' | 'FILE' | 'LINK' | 'MULTIPLE_FILES';
+
 // Main Assignment Interface
 export interface Assignment {
   id: string;
@@ -46,13 +50,12 @@ export interface Assignment {
   description: string | null;
   instructions: string | null;
   dueDate: string | null;
-  pointsValue: number;
+  maxScore: number; // Changed from pointsValue to match database schema
+  submissionType: SubmissionType; // Added to match database schema
   isPublished: boolean;
-  isGraded: boolean;
   allowLateSubmissions: boolean;
-  latePenalty: number | null;
   moduleId: string;
-  courseId: string;
+  courseId?: string; // Made optional as it might be retrieved through relation
   resources: AssignmentResource[];
   rubricItems: RubricItem[];
   createdAt: Date;
@@ -81,11 +84,10 @@ export interface CreateAssignmentRequest {
   description?: string;
   instructions?: string;
   dueDate?: string; // ISO date string
-  pointsValue?: number;
+  maxScore?: number; // Changed from pointsValue to match database schema
+  submissionType?: SubmissionType; // Added to match database schema
   isPublished?: boolean;
-  isGraded?: boolean;
   allowLateSubmissions?: boolean;
-  latePenalty?: number;
   resources?: {
     title: string;
     url: string;

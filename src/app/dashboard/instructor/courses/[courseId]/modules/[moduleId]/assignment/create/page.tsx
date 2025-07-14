@@ -109,11 +109,10 @@ export default function CreateAssignmentPage() {
         description: assignmentData.description || '', // Include description field
         instructions: assignmentData.instructions,
         dueDate: assignmentData.dueDate,
-        maxScore: assignmentData.maxScore,
-        // Map MIXED to MULTIPLE_FILES if that's the selected value
-        submissionType: assignmentData.submissionType === 'MIXED' ? 'MULTIPLE_FILES' : assignmentData.submissionType,
-        allowLateSubmissions: assignmentData.allowLateSubmissions,
+        maxScore: assignmentData.maxScore, // Use maxScore as the field is expected in the backend
+        submissionType: assignmentData.submissionType, // Include the submission type
         isPublished: assignmentData.isPublished,
+        allowLateSubmissions: assignmentData.allowLateSubmissions,
         // Exclude fields not in the backend schema
         // allowGroupSubmissions and maxGroupSize aren't in backend schema
       };
