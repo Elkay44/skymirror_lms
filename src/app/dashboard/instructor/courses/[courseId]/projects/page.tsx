@@ -1,46 +1,45 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { Plus, FileText, Target, CheckCircle, Clock, Users, GitBranch, GitPullRequest, Loader2 } from 'lucide-react';
 import { PageLayout } from '../_components/PageLayout';
-import { Plus, FileText, Target, CheckCircle, Clock, Users, GitBranch, GitPullRequest } from 'lucide-react';
+import { getProjects } from '@/lib/api/projects';
+import { Project } from '@/types/module';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function ProjectsPage() {
-  // Mock data - replace with real data
-  const projects = [
-    {
-      id: 1,
-      title: 'E-commerce Website',
-      description: 'Build a full-stack e-commerce application with React and Node.js',
-      status: 'in-progress',
-      dueDate: '2023-12-15',
-      submissions: 24,
-      averageScore: 85,
-      lastCommit: '2h ago',
-      pullRequests: 3
-    },
-    {
-      id: 2,
-      title: 'Task Management App',
-      description: 'Create a task management application with user authentication',
-      status: 'not-started',
-      dueDate: '2024-01-10',
-      submissions: 0,
-      averageScore: 0,
-      lastCommit: 'No commits yet',
-      pullRequests: 0
-    },
-    {
-      id: 3,
-      title: 'Portfolio Website',
-      description: 'Design and develop a personal portfolio website',
-      status: 'completed',
-      dueDate: '2023-11-30',
-      submissions: 30,
-      averageScore: 92,
-      lastCommit: '1w ago',
-      pullRequests: 5
-    }
-  ];
+  const params = useParams();
+  const router = useRouter();
+  const courseId = params.courseId as string;
+  
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getProjects(courseId);
+        setProjects(data);
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load projects');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, [courseId]);
+
+  const handleCreateProject = () => {
+    router.push(`/dashboard/instructor/courses/${courseId}/project/new`);
+  };
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'completed':
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200">
@@ -48,6 +47,7 @@ export default function ProjectsPage() {
             Completed
           </span>
         );
+      case 'in_progress':
       case 'in-progress':
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200">
@@ -64,13 +64,44 @@ export default function ProjectsPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <PageLayout
+        title="Loading Projects..."
+        description="Please wait while we load your projects"
+        backHref="/dashboard/instructor/courses"
+      >
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageLayout
+        title="Error Loading Projects"
+        description={error}
+        backHref="/dashboard/instructor/courses"
+      >
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+          <p className="text-red-700 dark:text-red-300">{error}</p>
+        </div>
+      </PageLayout>
+    );
+  }
+
   return (
     <PageLayout
       title="Course Projects"
       description="Manage and track student projects"
       backHref="/dashboard/instructor/courses"
       actions={
-        <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <button 
+          onClick={handleCreateProject}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Create Project
         </button>
@@ -78,7 +109,11 @@ export default function ProjectsPage() {
     >
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (
-          <div key={project.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow duration-200">
+          <div 
+            key={project.id} 
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer"
+            onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/projects/${project.id}`)}
+          >
             <div className="p-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -88,41 +123,50 @@ export default function ProjectsPage() {
                   </div>
                   <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{project.description}</p>
                 </div>
-                {getStatusBadge(project.status)}
+                {getStatusBadge(project.status || 'not_started')}
               </div>
               
               <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center">
                     <Users className="h-4 w-4 text-gray-400 mr-2" />
-                    <span className="text-gray-700 dark:text-gray-300">{project.submissions} submissions</span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {project.submissions?.length || 0} submissions
+                    </span>
                   </div>
-                  <div className="flex items-center">
-                    <FileText className="h-4 w-4 text-gray-400 mr-2" />
-                    <span className="text-gray-700 dark:text-gray-300">Avg: {project.averageScore || 'N/A'}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <GitBranch className="h-4 w-4 text-gray-400 mr-2" />
-                    <span className="text-gray-700 dark:text-gray-300">{project.lastCommit}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <GitPullRequest className="h-4 w-4 text-gray-400 mr-2" />
-                    <span className="text-gray-700 dark:text-gray-300">{project.pullRequests} PRs</span>
-                  </div>
+                  {project.dueDate && (
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 text-gray-400 mr-2" />
+                      <span className="text-gray-700 dark:text-gray-300">
+                        Due {formatDistanceToNow(new Date(project.dueDate), { addSuffix: true })}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              </div>
-              
-              <div className="mt-4 flex justify-between items-center">
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Due: {new Date(project.dueDate).toLocaleDateString()}
-                </span>
-                <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
-                  View Details →
-                </button>
               </div>
             </div>
           </div>
         ))}
+
+        {projects.length === 0 && (
+          <div className="col-span-full text-center py-12">
+            <Target className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No projects</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Get started by creating a new project.
+            </p>
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={handleCreateProject}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <Plus className="-ml-1 mr-2 h-5 w-5" />
+                New Project
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </PageLayout>
   );

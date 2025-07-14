@@ -7,6 +7,79 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+// Assignment models
+model Assignment {
+  id                 String                 @id @default(uuid())
+  title              String
+  description        String?
+  instructions       String?
+  dueDate            DateTime?
+  isPublished        Boolean                @default(false)
+  maxScore           Int                    @default(100)
+  submissionType     String                 @default("TEXT")
+  allowLateSubmissions Boolean               @default(false)
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  moduleId           String
+  module             Module                 @relation(fields: [moduleId], references: [id])
+  submissions        AssignmentSubmission[]
+  resources          AssignmentResource[]
+  rubricItems        RubricItem[]
+}
+
+model AssignmentSubmission {
+  id          String    @id @default(uuid())
+  content     String?
+  fileUrl     String?
+  status      String    @default("DRAFT") // DRAFT, SUBMITTED, GRADED
+  grade       Float?
+  feedback    String?
+  submittedAt DateTime?
+  gradedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  assignmentId String
+  assignment  Assignment @relation(fields: [assignmentId], references: [id])
+  userId      Int
+  user        User       @relation(fields: [userId], references: [id])
+}
+
+model AssignmentResource {
+  id          String    @id @default(uuid())
+  title       String
+  url         String
+  type        String    @default("LINK") // LINK, FILE, VIDEO
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  assignmentId String
+  assignment  Assignment @relation(fields: [assignmentId], references: [id])
+}
+
+model RubricItem {
+  id             String          @id @default(uuid())
+  title          String
+  description    String?
+  points         Int
+  order          Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  assignmentId   String
+  assignment     Assignment      @relation(fields: [assignmentId], references: [id])
+  criteriaLevels CriteriaLevel[]
+}
+
+model CriteriaLevel {
+  id           String     @id @default(uuid())
+  level        String
+  description  String
+  points       Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  rubricItemId String
+  rubricItem   RubricItem @relation(fields: [rubricItemId], references: [id])
+}
+
 model User {
   id                  Int                       @id @default(autoincrement())
   name                String?
@@ -42,6 +115,7 @@ model User {
   projectSubmissions  ProjectSubmission[]       @relation("StudentSubmissions")
   quizAttempts        QuizAttempt[]             @relation("UserQuizAttempts")
   showcaseProjects    ShowcaseProject[]         @relation("StudentShowcaseProjects")
+  assignmentSubmissions AssignmentSubmission[]
   studentProfile      StudentProfile?
   submissionResponses SubmissionResponse[]      @relation("StudentResponses")
   achievements        UserAchievement[]         @relation("UserAchievements")
@@ -115,6 +189,7 @@ model Module {
   projects    Project[]
   quizzes     Quiz[]     @relation("ModuleQuizzes")
   resources   Resource[]
+  assignments Assignment[]
 
   @@unique([courseId, order])
 }

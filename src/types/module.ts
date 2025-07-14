@@ -47,6 +47,34 @@ export interface Lesson {
 // Content Block Types
 export type ContentBlockType = 'text' | 'video' | 'youtube' | 'assignment' | 'project' | 'quiz';
 
+export interface Project {
+  id: string;
+  courseId: string;
+  moduleId: string;
+  title: string;
+  description?: string;
+  instructions?: string;
+  dueDate?: string | Date;
+  isPublished: boolean;
+  difficulty?: 'BEGINNER' | 'EASY' | 'MEDIUM' | 'HARD' | 'ADVANCED';
+  estimatedHours?: number;
+  technologies?: string;
+  requirements?: string;
+  resources?: Array<{
+    id?: string;
+    title: string;
+    url: string;
+    type: string;
+  }>;
+  allowTeamSubmissions?: boolean;
+  maxTeamSize?: number;
+  githubTemplateUrl?: string;
+  status?: string;
+  submissions?: any[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 export interface ContentBlockBase {
   id: string;
   type: ContentBlockType;

@@ -105,6 +105,30 @@ export default function CreateProjectPage() {
     setIsLoading(true);
     
     try {
+      // Helper function to validate URLs
+      const isValidUrl = (urlString: string): boolean => {
+        try {
+          if (!urlString.trim()) return false;
+          new URL(urlString.trim());
+          return true;
+        } catch {
+          return false;
+        }
+      };
+
+      // Parse resources string to array of valid resource objects
+      const resourcesArray = projectData.resources
+        ? projectData.resources
+            .split(',')
+            .map(url => url.trim())
+            .filter(url => isValidUrl(url))
+            .map(url => ({
+              title: 'Project Resource',
+              url: url,
+              type: 'LINK'
+            }))
+        : [];
+      
       // Transform the data to match API schema
       const apiData = {
         title: projectData.title,
@@ -116,15 +140,13 @@ export default function CreateProjectPage() {
         estimatedHours: projectData.estimatedHours,
         technologies: projectData.technologies,
         requirements: projectData.requirements,
-        // Fix resources format to match the API schema
-        resources: projectData.resources ? projectData.resources.split(',').map(url => ({
-          title: 'Project Resource',
-          url: url.trim(),
-          type: 'LINK'
-        })).filter(res => res.url !== '') : [],
+        resources: resourcesArray,
         allowTeamSubmissions: projectData.allowTeamSubmissions,
         maxTeamSize: projectData.maxTeamSize,
-        githubTemplateUrl: projectData.githubTemplateUrl
+        // Only include githubTemplateUrl if it's a valid URL
+        ...(projectData.githubTemplateUrl && isValidUrl(projectData.githubTemplateUrl) 
+          ? { githubTemplateUrl: projectData.githubTemplateUrl } 
+          : {})
       };
       
       const response = await axios.post(

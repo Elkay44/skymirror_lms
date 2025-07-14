@@ -19,7 +19,9 @@ import {
   Module, 
   ModulePage, 
   ContentBlock, 
-  ContentBlockType 
+  ContentBlockType,
+  Project,
+  GetModulePagesResponse
 } from '@/types/module';
 import { 
   getModule
@@ -33,6 +35,7 @@ import {
   deleteContentBlock,
   getModulePage
 } from '@/lib/api/module-pages';
+import { getModuleProjects } from '@/lib/api/projects';
 
 // DND Kit imports for drag and drop functionality
 import {
@@ -65,6 +68,7 @@ export default function ModuleDetailsPage() {
   const [pages, setPages] = useState<ModulePage[]>([]);
   const [activePage, setActivePage] = useState<ModulePage | null>(null);
   const [blocks, setBlocks] = useState<ContentBlock[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isBlockEditorOpen, setIsBlockEditorOpen] = useState(false);
   const [editingBlock, setEditingBlock] = useState<ContentBlock | undefined>(undefined);
@@ -89,21 +93,29 @@ export default function ModuleDetailsPage() {
       setIsLoading(true);
       
       // Fetch module details
-      const moduleData = await getModule(courseId, moduleId);
+      const [moduleData, pagesResponse, projectsData] = await Promise.all([
+        getModule(courseId, moduleId),
+        getModulePages(courseId, moduleId),
+        getModuleProjects(courseId, moduleId)
+      ]);
+      
       setModule(moduleData);
       
-      // Fetch module pages
-      const pagesData = await getModulePages(courseId, moduleId);
-      setPages(pagesData.data);
+      // Extract pages from the response
+      const pages = pagesResponse.data;
+      setPages(pages);
+      
+      // Set projects
+      setProjects(projectsData);
       
       // Set first page as active if available
-      if (pagesData.data.length > 0) {
-        setActivePage(pagesData.data[0]);
+      if (pages.length > 0) {
+        setActivePage(pages[0]);
         
         // Fetch content blocks for the first page
-        const pageData = await getModulePage(courseId, moduleId, pagesData.data[0].id);
-        const blocksData = { data: pageData.contentBlocks || [] };
-        setBlocks(blocksData.data);
+        const pageData = await getModulePage(courseId, moduleId, pages[0].id);
+        const contentBlocks = pageData.contentBlocks || [];
+        setBlocks(contentBlocks);
       }
     } catch (error) {
       console.error('Error fetching module data:', error);
@@ -312,6 +324,9 @@ export default function ModuleDetailsPage() {
             <TabsTrigger value="content" className="flex items-center gap-1">
               <LayoutGrid size={16} /> Content
             </TabsTrigger>
+            <TabsTrigger value="projects" className="flex items-center gap-1">
+              <FileText size={16} /> Projects ({projects.length})
+            </TabsTrigger>
             <TabsTrigger value="discussions" className="flex items-center gap-1">
               <MessageCircle size={16} /> Discussions
             </TabsTrigger>
@@ -468,6 +483,69 @@ export default function ModuleDetailsPage() {
                   </Card>
                 )}
               </div>
+            </div>
+          </TabsContent>
+          
+          {/* Projects Tab */}
+          <TabsContent value="projects" className="p-0 border-0">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Module Projects</h3>
+                <Button 
+                  onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/project/create`)}
+                  size="sm"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Project
+                </Button>
+              </div>
+              
+              {projects.length === 0 ? (
+                <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No projects</h3>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Get started by creating a new project.
+                  </p>
+                  <div className="mt-6">
+                    <Button
+                      onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/project/create`)}
+                    >
+                      <Plus className="-ml-1 mr-2 h-5 w-5" />
+                      New Project
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {projects.map((project) => (
+                    <Card key={project.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-medium">{project.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {project.description || 'No description'}
+                            </p>
+                            {project.dueDate && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Due: {new Date(project.dueDate).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/projects/${project.id}`)}
+                          >
+                            View
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           </TabsContent>
           
