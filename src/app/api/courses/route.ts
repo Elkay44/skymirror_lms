@@ -419,7 +419,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Transform the data for the client
-    let coursesWithStats = courses.map(course => {
+    const coursesWithStats = courses.map(course => {
       // Count lessons for each course
       const lessonCount = course.modules.reduce((total, module) => {
         return total + module.lessons.length;
@@ -449,7 +449,7 @@ export async function GET(req: NextRequest) {
         moduleCount: course.modules.length
       };
     });
-    
+
     // Return the courses with pagination metadata
     return NextResponse.json({
       courses: coursesWithStats,

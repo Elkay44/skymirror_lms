@@ -12,7 +12,7 @@ export interface Course extends Omit<CourseFormData, 'imageFile' | 'imagePreview
   // Core fields
   id: string;
   slug: string;
-  imageUrl: string | null;
+  imageUrl: string;
   createdAt: Date | string;
   updatedAt: Date | string;
   instructor: Instructor;

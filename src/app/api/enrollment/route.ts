@@ -94,9 +94,16 @@ export async function POST(request: Request) {
       data: {
         user: { connect: { id: userId } },
         course: { connect: { id: courseId } },
-        status: 'ACTIVE',
-        // enrolledAt is automatically set to now() as defined in the schema
-      },
+        status: 'ACTIVE'
+      }
+    });
+
+    // Get the updated course with enrollment data
+    const updatedCourse = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        enrollments: true
+      }
     });
     
     // Award points to the user for enrolling in a new course
