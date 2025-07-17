@@ -53,40 +53,68 @@ export async function fetchMentors(): Promise<Mentor[]> {
 
 export async function requestMentorship(mentorId: string, message: string): Promise<MentorshipRequest> {
   try {
+    if (!mentorId) {
+      throw new Error('Mentor ID is required');
+    }
+
+    const requestBody = {
+      mentorId,
+      notes: message, // Backend expects 'notes' instead of 'message'
+    };
+
+    console.log('Sending mentorship request with data:', requestBody);
+    
     const response = await fetch(`${API_BASE}/mentorships`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        mentorId,
-        message,
-      }),
+      credentials: 'include', // Ensure cookies are sent with the request
+      body: JSON.stringify(requestBody),
     });
     
+    const responseData = await response.json().catch(() => ({}));
+    
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Failed to send mentorship request');
+      console.error('Mentorship request failed:', {
+        status: response.status,
+        statusText: response.statusText,
+        response: responseData,
+      });
+      
+      throw new Error(
+        responseData.message || 
+        responseData.error || 
+        `Failed to send mentorship request: ${response.status} ${response.statusText}`
+      );
     }
     
-    const data = await response.json();
+    console.log('Mentorship request successful:', responseData);
     
     // Transform API response to match our frontend MentorshipRequest type
     return {
-      id: data.id,
+      id: responseData.id,
       mentor: {
-        id: data.mentor.id,
-        name: data.mentor.name,
-        image: data.mentor.image
+        id: responseData.mentor?.id || mentorId,
+        name: responseData.mentor?.name || 'Mentor',
+        image: responseData.mentor?.image
       },
-      status: data.status || 'pending',
-      requestedDate: new Date(data.requestedDate || new Date()),
-      messages: data.messages || [],
-      scheduledSessions: data.scheduledSessions || []
+      status: responseData.status || 'pending',
+      requestedDate: new Date(responseData.requestedDate || new Date()),
+      messages: responseData.messages || [],
+      scheduledSessions: responseData.scheduledSessions || []
     };
   } catch (error) {
-    console.error('Error in requestMentorship:', error);
-    throw error;
+    console.error('Error in requestMentorship:', {
+      error,
+      mentorId,
+      message: message.length > 50 ? message.substring(0, 50) + '...' : message,
+    });
+    
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('An unexpected error occurred while sending the mentorship request');
   }
 }
 

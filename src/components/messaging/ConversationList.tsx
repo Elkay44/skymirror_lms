@@ -64,29 +64,49 @@ export default function ConversationList({
   
   // Get the primary participant (not the current user)
   const getPrimaryParticipant = (conversation: Conversation) => {
+    // Return a default participant if participants array is empty or undefined
+    if (!conversation.participants || conversation.participants.length === 0) {
+      return {
+        id: 'unknown',
+        name: 'Unknown User',
+        role: 'STUDENT' as const,
+        isOnline: false
+      };
+    }
+    
     // In a real app, we would filter out the current user
     // For demo purposes, just return the first participant
     return conversation.participants[0];
   };
   
   // Format timestamp to display time or date
-  const formatTime = (date: Date) => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+  const formatTime = (date?: Date | null) => {
+    // Return empty string if date is not provided or invalid
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      return '';
+    }
     
-    const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    
-    if (messageDate.getTime() === today.getTime()) {
-      // Today, show time
-      return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    } else if (messageDate.getTime() === yesterday.getTime()) {
-      // Yesterday
-      return 'Yesterday';
-    } else {
-      // Older, show date
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    try {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      
+      if (messageDate.getTime() === today.getTime()) {
+        // Today, show time
+        return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      } else if (messageDate.getTime() === yesterday.getTime()) {
+        // Yesterday
+        return 'Yesterday';
+      } else {
+        // Older, show date
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      }
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return '';
     }
   };
   
