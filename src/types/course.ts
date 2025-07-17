@@ -7,6 +7,43 @@ export interface CourseSection {
   lessons: CourseLesson[];
 }
 
+export interface Lesson {
+  id: string;
+  title: string;
+  description?: string;
+  duration: number;
+  completed: boolean;
+  order: number;
+  videoUrl?: string;
+  content?: string;
+}
+
+export interface Module {
+  id: string;
+  title: string;
+  description?: string;
+  order: number;
+  lessons: Lesson[];
+  isPublished?: boolean;
+}
+
+export interface Course {
+  id: string;
+  title: string;
+  description: string;
+  instructor: string;
+  thumbnailUrl?: string;
+  duration: number;
+  level: 'beginner' | 'intermediate' | 'advanced';
+  category: string;
+  modules: Module[];
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  isPublished?: boolean;
+  progress?: number;
+  projects?: any[];
+}
+
 export interface CourseLesson {
   id: string;
   title: string;

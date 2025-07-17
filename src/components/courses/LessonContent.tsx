@@ -152,10 +152,8 @@ export default function LessonContent({ courseId, lessonId, onComplete }: Lesson
       // Update local state
       setLesson(prev => prev ? { ...prev, completed: true } : null);
       
-      // Notify parent component if callback provided
-      if (onComplete) {
-        onComplete();
-      }
+      // We're removing the automatic navigation to the next lesson
+      // to give users more control over their learning flow
       
       toast.success('Lesson marked as complete!');
     } catch (err) {
@@ -170,17 +168,14 @@ export default function LessonContent({ courseId, lessonId, onComplete }: Lesson
   const handleVideoProgress = (progress: number) => {
     setVideoProgress(progress);
     
-    // Auto-mark as complete when video reaches 90%
-    if (progress >= 90 && lesson && !lesson.completed) {
-      handleMarkComplete();
-    }
+    // We're removing the auto-mark as complete when video reaches 90%
+    // to give users more control over their learning flow
   };
 
   // Handle video completion
   const handleVideoComplete = () => {
-    if (lesson && !lesson.completed) {
-      handleMarkComplete();
-    }
+    // We're removing the auto-mark as complete when video finishes
+    // to give users more control over their learning flow
   };
 
   if (loading) {

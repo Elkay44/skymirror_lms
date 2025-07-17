@@ -54,7 +54,7 @@ export async function GET(
     if (!hasAccess) {
       const enrollment = await prisma.enrollment.findFirst({
         where: {
-          userId: Number(userId),
+          userId: parseInt(userId),
           courseId,
           status: { in: ['ACTIVE', 'COMPLETED'] },
         },
@@ -93,7 +93,7 @@ export async function GET(
         },
         progress: {
           where: {
-            userId: Number(userId),
+            userId: parseInt(userId),
           },
           select: {
             completed: true,
@@ -123,15 +123,12 @@ export async function GET(
     const transformedLesson = {
       id: lesson.id,
       title: lesson.title,
-      description: lesson.description,
       content: lesson.content,
       videoUrl: lesson.videoUrl,
-      duration: lesson.duration ? `${lesson.duration} min` : 'Unknown',
-      order: lesson.order, // Using order instead of position
-      moduleId: lesson.moduleId || '', // Handle potential null
-      moduleName: lesson.module?.title || 'Unknown Module',
+      duration: lesson.duration ? `${Math.floor(lesson.duration / 60)}m ${Math.floor(lesson.duration % 60)}s` : '0m 0s',
       completed: lesson.progress?.[0]?.completed || false,
-      completedAt: lesson.progress?.[0]?.completedAt,
+      order: lesson.order,
+      moduleId: lesson.moduleId || '',
     };
 
     return NextResponse.json(transformedLesson);

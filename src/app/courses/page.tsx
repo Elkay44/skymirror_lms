@@ -49,7 +49,7 @@ export default function CoursesPage() {
       const data = await response.json();
       
       // Handle pagination and ensure we always have an array of courses
-      const coursesArray = Array.isArray(data.courses) ? data.courses : [];
+      const coursesArray = data?.courses || [];
       setCourses(coursesArray);
       setLoading(false);
     } catch (error) {
@@ -79,7 +79,7 @@ export default function CoursesPage() {
 
       const refreshResponse = await fetch('/api/courses');
       const refreshData = await refreshResponse.json();
-      setCourses(refreshData || []);
+      setCourses(refreshData?.courses || []);
       toast.success('Successfully enrolled in the course!');
     } catch (error) {
       console.error('Enrollment error:', error);

@@ -1,11 +1,144 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { courseUpdateSchema } from '@/validations/course';
-import { z } from 'zod';
-import { logCourseActivity, ActivityAction } from '@/lib/activity-log';
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import { courseUpdateSchema } from "@/lib/validations/course";
+import { logCourseActivity, ActivityType } from "@/lib/activity-logger";
+
+interface Progress {
+  completed: boolean;
+  createdAt: Date | null;
+}
+
+interface Lesson {
+  id: string;
+  title: string;
+  description: string | null;
+  content: string | null;
+  videoUrl: string | null;
+  duration: number | null;
+  order: number;
+  moduleId: string;
+  completed: boolean;
+  completedAt: Date | null;
+}
+
+interface Module {
+  id: string;
+  title: string;
+  description: string | null;
+  order: number;
+  lessons: Lesson[];
+}
+
+interface Instructor {
+  id: string;
+  name: string;
+  image: string | null;
+}
+
+interface CourseDetails {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  instructor: Instructor;
+  modules: Module[];
+  isEnrolled: boolean;
+  enrollmentStatus: string | undefined;
+}
+
+interface Progress {
+  completed: boolean;
+  createdAt: Date | null;
+}
+
+interface Lesson {
+  id: string;
+  title: string;
+  description: string | null;
+  content: string | null;
+  videoUrl: string | null;
+  duration: number | null;
+  order: number;
+  moduleId: string;
+  completed: boolean;
+  completedAt: Date | null;
+}
+
+interface Module {
+  id: string;
+  title: string;
+  description: string | null;
+  order: number;
+  lessons: Lesson[];
+}
+
+interface Instructor {
+  id: string;
+  name: string;
+  image: string | null;
+}
+
+interface CourseDetails {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  instructor: Instructor;
+  modules: Module[];
+  isEnrolled: boolean;
+  enrollmentStatus: string | undefined;
+}
 import { revalidatePath } from 'next/cache';
+
+interface TransformedLesson extends Omit<Lesson, 'duration'> {
+  duration: number | null;
+  formattedDuration: string;
+}
+
+interface Progress {
+  completed: boolean;
+  createdAt: Date | null;
+}
+
+interface Lesson {
+  id: string;
+  title: string;
+  description: string | null;
+  content: string | null;
+  videoUrl: string | null;
+  duration: number | null;
+  order: number;
+  moduleId: string;
+  completed: boolean;
+  completedAt: Date | null;
+}
+
+interface Module {
+  id: string;
+  title: string;
+  description: string | null;
+  order: number;
+  lessons: Lesson[];
+}
+
+interface Instructor {
+  id: string;
+  name: string;
+  image: string | null;
+}
+
+interface CourseDetails {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  instructor: Instructor;
+  modules: Module[];
+  isEnrolled: boolean;
+  enrollmentStatus: string | undefined;
+}
 
 interface CourseWithInstructor {
   id: string;
@@ -16,6 +149,8 @@ interface CourseWithInstructor {
   status?: string;
   instructor: {
     id: number;
+    name: string | null;
+    image: string | null;
   };
   instructorId: number;
   approvalHistory?: Array<{
@@ -25,7 +160,7 @@ interface CourseWithInstructor {
     createdAt: Date;
     reviewer?: {
       id: number;
-      name: string;
+      name: string | null;
       image?: string | null;
     } | null;
   }>;
@@ -36,7 +171,7 @@ interface CourseWithDetails extends CourseWithInstructor {
     id: string;
     title: string;
     description: string | null;
-    position: number;
+    order: number;
     lessons: Array<{
       id: string;
       title: string;
@@ -44,11 +179,10 @@ interface CourseWithDetails extends CourseWithInstructor {
       content: string | null;
       videoUrl: string | null;
       duration: number | null;
-      position: number;
-      progress?: Array<{
-        completed: boolean;
-        completedAt: Date | null;
-      }>;
+      order: number;
+      moduleId: string;
+      completed: boolean;
+      completedAt: Date | null;
     }>;
   }>;
   enrollments?: Array<{
@@ -62,236 +196,119 @@ interface CourseWithDetails extends CourseWithInstructor {
     action: string;
     comments?: string | null;
     createdAt: Date;
-    reviewerId: number;
     reviewer?: {
       id: number;
-      name: string;
+      name: string | null;
       image?: string | null;
     } | null;
   }>;
 }
 
-// GET /api/courses/[courseId] - Get a specific course with all its details
-export async function GET(request: Request, { params }: { params: { courseId: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { courseId: string } }
+): Promise<NextResponse> {
   try {
     const { courseId } = params;
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
-    const userIdNum = userId ? Number(userId) : undefined;
+    const userIdNum = userId ? parseInt(userId) : undefined;
 
-    // Check if the user is logged in
     if (!userIdNum) {
       return NextResponse.json(
-        { error: 'You must be logged in to view course details' },
+        { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // First, check if the course exists and if the current user is the instructor
+    // First check if course exists
+    const courseExists = await prisma.course.findUnique({
+      where: { id: courseId },
+      select: { id: true }
+    });
+
+    if (!courseExists) {
+      return NextResponse.json(
+        { error: 'Course not found' },
+        { status: 404 }
+      );
+    }
+
+    // Then fetch the full course with all includes
     const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
-        instructor: { select: { id: true } },
-      },
-    }) as CourseWithInstructor | null;
-
-    // If course doesn't exist, return 404
-    if (!course) {
-      return NextResponse.json(
-        { error: 'Course not found' },
-        { status: 404 }
-      );
-    }
-
-    // Check if the user is the instructor of this course
-    const isInstructor = course.instructor.id === userIdNum;
-
-    // If not the instructor and course is not published, return 404
-    if (!isInstructor && !course.isPublished) {
-      return NextResponse.json(
-        { error: 'Course not found' },
-        { status: 404 }
-      );
-    }
-
-    // Fetch the full course details with modules and lessons
-    const isAdmin = session?.user?.role === 'ADMIN';
-    const courseCheck = await prisma.course.findUnique({
-      where: { id: courseId },
-      select: { instructorId: true }
-    });
-
-    if (!courseCheck) {
-      return NextResponse.json(
-        {
-          message: 'Course not found',
-        },
-        { status: 404 }
-      );
-    }
-    
-    // Check if current user is the instructor of this course
-    // Convert IDs to strings for comparison since session.user.id might be a string
-    const isInstructorOfCourse = courseCheck.instructorId.toString() === session?.user?.id?.toString();
-
-    // For instructors, check if this is their course
-    if (session?.user?.role === 'INSTRUCTOR' && !isInstructorOfCourse) {
-      return NextResponse.json(
-        { error: 'You do not have permission to view this course' },
-        { status: 403 }
-      );
-    }
-
-    // Now fetch the full course details
-    const courseWithDetails = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        instructor: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-          },
-        },
+        instructor: true,
         modules: {
-          orderBy: {
-            createdAt: 'asc', // Using createdAt instead of position
-          },
           include: {
             lessons: {
-              orderBy: {
-                createdAt: 'asc', // Using createdAt instead of position
-              },
               include: {
-                progress: isInstructor ? false : {
+                progress: {
                   where: {
-                    userId: userIdNum
-                  },
-                  select: {
-                    completed: true,
-                    completedAt: true,
+                    userId: userIdNum,
                   },
                 },
               },
             },
           },
+          orderBy: {
+            order: 'asc',
+          },
         },
-        enrollments: isInstructor ? false : {
+        enrollments: {
           where: {
-            userId: userIdNum
-          },
-          select: {
-            id: true,
-            status: true,
-            enrolledAt: true,
-            completedAt: true,
+            userId: userIdNum,
           },
         },
-        ...(isAdmin || isInstructorOfCourse ? {
-          approvalHistory: {
-            orderBy: { createdAt: 'desc' },
-            take: 10,
-            include: {
-              reviewer: {
-                select: {
-                  id: true,
-                  name: true,
-                  image: true
-                }
-              }
-            }
-          }
-        } : {})
       },
-    }) as unknown as CourseWithDetails | null;
+    });
 
-    if (!courseWithDetails) {
+    if (!course) {
       return NextResponse.json(
-        { error: 'Failed to load course details' },
+        { error: 'Failed to fetch course details' },
         { status: 500 }
       );
     }
 
-    // Check if the user is enrolled in this course or is the instructor
-    const userEnrollments = 'enrollments' in courseWithDetails ? courseWithDetails.enrollments : [];
-    const isEnrolled = Array.isArray(userEnrollments) ? userEnrollments.length > 0 : false;
-    const userIsInstructor = courseWithDetails.instructor.id === userIdNum;
-
-    // If not enrolled and not the instructor, return limited information
-    if (!isEnrolled && !userIsInstructor) {
-      // Return limited course info without content
-      const limitedCourse = {
-        id: courseWithDetails.id,
-        title: courseWithDetails.title,
-        description: courseWithDetails.description,
-        imageUrl: courseWithDetails.imageUrl,
-        instructor: courseWithDetails.instructor,
-        isEnrolled: false,
-        isInstructor: false,
-        modules: [], // No access to modules if not enrolled
-      };
-
-      return NextResponse.json(limitedCourse);
-    }
-
-    // Transform the data to include progress information
-    const baseCourse = {
-      id: courseWithDetails.id,
-      title: courseWithDetails.title,
-      description: courseWithDetails.description,
-      imageUrl: courseWithDetails.imageUrl,
-      instructor: courseWithDetails.instructor,
-      isEnrolled: isEnrolled,
-      isInstructor: userIsInstructor,
-    };
-
-    // Add enrollment details if user is enrolled
-    const enrollmentDetails = isEnrolled && Array.isArray(userEnrollments) && userEnrollments[0] ? {
-      enrollmentStatus: userEnrollments[0].status,
-      enrolledAt: userEnrollments[0].enrolledAt,
-      completedAt: userEnrollments[0].completedAt,
-    } : {};
-
-    // Add modules and lessons if user is enrolled or is the instructor
-    const modules = ('modules' in courseWithDetails && courseWithDetails.modules) ? 
-      courseWithDetails.modules.map((module: any) => ({
+    const transformedCourse: CourseDetails = {
+      id: course.id,
+      title: course.title,
+      description: course.description || '',
+      imageUrl: course.imageUrl || '',
+      instructor: {
+        id: course.instructorId.toString(),
+        name: course.instructor?.name || '',
+        image: course.instructor?.image || '',
+      },
+      modules: course.modules?.map((module): Module => ({
         id: module.id,
         title: module.title,
         description: module.description || '',
-        position: module.position || 0,
-        lessons: (module.lessons || []).map((lesson: any) => {
-          const progress = Array.isArray(lesson.progress) && lesson.progress[0] || null;
+        order: module.order,
+        lessons: module.lessons.map((lesson): TransformedLesson => {
+          const progress = lesson.progress?.[0] || { completed: false, createdAt: null };
           return {
             id: lesson.id,
             title: lesson.title,
             description: lesson.description || '',
-            content: userIsInstructor || isEnrolled ? lesson.content || '' : '',
-            videoUrl: userIsInstructor || isEnrolled ? lesson.videoUrl || '' : '',
-            duration: lesson.duration ? `${lesson.duration} min` : 'Unknown',
-            position: lesson.position || 0,
+            content: lesson.content,
+            videoUrl: lesson.videoUrl,
+            duration: lesson.duration,
+            formattedDuration: lesson.duration ? `${Math.floor(Number(lesson.duration) / 60)}m ${Math.floor(Number(lesson.duration) % 60)}s` : '0m 0s',
+            order: lesson.order,
             moduleId: module.id,
-            completed: progress?.completed || false,
-            completedAt: progress?.completedAt,
+            completed: progress.completed,
+            completedAt: progress.createdAt,
           };
         }),
-      })) : [];
-
-    const transformedCourse = {
-      ...baseCourse,
-      ...enrollmentDetails,
-      modules,
-      ...(isAdmin || isInstructorOfCourse ? {
-        approvalHistory: courseWithDetails.approvalHistory
-      } : {})
+      })),
+      isEnrolled: course.enrollments?.length > 0,
+      enrollmentStatus: course.enrollments?.[0]?.status || undefined,
     };
 
-    // Add approval history if user is admin or the instructor
-    const canManageCourse = isAdmin || isInstructorOfCourse;
-    
-    // We've already added approval history to transformedCourse above, so just return it
     return NextResponse.json(transformedCourse);
-  } catch (error) {
-    console.error('Error fetching course:', error);
+  } catch (error: unknown) {
+    console.error('Course fetch error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch course details' },
       { status: 500 }
@@ -412,8 +429,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { course
     
     // Determine the appropriate status
     if (isInstructor && submitForReview) {
-      // If instructor is submitting for review, change status to UNDER_REVIEW
-      processedData.status = 'UNDER_REVIEW';
+      // If instructor is submitting for review, change status to PENDING
+      processedData.status = 'PENDING';
       approvalHistoryEntry = {
         action: 'SUBMITTED',
         comments: (updateData as any).submissionComments || null
@@ -423,7 +440,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { course
       const approvalAction = (updateData as any).approvalAction;
       
       if (approvalAction === 'APPROVED') {
-        processedData.status = 'PUBLISHED';
+        processedData.status = 'APPROVED';
         processedData.isPublished = true;
         approvalHistoryEntry = {
           action: 'APPROVED',
@@ -438,7 +455,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { course
           reviewerId: userIdNum
         };
       } else if (approvalAction === 'CHANGES_REQUESTED') {
-        processedData.status = 'CHANGES_REQUESTED';
+        processedData.status = 'DRAFT';
         approvalHistoryEntry = {
           action: 'CHANGES_REQUESTED',
           comments: (updateData as any).approvalComments || null,
@@ -447,7 +464,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { course
       }
     } else if (updateData.isPublished === true && isAdmin) {
       // If admin directly publishes without approval flow
-      processedData.status = 'PUBLISHED';
+      processedData.status = 'APPROVED';
+      processedData.isPublished = true;
     }
     
     // Use a transaction to ensure that both course update and approval history creation succeed
@@ -466,36 +484,30 @@ export async function PATCH(request: NextRequest, { params }: { params: { course
           }
         },
       });
-      
+
       // Create approval history entry if needed
       if (approvalHistoryEntry) {
-        // Use raw query approach instead of extension to avoid type errors
-        await tx.$executeRaw`
-          INSERT INTO "CourseApprovalHistory" (
-            "id", "courseId", "action", "comments", "reviewerId", "createdAt"
-          ) VALUES (
-            uuid_generate_v4(),
-            ${courseId},
-            ${approvalHistoryEntry.action},
-            ${approvalHistoryEntry.comments || null},
-            ${'reviewerId' in approvalHistoryEntry ? approvalHistoryEntry.reviewerId : null},
-            now()
-          )
-        `;
-        
+        await tx.courseApprovalHistory.create({
+          data: {
+            courseId,
+            action: approvalHistoryEntry.action,
+            comments: approvalHistoryEntry.comments,
+            reviewerId: approvalHistoryEntry.reviewerId,
+          },
+        });
+
         // Log course activity
         const activityType = 
           approvalHistoryEntry.action === 'SUBMITTED' ? 'course.submitted_for_review' :
           approvalHistoryEntry.action === 'APPROVED' ? 'course.approved' :
           approvalHistoryEntry.action === 'REJECTED' ? 'course.rejected' : 'course.changes_requested';
-        
-        // Log course activity with the correct parameter structure
-        await logCourseActivity(
-          userIdNum,
+
+        await logCourseActivity(prisma, {
+          userId: userIdNum,
           courseId,
-          activityType as ActivityAction,
-          approvalHistoryEntry.comments ? { comments: approvalHistoryEntry.comments } : undefined
-        );
+          type: activityType as ActivityType,
+          details: approvalHistoryEntry.comments ? { comments: approvalHistoryEntry.comments } : undefined
+        });
       }
       
       return updatedCourse;

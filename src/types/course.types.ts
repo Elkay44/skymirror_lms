@@ -8,6 +8,59 @@ export interface Instructor {
   bio?: string;
 }
 
+export interface Lesson {
+  id: string;
+  title: string;
+  description?: string;
+  content?: string;
+  videoUrl?: string;
+  duration: number | null;
+  formattedDuration: string;
+  order: number;
+  moduleId: string;
+  completed: boolean;
+  completedAt: Date | null;
+}
+
+export interface Module {
+  id: string;
+  title: string;
+  description: string | null;
+  order: number;
+  courseId: string;
+  lessons: Lesson[];
+}
+
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  status: 'not_started' | 'in_progress' | 'submitted' | 'graded';
+  submissionUrl?: string;
+  grade?: number;
+  feedback?: string;
+  courseId: string;
+  studentId: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+export interface Grade {
+  id: string;
+  title: string;
+  score: number;
+  maxScore: number;
+  weight: number;
+  type: 'quiz' | 'assignment' | 'exam' | 'project';
+  courseId: string;
+  studentId: string;
+  feedback?: string;
+  gradedAt?: Date | string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
 export interface Course extends Omit<CourseFormData, 'imageFile' | 'imagePreview' | 'promoVideoUrl'> {
   // Core fields
   id: string;
@@ -32,6 +85,11 @@ export interface Course extends Omit<CourseFormData, 'imageFile' | 'imagePreview
   
   // Progress tracking
   progress: number; // 0-100
+  
+  // Course content
+  modules: Module[];
+  projects?: Project[];
+  grades?: Grade[];
   
   // Media
   promoVideo: string;

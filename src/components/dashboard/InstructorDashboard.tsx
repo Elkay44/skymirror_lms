@@ -54,6 +54,9 @@ const createMockCourse = (overrides: Partial<Course> = {}): Course => ({
   updatedAt: overrides.updatedAt ? new Date(overrides.updatedAt).toISOString() : new Date().toISOString(),
   instructor: overrides.instructor || createMockInstructor(),
   
+  // Add empty modules array as it's required by the Course type
+  modules: overrides.modules || [],
+  
   // Ensure we don't include any undefined values that might cause type issues
   ...Object.fromEntries(
     Object.entries(overrides)
@@ -63,7 +66,7 @@ const createMockCourse = (overrides: Partial<Course> = {}): Course => ({
         'imageUrl', 'promoVideo', 'requirements', 'learningOutcomes', 'targetAudience',
         'isPublished', 'isPrivate', 'isEnrolled', 'isFavorite', 'isNew', 'isBestSeller',
         'rating', 'reviewCount', 'studentCount', 'lessonCount', 'duration', 'progress',
-        'createdAt', 'updatedAt', 'instructor'
+        'createdAt', 'updatedAt', 'instructor', 'modules'
       ].includes(key))
   )
 });
