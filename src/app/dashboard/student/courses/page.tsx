@@ -4,14 +4,15 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import StudentCourseDashboard from '@/components/dashboard/StudentCourseDashboard';
-import { Course } from '@/types/course';
+import { Course, Module, Lesson as ApiLesson } from '@/types/course';
+import type { DashboardCourse, DashboardModule, DashboardLesson } from '@/components/dashboard/StudentCourseDashboard';
 import { Button } from '@/components/ui/button';
 import { Loader2, BookOpen } from 'lucide-react';
 
 export default function StudentCoursesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [courses, setCourses] = useState<DashboardCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +30,33 @@ export default function StudentCoursesPage() {
         }
         
         const data = await response.json();
-        setCourses(data.courses || []);
+        
+        // Transform API course data to match dashboard's expected format
+        const transformedCourses = (data.courses || []).map((course: any) => {
+          // Create a properly typed DashboardCourse object
+          const transformedCourse: DashboardCourse = {
+            ...course,
+            startDate: course.startDate ? new Date(course.startDate) : undefined,
+            endDate: course.endDate ? new Date(course.endDate) : undefined,
+            modules: (course.modules || []).map((mod: any): DashboardModule => ({
+              ...mod,
+              progress: mod.progress || 0,
+              order: mod.order || 0,
+              lessons: (mod.lessons || []).map((lesson: any): DashboardLesson => ({
+                ...lesson,
+                completed: false,
+                duration: lesson.duration?.toString() || '0',
+                type: lesson.type || 'video',
+                order: lesson.order || 0
+              }))
+            })),
+            projects: course.projects || [],
+            activities: course.activities || []
+          };
+          return transformedCourse;
+        });
+        
+        setCourses(transformedCourses);
       } catch (err) {
         console.error('Error fetching courses:', err);
         setError('Failed to load your courses. Please try again later.');

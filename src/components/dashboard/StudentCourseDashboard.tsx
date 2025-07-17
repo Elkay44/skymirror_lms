@@ -48,25 +48,31 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Course, Module as ApiModule, Lesson as ApiLesson, CourseSection } from '@/types/course';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 
 // Types
-interface Module {
-  id: string;
-  title: string;
-  description?: string;
-  progress: number;
-  lessons: Lesson[];
+export interface DashboardLesson extends Omit<ApiLesson, 'duration'> {
+  completed: boolean;
+  duration: string; // Converted from number to string for display
+  type?: string;
+  order: number;
 }
 
-interface Lesson {
-  id: string;
-  title: string;
-  completed: boolean;
-  duration: string;
-  type?: string;
+export interface DashboardModule extends Omit<ApiModule, 'lessons'> {
+  progress: number;
+  lessons: DashboardLesson[];
+  order: number;
+  duration: number; // in weeks
+  isLocked: boolean;
+  resources: Array<{
+    id: string;
+    title: string;
+    url: string;
+    type: string;
+  }>;
 }
 
 interface Project {
@@ -85,19 +91,12 @@ interface Project {
   }[];
 }
 
-interface Course {
-  id: string;
-  title: string;
-  instructor: string;
-  thumbnail?: string;
-  startDate?: Date;
-  endDate?: Date;
-  category?: string;
-  description?: string;
-  progress?: number; // Optional to match imported type
-  modules: Module[];
+export interface DashboardCourse extends Omit<Course, 'modules'> {
+  modules: DashboardModule[];
   projects?: Project[];
   activities?: Activity[];
+  startDate?: Date;
+  endDate?: Date;
 }
 
 interface Activity {
@@ -120,7 +119,7 @@ interface StudentProgress {
 }
 
 interface StudentCourseDashboardProps {
-  courses?: Course[];
+  courses?: DashboardCourse[];
 }
 
 export default function StudentCourseDashboard({ courses = [] }: StudentCourseDashboardProps) {
@@ -340,22 +339,97 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
   ];
 
   // Mock course data for demonstration
-  const mockCourses: Course[] = [
+  const mockCourses: DashboardCourse[] = [
     {
       id: "course-1",
       title: "Modern Web Development",
+      description: "Learn modern web development with React, Node.js, and more",
       instructor: "Dr. Jane Smith",
-      thumbnail: "/course-thumbnail.jpg",
+      thumbnailUrl: "/course-thumbnail.jpg",
       progress: 68,
+      duration: 12, // weeks
+      level: "intermediate",
+      category: "Web Development",
       startDate: new Date("2023-01-15"),
       endDate: new Date("2023-05-30"),
       modules: [
-        { id: "module-1", title: "Introduction to React", description: "Learn React basics", progress: 100, lessons: [] },
-        { id: "module-2", title: "State Management", description: "Redux and Context API", progress: 75, lessons: [] },
-        { id: "module-3", title: "API Integration", description: "Fetch and Axios", progress: 30, lessons: [] },
-        { id: "module-4", title: "Testing & Deployment", description: "Jest and CI/CD", progress: 0, lessons: [] }
+        { 
+          id: "module-1", 
+          title: "Introduction to React", 
+          description: "Learn React basics", 
+          progress: 100, 
+          order: 1,
+          lessons: [],
+          duration: 2,
+          isLocked: false,
+          resources: [
+            {
+              id: 'res-1-1',
+              title: 'React Documentation',
+              url: 'https://reactjs.org/docs/getting-started.html',
+              type: 'documentation'
+            }
+          ]
+        },
+        { 
+          id: "module-2", 
+          title: "State Management", 
+          description: "Redux and Context API", 
+          progress: 75, 
+          order: 2,
+          lessons: [],
+          duration: 3,
+          isLocked: false,
+          resources: [
+            {
+              id: 'res-2-1',
+              title: 'Redux Documentation',
+              url: 'https://redux.js.org/',
+              type: 'documentation'
+            }
+          ]
+        },
+        { 
+          id: "module-3", 
+          title: "API Integration", 
+          description: "Fetch and Axios", 
+          progress: 30, 
+          order: 3,
+          lessons: [],
+          duration: 3,
+          isLocked: true,
+          resources: [
+            {
+              id: 'res-3-1',
+              title: 'Fetch API Docs',
+              url: 'https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API',
+              type: 'documentation'
+            }
+          ]
+        },
+        { 
+          id: "module-4", 
+          title: "Testing & Deployment", 
+          description: "Jest and CI/CD", 
+          progress: 0, 
+          order: 4,
+          lessons: [],
+          duration: 4,
+          isLocked: true,
+          resources: [
+            {
+              id: 'res-4-1',
+              title: 'Jest Documentation',
+              url: 'https://jestjs.io/',
+              type: 'documentation'
+            }
+          ]
+        }
       ],
-      projects: projects
+      projects: projects,
+      activities: [],
+      createdAt: new Date("2023-01-01"),
+      updatedAt: new Date()
     }
   ];
 
@@ -902,7 +976,7 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
                   <h2 className="text-2xl font-bold text-slate-800">Course Modules</h2>
                   {availableCourses[0].modules.length > 0 ? (
                     <div className="space-y-4">
-                      {availableCourses[0].modules.map((moduleItem: Module, index: number) => (
+                      {availableCourses[0].modules.map((moduleItem: DashboardModule, index: number) => (
                         <Card key={moduleItem.id} className="shadow-sm">
                           <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
                             <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -928,7 +1002,7 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
                               </div>
                               {moduleItem.lessons && moduleItem.lessons.length > 0 ? (
                                 <ul className="space-y-2">
-                                  {moduleItem.lessons.map((lesson: Lesson) => (
+                                  {moduleItem.lessons.map((lesson: DashboardLesson) => (
                                     <li key={lesson.id} className="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-md">
                                       <div className="flex items-center gap-3">
                                         {lesson.completed ? (

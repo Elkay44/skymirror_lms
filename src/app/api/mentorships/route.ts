@@ -3,6 +3,110 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
+// Define base types for the mentorship data
+type User = {
+  id: number;
+  name: string | null;
+  email: string;
+  image: string | null;
+};
+
+type StudentProfile = {
+  id: string;
+  user: User;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: number;
+  interests: string | null;
+  goals: string | null;
+  preferredLearningStyle: string | null;
+  careerPathId: string | null;
+};
+
+type MentorProfile = {
+  id: string;
+  user: User;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: number;
+  bio: string | null;
+  expertise: string[];
+  availability: string | null;
+  isActive: boolean;
+};
+
+type Conversation = {
+  id: string;
+  lastActivity: Date;
+  _count: { messages: number };
+};
+
+type CheckIn = {
+  id: string;
+  scheduledFor: Date;
+  completedAt: Date | null;
+  progress: string | null;
+  summary: string | null;
+  mentorshipId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  nextSteps: string | null;
+  mood: string | null;
+};
+
+type MentorshipBase = {
+  id: string;
+  status: string;
+  startDate: Date;
+  endDate: Date | null;
+  notes?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  studentId: string;
+  mentorId: string;
+};
+
+type MentorshipWithRelations = MentorshipBase & {
+  student: StudentProfile;
+  mentor: MentorProfile;
+  conversations: Conversation[];
+  checkIns: CheckIn[];
+  _count: {
+    conversations: number;
+    checkIns: number;
+  };
+  userRole?: 'mentor' | 'student';
+};
+
+type FormattedMentorship = {
+  id: string;
+  status: string;
+  startDate: Date;
+  endDate: Date | null;
+  notes: string | null;
+  userRole: 'mentor' | 'student';
+  otherParty: {
+    id: string;
+    userId: number;
+    name: string | null;
+    email: string;
+    image: string | null;
+  };
+  lastConversation: {
+    id: string;
+    lastActivity: Date;
+    messageCount: number;
+  } | null;
+  lastCheckIn: {
+    scheduledFor: Date;
+    completed: boolean;
+  } | null;
+  conversationCount: number;
+  checkInCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 /**
  * GET /api/mentorships
  * Get all mentorships for the current user (either as mentor or student)
@@ -17,22 +121,22 @@ export async function GET(req: Request) {
     
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
-    const role = searchParams.get('role'); // 'mentor' or 'student'
+    const role = searchParams.get('role') as 'mentor' | 'student' | null; // 'mentor' or 'student'
     
     // Check if user has a mentor profile
     const mentorProfile = await prisma.mentorProfile.findUnique({
-      where: { userId: session.user.id },
+      where: { userId: Number(session.user.id) },
       select: { id: true }
     });
     
     // Check if user has a student profile
     const studentProfile = await prisma.studentProfile.findUnique({
-      where: { userId: session.user.id },
+      where: { userId: Number(session.user.id) },
       select: { id: true }
     });
     
     // Build query conditions based on role
-    let mentorships = [];
+    let mentorships: any[] = [];
     
     // Handle filtering based on role
     if (role === 'mentor' && mentorProfile) {
@@ -210,9 +314,40 @@ export async function GET(req: Request) {
     }
     
     // Format the response for easier consumption
-    const formattedMentorships = mentorships.map(mentorship => {
-      const isMentor = mentorship.userRole === 'mentor' || (role === 'mentor');
+    interface FormattedMentorship {
+      id: string;
+      status: string;
+      startDate: Date | null;
+      endDate: Date | null;
+      notes: string | null;
+      userRole: 'mentor' | 'student';
+      otherParty: {
+        id: string;
+        userId: string;
+        name: string;
+        email: string;
+        image: string;
+      };
+      lastConversation: {
+        id: string;
+        lastActivity: Date;
+        messageCount: number;
+      } | null;
+      lastCheckIn: {
+        scheduledFor: Date;
+        completed: boolean;
+      } | null;
+      conversationCount: number;
+      checkInCount: number;
+      createdAt: Date;
+      updatedAt: Date;
+    }
+    
+    const formattedMentorships = mentorships.map((mentorship: any): FormattedMentorship => {
+      // Determine user role based on the presence of student or mentor in the query
+      const isMentor = role === 'mentor' || (mentorship as any).userRole === 'mentor';
       
+      // Safely access the other party (mentor or student) based on user role
       const otherParty = isMentor
         ? {
             id: mentorship.student.id,
@@ -229,20 +364,21 @@ export async function GET(req: Request) {
             image: mentorship.mentor.user.image,
           };
       
-      return {
+      // Format the response object with proper type safety
+      const result: FormattedMentorship = {
         id: mentorship.id,
         status: mentorship.status,
         startDate: mentorship.startDate,
         endDate: mentorship.endDate,
-        notes: mentorship.notes,
-        userRole: mentorship.userRole || role,
+        notes: mentorship.notes || null,
+        userRole: isMentor ? 'mentor' : 'student',
         otherParty,
-        lastConversation: mentorship.conversations && mentorship.conversations[0] ? {
+        lastConversation: mentorship.conversations?.[0] ? {
           id: mentorship.conversations[0].id,
           lastActivity: mentorship.conversations[0].lastActivity,
-          messageCount: mentorship.conversations[0]._count.messages
+          messageCount: mentorship.conversations[0]._count?.messages || 0
         } : null,
-        lastCheckIn: mentorship.checkIns && mentorship.checkIns[0] ? {
+        lastCheckIn: mentorship.checkIns?.[0] ? {
           scheduledFor: mentorship.checkIns[0].scheduledFor,
           completed: !!mentorship.checkIns[0].completedAt
         } : null,
@@ -251,13 +387,24 @@ export async function GET(req: Request) {
         createdAt: mentorship.createdAt,
         updatedAt: mentorship.updatedAt
       };
+      
+      return result;
     });
     
     return NextResponse.json(formattedMentorships);
   } catch (error) {
     console.error('Error fetching mentorships:', error);
+    
+    // Return more detailed error information in development
+    const errorMessage = process.env.NODE_ENV === 'development' 
+      ? error instanceof Error ? error.message : 'Unknown error occurred'
+      : 'Failed to fetch mentorships';
+      
     return NextResponse.json(
-      { error: 'Failed to fetch mentorships' },
+      { 
+        error: errorMessage,
+        stack: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
+      },
       { status: 500 }
     );
   }
@@ -275,7 +422,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const { mentorId, notes } = await req.json();
+    const { mentorId, notes } = await req.json() as { mentorId: string; notes?: string };
     
     if (!mentorId) {
       return NextResponse.json(
@@ -286,12 +433,12 @@ export async function POST(req: Request) {
     
     // Get or create student profile
     let studentProfile = await prisma.studentProfile.findUnique({
-      where: { userId: session.user.id }
+      where: { userId: Number(session.user.id) }
     });
     
     if (!studentProfile) {
       studentProfile = await prisma.studentProfile.create({
-        data: { userId: session.user.id }
+        data: { userId: Number(session.user.id) }
       });
     }
     
@@ -330,7 +477,7 @@ export async function POST(req: Request) {
         mentorId,
         studentId: studentProfile.id,
         status: 'PENDING',
-        notes
+        ...(notes ? { notes } : {})
       }
     });
     
@@ -345,9 +492,8 @@ export async function POST(req: Request) {
     // Add system message to the conversation
     await prisma.message.create({
       data: {
-        conversationId: conversation.id,
-        senderId: session.user.id,
-        receiverId: mentorProfile.userId,
+        conversation: { connect: { id: conversation.id } },
+        sender: { connect: { id: Number(session.user.id) } },
         content: `${session.user.name || 'A student'} has requested mentorship. Please review and respond.`,
         isRead: false
       }
@@ -357,9 +503,8 @@ export async function POST(req: Request) {
     if (notes) {
       await prisma.message.create({
         data: {
-          conversationId: conversation.id,
-          senderId: session.user.id,
-          receiverId: mentorProfile.userId,
+          conversation: { connect: { id: conversation.id } },
+          sender: { connect: { id: Number(session.user.id) } },
           content: notes,
           isRead: false
         }

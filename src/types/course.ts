@@ -25,6 +25,7 @@ export interface Module {
   order: number;
   lessons: Lesson[];
   isPublished?: boolean;
+  progress?: number; // Added to match StudentCourseDashboard expectations
 }
 
 export interface Course {
