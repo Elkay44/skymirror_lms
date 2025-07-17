@@ -35,8 +35,14 @@ export type ExtendedPrismaClient = PrismaClient & {
     update: (args: any) => Promise<ForumPostComment>;
     delete: (args: any) => Promise<ForumPostComment>;
   };
-  // Project-related models - use any to avoid TypeScript errors
-  project: any;
+  // Project-related models
+  project: {
+    findMany: (args: any) => Promise<any[]>;
+    findUnique: (args: any) => Promise<any>;
+    create: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+  };
   projectSubmission: any;
   projectResource: any;
   page: any;
@@ -48,7 +54,18 @@ export type ExtendedPrismaClient = PrismaClient & {
   discussion: any; // Adding discussion model for search functionality
   // Use proper types from @prisma/client when they exist, otherwise any
   courseApprovalHistory: any;
+  notification: any;
+  learningGoal: any;
   CourseApprovalHistory: any; // Properly capitalized to match schema
+  // Note model for course lesson notes
+  note: {
+    findUnique: (args: any) => Promise<any>;
+    findFirst: (args: any) => Promise<any>;
+    findMany: (args: any) => Promise<any[]>;
+    create: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+  };
   // Assignment and Rubric models
   assignment: {
     findUnique: (args: any) => Promise<any>;
@@ -399,6 +416,19 @@ export function extendPrismaClient(prismaClient: PrismaClient): ExtendedPrismaCl
     update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "PageContentBlock" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
     delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "PageContentBlock" WHERE id = ${args.where.id} RETURNING *`,
     deleteMany: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "PageContentBlock" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''} RETURNING *`
+  };
+
+  // Add Note model implementation using raw SQL queries
+  (prismaClient as any).note = {
+    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "Note" WHERE id = ${args.where.id} LIMIT 1`,
+    findFirst: (args: any) => {
+      const whereClause = args.where ? `WHERE ${formatWhereClause(args.where)}` : '';
+      return (prismaClient as any).$queryRaw`SELECT * FROM "Note" ${whereClause} LIMIT 1`;
+    },
+    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "Note" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''} ${args.orderBy ? `ORDER BY ${formatOrderByClause(args.orderBy)}` : ''}`,
+    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "Note" ${formatInsertClause(args.data)} RETURNING *`,
+    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "Note" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
+    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "Note" WHERE id = ${args.where.id} RETURNING *`
   };
 
   return prismaClient as ExtendedPrismaClient;

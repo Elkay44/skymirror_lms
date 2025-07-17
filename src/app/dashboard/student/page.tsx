@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
 import { 
   BookOpen, 
   Award, 
@@ -419,11 +421,10 @@ export default function StudentDashboard() {
                       {course.completedLessons} of {course.totalLessons} lessons
                     </div>
                     <Link 
-                      href={`/courses/${course.id}/lessons/${course.nextLesson?.id}`}
-                      className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium"
+                      href={`/courses/${course.id}`}
+                      className="w-full inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
-                      Continue: {course.nextLesson?.title}
-                      <ArrowRight className="ml-2 h-4 w-4" />
+                      Continue
                     </Link>
                   </div>
                 </div>
@@ -431,7 +432,7 @@ export default function StudentDashboard() {
 
               {dashboardData.enrolledCourses.length > 2 && (
                 <Link 
-                  href="/dashboard/student/courses" 
+                  href="/dashboard/student/my-courses" 
                   className="block text-center py-3 bg-gray-50 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
                 >
                   View all {dashboardData.enrolledCourses.length} courses

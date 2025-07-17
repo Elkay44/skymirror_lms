@@ -2,6 +2,61 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
+import { MentorProfile, Prisma } from '@prisma/client';
+
+// Types for the mentor data
+interface MentorUser {
+  id: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+  bio: string | null;
+  role: string;
+}
+
+interface MentorCounts {
+  mentorships: number;
+  careerPaths: number;
+  reviews: number;
+}
+
+interface MentorProfileWithCounts extends MentorProfile {
+  user: MentorUser | null;
+  _count: MentorCounts;
+  // Add missing properties from MentorProfile
+  id: string;
+  userId: number;
+  bio: string | null;
+  specialties: string | null;
+  experience: string | null;
+  availability: string | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Response type for the frontend
+interface MentorResponse {
+  id: string;
+  userId: number;
+  name: string;
+  email?: string;
+  image: string | null;
+  bio: string | null;
+  role: string;
+  specialties: string[];
+  experience: string | null;
+  availability: string | null;
+  rating: number;
+  reviewCount: number;
+  isActive: boolean;
+  stats: {
+    menteeCount: number;
+    careerPathsCount: number;
+    reviewCount: number;
+  };
+  createdAt: string;
+}
 
 /**
  * GET /api/mentors
@@ -36,13 +91,25 @@ export async function GET(req: Request) {
     
     // Get mentors with their user information
     const mentors = await prisma.mentorProfile.findMany({
-      where,
+      where: {
+        isActive: true, // Only show active mentors
+        ...(specialtyFilter && {
+          specialties: {
+            contains: specialtyFilter
+          }
+        }),
+        ...(availableOnly && {
+          availability: {
+            not: null
+          }
+        })
+      },
       include: {
         user: {
           select: {
             id: true,
             name: true,
-            email: true,
+            email: session?.user?.role === 'ADMIN',
             image: true,
             bio: true,
             role: true,
@@ -57,33 +124,42 @@ export async function GET(req: Request) {
         }
       },
       orderBy: [
-        { rating: 'desc' },
-        { reviewCount: 'desc' }
+        { userId: 'desc' } // Default ordering by user ID
       ]
-    });
+    }) as unknown as MentorProfileWithCounts[];
     
     // Transform the data to make it more frontend-friendly
-    const formattedMentors = mentors.map(mentor => ({
-      id: mentor.id,
-      userId: mentor.userId,
-      name: mentor.user.name,
-      email: mentor.user.email,
-      image: mentor.user.image,
-      bio: mentor.user.bio || mentor.bio,
-      role: mentor.user.role,
-      specialties: mentor.specialties ? mentor.specialties.split(',').map(s => s.trim()) : [],
-      yearsExperience: mentor.yearsExperience,
-      availableHours: mentor.availableHours,
-      rating: mentor.rating,
-      reviewCount: mentor.reviewCount,
-      isAvailable: mentor.isAvailable,
-      stats: {
-        menteeCount: mentor._count.mentorships,
-        careerPathsCount: mentor._count.careerPaths,
-        reviewCount: mentor._count.reviews
-      },
-      createdAt: mentor.createdAt,
-    }));
+    const formattedMentors: MentorResponse[] = mentors.map(mentor => {
+      const mentorUser = mentor.user || {} as MentorUser;
+      const counts = mentor._count || {} as MentorCounts;
+      
+      // Calculate review count safely
+      const reviewCount = Number(counts.reviews || 0);
+      
+      return {
+        id: mentor.id,
+        userId: mentor.userId,
+        name: mentorUser.name || 'Mentor',
+        email: session?.user?.role === 'ADMIN' ? mentorUser.email || undefined : undefined,
+        image: mentorUser.image,
+        bio: mentor.bio || mentorUser.bio || '',
+        role: mentorUser.role || 'MENTOR',
+        specialties: mentor.specialties ? 
+          mentor.specialties.split(',').map(s => s.trim()).filter(Boolean) : 
+          [],
+        experience: mentor.experience || null,
+        availability: mentor.availability,
+        rating: 0, // Default rating (can be calculated from reviews if needed)
+        reviewCount,
+        isActive: mentor.isActive,
+        stats: {
+          menteeCount: Number(counts.mentorships || 0),
+          careerPathsCount: Number(counts.careerPaths || 0),
+          reviewCount
+        },
+        createdAt: mentor.createdAt.toISOString()
+      };
+    });
     
     return NextResponse.json(formattedMentors);
   } catch (error) {
@@ -109,7 +185,7 @@ export async function POST(req: Request) {
     
     // Check if user role is appropriate for being a mentor
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: Number(session.user.id) },
       select: { role: true }
     });
     
@@ -122,48 +198,52 @@ export async function POST(req: Request) {
     
     const { 
       bio, 
-      specialties, 
-      yearsExperience, 
-      availableHours,
-      isAvailable 
+      specialties,
+      experience,
+      availability,
+      isActive
     } = await req.json();
     
-    // Format specialties as comma-separated string
+    // Format specialties as comma-separated string if it's an array
     const formattedSpecialties = Array.isArray(specialties)
-      ? specialties.join(', ')
+      ? specialties.join(',')
       : specialties;
     
     // Check if mentor profile already exists
     const existingProfile = await prisma.mentorProfile.findUnique({
-      where: { userId: session.user.id }
+      where: { userId: Number(session.user.id) }
     });
     
     let mentorProfile;
     
     if (existingProfile) {
       // Update existing profile
+      const updateData: Prisma.MentorProfileUpdateInput = {
+        bio: bio ?? existingProfile.bio,
+        specialties: formattedSpecialties ?? existingProfile.specialties,
+        experience: experience ?? existingProfile.experience,
+        availability: availability ?? existingProfile.availability,
+        isActive: isActive ?? existingProfile.isActive,
+        updatedAt: new Date(),
+      };
+      
       mentorProfile = await prisma.mentorProfile.update({
-        where: { userId: session.user.id },
-        data: {
-          bio,
-          specialties: formattedSpecialties,
-          yearsExperience: yearsExperience || existingProfile.yearsExperience,
-          availableHours: availableHours || existingProfile.availableHours,
-          isAvailable: isAvailable !== undefined ? isAvailable : existingProfile.isAvailable,
-          updatedAt: new Date(),
-        }
+        where: { userId: Number(session.user.id) },
+        data: updateData
       });
     } else {
       // Create new profile
+      const createData: Prisma.MentorProfileCreateInput = {
+        user: { connect: { id: Number(session.user.id) } },
+        bio: bio ?? null,
+        specialties: formattedSpecialties || null,
+        experience: experience ?? null,
+        availability: availability ?? null,
+        isActive: isActive ?? true,
+      };
+      
       mentorProfile = await prisma.mentorProfile.create({
-        data: {
-          userId: session.user.id,
-          bio,
-          specialties: formattedSpecialties,
-          yearsExperience: yearsExperience || 0,
-          availableHours: availableHours || 5,
-          isAvailable: isAvailable !== undefined ? isAvailable : true,
-        }
+        data: createData
       });
     }
     

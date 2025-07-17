@@ -1,6 +1,93 @@
 -- CreateTable
-CREATE TABLE "User" (
+CREATE TABLE "Assignment" (
     "id" TEXT NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "instructions" TEXT,
+    "dueDate" DATETIME,
+    "isPublished" BOOLEAN NOT NULL DEFAULT false,
+    "maxScore" INTEGER NOT NULL DEFAULT 100,
+    "submissionType" TEXT NOT NULL DEFAULT 'TEXT',
+    "allowLateSubmissions" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "moduleId" TEXT NOT NULL,
+    CONSTRAINT "Assignment_moduleId_fkey" FOREIGN KEY ("moduleId") REFERENCES "Module" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "AssignmentSubmission" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "content" TEXT,
+    "fileUrl" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'DRAFT',
+    "grade" REAL,
+    "feedback" TEXT,
+    "submittedAt" DATETIME,
+    "gradedAt" DATETIME,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "assignmentId" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
+    CONSTRAINT "AssignmentSubmission_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "AssignmentSubmission_assignmentId_fkey" FOREIGN KEY ("assignmentId") REFERENCES "Assignment" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "LearningGoal" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "deadline" DATETIME,
+    "progress" INTEGER NOT NULL DEFAULT 0,
+    "targetCompletion" INTEGER,
+    "userId" INTEGER NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "LearningGoal_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "AssignmentResource" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "type" TEXT NOT NULL DEFAULT 'LINK',
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "assignmentId" TEXT NOT NULL,
+    CONSTRAINT "AssignmentResource_assignmentId_fkey" FOREIGN KEY ("assignmentId") REFERENCES "Assignment" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "RubricItem" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "points" INTEGER NOT NULL,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "assignmentId" TEXT NOT NULL,
+    CONSTRAINT "RubricItem_assignmentId_fkey" FOREIGN KEY ("assignmentId") REFERENCES "Assignment" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "CriteriaLevel" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "level" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "points" INTEGER NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "rubricItemId" TEXT NOT NULL,
+    CONSTRAINT "CriteriaLevel_rubricItemId_fkey" FOREIGN KEY ("rubricItemId") REFERENCES "RubricItem" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "User" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" TEXT,
     "email" TEXT NOT NULL,
     "hashedPassword" TEXT,
@@ -11,8 +98,8 @@ CREATE TABLE "User" (
     "updatedAt" DATETIME NOT NULL,
     "points" INTEGER NOT NULL DEFAULT 0,
     "level" INTEGER NOT NULL DEFAULT 1,
-    "bio" TEXT,
-    "location" TEXT,
+    "bio" TEXT DEFAULT '',
+    "location" TEXT DEFAULT '',
     "expertise" TEXT,
     "yearsOfExperience" INTEGER,
     "education" TEXT,
@@ -24,18 +111,36 @@ CREATE TABLE "User" (
 CREATE TABLE "Course" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "title" TEXT NOT NULL,
-    "description" TEXT,
-    "imageUrl" TEXT,
+    "shortDescription" TEXT DEFAULT '',
+    "description" TEXT DEFAULT '',
+    "imageUrl" TEXT DEFAULT '/images/course-placeholder.jpg',
     "difficulty" TEXT NOT NULL DEFAULT 'BEGINNER',
     "isPublished" BOOLEAN NOT NULL DEFAULT false,
-    "price" INTEGER DEFAULT 0,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    "instructorId" TEXT NOT NULL,
-    "tags" TEXT,
+    "isPrivate" BOOLEAN NOT NULL DEFAULT false,
+    "price" REAL NOT NULL DEFAULT 0,
+    "discountedPrice" REAL,
+    "language" TEXT DEFAULT 'English',
+    "requirements" TEXT,
+    "learningOutcomes" TEXT,
+    "targetAudience" TEXT,
     "hasCertification" BOOLEAN NOT NULL DEFAULT false,
     "certificationRequirements" TEXT,
-    CONSTRAINT "Course_instructorId_fkey" FOREIGN KEY ("instructorId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "status" TEXT NOT NULL DEFAULT 'DRAFT',
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "instructorId" INTEGER NOT NULL,
+    "tags" TEXT,
+    CONSTRAINT "Course_instructorId_fkey" FOREIGN KEY ("instructorId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "CourseSection" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "description" TEXT DEFAULT '',
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "courseId" TEXT NOT NULL,
+    CONSTRAINT "CourseSection_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -43,7 +148,7 @@ CREATE TABLE "Module" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "position" INTEGER NOT NULL,
+    "order" INTEGER NOT NULL,
     "courseId" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
@@ -54,48 +159,52 @@ CREATE TABLE "Module" (
 CREATE TABLE "Lesson" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "title" TEXT NOT NULL,
-    "description" TEXT,
-    "content" TEXT,
+    "description" TEXT DEFAULT '',
+    "content" TEXT DEFAULT '',
     "videoUrl" TEXT,
     "duration" INTEGER,
-    "position" INTEGER NOT NULL,
-    "moduleId" TEXT NOT NULL,
+    "order" INTEGER NOT NULL,
+    "moduleId" TEXT,
+    "sectionId" TEXT,
+    "quizId" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Lesson_quizId_fkey" FOREIGN KEY ("quizId") REFERENCES "Quiz" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "Lesson_sectionId_fkey" FOREIGN KEY ("sectionId") REFERENCES "CourseSection" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "Lesson_moduleId_fkey" FOREIGN KEY ("moduleId") REFERENCES "Module" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Enrollment" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "userId" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
     "courseId" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'ACTIVE',
     "enrolledAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "completedAt" DATETIME,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Enrollment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "Enrollment_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "Enrollment_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Enrollment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Progress" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "userId" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
     "lessonId" TEXT NOT NULL,
     "completed" BOOLEAN NOT NULL DEFAULT false,
     "completedAt" DATETIME,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Progress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "Progress_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "Lesson" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "Progress_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "Lesson" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Progress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "MentorProfile" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "userId" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
     "bio" TEXT,
     "specialties" TEXT,
     "experience" TEXT,
@@ -110,15 +219,15 @@ CREATE TABLE "MentorProfile" (
 -- CreateTable
 CREATE TABLE "StudentProfile" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "userId" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
     "interests" TEXT,
     "goals" TEXT,
     "preferredLearningStyle" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     "careerPathId" TEXT,
-    CONSTRAINT "StudentProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "StudentProfile_careerPathId_fkey" FOREIGN KEY ("careerPathId") REFERENCES "CareerPath" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "StudentProfile_careerPathId_fkey" FOREIGN KEY ("careerPathId") REFERENCES "CareerPath" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "StudentProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -132,8 +241,8 @@ CREATE TABLE "Mentorship" (
     "endDate" DATETIME,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Mentorship_mentorId_fkey" FOREIGN KEY ("mentorId") REFERENCES "MentorProfile" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Mentorship_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "StudentProfile" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Mentorship_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "StudentProfile" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Mentorship_mentorId_fkey" FOREIGN KEY ("mentorId") REFERENCES "MentorProfile" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -149,27 +258,27 @@ CREATE TABLE "Conversation" (
     "lastMessage" TEXT,
     "lastMessageAt" DATETIME,
     "lastMessageSenderId" TEXT,
-    CONSTRAINT "Conversation_mentorshipId_fkey" FOREIGN KEY ("mentorshipId") REFERENCES "Mentorship" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Conversation_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "Conversation_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "Conversation_mentorshipId_fkey" FOREIGN KEY ("mentorshipId") REFERENCES "Mentorship" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "ConversationParticipant" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "conversationId" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
     "joinedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "role" TEXT NOT NULL DEFAULT 'MEMBER',
     "unreadCount" INTEGER NOT NULL DEFAULT 0,
-    CONSTRAINT "ConversationParticipant_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "ConversationParticipant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "ConversationParticipant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "ConversationParticipant_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Message" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "conversationId" TEXT NOT NULL,
-    "senderId" TEXT NOT NULL,
+    "senderId" INTEGER NOT NULL,
     "content" TEXT NOT NULL,
     "isRead" BOOLEAN NOT NULL DEFAULT false,
     "isSystem" BOOLEAN NOT NULL DEFAULT false,
@@ -177,8 +286,8 @@ CREATE TABLE "Message" (
     "sentAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
-    CONSTRAINT "Message_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "Message_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Message_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Message_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -239,16 +348,19 @@ CREATE TABLE "Milestone" (
 
 -- CreateTable
 CREATE TABLE "Resource" (
-    "moduleId" TEXT,
     "id" TEXT NOT NULL PRIMARY KEY,
-    "milestoneId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "url" TEXT,
+    "url" TEXT NOT NULL,
     "type" TEXT NOT NULL DEFAULT 'ARTICLE',
+    "moduleId" TEXT,
+    "lessonId" TEXT,
+    "milestoneId" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "Resource_moduleId_fkey" FOREIGN KEY ("moduleId") REFERENCES "Module" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "Resource_milestoneId_fkey" FOREIGN KEY ("milestoneId") REFERENCES "Milestone" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Resource_milestoneId_fkey" FOREIGN KEY ("milestoneId") REFERENCES "Milestone" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Resource_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "Lesson" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Resource_moduleId_fkey" FOREIGN KEY ("moduleId") REFERENCES "Module" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -261,8 +373,8 @@ CREATE TABLE "MilestoneProgress" (
     "notes" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "MilestoneProgress_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "StudentProfile" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "MilestoneProgress_milestoneId_fkey" FOREIGN KEY ("milestoneId") REFERENCES "Milestone" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "MilestoneProgress_milestoneId_fkey" FOREIGN KEY ("milestoneId") REFERENCES "Milestone" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "MilestoneProgress_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "StudentProfile" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -289,8 +401,8 @@ CREATE TABLE "Quiz" (
     "moduleId" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Quiz_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "Quiz_moduleId_fkey" FOREIGN KEY ("moduleId") REFERENCES "Module" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "Quiz_moduleId_fkey" FOREIGN KEY ("moduleId") REFERENCES "Module" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Quiz_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -320,15 +432,15 @@ CREATE TABLE "QuestionOption" (
 -- CreateTable
 CREATE TABLE "QuizAttempt" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "userId" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
     "quizId" TEXT NOT NULL,
     "score" INTEGER,
     "isPassed" BOOLEAN NOT NULL DEFAULT false,
     "startedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "completedAt" DATETIME,
     "feedbackGiven" TEXT,
-    CONSTRAINT "QuizAttempt_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "QuizAttempt_quizId_fkey" FOREIGN KEY ("quizId") REFERENCES "Quiz" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "QuizAttempt_quizId_fkey" FOREIGN KEY ("quizId") REFERENCES "Quiz" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "QuizAttempt_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -340,8 +452,8 @@ CREATE TABLE "UserAnswer" (
     "isCorrect" BOOLEAN NOT NULL DEFAULT false,
     "pointsEarned" INTEGER NOT NULL DEFAULT 0,
     "submittedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "UserAnswer_attemptId_fkey" FOREIGN KEY ("attemptId") REFERENCES "QuizAttempt" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "UserAnswer_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "Question" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "UserAnswer_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "Question" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "UserAnswer_attemptId_fkey" FOREIGN KEY ("attemptId") REFERENCES "QuizAttempt" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -350,10 +462,12 @@ CREATE TABLE "Forum" (
     "title" TEXT NOT NULL,
     "description" TEXT,
     "courseId" TEXT NOT NULL,
+    "moduleId" TEXT,
     "isGlobal" BOOLEAN NOT NULL DEFAULT false,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Forum_moduleId_fkey" FOREIGN KEY ("moduleId") REFERENCES "Module" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "Forum_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -361,7 +475,7 @@ CREATE TABLE "Forum" (
 CREATE TABLE "ForumPost" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "forumId" TEXT NOT NULL,
-    "authorId" TEXT NOT NULL,
+    "authorId" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "isPinned" BOOLEAN NOT NULL DEFAULT false,
@@ -370,28 +484,28 @@ CREATE TABLE "ForumPost" (
     "likes" INTEGER NOT NULL DEFAULT 0,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "ForumPost_forumId_fkey" FOREIGN KEY ("forumId") REFERENCES "Forum" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "ForumPost_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "ForumPost_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "ForumPost_forumId_fkey" FOREIGN KEY ("forumId") REFERENCES "Forum" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "ForumComment" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "postId" TEXT NOT NULL,
-    "authorId" TEXT NOT NULL,
+    "authorId" INTEGER NOT NULL,
     "content" TEXT NOT NULL,
     "parentCommentId" TEXT,
     "likes" INTEGER NOT NULL DEFAULT 0,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "ForumComment_postId_fkey" FOREIGN KEY ("postId") REFERENCES "ForumPost" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "ForumComment_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "ForumComment_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "ForumComment_postId_fkey" FOREIGN KEY ("postId") REFERENCES "ForumPost" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Notification" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "userId" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
     "message" TEXT NOT NULL,
     "type" TEXT NOT NULL,
@@ -406,7 +520,7 @@ CREATE TABLE "Notification" (
 -- CreateTable
 CREATE TABLE "LearningMetric" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "userId" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
     "metricType" TEXT NOT NULL,
     "metricData" TEXT NOT NULL,
     "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -426,7 +540,7 @@ CREATE TABLE "CourseAnalytic" (
 -- CreateTable
 CREATE TABLE "UserStats" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "userId" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
     "level" INTEGER NOT NULL DEFAULT 1,
     "currentXP" INTEGER NOT NULL DEFAULT 0,
     "nextLevelXP" INTEGER NOT NULL DEFAULT 100,
@@ -466,11 +580,11 @@ CREATE TABLE "Achievement" (
 -- CreateTable
 CREATE TABLE "UserAchievement" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "userId" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
     "achievementId" TEXT NOT NULL,
     "earnedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "UserAchievement_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "UserAchievement_achievementId_fkey" FOREIGN KEY ("achievementId") REFERENCES "Achievement" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "UserAchievement_achievementId_fkey" FOREIGN KEY ("achievementId") REFERENCES "Achievement" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "UserAchievement_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -481,7 +595,7 @@ CREATE TABLE "ShowcaseProject" (
     "imageUrl" TEXT,
     "repositoryUrl" TEXT,
     "demoUrl" TEXT,
-    "studentId" TEXT NOT NULL,
+    "studentId" INTEGER NOT NULL,
     "courseId" TEXT NOT NULL,
     "submissionId" TEXT,
     "featured" BOOLEAN NOT NULL DEFAULT false,
@@ -491,9 +605,9 @@ CREATE TABLE "ShowcaseProject" (
     "viewCount" INTEGER NOT NULL DEFAULT 0,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "ShowcaseProject_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "ShowcaseProject_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "ProjectSubmission" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "ShowcaseProject_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "ShowcaseProject_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "ProjectSubmission" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "ShowcaseProject_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -510,29 +624,29 @@ CREATE TABLE "Project" (
     "isRequiredForCertification" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Project_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "Project_moduleId_fkey" FOREIGN KEY ("moduleId") REFERENCES "Module" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "Project_moduleId_fkey" FOREIGN KEY ("moduleId") REFERENCES "Module" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Project_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "ProjectSubmission" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "projectId" TEXT NOT NULL,
-    "studentId" TEXT NOT NULL,
+    "studentId" INTEGER NOT NULL,
     "submissionUrl" TEXT,
     "submissionText" TEXT,
     "submissionFiles" TEXT,
     "status" TEXT NOT NULL DEFAULT 'SUBMITTED',
     "grade" INTEGER,
     "feedback" TEXT,
-    "reviewerId" TEXT,
+    "reviewerId" INTEGER,
     "revisionCount" INTEGER NOT NULL DEFAULT 0,
     "submittedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "reviewedAt" DATETIME,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "ProjectSubmission_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "ProjectSubmission_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "ProjectSubmission_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "ProjectSubmission_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "ProjectSubmission_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -546,34 +660,59 @@ CREATE TABLE "Certification" (
     "txHash" TEXT,
     "ipfsMetadataUrl" TEXT,
     "isRevoked" BOOLEAN NOT NULL DEFAULT false,
-    "studentId" TEXT NOT NULL,
+    "studentId" INTEGER NOT NULL,
     "courseId" TEXT NOT NULL,
     "issuedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "expiresAt" DATETIME,
     "revokedAt" DATETIME,
     "verificationUrl" TEXT,
     "verificationCode" TEXT,
-    CONSTRAINT "Certification_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "Certification_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "Certification_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Certification_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "SubmissionResponse" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "submissionId" TEXT NOT NULL,
-    "studentId" TEXT NOT NULL,
+    "studentId" INTEGER NOT NULL,
     "content" TEXT NOT NULL,
     "isRead" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "SubmissionResponse_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "ProjectSubmission" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "SubmissionResponse_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "SubmissionResponse_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "SubmissionResponse_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "ProjectSubmission" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "CourseApprovalHistory" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "courseId" TEXT NOT NULL,
+    "action" TEXT NOT NULL,
+    "comments" TEXT,
+    "reviewerId" INTEGER,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "CourseApprovalHistory_reviewerId_fkey" FOREIGN KEY ("reviewerId") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "CourseApprovalHistory_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "Note" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "content" TEXT NOT NULL,
+    "timestamp" INTEGER NOT NULL DEFAULT 0,
+    "lessonId" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Note_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "Lesson" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Note_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "_MessageReadBy" (
     "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL,
+    "B" INTEGER NOT NULL,
     CONSTRAINT "_MessageReadBy_A_fkey" FOREIGN KEY ("A") REFERENCES "Message" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "_MessageReadBy_B_fkey" FOREIGN KEY ("B") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -614,6 +753,27 @@ CREATE TABLE "_CertificationToProjectSubmission" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE INDEX "Course_instructorId_idx" ON "Course"("instructorId");
+
+-- CreateIndex
+CREATE INDEX "Course_isPublished_status_idx" ON "Course"("isPublished", "status");
+
+-- CreateIndex
+CREATE INDEX "CourseSection_courseId_order_idx" ON "CourseSection"("courseId", "order");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Module_courseId_order_key" ON "Module"("courseId", "order");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Lesson_quizId_key" ON "Lesson"("quizId");
+
+-- CreateIndex
+CREATE INDEX "Lesson_moduleId_order_idx" ON "Lesson"("moduleId", "order");
+
+-- CreateIndex
+CREATE INDEX "Lesson_sectionId_order_idx" ON "Lesson"("sectionId", "order");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Enrollment_userId_courseId_key" ON "Enrollment"("userId", "courseId");
 
 -- CreateIndex
@@ -638,6 +798,9 @@ CREATE UNIQUE INDEX "MilestoneProgress_studentId_milestoneId_key" ON "MilestoneP
 CREATE UNIQUE INDEX "MentorReview_mentorId_studentId_key" ON "MentorReview"("mentorId", "studentId");
 
 -- CreateIndex
+CREATE INDEX "Forum_moduleId_idx" ON "Forum"("moduleId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "UserStats_userId_key" ON "UserStats"("userId");
 
 -- CreateIndex
@@ -648,6 +811,18 @@ CREATE UNIQUE INDEX "ProjectSubmission_projectId_studentId_key" ON "ProjectSubmi
 
 -- CreateIndex
 CREATE UNIQUE INDEX "SubmissionResponse_submissionId_key" ON "SubmissionResponse"("submissionId");
+
+-- CreateIndex
+CREATE INDEX "CourseApprovalHistory_courseId_idx" ON "CourseApprovalHistory"("courseId");
+
+-- CreateIndex
+CREATE INDEX "CourseApprovalHistory_reviewerId_idx" ON "CourseApprovalHistory"("reviewerId");
+
+-- CreateIndex
+CREATE INDEX "Note_lessonId_idx" ON "Note"("lessonId");
+
+-- CreateIndex
+CREATE INDEX "Note_userId_idx" ON "Note"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_MessageReadBy_AB_unique" ON "_MessageReadBy"("A", "B");

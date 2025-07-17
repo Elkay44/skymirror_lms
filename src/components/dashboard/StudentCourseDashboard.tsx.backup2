@@ -579,8 +579,7 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
   const completedProjectsPercent = progress ? Math.round((progress.completedProjects / progress.totalProjects) * 100) : 0;
 
   return (
-    <React.Fragment>
-      <div className="bg-slate-50 min-h-screen">
+    <div className="bg-slate-50 min-h-screen">
       {/* Course Header */}
       <div className="bg-white border-b shadow-sm">
         <div className="container py-4 flex items-center justify-between">
@@ -1391,6 +1390,6 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
           </div>
         </div>
       </div>
-    </React.Fragment>
+    </div>
   );
 }

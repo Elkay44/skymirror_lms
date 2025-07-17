@@ -21,7 +21,8 @@ import {
   FileQuestion,
   Target,
   Database,
-  Home
+  Home,
+  UserPlus
 } from 'lucide-react';
 
 interface DashboardNavigationProps {
@@ -134,14 +135,12 @@ export default function DashboardNavigation({ unreadNotificationsCount = 0 }: Da
         Achievements
       </Link>
 
-
-      
-      {/* Request Mentorship - New section */}
+      {/* Mentorship - Student mentorship program */}
       <Link
-        href="/dashboard/request-mentorship"
+        href="/dashboard/student/mentorship"
         className={linkClass}
       >
-        <Users className={`mr-3 h-5 w-5 ${iconColorClass('STUDENT')}`} />
+        <UserPlus className={`mr-3 h-5 w-5 ${iconColorClass('STUDENT')}`} />
         Mentorship
       </Link>
 

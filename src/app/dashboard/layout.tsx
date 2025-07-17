@@ -17,8 +17,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       try {
         const response = await fetch('/api/notifications');
         if (response.ok) {
-          const data = await response.json();
-          const unreadCount = data.notifications.filter((notification: any) => !notification.isRead).length;
+          const notifications = await response.json();
+          const unreadCount = notifications.filter((notification: any) => !notification.isRead).length;
           setUnreadNotificationsCount(unreadCount);
         }
       } catch (error) {

@@ -7,24 +7,28 @@ import Image from 'next/image';
 
 interface Mentor {
   id: string;
-  userId: string;
+  userId: number;
   name: string;
+  email?: string;
   image: string | null;
   bio: string | null;
+  role: string;
   specialties: string[];
-  yearsExperience: number;
+  experience: string | null;
+  availability: string | null;
   rating: number;
   reviewCount: number;
-  isAvailable: boolean;
+  isActive: boolean;
   stats: {
     menteeCount: number;
     careerPathsCount: number;
     reviewCount: number;
   };
+  createdAt: string;
 }
 
 export default function MentorsPage() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,88 +40,89 @@ export default function MentorsPage() {
     const fetchMentors = async () => {
       try {
         setIsLoading(true);
-        let url = '/api/mentors';
-        const params = new URLSearchParams();
+        setError(null);
         
-        if (specialty) {
-          params.append('specialty', specialty);
-        }
+        const params = new URLSearchParams({
+          ...(specialty && { specialty }),
+          ...(showAvailableOnly && { availableOnly: 'true' })
+        });
         
-        if (showAvailableOnly) {
-          params.append('available', 'true');
-        }
+        const url = `/api/mentors${params.toString() ? `?${params.toString()}` : ''}`;
         
-        if (params.toString()) {
-          url += `?${params.toString()}`;
-        }
-        
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session && {
+              'Authorization': `Bearer ${session.user?.id}`
+            })
+          }
+        });
         
         if (!response.ok) {
-          throw new Error('Failed to fetch mentors');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to fetch mentors');
         }
         
         const data = await response.json();
         setMentors(data);
-        setError(null);
       } catch (err) {
         console.error('Error fetching mentors:', err);
-        setError('Failed to load mentors. Please try again later.');
+        setError(err instanceof Error ? err.message : 'Failed to load mentors. Please try again later.');
       } finally {
         setIsLoading(false);
       }
     };
     
-    if (session) {
-      fetchMentors();
-    } else if (status === 'unauthenticated') {
-      setError('Please sign in to view available mentors');
-      setIsLoading(false);
-    }
-  }, [session, status, specialty, showAvailableOnly]);
+    fetchMentors();
+  }, [specialty, showAvailableOnly, session]);
   
-  // Render star rating
-  const renderStars = (rating: number) => {
+  if (isLoading) {
     return (
-      <div className="flex items-center">
-        {[...Array(5)].map((_, i) => (
-          <svg
-            key={i}
-            className={`w-4 h-4 ${i < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-300'}`}
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-        ))}
-        <span className="ml-1 text-sm text-gray-600">{rating.toFixed(1)} ({mentors.length > 0 ? mentors[0].reviewCount : 0})</span>
-      </div>
-    );
-  };
-  
-  if (status === 'loading' || isLoading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Find a Mentor</h1>
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      <>
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Find a Mentor</h1>
+          <div className="animate-pulse space-y-8">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </>
     );
   }
   
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Find a Mentor</h1>
-        <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">
-          <p>{error}</p>
-          {status === 'unauthenticated' && (
-            <Link href="/login?callbackUrl=/mentors" className="mt-2 inline-block text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-lg text-sm px-5 py-2.5">
-              Sign In
-            </Link>
-          )}
+      <div className="text-center">
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-8">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">
+                {error}
+              </p>
+            </div>
+          </div>
         </div>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
@@ -133,6 +138,20 @@ export default function MentorsPage() {
     'Cloud Computing',
     'Cybersecurity'
   ];
+  
+  // Render star rating
+  const renderStars = (rating: number) => {
+    return (
+      <div className="mt-2 flex items-center text-sm text-gray-500">
+        <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+        <span>{rating.toFixed(1)}</span>
+        <span className="mx-1">•</span>
+        <span>{mentors.length > 0 ? mentors[0].reviewCount : 0} {mentors.length > 0 ? (mentors[0].reviewCount === 1 ? 'review' : 'reviews') : 'reviews'}</span>
+      </div>
+    );
+  };
   
   return (
     <div className="container mx-auto px-4 py-8">
@@ -225,6 +244,13 @@ export default function MentorsPage() {
                       <span className="text-sm text-gray-500">No specialties listed</span>
                     )}
                   </div>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    mentor.isActive 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {mentor.isActive ? 'Available' : 'Not Available'}
+                  </span>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-2 mb-4 text-center">
@@ -233,14 +259,24 @@ export default function MentorsPage() {
                     <p className="text-xs text-gray-500">Mentees</p>
                   </div>
                   <div>
-                    <p className="text-lg font-semibold text-gray-900">{mentor.yearsExperience}</p>
-                    <p className="text-xs text-gray-500">Years Exp.</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {mentor.experience ? mentor.experience.split(' ')[0] : 'N/A'}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {mentor.experience ? 'Experience' : 'No experience'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-lg font-semibold text-gray-900">{mentor.stats.reviewCount}</p>
                     <p className="text-xs text-gray-500">Reviews</p>
                   </div>
                 </div>
+                
+                {mentor.experience && (
+                  <p className="text-sm text-gray-600">
+                    {mentor.experience}
+                  </p>
+                )}
                 
                 <div className="mt-4">
                   <Link 

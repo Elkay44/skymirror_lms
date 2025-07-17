@@ -76,11 +76,10 @@ export default function StudentProjects() {
           throw new Error('Failed to fetch projects');
         }
         
-        const data = await response.json();
-        const fetchedProjects = data.projects || [];
+        const fetchedProjects = await response.json();
         
-        // Parse skills JSON if needed
-        const processedProjects = fetchedProjects.map((project: any) => ({
+        // Parse skills JSON if needed and ensure submissions are properly typed
+        const processedProjects = (fetchedProjects || []).map((project: any) => ({
           ...project,
           skills: project.skills && typeof project.skills === 'string' 
             ? JSON.parse(project.skills) 

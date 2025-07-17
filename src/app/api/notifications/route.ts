@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET endpoint to fetch user notifications
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Get user session
     const session = await getServerSession(authOptions);
@@ -22,6 +22,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Define the notification type for type safety
+    interface Notification {
+      id: string;
+      title: string;
+      message: string;
+      type: string;
+      isRead: boolean;
+      createdAt: Date;
+      linkUrl: string | null;
+    }
+    
     // Use a try/catch block specifically for the notifications query
     // This helps handle cases where the notifications table might not exist yet
     interface FormattedNotification {
@@ -44,7 +55,7 @@ export async function GET(req: NextRequest) {
       });
 
       // Format the response
-      formattedNotifications = notifications.map((notification) => ({
+      formattedNotifications = (notifications as Notification[]).map((notification) => ({
         id: notification.id,
         title: notification.title,
         message: notification.message,
@@ -61,15 +72,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Return whatever notifications we found (or an empty array if there was an error)
-    return NextResponse.json({
-      notifications: formattedNotifications,
-    });
+    return NextResponse.json(formattedNotifications);
   } catch (error) {
     console.error('Error in notifications API route:', error);
     // Return empty notifications array to avoid breaking the UI
-    return NextResponse.json({
-      notifications: [],
-      error: 'Failed to fetch notifications'
-    });
+    return NextResponse.json([], { status: 200 });
   }
 }

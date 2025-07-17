@@ -7,53 +7,65 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-// Assignment models
 model Assignment {
-  id                 String                 @id @default(uuid())
-  title              String
-  description        String?
-  instructions       String?
-  dueDate            DateTime?
-  isPublished        Boolean                @default(false)
-  maxScore           Int                    @default(100)
-  submissionType     String                 @default("TEXT")
-  allowLateSubmissions Boolean               @default(false)
-  createdAt          DateTime               @default(now())
-  updatedAt          DateTime               @updatedAt
-  moduleId           String
-  module             Module                 @relation(fields: [moduleId], references: [id])
-  submissions        AssignmentSubmission[]
-  resources          AssignmentResource[]
-  rubricItems        RubricItem[]
+  id                   String                 @id @default(uuid())
+  title                String
+  description          String?
+  instructions         String?
+  dueDate              DateTime?
+  isPublished          Boolean                @default(false)
+  maxScore             Int                    @default(100)
+  submissionType       String                 @default("TEXT")
+  allowLateSubmissions Boolean                @default(false)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  moduleId             String
+  module               Module                 @relation(fields: [moduleId], references: [id])
+  resources            AssignmentResource[]
+  submissions          AssignmentSubmission[]
+  rubricItems          RubricItem[]
 }
 
 model AssignmentSubmission {
-  id          String    @id @default(uuid())
-  content     String?
-  fileUrl     String?
-  status      String    @default("DRAFT") // DRAFT, SUBMITTED, GRADED
-  grade       Float?
-  feedback    String?
-  submittedAt DateTime?
-  gradedAt    DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id           String     @id @default(uuid())
+  content      String?
+  fileUrl      String?
+  status       String     @default("DRAFT")
+  grade        Float?
+  feedback     String?
+  submittedAt  DateTime?
+  gradedAt     DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   assignmentId String
-  assignment  Assignment @relation(fields: [assignmentId], references: [id])
-  userId      Int
-  user        User       @relation(fields: [userId], references: [id])
+  userId       Int
+  user         User       @relation(fields: [userId], references: [id])
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+}
+
+model LearningGoal {
+  id               String    @id @default(uuid())
+  title           String
+  description     String?
+  deadline        DateTime?
+  progress        Int       @default(0)
+  targetCompletion Int?
+  userId          Int
+  user            User      @relation(fields: [userId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model AssignmentResource {
-  id          String    @id @default(uuid())
-  title       String
-  url         String
-  type        String    @default("LINK") // LINK, FILE, VIDEO
-  order       Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id           String     @id @default(uuid())
+  title        String
+  url          String
+  type         String     @default("LINK")
+  order        Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   assignmentId String
-  assignment  Assignment @relation(fields: [assignmentId], references: [id])
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
 }
 
 model RubricItem {
@@ -65,8 +77,8 @@ model RubricItem {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   assignmentId   String
-  assignment     Assignment      @relation(fields: [assignmentId], references: [id])
   criteriaLevels CriteriaLevel[]
+  assignment     Assignment      @relation(fields: [assignmentId], references: [id])
 }
 
 model CriteriaLevel {
@@ -81,46 +93,48 @@ model CriteriaLevel {
 }
 
 model User {
-  id                  Int                       @id @default(autoincrement())
-  name                String?
-  email               String                    @unique
-  hashedPassword      String?
-  emailVerified       DateTime?
-  image               String?
-  role                String                    @default("STUDENT")
-  createdAt           DateTime                  @default(now())
-  updatedAt           DateTime                  @updatedAt
-  points              Int                       @default(0)
-  level               Int                       @default(1)
-  bio                 String?                   @default("")
-  location            String?                   @default("")
-  expertise           String?
-  yearsOfExperience   Int?
-  education           String?
-  teachingPhilosophy  String?
-  walletAddress       String?
-  certifications      Certification[]           @relation("StudentCertifications")
-  conversations       ConversationParticipant[]
-  createdCourses      Course[]                  @relation("CourseInstructor")
-  courseApprovals     CourseApprovalHistory[]   @relation("CourseReviewer")
-  enrollments         Enrollment[]
-  forumComments       ForumComment[]            @relation("CommentAuthor")
-  forumPosts          ForumPost[]               @relation("PostAuthor")
-  learningMetrics     LearningMetric[]          @relation("UserLearningMetrics")
-  mentorProfile       MentorProfile?
-  sentMessages        Message[]                 @relation("MessageSender")
-  notifications       Notification[]            @relation("UserNotifications")
-  progress            Progress[]
-  reviewedSubmissions ProjectSubmission[]       @relation("InstructorReviews")
-  projectSubmissions  ProjectSubmission[]       @relation("StudentSubmissions")
-  quizAttempts        QuizAttempt[]             @relation("UserQuizAttempts")
-  showcaseProjects    ShowcaseProject[]         @relation("StudentShowcaseProjects")
+  id                    Int                       @id @default(autoincrement())
+  name                  String?
+  email                 String                    @unique
+  hashedPassword        String?
+  emailVerified         DateTime?
+  image                 String?
+  role                  String                    @default("STUDENT")
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  points                Int                       @default(0)
+  level                 Int                       @default(1)
+  bio                   String?                   @default("")
+  location              String?                   @default("")
+  expertise             String?
+  yearsOfExperience     Int?
+  education             String?
+  teachingPhilosophy    String?
+  walletAddress         String?
   assignmentSubmissions AssignmentSubmission[]
-  studentProfile      StudentProfile?
-  submissionResponses SubmissionResponse[]      @relation("StudentResponses")
-  achievements        UserAchievement[]         @relation("UserAchievements")
-  userStats           UserStats?
-  readMessages        Message[]                 @relation("MessageReadBy")
+  certifications        Certification[]           @relation("StudentCertifications")
+  conversations         ConversationParticipant[]
+  createdCourses        Course[]                  @relation("CourseInstructor")
+  courseApprovals       CourseApprovalHistory[]   @relation("CourseReviewer")
+  enrollments           Enrollment[]
+  forumComments         ForumComment[]            @relation("CommentAuthor")
+  forumPosts            ForumPost[]               @relation("PostAuthor")
+  learningGoals         LearningGoal[]
+  learningMetrics       LearningMetric[]          @relation("UserLearningMetrics")
+  mentorProfile         MentorProfile?
+  sentMessages          Message[]                 @relation("MessageSender")
+  notes                 Note[]
+  notifications         Notification[]            @relation("UserNotifications")
+  progress              Progress[]
+  reviewedSubmissions   ProjectSubmission[]       @relation("InstructorReviews")
+  projectSubmissions    ProjectSubmission[]       @relation("StudentSubmissions")
+  quizAttempts          QuizAttempt[]             @relation("UserQuizAttempts")
+  showcaseProjects      ShowcaseProject[]         @relation("StudentShowcaseProjects")
+  studentProfile        StudentProfile?
+  submissionResponses   SubmissionResponse[]      @relation("StudentResponses")
+  achievements          UserAchievement[]         @relation("UserAchievements")
+  userStats             UserStats?
+  readMessages          Message[]                 @relation("MessageReadBy")
 }
 
 model Course {
@@ -176,20 +190,20 @@ model CourseSection {
 }
 
 model Module {
-  id          String     @id @default(cuid())
+  id          String       @id @default(cuid())
   title       String
   description String?
   order       Int
   courseId    String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  forums      Forum[]    @relation("ModuleForums")
-  lessons     Lesson[]
-  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  projects    Project[]
-  quizzes     Quiz[]     @relation("ModuleQuizzes")
-  resources   Resource[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   assignments Assignment[]
+  forums      Forum[]      @relation("ModuleForums")
+  lessons     Lesson[]
+  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  projects    Project[]
+  quizzes     Quiz[]       @relation("ModuleQuizzes")
+  resources   Resource[]
 
   @@unique([courseId, order])
 }
@@ -210,6 +224,7 @@ model Lesson {
   quiz        Quiz?          @relation("LessonToQuiz", fields: [quizId], references: [id])
   section     CourseSection? @relation("SectionLessons", fields: [sectionId], references: [id], onDelete: Cascade)
   module      Module?        @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  notes       Note[]
   progress    Progress[]
   resources   Resource[]     @relation("LessonResources")
 
@@ -757,4 +772,19 @@ model CourseApprovalHistory {
 
   @@index([courseId])
   @@index([reviewerId])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  content   String
+  timestamp Int      @default(0)
+  lessonId  String
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+  @@index([userId])
 }

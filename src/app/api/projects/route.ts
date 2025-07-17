@@ -40,6 +40,15 @@ export async function GET(req: NextRequest) {
           include: {
             _count: {
               select: { submissions: true }
+            },
+            submissions: {
+              orderBy: { submittedAt: 'desc' },
+              take: 1
+            },
+            course: {
+              select: {
+                title: true
+              }
             }
           },
           orderBy: { createdAt: 'desc' }
@@ -225,7 +234,8 @@ export async function GET(req: NextRequest) {
       }
     }
     
-    return NextResponse.json({ projects });
+    // Return the projects directly as an array to match the client's expectation
+    return NextResponse.json(projects);
   } catch (error) {
     console.error('Error fetching projects:', error);
     return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 });

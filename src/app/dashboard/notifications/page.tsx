@@ -137,6 +137,7 @@ export default function NotificationsPage() {
         const response = await fetch('/api/notifications');
         if (!response.ok) throw new Error('Failed to fetch notifications');
         const data = await response.json();
+        // The API now returns the array directly
         setNotifications(Array.isArray(data) ? data : []);
         setIsLoading(false);
       } catch (error) {
