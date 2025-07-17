@@ -74,12 +74,22 @@ export default function StudentMentorshipPage() {
   }, [showToast]);
 
   const handleRequestMentorship = async () => {
-    if (!selectedMentor) return;
-    
     try {
+      // Check if selectedMentor exists and has an id
+      if (!selectedMentor || !selectedMentor.id) {
+        throw new Error('No mentor selected or invalid mentor data');
+      }
+      
       setIsRequesting(true);
+      
+      // Ensure we have a valid mentor ID before making the request
+      const mentorId = selectedMentor.id;
+      if (!mentorId) {
+        throw new Error('Invalid mentor ID');
+      }
+      
       const newRequest = await requestMentorship(
-        selectedMentor.id,
+        mentorId,
         requestMessage || 'I would like to request mentorship with you.'
       );
       
@@ -89,10 +99,12 @@ export default function StudentMentorshipPage() {
       
       showToast({
         title: 'Request Sent',
-        description: `Your mentorship request has been sent to ${selectedMentor.name}`,
+        description: `Your mentorship request has been sent to ${selectedMentor.name || 'the mentor'}`,
+        variant: 'success' as ToastVariant,
       });
     } catch (err: any) {
-      const message = err.message;
+      console.error('Error in handleRequestMentorship:', err);
+      const message = err.message || 'Failed to send mentorship request';
       showToast({
         title: 'Error',
         description: message,
