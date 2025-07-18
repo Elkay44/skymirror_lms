@@ -14,15 +14,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Fetch unread notification count
   useEffect(() => {
     const fetchNotifications = async () => {
+      if (!session?.user) return;
+      
       try {
-        const response = await fetch('/api/notifications');
-        if (response.ok) {
-          const notifications = await response.json();
-          const unreadCount = notifications.filter((notification: any) => !notification.isRead).length;
+        const response = await fetch('/api/notifications', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Ensure cookies are sent with the request
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (Array.isArray(data)) {
+          const unreadCount = data.filter((notification: any) => !notification.isRead).length;
           setUnreadNotificationsCount(unreadCount);
+        } else {
+          console.warn('Unexpected notifications response format:', data);
+          setUnreadNotificationsCount(0);
         }
       } catch (error) {
         console.error('Error fetching notifications:', error);
+        setUnreadNotificationsCount(0); // Reset count on error to prevent UI issues
       }
     };
 
@@ -30,9 +48,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       fetchNotifications();
       
       // Set up interval to periodically check for new notifications
-      const intervalId = setInterval(fetchNotifications, 60000); // every minute
+      const intervalId = setInterval(fetchNotifications, 5 * 60 * 1000); // every 5 minutes
       
       return () => clearInterval(intervalId);
+    } else {
+      // Reset count if user logs out
+      setUnreadNotificationsCount(0);
     }
   }, [session]);
 
