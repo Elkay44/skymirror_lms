@@ -1,13 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
+
+type Answer = {
+  questionId: string;
+  answer: any; // This can be string, string[], or { itemId: string; matchId: string }[]
+};
+
+type Question = {
+  id: string;
+  questionType: string;
+  points: number;
+  correctAnswers: Array<{
+    id: string;
+    optionText: string;
+  }>;
+};
 
 // POST endpoint to submit quiz answers
 export async function POST(
   req: NextRequest,
-  { params }: { params: { courseId: string; quizId: string } }
+  { params }: { params: Promise<{ courseId: string; quizId: string }> }
 ) {
+  const { courseId, quizId } = await params;
   try {
     // Get user session
     const session = await getServerSession(authOptions);
@@ -15,7 +31,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { courseId, quizId } = params;
+
     const { answers } = await req.json();
 
     // Get user ID
@@ -109,7 +125,7 @@ export async function POST(
         // Check if answer is correct based on question type
         switch (question.questionType) {
           case 'MULTIPLE_CHOICE':
-            const correctOptionIds = question.correctAnswers.map((a) => a.id);
+            const correctOptionIds = question.correctAnswers.map((a: { id: string }) => a.id);
             isCorrect = 
               userAnswer.answer.length === correctOptionIds.length && 
               userAnswer.answer.every((id: string) => correctOptionIds.includes(id));
@@ -122,17 +138,17 @@ export async function POST(
 
           case 'FILL_BLANK':
             const correctTexts = question.correctAnswers.map(
-              (a) => a.optionText.toLowerCase().trim()
+              (a: { optionText: string }) => a.optionText.toLowerCase().trim()
             );
             isCorrect = correctTexts.includes(
-              userAnswer.answer.toLowerCase().trim()
+              (userAnswer.answer as string).toLowerCase().trim()
             );
             break;
 
           case 'SHORT_ANSWER':
             // For short answer, we'll use a simple keyword matching approach
             // In a real system, this might involve NLP or manual grading
-            const keywords = question.correctAnswers.flatMap((a) =>
+            const keywords = question.correctAnswers.flatMap((a: { optionText: string }) =>
               a.optionText.toLowerCase().split(/\s+/)
             );
             const userWords = userAnswer.answer.toLowerCase().split(/\s+/);
@@ -144,7 +160,7 @@ export async function POST(
             break;
 
           case 'MATCHING':
-            const correctPairs = question.correctAnswers.map((a) => ({
+            const correctPairs = question.correctAnswers.map((a: { id: string; optionText: string }) => ({
               itemId: a.id,
               matchId: a.optionText, // In this model, optionText stores the matched ID
             }));
@@ -152,7 +168,7 @@ export async function POST(
               userAnswer.answer.length === correctPairs.length &&
               userAnswer.answer.every((pair: any) =>
                 correctPairs.some(
-                  (cp) => cp.itemId === pair.itemId && cp.matchId === pair.matchId
+                  (cp: { itemId: string; matchId: string }) => cp.itemId === pair.itemId && cp.matchId === pair.matchId
                 )
               );
             break;

@@ -2,7 +2,7 @@
 
 import { PageLayout } from '../_components/PageLayout';
 import { Search, Filter, UserPlus, ExternalLink, MessageSquare, BarChart, BookOpen, Calendar, Mail, User } from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { 
   Button, 
@@ -29,456 +29,453 @@ interface StudentData {
   id: number;
   name: string;
   email: string;
-  progress: number;
+  avatarUrl?: string;
+  status: 'active' | 'inactive' | 'pending';
   lastActive: string;
-  enrolledDate: string;
-  completedSections: number;
-  totalSections: number;
-  profileImage?: string;
-  bio?: string;
+  progress: number;
   completedLessons: number;
   totalLessons: number;
-  status: 'active' | 'inactive' | 'completed';
+  joinDate: string;
+  grade?: string;
 }
 
-export default function StudentsPage({ searchParams }: { searchParams: { status?: string } }) {
-  // Get URL parameters with a fallback to 'active'
-  const urlStatus = searchParams.status || 'active';
-  const params = useParams();
-  const courseId = params.courseId as string;
-  const router = useRouter();
-  
-  // Create state for current status that syncs with URL
-  const [currentStatus, setCurrentStatus] = useState<'active' | 'inactive' | 'completed'>(urlStatus as 'active' | 'inactive' | 'completed');
-  
-  // Use effect to sync state with URL parameters when they change
-  useEffect(() => {
-    if (urlStatus && (urlStatus === 'active' || urlStatus === 'inactive' || urlStatus === 'completed')) {
-      setCurrentStatus(urlStatus as 'active' | 'inactive' | 'completed');
-    }
-  }, [urlStatus]);
-  
-  // State for dialogs and search
+// Mock data for students
+const mockStudents: StudentData[] = [
+  {
+    id: 1,
+    name: 'Alex Johnson',
+    email: 'alex.johnson@example.com',
+    status: 'active',
+    lastActive: '2023-04-15T14:30:00Z',
+    progress: 75,
+    completedLessons: 15,
+    totalLessons: 20,
+    joinDate: '2023-01-10',
+    grade: 'A'
+  },
+  // ... more mock data
+];
+
+interface StudentsPageProps {
+  searchParams: Promise<{ status?: string }>;
+}
+
+export default function StudentsPage({ searchParams: searchParamsPromise }: StudentsPageProps) {
+  const [searchParams, setSearchParams] = useState<{ status?: string }>({});
+  const [students, setStudents] = useState<StudentData[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<StudentData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteMessage, setInviteMessage] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<StudentData | null>(null);
-  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
-  const [enrollDialogOpen, setEnrollDialogOpen] = useState(false);
-  const [messageText, setMessageText] = useState('');
-  const [searchText, setSearchText] = useState('');
-  const [emailToEnroll, setEmailToEnroll] = useState('');
-  const [enrollmentError, setEnrollmentError] = useState('');
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   
-  // Handle status change with local state and URL update
-  const handleStatusChange = (newStatus: string) => {
-    if (newStatus === 'active' || newStatus === 'inactive' || newStatus === 'completed') {
-      // Update local state immediately
-      setCurrentStatus(newStatus as 'active' | 'inactive' | 'completed');
-      // Update URL without full page refresh
-      router.replace(`/dashboard/instructor/courses/${courseId}/students?status=${newStatus}`, { 
-        scroll: false 
-      });
-    }
-  };
+  const params = useParams();
+  const router = useRouter();
+  const urlSearchParams = useSearchParams();
   
-  // Mock data - in a real app, this would be fetched from API
-  const allStudents: StudentData[] = [
-    { 
-      id: 1, 
-      name: 'Alex Johnson', 
-      email: 'alex@example.com', 
-      progress: 85, 
-      lastActive: '2h ago', 
-      enrolledDate: 'May 15, 2023',
-      completedSections: 5,
-      totalSections: 8,
-      completedLessons: 12,
-      totalLessons: 24,
-      status: 'active',
-      profileImage: 'https://i.pravatar.cc/150?img=11',
-      bio: 'Web developer with 5 years of experience, currently focusing on expanding my skillset with this course.'
-    },
-    { 
-      id: 2, 
-      name: 'Sarah Williams', 
-      email: 'sarah@example.com', 
-      progress: 35, 
-      lastActive: '1d ago', 
-      enrolledDate: 'June 2, 2023',
-      completedSections: 2,
-      totalSections: 8,
-      completedLessons: 6,
-      totalLessons: 24,
-      status: 'active'
-    },
-    { 
-      id: 3, 
-      name: 'Miguel Rodriguez', 
-      email: 'miguel@example.com', 
-      progress: 0, 
-      lastActive: '2w ago', 
-      enrolledDate: 'June 10, 2023',
-      completedSections: 0,
-      totalSections: 8,
-      completedLessons: 0,
-      totalLessons: 24,
-      status: 'inactive'
-    },
-    { 
-      id: 4, 
-      name: 'Emily Chen', 
-      email: 'emily@example.com', 
-      progress: 100, 
-      lastActive: '3d ago',
-      enrolledDate: 'April 15, 2023',
-      completedSections: 8,
-      totalSections: 8,
-      completedLessons: 24,
-      totalLessons: 24,
-      status: 'completed'
-    },
-    { 
-      id: 5, 
-      name: 'David Kim', 
-      email: 'david@example.com', 
-      progress: 42, 
-      lastActive: '4h ago',
-      enrolledDate: 'May 20, 2023',
-      completedSections: 3,
-      totalSections: 8,
-      completedLessons: 10,
-      totalLessons: 24,
-      status: 'active'
-    }
-  ];
-  
-  // Get mock data based on the current status filter
-  const displayedStudents = searchText
-    ? allStudents.filter(
-        student => student.status === currentStatus && 
-          (student.name.toLowerCase().includes(searchText.toLowerCase()) || 
-           student.email.toLowerCase().includes(searchText.toLowerCase()))
-      )
-    : allStudents.filter(student => student.status === currentStatus);
+  // Load search params when component mounts
+  useEffect(() => {
+    const loadSearchParams = async () => {
+      try {
+        const resolvedParams = await searchParamsPromise;
+        setSearchParams(resolvedParams);
+      } catch (err) {
+        console.error('Error loading search params:', err);
+      }
+    };
+
+    loadSearchParams();
+  }, [searchParamsPromise]);
+
+  // Fetch students data
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        setLoading(true);
+        // In a real app, you would fetch this data from your API
+        // const response = await fetch(`/api/courses/${params.courseId}/students`);
+        // const data = await response.json();
+        
+        // Using mock data for now
+        setTimeout(() => {
+          setStudents(mockStudents);
+          setLoading(false);
+        }, 500);
+      } catch (error) {
+        console.error('Error fetching students:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, [params.courseId]);
+
+  // Filter students based on search term and status
+  useEffect(() => {
+    if (students.length === 0) return;
+
+    let result = [...students];
     
-  // Count students by status for the UI
-  const studentCounts = {
-    active: allStudents.filter(student => student.status === 'active').length,
-    inactive: allStudents.filter(student => student.status === 'inactive').length,
-    completed: allStudents.filter(student => student.status === 'completed').length
-  };
-  
-  // Handle viewing student profile
-  const handleViewProfile = (student: StudentData) => {
-    setSelectedStudent(student);
-    setProfileDialogOpen(true);
-  };
-  
-  // Handle messaging student
-  const handleMessageStudent = (student: StudentData) => {
-    setSelectedStudent(student);
-    setMessageDialogOpen(true);
-  };
-  
-  // Helper function for sending messages to students
-  const handleSendMessage = () => {
-    if (selectedStudent && messageText.trim()) {
-      toast.success(`Message sent to ${selectedStudent.name}`);
-      setMessageText('');
-      setMessageDialogOpen(false);
+    // Filter by status
+    const status = searchParams.status || urlSearchParams.get('status');
+    if (status) {
+      result = result.filter(student => student.status === status);
     }
-  };
-  
-  // Handle removing a student from the course
-  const handleRemoveStudent = (studentId: number) => {
-    // In a real app, this would remove the student from the course
-    toast.success('Student removed successfully');
-  };
-  
-  // Handle changing student status
-  const handleChangeStatus = (studentId: number, newStatus: string) => {
-    // In a real app, this would update the student's status
-    toast.success('Student status updated successfully');
-  };
-  
-  // Handle enrolling a student
-  const handleEnrollStudent = async () => {
-    if (!emailToEnroll.trim()) {
-      setEnrollmentError("Please enter the student's email");
+    
+    // Filter by search term
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(
+        student =>
+          student.name.toLowerCase().includes(term) ||
+          student.email.toLowerCase().includes(term)
+      );
+    }
+    
+    setFilteredStudents(result);
+  }, [students, searchTerm, searchParams.status, urlSearchParams]);
+
+  const handleInviteStudent = async () => {
+    if (!inviteEmail) {
+      toast.error('Please enter an email address');
       return;
     }
     
     try {
-      // In a real app, this would send an API request to enroll the student
-      console.log(`Enrolling student with email: ${emailToEnroll} to course ${courseId}`);
+      // In a real app, you would call your API to send the invitation
+      // await fetch(`/api/courses/${params.courseId}/invite`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ email: inviteEmail, message: inviteMessage })
+      // });
       
-      // Find if the student is already in our mock data with inactive status
-      const studentToEnroll = allStudents.find(
-        student => student.email.toLowerCase() === emailToEnroll.toLowerCase() && student.status === 'inactive'
-      );
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      if (studentToEnroll) {
-        // Update the student status to 'active'
-        studentToEnroll.status = 'active';
-        
-        // Show success message using react-hot-toast
-        toast.success(`${studentToEnroll.name} has been successfully enrolled in the course.`);
-      } else {
-        toast.success(`Enrollment invitation sent to ${emailToEnroll}`);
-      }
-      
-      // Close dialog and reset form
-      setEmailToEnroll('');
-      setEnrollmentError('');
-      setEnrollDialogOpen(false);
-      
+      toast.success(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail('');
+      setInviteMessage('');
+      setIsInviteDialogOpen(false);
     } catch (error) {
-      setEnrollmentError('Failed to enroll student. Please try again.');
-      console.error('Error enrolling student:', error);
+      console.error('Error sending invitation:', error);
+      toast.error('Failed to send invitation');
     }
   };
-  
+
+  const handleViewProfile = (student: StudentData) => {
+    setSelectedStudent(student);
+    setIsProfileDialogOpen(true);
+  };
+
+  const handleSendMessage = (student: StudentData) => {
+    // In a real app, this would open a messaging interface
+    router.push(`/dashboard/messages?to=${student.id}`);
+  };
+
+  const handleViewProgress = (student: StudentData) => {
+    // In a real app, this would navigate to the student's progress page
+    router.push(`/dashboard/instructor/courses/${params.courseId}/students/${student.id}`);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'inactive':
+        return 'bg-gray-100 text-gray-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
-    <PageLayout 
+    <PageLayout
       title="Students"
-      backHref={`/dashboard/instructor/courses/${courseId}`}
+      description="Manage and communicate with your students"
+      headerActions={[
+        <Button key="invite" onClick={() => setIsInviteDialogOpen(true)}>
+          <UserPlus className="mr-2 h-4 w-4" />
+          Invite Students
+        </Button>
+      ]}
     >
-      <div className="p-6 bg-white rounded-lg shadow-sm">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Course Students</h1>
-          <Button onClick={() => setEnrollDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Enroll Student
-          </Button>
-        </div>
-
-        {/* Status Tabs */}
-        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-6">
-          {['active', 'inactive', 'completed'].map((status) => (
-            <button
-              key={status}
-              onClick={() => handleStatusChange(status)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                currentStatus === status
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              {status.charAt(0).toUpperCase() + status.slice(1)} ({studentCounts[status as keyof typeof studentCounts]})
-            </button>
-          ))}
-        </div>
-
-        {/* Search */}
-        <div className="flex items-center space-x-4 mb-6">
+      <div className="space-y-6">
+        {/* Search and filter bar */}
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
-              placeholder="Search students by name or email..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              className="pl-10"
+              className="pl-10 w-full"
+              placeholder="Search students..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          <Select
+            value={searchParams.status || urlSearchParams.get('status') || ''}
+            onValueChange={(value) => {
+              router.push(`?status=${value}`);
+            }}
+          >
+            <SelectTrigger className="w-[180px]">
+              <Filter className="mr-2 h-4 w-4" />
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Students</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Students Table */}
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrolled</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {displayedStudents.map((student) => (
-                <tr key={student.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback>
-                          {student.name.split(' ').map(n => n[0]).join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{student.name}</div>
-                        <div className="text-sm text-gray-500">{student.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{student.progress}%</div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${student.progress}%` }}></div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.lastActive}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.enrolledDate}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewProfile(student)}
-                      >
-                        <User className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleMessageStudent(student)}
-                      >
-                        <MessageSquare className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {/* Students list */}
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : filteredStudents.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No students found</p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => {
+                setSearchTerm('');
+                setSearchParams({});
+              }}
+            >
+              Clear filters
+            </Button>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Student
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Progress
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Last Active
+                    </th>
+                    <th scope="col" className="relative px-6 py-3">
+                      <span className="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredStudents.map((student) => (
+                    <tr key={student.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <Avatar>
+                              {student.avatarUrl ? (
+                                <img src={student.avatarUrl} alt={student.name} />
+                              ) : (
+                                <AvatarFallback>
+                                  {student.name
+                                    .split(' ')
+                                    .map((n) => n[0])
+                                    .join('')}
+                                </AvatarFallback>
+                              )}
+                            </Avatar>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{student.name}</div>
+                            <div className="text-sm text-gray-500">{student.email}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(student.status)}`}>
+                          {student.status.charAt(0).toUpperCase() + student.status.slice(1)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="bg-blue-600 h-2.5 rounded-full" 
+                            style={{ width: `${student.progress}%` }}
+                          ></div>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {student.completedLessons} of {student.totalLessons} lessons
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(student.lastActive).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex space-x-2 justify-end">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleViewProfile(student)}
+                            title="View Profile"
+                          >
+                            <User className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleSendMessage(student)}
+                            title="Send Message"
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleViewProgress(student)}
+                            title="View Progress"
+                          >
+                            <BarChart className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
 
-        {/* Profile Dialog */}
-        <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Student Profile</DialogTitle>
-            </DialogHeader>
-            {selectedStudent && (
-              <div className="space-y-4">
+      {/* Invite Student Dialog */}
+      <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Invite Students</DialogTitle>
+            <DialogDescription>
+              Invite students to join your course by entering their email addresses below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none">Email Address</label>
+              <Input
+                type="email"
+                placeholder="student@example.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none">Message (Optional)</label>
+              <Textarea
+                placeholder="Add a personal message..."
+                rows={4}
+                value={inviteMessage}
+                onChange={(e) => setInviteMessage(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleInviteStudent}>
+              Send Invitation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Student Profile Dialog */}
+      <Dialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen}>
+        <DialogContent>
+          {selectedStudent && (
+            <>
+              <DialogHeader>
                 <div className="flex items-center space-x-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarFallback className="text-lg">
-                      {selectedStudent.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
+                  <Avatar className="h-12 w-12">
+                    {selectedStudent.avatarUrl ? (
+                      <img src={selectedStudent.avatarUrl} alt={selectedStudent.name} />
+                    ) : (
+                      <AvatarFallback>
+                        {selectedStudent.name
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')}
+                      </AvatarFallback>
+                    )}
                   </Avatar>
                   <div>
-                    <h3 className="text-lg font-medium">{selectedStudent.name}</h3>
-                    <p className="text-gray-500">{selectedStudent.email}</p>
+                    <DialogTitle>{selectedStudent.name}</DialogTitle>
+                    <DialogDescription>{selectedStudent.email}</DialogDescription>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Progress</p>
-                    <p className="text-lg">{selectedStudent.progress}%</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Status</p>
-                    <p className="text-lg capitalize">{selectedStudent.status}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Enrolled Date</p>
-                    <p className="text-lg">{selectedStudent.enrolledDate}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Last Active</p>
-                    <p className="text-lg">{selectedStudent.lastActive}</p>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-4 py-4">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Status</h4>
+                  <p className="mt-1 text-sm">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(selectedStudent.status)}`}>
+                      {selectedStudent.status.charAt(0).toUpperCase() + selectedStudent.status.slice(1)}
+                    </span>
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Grade</h4>
+                  <p className="mt-1 text-sm">{selectedStudent.grade || 'N/A'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Joined</h4>
+                  <p className="mt-1 text-sm">
+                    {new Date(selectedStudent.joinDate).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-500">Last Active</h4>
+                  <p className="mt-1 text-sm">
+                    {new Date(selectedStudent.lastActive).toLocaleString()}
+                  </p>
+                </div>
+                <div className="col-span-2">
+                  <h4 className="text-sm font-medium text-gray-500">Progress</h4>
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div 
+                        className="bg-blue-600 h-2.5 rounded-full" 
+                        style={{ width: `${selectedStudent.progress}%` }}
+                      ></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>{selectedStudent.completedLessons} of {selectedStudent.totalLessons} lessons</span>
+                      <span>{selectedStudent.progress}%</span>
+                    </div>
                   </div>
                 </div>
-                {selectedStudent.bio && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Bio</p>
-                    <p className="text-sm text-gray-700">{selectedStudent.bio}</p>
-                  </div>
-                )}
               </div>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Message Dialog */}
-        <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Send Message</DialogTitle>
-              <DialogDescription>
-                Send a message to {selectedStudent?.name}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-2">
-              <div className="space-y-2">
-                <label htmlFor="messageSubject" className="text-sm font-medium">
-                  Subject
-                </label>
-                <Input 
-                  id="messageSubject" 
-                  placeholder="Course progress update" 
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="messageContent" className="text-sm font-medium">
-                  Message
-                </label>
-                <Textarea 
-                  id="messageContent" 
-                  placeholder="Write your message here..." 
-                  className="min-h-[120px]" 
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setMessageDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSendMessage} disabled={!messageText.trim()}>
-                Send Message
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Enroll Student Dialog */}
-        <Dialog open={enrollDialogOpen} onOpenChange={(open) => {
-          setEnrollDialogOpen(open);
-          if (!open) {
-            setEmailToEnroll('');
-            setEnrollmentError('');
-          }
-        }}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Enroll Student</DialogTitle>
-              <DialogDescription>
-                Enter the email address of the student you want to enroll in this course.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-2">
-              <div className="space-y-2">
-                <label htmlFor="studentEmail" className="text-sm font-medium">
-                  Student Email
-                </label>
-                <Input 
-                  id="studentEmail" 
-                  type="email"
-                  placeholder="student@example.com" 
-                  value={emailToEnroll}
-                  onChange={(e) => {
-                    setEmailToEnroll(e.target.value);
-                    setEnrollmentError('');
-                  }}
-                />
-                {enrollmentError && (
-                  <p className="text-sm text-red-500">{enrollmentError}</p>
-                )}
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setEnrollDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleEnrollStudent}>
-                Enroll Student
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsProfileDialogOpen(false)}>
+                  Close
+                </Button>
+                <Button onClick={() => handleViewProgress(selectedStudent)}>
+                  View Full Progress
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 }

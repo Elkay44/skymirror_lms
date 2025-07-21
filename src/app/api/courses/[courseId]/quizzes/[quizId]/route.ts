@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET endpoint to fetch quiz data for a specific quiz
 export async function GET(
   req: NextRequest,
-  { params }: { params: { courseId: string; quizId: string } }
+  { params }: { params: Promise<{ courseId: string; quizId: string }> }
 ) {
   try {
     // Get user session
@@ -14,8 +14,8 @@ export async function GET(
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const { courseId, quizId } = params;
+    
+    const { courseId, quizId } = await params;
 
     // Get user ID
     const user = await prisma.user.findUnique({

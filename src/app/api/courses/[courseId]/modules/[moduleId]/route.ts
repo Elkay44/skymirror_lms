@@ -32,11 +32,12 @@ type ModuleResponse = {
 
 // GET /api/courses/[courseId]/modules/[moduleId] - Get module details, lessons, and resources
 export async function GET(
-  request: Request,
-  { params }: { params: { courseId: string; moduleId: string } }
-) {
+  request: NextRequest,
+  { params }: { params: Promise<{ courseId: string; moduleId: string }> }
+): Promise<Response> {
+  const { courseId, moduleId } = await params;
   try {
-    const { courseId, moduleId } = params;
+
     
     console.log(`[MODULE_GET] Request for course: ${courseId}, module: ${moduleId}`);
     
@@ -263,10 +264,11 @@ const logModuleActivity = async (userId: string | number, action: string, module
 // PATCH /api/courses/[courseId]/modules/[moduleId] - Update a module
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string } }
-) {
+  { params }: { params: Promise<{ courseId: string; moduleId: string }> }
+): Promise<Response> {
+  const { courseId, moduleId } = await params;
   try {
-    const { courseId, moduleId } = params;
+
     
     // Authentication
     const session = await getServerSession(authOptions);
@@ -340,15 +342,21 @@ export async function PATCH(
     });
     
     // Log activity
-    await logModuleActivity(userId.toString(), 'update_module', moduleId, updateData);
+    await logModuleActivity(userId.toString(), 'update', moduleId, {
+      changes: updateData,
+      previousData: existingModule
+    });
     
     // Revalidate cache
     revalidatePath(`/courses/${courseId}`);
     revalidatePath(`/courses/${courseId}/modules/${moduleId}`);
     
     return NextResponse.json({ module: updatedModule });
-  } catch (error: any) {
-    console.error(`Error updating module ${params.moduleId}:`, error);
-    return NextResponse.json({ error: 'Failed to update module' }, { status: 500 });
+  } catch (error: unknown) {
+    console.error(`Error updating module ${moduleId}:`, error);
+    return NextResponse.json(
+      { error: 'Failed to update module' }, 
+      { status: 500 }
+    );
   }
 }

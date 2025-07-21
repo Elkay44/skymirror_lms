@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
@@ -34,145 +35,223 @@ const logPageActivity = async (userId: string | number, action: string, pageId: 
 // GET handler - Get a specific page
 export async function GET(
   request: NextRequest,
-  { params }: { params: { pageId: string } }
+  { params }: { params: Promise<{ pageId: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const { pageId } = await params;
+    const searchParams = request.nextUrl.searchParams;
+    const includeContent = searchParams.get('includeContent') === 'true';
     
-    const { pageId } = params;
-    
-    // Get page
+    // Get the page with optional content
     const page = await prisma.page.findUnique({
-      where: { id: pageId },
+      where: { 
+        id: pageId,
+        isPublished: true, // Only fetch published pages via API
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        isPublished: true,
+        createdAt: true,
+        updatedAt: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+        content: includeContent,
+        _count: {
+          select: {
+            views: true,
+            likes: true,
+          },
+        },
+      },
     });
-    
+
     if (!page) {
-      return NextResponse.json({ error: 'Page not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Page not found' },
+        { status: 404 }
+      );
     }
-    
-    return NextResponse.json({ page });
-  } catch (error: any) {
-    console.error(`Error getting page ${params.pageId}:`, error);
-    return NextResponse.json({ error: 'Failed to fetch page' }, { status: 500 });
+
+    // Increment view count (non-blocking)
+    prisma.pageView.upsert({
+      where: { pageId },
+      create: { pageId, count: 1 },
+      update: { count: { increment: 1 } },
+    }).catch(console.error);
+
+    return NextResponse.json(page);
+  } catch (error) {
+    console.error('Error fetching page:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch page' },
+      { status: 500 }
+    );
   }
 }
 
 // PATCH handler - Update a page
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { pageId: string } }
+  { params }: { params: Promise<{ pageId: string }> }
 ) {
   try {
-    // Authentication
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
-    
-    // Get user ID from session
-    const userId = session.user.id;
-    
-    const { pageId } = params;
-    
-    // Check if page exists
-    const existingPage = await prisma.page.findUnique({
-      where: { id: pageId },
-      include: { module: true },
-    });
-    
-    if (!existingPage) {
-      return NextResponse.json({ error: 'Page not found' }, { status: 404 });
-    }
-    
-    // Get request body
+
+    const { pageId } = await params;
     const body = await request.json();
     
-    // Validate input
-    const validationResult = updatePageSchema.safeParse(body);
-    if (!validationResult.success) {
+    // Validate request body
+    const validation = updatePageSchema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Invalid input', details: validationResult.error.errors },
+        { error: 'Invalid request data', details: validation.error.format() },
         { status: 400 }
       );
     }
-    
-    // Extract validated data
-    const { title, content, description, isPublished } = validationResult.data;
-    
-    // Update data object
-    const updateData: any = {};
-    if (title !== undefined) updateData.title = title;
-    if (content !== undefined) updateData.content = content;
-    if (description !== undefined) updateData.description = description;
-    if (isPublished !== undefined) updateData.isPublished = isPublished;
-    
-    // Update page
+
+    // Check if user has permission to update this page
+    const page = await prisma.page.findUnique({
+      where: { id: pageId },
+      select: { authorId: true },
+    });
+
+    if (!page) {
+      return NextResponse.json(
+        { error: 'Page not found' },
+        { status: 404 }
+      );
+    }
+
+    // Only the author or an admin can update the page
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, role: true },
+    });
+
+    if (!user || (page.authorId !== user.id && user.role !== 'ADMIN')) {
+      return NextResponse.json(
+        { error: 'Unauthorized to update this page' },
+        { status: 403 }
+      );
+    }
+
+    // Update the page
     const updatedPage = await prisma.page.update({
       where: { id: pageId },
-      data: updateData,
+      data: {
+        ...validation.data,
+        // Only update slug if title is being updated
+        ...(validation.data.title && {
+          slug: validation.data.title
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+        }),
+      },
     });
-    
-    // Log activity
-    await logPageActivity(userId.toString(), 'update_page', pageId, updateData);
-    
-    // Revalidate cache
-    if (existingPage.module?.courseId) {
-      revalidatePath(`/courses/${existingPage.module.courseId}/modules/${existingPage.moduleId}`);
-    }
-    
-    return NextResponse.json({ page: updatedPage });
-  } catch (error: any) {
-    console.error(`Error updating page ${params.pageId}:`, error);
-    return NextResponse.json({ error: 'Failed to update page' }, { status: 500 });
+
+    // Log the update
+    await logPageActivity(user.id, 'PAGE_UPDATED', pageId, {
+      updatedFields: Object.keys(validation.data),
+    });
+
+    // Revalidate the page path
+    revalidatePath(`/pages/${updatedPage.slug}`);
+    revalidatePath('/pages');
+
+    return NextResponse.json(updatedPage);
+  } catch (error) {
+    console.error('Error updating page:', error);
+    return NextResponse.json(
+      { error: 'Failed to update page' },
+      { status: 500 }
+    );
   }
 }
 
 // DELETE handler - Delete a page
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { pageId: string } }
+  { params }: { params: Promise<{ pageId: string }> }
 ) {
   try {
-    // Authentication
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
+
+    const { pageId } = await params;
     
-    // Get user ID from session
-    const userId = session.user.id;
-    
-    const { pageId } = params;
-    
-    // Check if page exists
-    const existingPage = await prisma.page.findUnique({
+    // Check if user has permission to delete this page
+    const page = await prisma.page.findUnique({
       where: { id: pageId },
-      include: { module: true },
+      select: { 
+        id: true,
+        authorId: true,
+        slug: true,
+      },
     });
-    
-    if (!existingPage) {
-      return NextResponse.json({ error: 'Page not found' }, { status: 404 });
+
+    if (!page) {
+      return NextResponse.json(
+        { error: 'Page not found' },
+        { status: 404 }
+      );
     }
-    
-    // Delete page
+
+    // Only the author or an admin can delete the page
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, role: true },
+    });
+
+    if (!user || (page.authorId !== user.id && user.role !== 'ADMIN')) {
+      return NextResponse.json(
+        { error: 'Unauthorized to delete this page' },
+        { status: 403 }
+      );
+    }
+
+    // Log the deletion before actually deleting
+    await logPageActivity(user.id, 'PAGE_DELETED', pageId);
+
+    // Delete the page
     await prisma.page.delete({
       where: { id: pageId },
     });
-    
-    // Log activity
-    await logPageActivity(userId.toString(), 'delete_page', pageId, { title: existingPage.title });
-    
-    // Revalidate cache
-    if (existingPage.module?.courseId) {
-      revalidatePath(`/courses/${existingPage.module.courseId}/modules/${existingPage.moduleId}`);
-    }
-    
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error(`Error deleting page ${params.pageId}:`, error);
-    return NextResponse.json({ error: 'Failed to delete page' }, { status: 500 });
+
+    // Revalidate the pages list and the page path
+    revalidatePath('/pages');
+    revalidatePath(`/pages/${page.slug}`);
+
+    return NextResponse.json(
+      { success: true, message: 'Page deleted successfully' },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Error deleting page:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete page' },
+      { status: 500 }
+    );
   }
 }

@@ -30,549 +30,402 @@ interface Quiz {
 
 interface Question {
   id: string;
-  questionText: string;
-  questionType: string;
+  type: 'multiple_choice' | 'true_false' | 'fill_blank' | 'short_answer' | 'matching';
+  question: string;
   points: number;
-  position: number;
-  explanation?: string | null;
   options?: {
     id: string;
-    optionText: string;
-    position: number;
+    text: string;
+    isCorrect?: boolean;
+    matchId?: string;
   }[];
-  correctAnswers?: any; // This will be type-specific
+  correctAnswer?: string | string[] | Record<string, string>;
 }
 
 interface UserAnswer {
   questionId: string;
-  answer: any; // Can be string, boolean, string[], or objects depending on question type
+  answer: any;
 }
 
-export default function QuizPage({ params }: { params: { courseId: string; quizId: string } }) {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const { courseId, quizId } = params;
-  
+interface QuizPageProps {
+  params: {
+    courseId: string;
+    quizId: string;
+  };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+export default function QuizPage({ 
+  params: paramsPromise 
+}: { 
+  params: Promise<{ courseId: string; quizId: string }>;
+}) {
+  const [params, setParams] = useState<{ courseId: string; quizId: string } | null>(null);
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState<'intro' | 'quiz' | 'results'>('intro');
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
-  const [answers, setAnswers] = useState<UserAnswer[]>([]);
-  const [quizResults, setQuizResults] = useState<any | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState<number | null>(null);
+  const [passed, setPassed] = useState<boolean | null>(null);
+  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   
-  // Timer functionality
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  // Load params when component mounts
   useEffect(() => {
-    if (currentStep === 'quiz' && timeRemaining !== null && timeRemaining > 0) {
-      const timer = setTimeout(() => {
-        setTimeRemaining(prev => (prev && prev > 0) ? prev - 1 : 0);
-      }, 1000);
-      
-      return () => clearTimeout(timer);
-    }
+    const loadParams = async () => {
+      try {
+        const resolvedParams = await paramsPromise;
+        setParams(resolvedParams);
+      } catch (err) {
+        console.error('Error loading params:', err);
+        setError('Failed to load quiz data');
+        setLoading(false);
+      }
+    };
+
+    loadParams();
+  }, [paramsPromise]);
+
+  // Load quiz data when params are available
+  useEffect(() => {
+    if (!params) return;
     
-    if (timeRemaining === 0) {
-      // Auto-submit when time expires
-      handleSubmitQuiz();
-    }
-  }, [timeRemaining, currentStep]);
-  
-  // Format time remaining
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-  
-  // Fetch quiz data
-  useEffect(() => {
-    const fetchQuizData = async () => {
-      if (!session?.user) return;
-      
+    const { courseId, quizId } = params;
+    
+    const fetchQuiz = async () => {
       try {
         setLoading(true);
+        setError(null);
+        
         const response = await fetch(`/api/courses/${courseId}/quizzes/${quizId}`);
         
         if (!response.ok) {
-          throw new Error('Failed to fetch quiz data');
+          throw new Error('Failed to load quiz');
         }
         
         const data = await response.json();
         setQuiz(data);
         
-        // Initialize time remaining if there's a time limit
+        // Initialize user answers
+        setUserAnswers(
+          data.questions.map((q: Question) => ({
+            questionId: q.id,
+            answer: q.type === 'multiple_choice' || q.type === 'true_false' 
+              ? '' 
+              : q.type === 'fill_blank' 
+                ? [] 
+                : q.type === 'matching'
+                  ? {}
+                  : ''
+          }))
+        );
+        
+        // Set time limit if exists
         if (data.timeLimit) {
-          setTimeRemaining(data.timeLimit * 60); // Convert minutes to seconds
+          setTimeLeft(data.timeLimit * 60); // Convert minutes to seconds
         }
+        
+        setStartTime(new Date());
       } catch (err) {
-        console.error('Error fetching quiz:', err);
-        setError('Failed to load quiz. Please try again later.');
+        console.error('Error loading quiz:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load quiz');
       } finally {
         setLoading(false);
       }
     };
     
-    if (session?.user) {
-      fetchQuizData();
-    } else if (status === 'unauthenticated') {
-      router.push('/login?callbackUrl=' + encodeURIComponent(`/courses/${courseId}/quizzes/${quizId}`));
-    }
-  }, [courseId, quizId, session, status, router]);
+    fetchQuiz();
+  }, [params]);
   
-  // Start the quiz
-  const handleStartQuiz = () => {
-    setCurrentStep('quiz');
-  };
-  
-  // Handle answer submission for current question
-  const handleAnswerSubmit = (questionId: string, answer: any) => {
-    const existingAnswerIndex = answers.findIndex(a => a.questionId === questionId);
+  // Timer effect
+  useEffect(() => {
+    if (!timeLeft || submitted) return;
     
-    if (existingAnswerIndex >= 0) {
-      // Update existing answer
-      const updatedAnswers = [...answers];
-      updatedAnswers[existingAnswerIndex] = { questionId, answer };
-      setAnswers(updatedAnswers);
-    } else {
-      // Add new answer
-      setAnswers([...answers, { questionId, answer }]);
-    }
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev === null || prev <= 0) {
+          clearInterval(timer);
+          handleSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [timeLeft, submitted]);
+  
+  const handleAnswerChange = (questionId: string, answer: any) => {
+    setUserAnswers(prev => 
+      prev.map(item => 
+        item.questionId === questionId ? { ...item, answer } : item
+      )
+    );
   };
   
-  // Navigate to next question
-  const handleNextQuestion = () => {
-    if (quiz && currentQuestionIndex < quiz.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }
-  };
-  
-  // Navigate to previous question
-  const handlePrevQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    }
-  };
-  
-  // Submit the entire quiz
-  const handleSubmitQuiz = async () => {
-    if (!quiz || !session?.user) return;
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    
+    if (!quiz || !startTime) return;
     
     try {
-      const response = await fetch(`/api/courses/${courseId}/quizzes/${quizId}/submit`, {
+      setSubmitting(true);
+      
+      const endTime = new Date();
+      const timeSpent = Math.floor((endTime.getTime() - startTime.getTime()) / 1000); // in seconds
+      
+      const response = await fetch(`/api/courses/${params?.courseId}/quizzes/${params?.quizId}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ answers }),
+        body: JSON.stringify({
+          answers: userAnswers,
+          timeSpent,
+        }),
       });
       
       if (!response.ok) {
         throw new Error('Failed to submit quiz');
       }
       
-      const results = await response.json();
-      setQuizResults(results);
-      setCurrentStep('results');
+      const result = await response.json();
       
-      // Show success message
-      if (results.isPassed) {
-        toast.success('Quiz completed successfully! You passed!');
+      setScore(result.score);
+      setPassed(result.passed);
+      setSubmitted(true);
+      
+      // Show success/error message
+      if (result.passed) {
+        toast.success(`Quiz submitted! Your score: ${result.score}%`);
       } else {
-        toast.error('Quiz completed. Unfortunately, you did not pass.');
+        toast.error(`Quiz submitted. Your score: ${result.score}% - You need ${quiz.passingScore}% to pass.`);
       }
+      
+      // Scroll to results
+      setTimeout(() => {
+        const resultsElement = document.getElementById('quiz-results');
+        if (resultsElement) {
+          resultsElement.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+      
     } catch (err) {
       console.error('Error submitting quiz:', err);
       toast.error('Failed to submit quiz. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
   
-  // Render question based on type
-  const renderQuestion = (question: Question) => {
-    const userAnswer = answers.find(a => a.questionId === question.id);
-    
-    switch (question.questionType) {
-      case 'MULTIPLE_CHOICE':
-        return (
-          <MultipleChoiceQuestion
-            id={question.id}
-            questionText={question.questionText}
-            questionType={question.questionType}
-            points={question.points}
-            options={question.options || []}
-            selectedOptionIds={userAnswer?.answer || []}
-            onAnswer={(answer) => handleAnswerSubmit(question.id, answer)}
-          />
-        );
-      case 'TRUE_FALSE':
-        return (
-          <TrueFalseQuestion
-            id={question.id}
-            questionText={question.questionText}
-            questionType={question.questionType}
-            points={question.points}
-            userAnswer={userAnswer?.answer}
-            onAnswer={(answer) => handleAnswerSubmit(question.id, answer)}
-          />
-        );
-      case 'FILL_BLANK':
-        return (
-          <FillBlankQuestion
-            id={question.id}
-            questionText={question.questionText}
-            questionType={question.questionType}
-            points={question.points}
-            userAnswer={userAnswer?.answer}
-            onAnswer={(answer) => handleAnswerSubmit(question.id, answer)}
-          />
-        );
-      case 'SHORT_ANSWER':
-        return (
-          <ShortAnswerQuestion
-            id={question.id}
-            questionText={question.questionText}
-            questionType={question.questionType}
-            points={question.points}
-            userAnswer={userAnswer?.answer}
-            onAnswer={(answer) => handleAnswerSubmit(question.id, answer)}
-          />
-        );
-      case 'MATCHING':
-        return (
-          <MatchingQuestion
-            id={question.id}
-            questionText={question.questionText}
-            questionType={question.questionType}
-            points={question.points}
-            items={question.options?.slice(0, question.options.length / 2) || []}
-            matches={question.options?.slice(question.options.length / 2) || []}
-            userPairs={userAnswer?.answer}
-            onAnswer={(answer) => handleAnswerSubmit(question.id, answer)}
-          />
-        );
-      default:
-        return <div>Unknown question type</div>;
-    }
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
   
-  // Loading state
-  if (loading) {
+  if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center py-10">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-          </div>
-          <p className="text-center text-gray-500">Loading quiz...</p>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
   
-  // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 py-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="text-center">
-              <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Quiz</h2>
-              <p className="text-gray-500 mb-6">{error}</p>
-              <Link 
-                href={`/courses/${courseId}`}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Course
-              </Link>
-            </div>
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center text-red-600 mb-4">
+            <AlertTriangle className="h-5 w-5 mr-2" />
+            <h1 className="text-xl font-semibold">Error Loading Quiz</h1>
           </div>
+          <p className="text-gray-700 mb-4">{error}</p>
+          <Link 
+            href={`/courses/${params?.courseId}`}
+            className="inline-flex items-center text-blue-600 hover:text-blue-800"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Course
+          </Link>
         </div>
       </div>
     );
   }
   
-  // No quiz data
   if (!quiz) {
     return (
-      <div className="min-h-screen bg-gray-50 py-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="text-center">
-              <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Quiz Not Found</h2>
-              <p className="text-gray-500 mb-6">The quiz you're looking for doesn't exist or you don't have access.</p>
-              <Link 
-                href={`/courses/${courseId}`}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Course
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Quiz intro screen
-  if (currentStep === 'intro') {
-    return (
-      <div className="min-h-screen bg-gray-50 py-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h1 className="text-xl font-semibold text-gray-900">{quiz.title}</h1>
-                <Link 
-                  href={`/courses/${courseId}`}
-                  className="text-sm text-indigo-600 hover:text-indigo-500 flex items-center"
-                >
-                  <ArrowLeft className="mr-1 h-4 w-4" />
-                  Back to Course
-                </Link>
-              </div>
-            </div>
-            
-            <div className="px-6 py-6">
-              {quiz.description && (
-                <p className="text-gray-600 mb-6">{quiz.description}</p>
-              )}
-              
-              <div className="bg-gray-50 rounded-lg p-5 mb-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Quiz Information</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                      <FileText className="h-5 w-5" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-900">Questions</p>
-                      <p className="text-sm text-gray-500">{quiz.questions.length} questions</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                      <Award className="h-5 w-5" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-900">Passing Score</p>
-                      <p className="text-sm text-gray-500">{quiz.passingScore}% to pass</p>
-                    </div>
-                  </div>
-                  
-                  {quiz.timeLimit && (
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                        <Clock className="h-5 w-5" />
-                      </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-900">Time Limit</p>
-                        <p className="text-sm text-gray-500">{quiz.timeLimit} minutes</p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                      <RefreshCw className="h-5 w-5" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-900">Attempts</p>
-                      <p className="text-sm text-gray-500">{quiz.attempts || 0}/{quiz.attemptsAllowed} attempts used</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Instructions */}
-              <div className="mb-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-2">Instructions</h2>
-                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-                  <li>Read each question carefully before answering.</li>
-                  <li>You can navigate between questions using the previous and next buttons.</li>
-                  {quiz.timeLimit && <li>You have {quiz.timeLimit} minutes to complete the quiz.</li>}
-                  <li>You need to score at least {quiz.passingScore}% to pass this quiz.</li>
-                  <li>Once you submit the quiz, you cannot change your answers.</li>
-                </ul>
-              </div>
-              
-              {/* Start button */}
-              <div className="flex justify-center">
-                <button
-                  onClick={handleStartQuiz}
-                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Start Quiz
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  // Quiz results screen
-  if (currentStep === 'results') {
-    return (
-      <div className="min-h-screen bg-gray-50 py-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="px-6 py-5 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h1 className="text-xl font-semibold text-gray-900">Quiz Results: {quiz.title}</h1>
-                <Link 
-                  href={`/courses/${courseId}`}
-                  className="text-sm text-indigo-600 hover:text-indigo-500 flex items-center"
-                >
-                  <ArrowLeft className="mr-1 h-4 w-4" />
-                  Back to Course
-                </Link>
-              </div>
-            </div>
-            
-            <div className="px-6 py-6">
-              <div className="text-center mb-8">
-                {quizResults.isPassed ? (
-                  <div>
-                    <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-4">
-                      <CheckCircle className="h-10 w-10 text-green-600" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Congratulations!</h2>
-                    <p className="text-gray-600">You've passed this quiz.</p>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 mb-4">
-                      <XCircle className="h-10 w-10 text-red-600" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Not Quite There</h2>
-                    <p className="text-gray-600">You didn't pass this quiz. Review your answers and try again.</p>
-                  </div>
-                )}
-              </div>
-              
-              <div className="bg-gray-50 rounded-lg p-5 mb-8">
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div className="p-4 bg-white rounded-lg shadow-sm">
-                    <p className="text-sm text-gray-500 mb-1">Your Score</p>
-                    <p className="text-3xl font-bold text-gray-900">{quizResults.score}%</p>
-                  </div>
-                  
-                  <div className="p-4 bg-white rounded-lg shadow-sm">
-                    <p className="text-sm text-gray-500 mb-1">Passing Score</p>
-                    <p className="text-3xl font-bold text-gray-900">{quiz.passingScore}%</p>
-                  </div>
-                  
-                  <div className="p-4 bg-white rounded-lg shadow-sm">
-                    <p className="text-sm text-gray-500 mb-1">Correct Answers</p>
-                    <p className="text-3xl font-bold text-gray-900">{quizResults.correctCount}/{quiz.questions.length}</p>
-                  </div>
-                  
-                  <div className="p-4 bg-white rounded-lg shadow-sm">
-                    <p className="text-sm text-gray-500 mb-1">Time Taken</p>
-                    <p className="text-3xl font-bold text-gray-900">{quizResults.timeTaken || 'N/A'}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex justify-center space-x-4">
-                <Link
-                  href={`/courses/${courseId}`}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  Back to Course
-                </Link>
-                
-                {!quizResults.isPassed && quiz.attempts < quiz.attemptsAllowed && (
-                  <Link
-                    href={`/courses/${courseId}/quizzes/${quizId}`}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
-                  >
-                    Try Again
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  // Quiz taking interface
-  return (
-    <div className="min-h-screen bg-gray-50 py-10">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Quiz header */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h1 className="text-lg font-semibold text-gray-900">{quiz.title}</h1>
-              {timeRemaining !== null && (
-                <div className="flex items-center text-gray-700">
-                  <Clock className="h-5 w-5 mr-2" />
-                  <span className="text-sm font-medium">{formatTime(timeRemaining)}</span>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="px-6 py-3 bg-gray-50 flex justify-between items-center">
-            <span className="text-sm text-gray-600">
-              Question {currentQuestionIndex + 1} of {quiz.questions.length}
-            </span>
-            
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-gray-500">
-                {answers.length}/{quiz.questions.length} answered
-              </span>
-              <div className="w-32 bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-indigo-600 h-2 rounded-full" 
-                  style={{ width: `${(answers.length / quiz.questions.length) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Current question */}
-        {quiz.questions.length > 0 && renderQuestion(quiz.questions[currentQuestionIndex])}
-        
-        {/* Navigation buttons */}
-        <div className="flex justify-between mt-6">
-          <button
-            onClick={handlePrevQuestion}
-            disabled={currentQuestionIndex === 0}
-            className={`inline-flex items-center px-4 py-2 border rounded-md text-sm font-medium ${currentQuestionIndex === 0 ? 'border-gray-300 text-gray-400 cursor-not-allowed' : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'}`}
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
+          <h1 className="text-xl font-semibold text-gray-800">Quiz not found</h1>
+          <p className="text-gray-600 mt-2">The requested quiz could not be found.</p>
+          <Link 
+            href={`/courses/${params?.courseId}`}
+            className="inline-flex items-center mt-4 text-blue-600 hover:text-blue-800"
           >
-            Previous
-          </button>
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Course
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-6">
+          <Link 
+            href={`/courses/${params?.courseId}`}
+            className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Course
+          </Link>
           
-          <div>
-            {currentQuestionIndex < quiz.questions.length - 1 ? (
-              <button
-                onClick={handleNextQuestion}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                onClick={handleSubmitQuiz}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700"
-              >
-                Submit Quiz
-              </button>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{quiz.title}</h1>
+              {quiz.description && (
+                <p className="text-gray-600 mt-1">{quiz.description}</p>
+              )}
+            </div>
+            
+            {timeLeft !== null && !submitted && (
+              <div className="flex items-center bg-yellow-50 text-yellow-800 px-4 py-2 rounded-md mt-4 sm:mt-0">
+                <Clock className="h-5 w-5 mr-2" />
+                <span className="font-medium">{formatTime(timeLeft)}</span>
+              </div>
             )}
           </div>
+          
+          {quiz.attemptsAllowed > 0 && (
+            <div className="text-sm text-gray-600 mb-6">
+              Attempts allowed: {quiz.attempts || 0} of {quiz.attemptsAllowed}
+            </div>
+          )}
         </div>
+        
+        {submitted ? (
+          <div id="quiz-results" className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div className="text-center">
+              {passed ? (
+                <div className="text-green-600 mb-4">
+                  <CheckCircle className="h-16 w-16 mx-auto mb-2" />
+                  <h2 className="text-2xl font-bold">Quiz Completed!</h2>
+                  <p className="text-lg">Your score: {score}%</p>
+                </div>
+              ) : (
+                <div className="text-red-600 mb-4">
+                  <XCircle className="h-16 w-16 mx-auto mb-2" />
+                  <h2 className="text-2xl font-bold">Quiz Completed</h2>
+                  <p className="text-lg">Your score: {score}% (Minimum passing score: {quiz.passingScore}%)</p>
+                </div>
+              )}
+              
+              <div className="mt-6">
+                <Link
+                  href={`/courses/${params?.courseId}`}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Back to Course
+                </Link>
+                
+                {!passed && quiz.attemptsAllowed > (quiz.attempts || 0) && (
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Try Again
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {quiz.questions.map((question, index) => {
+              const userAnswer = userAnswers.find(a => a.questionId === question.id)?.answer;
+              
+              return (
+                <div key={question.id} className="bg-white rounded-lg shadow-md p-6">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
+                      {index + 1}
+                    </div>
+                    <div className="ml-4 flex-1">
+                      <h3 className="text-lg font-medium text-gray-900 mb-4">
+                        {question.question} <span className="text-sm text-gray-500">({question.points} points)</span>
+                      </h3>
+                      
+                      <div className="mt-2">
+                        {question.type === 'multiple_choice' && (
+                          <MultipleChoiceQuestion
+                            question={question}
+                            value={userAnswer || ''}
+                            onChange={(value) => handleAnswerChange(question.id, value)}
+                            disabled={submitted}
+                          />
+                        )}
+                        
+                        {question.type === 'true_false' && (
+                          <TrueFalseQuestion
+                            question={question}
+                            value={userAnswer || ''}
+                            onChange={(value) => handleAnswerChange(question.id, value)}
+                            disabled={submitted}
+                          />
+                        )}
+                        
+                        {question.type === 'fill_blank' && (
+                          <FillBlankQuestion
+                            question={question}
+                            value={userAnswer || []}
+                            onChange={(value) => handleAnswerChange(question.id, value)}
+                            disabled={submitted}
+                          />
+                        )}
+                        
+                        {question.type === 'short_answer' && (
+                          <ShortAnswerQuestion
+                            question={question}
+                            value={userAnswer || ''}
+                            onChange={(value) => handleAnswerChange(question.id, value)}
+                            disabled={submitted}
+                          />
+                        )}
+                        
+                        {question.type === 'matching' && (
+                          <MatchingQuestion
+                            question={question}
+                            value={userAnswer || {}}
+                            onChange={(value) => handleAnswerChange(question.id, value)}
+                            disabled={submitted}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            
+            <div className="bg-white rounded-lg shadow-md p-6 flex justify-end">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? 'Submitting...' : 'Submit Quiz'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

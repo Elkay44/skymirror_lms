@@ -1,0 +1,174 @@
+/* eslint-disable */
+/**
+ * Prisma client extensions for models not directly defined in the schema
+ * This allows us to work with models that might be created at runtime or through migrations
+ */
+
+import { PrismaClient } from '@prisma/client';
+import { Forum, ForumPost, ForumPostLike, ForumPostComment } from './types/forum-types';
+
+// Base model type with common CRUD operations
+type BaseModel<T = any> = {
+  findMany: (args?: { 
+    where?: any;
+    include?: any;
+    select?: any;
+    orderBy?: any;
+    skip?: number;
+    take?: number;
+  }) => Promise<T[]>;
+  findUnique: (args: { 
+    where: { id: string };
+    include?: any;
+    select?: any;
+  }) => Promise<T | null>;
+  findFirst: (args?: any) => Promise<T | null>;
+  create: (args: { data: any }) => Promise<T>;
+  update: (args: { where: { id: string }; data: any }) => Promise<T>;
+  deleteItem: (args: { where: { id: string } }) => Promise<T>;
+  deleteMany?: (args?: any) => Promise<{ count: number }>;
+  count?: (args?: any) => Promise<number>;
+  createMany?: (args: { data: any[] }) => Promise<{ count: number }>;
+};
+
+// Extended Prisma client type with custom models
+export type ExtendedPrismaClient = PrismaClient & {
+  // Add $transaction with proper typing
+  $transaction: <T>(
+    fn: (prisma: Omit<ExtendedPrismaClient, '$transaction'>) => Promise<T>,
+    options?: { maxWait?: number; timeout?: number; isolationLevel?: string }
+  ) => Promise<T>;
+
+  // Core models
+  enrollment: BaseModel;
+  course: BaseModel;
+  courseVersion: BaseModel;
+  assignment: BaseModel;
+  assignmentSubmission: BaseModel;
+  note: BaseModel;
+  activityLog: BaseModel;
+  pageContentBlock: BaseModel;
+  project: BaseModel;
+  projectResource: BaseModel;
+  projectSubmission: BaseModel;
+  modulePrerequisite: BaseModel;
+  lessonPrerequisite: BaseModel;
+  discussionPost: BaseModel;
+  courseApprovalHistory: BaseModel;
+  assignmentResource: BaseModel;
+  criteriaLevel: BaseModel;
+  rubricitem: BaseModel;
+
+  // Forum models with specific types
+  forum: BaseModel<Forum>;
+  forumPost: BaseModel<ForumPost>;
+  forumPostLike: BaseModel<ForumPostLike>;
+  forumPostComment: BaseModel<ForumPostComment>;
+};
+
+// Helper functions for SQL clause formatting
+function formatValue(value: any): string {
+  if (value === null || value === undefined) return 'NULL';
+  if (typeof value === 'string') return `'${value.replace(/'/g, "''")}'`;
+  if (value instanceof Date) return `'${value.toISOString()}'`;
+  if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
+  return String(value);
+}
+
+function formatWhereClause(where: Record<string, any>): string {
+  if (!where) return '';
+  
+  const conditions = [];
+  for (const [key, value] of Object.entries(where)) {
+    if (value === undefined || value === null) continue;
+    
+    if (typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
+      // Handle nested conditions
+      for (const [op, val] of Object.entries(value)) {
+        switch (op) {
+          case 'equals': conditions.push(`"${key}" = ${formatValue(val)}`); break;
+          case 'not': conditions.push(`"${key}" != ${formatValue(val)}`); break;
+          case 'in': 
+            const values = Array.isArray(val) ? val : [val];
+            conditions.push(`"${key}" IN (${values.map(v => formatValue(v)).join(', ')})`);
+            break;
+          case 'notIn':
+            const notInValues = Array.isArray(val) ? val : [val];
+            conditions.push(`"${key}" NOT IN (${notInValues.map(v => formatValue(v)).join(', ')})`);
+            break;
+          case 'lt': conditions.push(`"${key}" < ${formatValue(val)}`); break;
+          case 'lte': conditions.push(`"${key}" <= ${formatValue(val)}`); break;
+          case 'gt': conditions.push(`"${key}" > ${formatValue(val)}`); break;
+          case 'gte': conditions.push(`"${key}" >= ${formatValue(val)}`); break;
+          case 'contains': conditions.push(`"${key}"::text LIKE '%${String(val).replace(/'/g, "''")}%'`); break;
+          case 'startsWith': conditions.push(`"${key}"::text LIKE '${String(val).replace(/'/g, "''")}%'`); break;
+          case 'endsWith': conditions.push(`"${key}"::text LIKE '%${String(val).replace(/'/g, "''")}'`); break;
+        }
+      }
+    } else {
+      // Simple equality check
+      conditions.push(`"${key}" = ${formatValue(value)}`);
+    }
+  }
+  
+  return conditions.join(' AND ');
+}
+
+function formatInsertClause(data: Record<string, any>): string {
+  const columns = Object.keys(data).map(k => `"${k}"`).join(', ');
+  const values = Object.values(data).map(formatValue).join(', ');
+  return `(${columns}) VALUES (${values})`;
+}
+
+function formatUpdateClause(data: Record<string, any>): string {
+  return Object.entries(data)
+    .map(([key, value]) => `"${key}" = ${formatValue(value)}`)
+    .join(', ');
+}
+
+function formatOrderByClause(orderBy: Record<string, any> | Array<Record<string, any>>): string {
+  if (!orderBy) return '';
+  
+  const orders = Array.isArray(orderBy) 
+    ? orderBy.map(o => formatSingleOrderBy(o))
+    : [formatSingleOrderBy(orderBy)];
+    
+  return orders.length > 0 ? `ORDER BY ${orders.join(', ')}` : '';
+}
+
+function formatSingleOrderBy(orderBy: Record<string, any>): string {
+  const [field, direction] = Object.entries(orderBy)[0];
+  const dir = String(direction).toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+  return `"${field}" ${dir}`;
+}
+
+/**
+ * Extend the Prisma client with custom models
+ */
+export function extendPrismaClient(prismaClient: PrismaClient): ExtendedPrismaClient {
+  // Add forum model
+  (prismaClient as any).forum = {
+    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "Forum" WHERE id = ${args.where.id} LIMIT 1`,
+    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "Forum" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
+    findFirst: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "Forum" ${args?.where ? `WHERE ${formatWhereClause(args.where)}` : ''} LIMIT 1`,
+    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "Forum" ${formatInsertClause(args.data)} RETURNING *`,
+    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "Forum" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
+    deleteItem: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "Forum" WHERE id = ${args.where.id} RETURNING *`,
+    count: (args: any) => (prismaClient as any).$queryRaw`SELECT COUNT(*) FROM "Forum" ${args?.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
+  };
+
+  // Add forumPost model
+  (prismaClient as any).forumPost = {
+    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ForumPost" WHERE id = ${args.where.id} LIMIT 1`,
+    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ForumPost" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
+    findFirst: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ForumPost" ${args?.where ? `WHERE ${formatWhereClause(args.where)}` : ''} LIMIT 1`,
+    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "ForumPost" ${formatInsertClause(args.data)} RETURNING *`,
+    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "ForumPost" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
+    deleteItem: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "ForumPost" WHERE id = ${args.where.id} RETURNING *`,
+    count: (args: any) => (prismaClient as any).$queryRaw`SELECT COUNT(*) FROM "ForumPost" ${args?.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
+  };
+
+  // Add other models here following the same pattern...
+
+  return prismaClient as ExtendedPrismaClient;
+}

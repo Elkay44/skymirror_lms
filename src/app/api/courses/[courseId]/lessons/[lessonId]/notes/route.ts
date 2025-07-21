@@ -1,13 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 // GET all notes for a specific lesson
 export async function GET(
-  request: Request,
-  { params }: { params: { courseId: string; lessonId: string } }
-) {
+  request: NextRequest,
+  { params }: { params: Promise<{ courseId: string; lessonId: string }> }
+): Promise<Response> {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -16,7 +16,7 @@ export async function GET(
 
     // Convert userId to integer
     const userId = parseInt(session.user.id);
-    const { courseId, lessonId } = params;
+    const { courseId, lessonId } = await params;
 
     // Verify user has access to this course
     const enrollment = await prisma.enrollment.findFirst({
@@ -50,9 +50,9 @@ export async function GET(
 
 // POST create a new note for a lesson
 export async function POST(
-  request: Request,
-  { params }: { params: { courseId: string; lessonId: string } }
-) {
+  request: NextRequest,
+  { params }: { params: Promise<{ courseId: string; lessonId: string }> }
+): Promise<Response> {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
@@ -61,7 +61,7 @@ export async function POST(
 
     // Convert userId to integer
     const userId = parseInt(session.user.id);
-    const { courseId, lessonId } = params;
+    const { courseId, lessonId } = await params;
     const { content, timestamp } = await request.json();
 
     if (!content || content.trim() === '') {

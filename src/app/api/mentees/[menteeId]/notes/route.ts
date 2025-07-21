@@ -1,107 +1,147 @@
+/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
-export async function PUT(request: NextRequest, { params }: { params: { menteeId: string } }) {
+// PUT /api/mentees/[menteeId]/notes - Update mentee notes
+export async function PUT(
+  request: NextRequest, 
+  { params }: { params: Promise<{ menteeId: string }> }
+) {
   try {
     // Get the authenticated user session
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' }, 
+        { status: 401 }
+      );
     }
+    
+    // Extract menteeId from params
+    const { menteeId } = await params;
     
     // Check if the user is a mentor
-    // This would typically check the user's role in your database
-    // For now, we'll simulate this check
-    const isMentor = true; // Replace with actual role check
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+    
+    const isMentor = user?.role === 'MENTOR' || user?.role === 'ADMIN';
     
     if (!isMentor) {
-      return NextResponse.json({ error: 'Access denied. Only mentors can update mentee notes.' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Access denied. Only mentors can update mentee notes.' }, 
+        { status: 403 }
+      );
     }
     
-    const { menteeId } = params;
+    // Parse and validate request body
     const { notes } = await request.json();
     
     if (typeof notes !== 'string') {
-      return NextResponse.json({ error: 'Invalid notes format' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid notes format' }, 
+        { status: 400 }
+      );
     }
     
-    // Here you would save the notes to your database
-    // For demonstration, we'll just simulate a successful save
-    
-    // Example database update:
-    // await prisma.mentorNotes.upsert({
-    //   where: {
-    //     mentorId_menteeId: {
-    //       mentorId: session.user.id,
-    //       menteeId
-    //     }
-    //   },
-    //   update: {
-    //     notes
-    //   },
-    //   create: {
-    //     mentorId: session.user.id,
-    //     menteeId,
-    //     notes
-    //   }
-    // });
-    
-    return NextResponse.json({
-      success: true,
-      message: 'Notes updated successfully'
+    // Update or create mentee notes
+    const updatedNotes = await prisma.menteeNotes.upsert({
+      where: { 
+        menteeId_mentorId: {
+          menteeId,
+          mentorId: session.user.id
+        }
+      },
+      update: { notes },
+      create: {
+        menteeId,
+        mentorId: session.user.id,
+        notes
+      },
+      include: {
+        mentor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
     });
     
+    return NextResponse.json(updatedNotes);
   } catch (error) {
     console.error('Error updating mentee notes:', error);
-    return NextResponse.json({ error: 'Failed to update notes' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update mentee notes' },
+      { status: 500 }
+    );
   }
 }
 
-export async function GET(request: NextRequest, { params }: { params: { menteeId: string } }) {
+// GET /api/mentees/[menteeId]/notes - Get mentee notes
+export async function GET(
+  request: NextRequest, 
+  { params }: { params: Promise<{ menteeId: string }> }
+) {
   try {
     // Get the authenticated user session
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' }, 
+        { status: 401 }
+      );
     }
     
-    // Check if the user is a mentor
-    // This would typically check the user's role in your database
-    const isMentor = true; // Replace with actual role check
+    // Extract menteeId from params
+    const { menteeId } = await params;
     
-    if (!isMentor) {
-      return NextResponse.json({ error: 'Access denied. Only mentors can access mentee notes.' }, { status: 403 });
-    }
-    
-    const { menteeId } = params;
-    
-    // Here you would fetch the notes from your database
-    // For demonstration, we'll just return sample notes
-    
-    // Example database query:
-    // const mentorNotes = await prisma.mentorNotes.findUnique({
-    //   where: {
-    //     mentorId_menteeId: {
-    //       mentorId: session.user.id,
-    //       menteeId
-    //     }
-    //   }
-    // });
-    
-    // const notes = mentorNotes?.notes || '';
-    
-    // For demonstration:
-    const notes = 'Sample mentee notes. The student is showing great progress in React and NextJS.';
-    
-    return NextResponse.json({
-      success: true,
-      notes
+    // Check if the user is a mentor or the mentee themselves
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
     });
     
+    const isMentor = user?.role === 'MENTOR' || user?.role === 'ADMIN';
+    const isMentee = session.user.id === menteeId;
+    
+    if (!isMentor && !isMentee) {
+      return NextResponse.json(
+        { error: 'Access denied. Only mentors or the mentee can view these notes.' }, 
+        { status: 403 }
+      );
+    }
+    
+    // Get mentee notes
+    const notes = await prisma.menteeNotes.findMany({
+      where: { 
+        menteeId,
+        ...(isMentee ? { isVisibleToMentee: true } : {})
+      },
+      include: {
+        mentor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
+    
+    return NextResponse.json(notes);
   } catch (error) {
     console.error('Error fetching mentee notes:', error);
-    return NextResponse.json({ error: 'Failed to fetch notes' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch mentee notes' },
+      { status: 500 }
+    );
   }
 }

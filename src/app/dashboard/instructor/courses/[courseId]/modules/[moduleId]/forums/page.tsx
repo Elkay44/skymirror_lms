@@ -20,135 +20,171 @@ interface Forum {
   }
 }
 
-export default function ModuleForumsPage({ 
-  params 
-}: { 
-  params: { courseId: string; moduleId: string } 
-}) {
-  const router = useRouter();
-  const { courseId, moduleId } = params;
-  
-  const [isModalOpen, setIsModalOpen] = useState(false);
+interface ModuleForumsPageProps {
+  params: Promise<{ courseId: string; moduleId: string }>;
+}
+
+export default function ModuleForumsPage({ params: paramsPromise }: ModuleForumsPageProps) {
+  const [params, setParams] = useState<{ courseId: string; moduleId: string } | null>(null);
   const [forums, setForums] = useState<Forum[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [moduleTitle, setModuleTitle] = useState('');
-  
-  const fetchForums = async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      // First fetch the module to get its title
-      const moduleResponse = await fetch(`/api/courses/${courseId}/modules/${moduleId}`);
-      if (!moduleResponse.ok) {
-        throw new Error('Failed to load module information');
-      }
-      const moduleData = await moduleResponse.json();
-      setModuleTitle(moduleData.module.title);
-      
-      // Then fetch the forums
-      const forumsResponse = await fetch(`/api/courses/${courseId}/modules/${moduleId}/forums`);
-      if (!forumsResponse.ok) {
-        throw new Error('Failed to load forums');
-      }
-      
-      const data = await forumsResponse.json();
-      setForums(data.forums);
-    } catch (err) {
-      console.error('Error fetching module forums:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred while loading forums');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const router = useRouter();
+
+  // Load params when component mounts
   useEffect(() => {
-    fetchForums();
-  }, [courseId, moduleId]);
-  
-  return (
-    <div className="container py-10 max-w-5xl">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Module Forums</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage discussion forums for module: {moduleTitle || 'Loading...'}
-          </p>
-        </div>
+    const loadParams = async () => {
+      try {
+        const resolvedParams = await paramsPromise;
+        setParams(resolvedParams);
+      } catch (err) {
+        console.error('Error loading params:', err);
+        setError('Failed to load module data');
+        setLoading(false);
+      }
+    };
+
+    loadParams();
+  }, [paramsPromise]);
+
+  // Fetch forums when params are available
+  useEffect(() => {
+    if (!params) return;
+    
+    const { courseId, moduleId } = params;
+    
+    const fetchForums = async () => {
+      try {
+        setLoading(true);
+        setError(null);
         
-        <Button onClick={() => setIsModalOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Add Forum
+        const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/forums`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to load forums');
+        }
+        
+        const data = await response.json();
+        setForums(data);
+      } catch (err) {
+        console.error('Error loading forums:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load forums');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchForums();
+  }, [params]);
+
+  const handleForumCreated = (newForum: Forum) => {
+    setForums(prev => [newForum, ...prev]);
+    setIsCreateModalOpen(false);
+  };
+
+  const navigateToForum = (forumId: string) => {
+    if (!params) return;
+    router.push(`/dashboard/instructor/courses/${params.courseId}/modules/${params.moduleId}/forums/${forumId}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-md bg-red-50 p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <AlertTriangle className="h-5 w-5 text-red-400" aria-hidden="true" />
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-red-800">Error loading forums</h3>
+            <div className="mt-2 text-sm text-red-700">
+              <p>{error}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight">Module Forums</h1>
+        <Button onClick={() => setIsCreateModalOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          New Forum
         </Button>
       </div>
-      
-      {isLoading ? (
-        <div className="flex justify-center items-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : error ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <AlertTriangle className="h-10 w-10 text-amber-500 mb-4" />
-          <h3 className="text-lg font-medium">Something went wrong</h3>
-          <p className="text-muted-foreground mt-2 max-w-md">{error}</p>
-          <Button variant="outline" onClick={fetchForums} className="mt-4">
-            Try Again
-          </Button>
-        </div>
-      ) : forums.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center border rounded-lg bg-muted/20">
-          <MessageSquare className="h-10 w-10 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium">No forums yet</h3>
-          <p className="text-muted-foreground mt-2 max-w-md">
-            Create a forum to allow discussions specific to this module.
-          </p>
-          <Button onClick={() => setIsModalOpen(true)} className="mt-4">
-            <Plus className="mr-2 h-4 w-4" /> Create Forum
-          </Button>
-        </div>
+
+      {forums.length === 0 ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <MessageSquare className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No forums</h3>
+              <p className="mt-1 text-sm text-gray-500">Get started by creating a new forum.</p>
+              <div className="mt-6">
+                <Button onClick={() => setIsCreateModalOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Forum
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {forums.map((forum) => (
-            <Card key={forum.id} className="overflow-hidden">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  {forum.title}
-                  {!forum.isActive && (
-                    <span className="text-xs font-normal py-1 px-2 bg-amber-100 text-amber-800 rounded-full">
-                      Inactive
-                    </span>
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  {forum.description || 'No description provided'}
-                </CardDescription>
+            <Card 
+              key={forum.id} 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => navigateToForum(forum.id)}
+            >
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">{forum.title}</CardTitle>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    forum.isActive 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {forum.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+                {forum.description && (
+                  <CardDescription className="line-clamp-2">
+                    {forum.description}
+                  </CardDescription>
+                )}
               </CardHeader>
               <CardContent>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  {forum._count.posts} posts
+                <div className="flex items-center text-sm text-gray-500">
+                  <MessageSquare className="mr-1.5 h-4 w-4 flex-shrink-0" />
+                  <span>{forum._count.posts} posts</span>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between bg-muted/30 py-3 text-xs text-muted-foreground border-t">
-                <span>Created {formatDistanceToNow(new Date(forum.createdAt), { addSuffix: true })}</span>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/forums/${forum.id}`)}
-                >
-                  View Forum
-                </Button>
+              <CardFooter className="text-xs text-gray-500">
+                Created {formatDistanceToNow(new Date(forum.createdAt), { addSuffix: true })}
               </CardFooter>
             </Card>
           ))}
         </div>
       )}
-      
+
       <CreateForumModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        courseId={courseId}
-        moduleId={moduleId}
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        courseId={params?.courseId || ''}
+        moduleId={params?.moduleId || ''}
+        onSuccess={handleForumCreated}
       />
     </div>
   );

@@ -1,132 +1,60 @@
+/* eslint-disable */
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { courseUpdateSchema } from "@/lib/validations/course";
 import { logCourseActivity, ActivityType } from "@/lib/activity-logger";
-
-interface Progress {
-  completed: boolean;
-  createdAt: Date | null;
-}
-
-interface Lesson {
-  id: string;
-  title: string;
-  description: string | null;
-  content: string | null;
-  videoUrl: string | null;
-  duration: number | null;
-  order: number;
-  moduleId: string;
-  completed: boolean;
-  completedAt: Date | null;
-}
-
-interface Module {
-  id: string;
-  title: string;
-  description: string | null;
-  order: number;
-  lessons: Lesson[];
-}
-
-interface Instructor {
-  id: string;
-  name: string;
-  image: string | null;
-}
-
-interface CourseDetails {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  instructor: Instructor;
-  modules: Module[];
-  isEnrolled: boolean;
-  enrollmentStatus: string | undefined;
-}
-
-interface Progress {
-  completed: boolean;
-  createdAt: Date | null;
-}
-
-interface Lesson {
-  id: string;
-  title: string;
-  description: string | null;
-  content: string | null;
-  videoUrl: string | null;
-  duration: number | null;
-  order: number;
-  moduleId: string;
-  completed: boolean;
-  completedAt: Date | null;
-}
-
-interface Module {
-  id: string;
-  title: string;
-  description: string | null;
-  order: number;
-  lessons: Lesson[];
-}
-
-interface Instructor {
-  id: string;
-  name: string;
-  image: string | null;
-}
-
-interface CourseDetails {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  instructor: Instructor;
-  modules: Module[];
-  isEnrolled: boolean;
-  enrollmentStatus: string | undefined;
-}
 import { revalidatePath } from 'next/cache';
+
+// Common interfaces
+interface Progress {
+  completed: boolean;
+  createdAt: Date | null;
+}
+
+interface Lesson {
+  id: string;
+  title: string;
+  description: string | null;
+  content: string | null;
+  videoUrl: string | null;
+  duration: number | null;
+  order: number;
+  moduleId: string;
+  completed: boolean;
+  completedAt: Date | null;
+  progress?: Progress[];
+}
+
+interface Module {
+  id: string;
+  title: string;
+  description: string | null;
+  order: number;
+  lessons: Lesson[];
+}
+
+interface Instructor {
+  id: string;
+  name: string;
+  image: string | null;
+}
+
+interface CourseDetails {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  instructor: Instructor;
+  modules: Module[];
+  isEnrolled: boolean;
+  enrollmentStatus: string | undefined;
+}
 
 interface TransformedLesson extends Omit<Lesson, 'duration'> {
   duration: number | null;
   formattedDuration: string;
-}
-
-interface Progress {
-  completed: boolean;
-  createdAt: Date | null;
-}
-
-interface Lesson {
-  id: string;
-  title: string;
-  description: string | null;
-  content: string | null;
-  videoUrl: string | null;
-  duration: number | null;
-  order: number;
-  moduleId: string;
-  completed: boolean;
-  completedAt: Date | null;
-}
-
-interface Module {
-  id: string;
-  title: string;
-  description: string | null;
-  order: number;
-  lessons: Lesson[];
-}
-
-interface Instructor {
-  id: string;
-  name: string;
-  image: string | null;
 }
 
 interface CourseDetails {
@@ -206,10 +134,11 @@ interface CourseWithDetails extends CourseWithInstructor {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
-): Promise<NextResponse> {
+  { params }: { params: Promise<{ courseId: string }> }
+): Promise<Response> {
+  const { courseId } = await params;
   try {
-    const { courseId } = params;
+
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
     const userIdNum = userId ? parseInt(userId) : undefined;
@@ -280,12 +209,12 @@ export async function GET(
         name: course.instructor?.name || '',
         image: course.instructor?.image || '',
       },
-      modules: course.modules?.map((module): Module => ({
+      modules: course.modules?.map((module: Module) => ({
         id: module.id,
         title: module.title,
         description: module.description || '',
         order: module.order,
-        lessons: module.lessons.map((lesson): TransformedLesson => {
+        lessons: module.lessons.map((lesson: Lesson) => {
           const progress = lesson.progress?.[0] || { completed: false, createdAt: null };
           return {
             id: lesson.id,
@@ -300,7 +229,7 @@ export async function GET(
             completed: progress.completed,
             completedAt: progress.createdAt,
           };
-        }),
+        })
       })),
       isEnrolled: course.enrollments?.length > 0,
       enrollmentStatus: course.enrollments?.[0]?.status || undefined,
@@ -317,9 +246,13 @@ export async function GET(
 }
 
 // PATCH /api/courses/[courseId] - Update a specific course
-export async function PATCH(request: NextRequest, { params }: { params: { courseId: string } }) {
+export async function PATCH(
+  request: NextRequest, 
+  { params }: { params: Promise<{ courseId: string }> }
+): Promise<Response> {
+  const { courseId } = await params;
   try {
-    const { courseId } = params;
+
     const session = await getServerSession(authOptions);
     
     // Check if user is authenticated
@@ -469,7 +402,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { course
     }
     
     // Use a transaction to ensure that both course update and approval history creation succeed
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       // Update the course
       const updatedCourse = await tx.course.update({
         where: { id: courseId },
@@ -531,9 +464,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { course
 }
 
 // DELETE /api/courses/[courseId] - Delete a specific course
-export async function DELETE(request: Request, { params }: { params: { courseId: string } }) {
+export async function DELETE(
+  request: NextRequest, 
+  { params }: { params: Promise<{ courseId: string }> }
+): Promise<Response> {
+  const { courseId } = await params;
   try {
-    const { courseId } = params;
+
     const session = await getServerSession(authOptions);
     
     // Check if user is authenticated

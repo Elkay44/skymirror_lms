@@ -7,12 +7,12 @@ import dynamic from 'next/dynamic';
 // Dynamically import client-side components with named exports
 const Sidebar = dynamic(
   () => import('@/components/admin/Sidebar').then((mod) => mod.Sidebar),
-  { ssr: false }
+  { ssr: true }
 );
 
 const MainNav = dynamic(
   () => import('@/components/admin/MainNav').then((mod) => mod.MainNav),
-  { ssr: false }
+  { ssr: true }
 );
 
 interface AdminLayoutProps {

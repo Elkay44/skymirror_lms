@@ -216,3 +216,13 @@ export function getDefaultTTL(type: CacheType): number {
 }
 
 export const CACHE_TTL = DEFAULT_TTL;
+
+// Export a combined cache object for named imports
+export const cache = {
+  get: getFromCache,
+  set: setCache,
+  invalidate: invalidateCache,
+  invalidateByType: invalidateCacheByType,
+  getOrSet: getOrSetCache,
+  createKey: createCacheKey,
+};

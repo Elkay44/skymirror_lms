@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 
     // Check if user is an admin
     const user = await prisma.user.findUnique({
-      where: { id: Number(session.user.id) },
+      where: { id: session.user.id },
       select: { role: true }
     });
 
@@ -38,295 +38,202 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Parse query parameters
-    const url = new URL(req.url);
-    const searchParams = Object.fromEntries(url.searchParams.entries());
+    // Parse and validate query parameters
+    const { searchParams } = new URL(req.url);
+    const queryParams = Object.fromEntries(searchParams.entries());
     
-    const { timeframe, compareWithPrevious } = analyticsQuerySchema.parse(searchParams);
+    const { timeframe, compareWithPrevious } = analyticsQuerySchema.parse(queryParams);
 
-    // Calculate date ranges based on timeframe
+    // Calculate date ranges
     const now = new Date();
-    let startDate = new Date();
-    let compareStartDate = new Date();
-    let compareEndDate = new Date();
+    let startDate: Date;
+    let previousPeriodStartDate: Date | null = null;
 
     switch (timeframe) {
       case 'last7days':
+        startDate = new Date(now);
         startDate.setDate(now.getDate() - 7);
-        compareStartDate.setDate(now.getDate() - 14);
-        compareEndDate.setDate(now.getDate() - 7);
+        if (compareWithPrevious) {
+          previousPeriodStartDate = new Date(startDate);
+          previousPeriodStartDate.setDate(startDate.getDate() - 7);
+        }
         break;
       case 'last30days':
+        startDate = new Date(now);
         startDate.setDate(now.getDate() - 30);
-        compareStartDate.setDate(now.getDate() - 60);
-        compareEndDate.setDate(now.getDate() - 30);
+        if (compareWithPrevious) {
+          previousPeriodStartDate = new Date(startDate);
+          previousPeriodStartDate.setDate(startDate.getDate() - 30);
+        }
         break;
       case 'last90days':
+        startDate = new Date(now);
         startDate.setDate(now.getDate() - 90);
-        compareStartDate.setDate(now.getDate() - 180);
-        compareEndDate.setDate(now.getDate() - 90);
+        if (compareWithPrevious) {
+          previousPeriodStartDate = new Date(startDate);
+          previousPeriodStartDate.setDate(startDate.getDate() - 90);
+        }
         break;
-      case 'allTime':
-        startDate = new Date(2000, 0, 1); // Set to a very old date
-        compareWithPrevious = false; // No comparison for all time
-        break;
+      default: // allTime
+        startDate = new Date(0); // Unix epoch start
     }
 
-    // Get current period metrics
-    const [
-      totalCourses,
-      newCourses,
-      publishedCourses,
-      pendingApprovalCourses,
-      totalEnrollments,
-      newEnrollments,
-      avgCompletionRate,
-      avgRating,
-      mostPopularCategories,
-      statusDistribution
-    ] = await Promise.all([
-      // Total active courses
-      prisma.course.count({
-        where: {
-          status: { not: 'ARCHIVED' },
-        }
-      }),
-      
-      // New courses created in the period
-      prisma.course.count({
-        where: {
-          createdAt: {
-            gte: startDate,
-            lte: now
-          }
-        }
-      }),
-      
-      // Published courses
-      prisma.course.count({
-        where: {
-          status: 'PUBLISHED',
-          isPublished: true
-        }
-      }),
-      
-      // Courses pending approval
-      prisma.course.count({
-        where: {
-          status: 'PENDING_APPROVAL'
-        }
-      }),
-      
-      // Total enrollments
-      prisma.enrollment.count(),
-      
-      // New enrollments in the period
-      prisma.enrollment.count({
-        where: {
-          enrolledAt: {
-            gte: startDate,
-            lte: now
-          }
-        }
-      }),
-      
-      // Average completion rate
-      prisma.enrollment.aggregate({
-        where: {
-          enrolledAt: { lte: now }
-        },
-        _avg: {
-          completionPercentage: true
-        }
-      }).then(result => result._avg.completionPercentage || 0),
-      
-      // Average rating
-      prisma.courseReview.aggregate({
-        _avg: {
-          rating: true
-        }
-      }).then(result => result._avg.rating || 0),
-      
-      // Most popular categories
-      prisma.course.groupBy({
-        by: ['category'],
-        _count: {
-          id: true
-        },
-        orderBy: {
-          _count: {
-            id: 'desc'
-          }
-        },
-        take: 5
-      }).then(results => results.map(item => ({
-        category: item.category,
-        count: item._count.id
-      }))),
-      
-      // Status distribution
-      prisma.course.groupBy({
-        by: ['status'],
-        _count: {
-          id: true
-        }
-      }).then(results => {
-        // Convert to an object for easier frontend consumption
-        const distribution: Record<string, number> = {};
-        results.forEach(item => {
-          distribution[item.status] = item._count.id;
-        });
-        return distribution;
-      })
-    ]);
-
-    // Get comparison data if requested
-    let comparisonData = null;
-    if (compareWithPrevious && timeframe !== 'allTime') {
-      const [
-        prevNewCourses,
-        prevNewEnrollments,
-        prevAvgCompletionRate,
-        prevAvgRating
-      ] = await Promise.all([
-        // New courses in previous period
-        prisma.course.count({
-          where: {
-            createdAt: {
-              gte: compareStartDate,
-              lte: compareEndDate
-            }
-          }
-        }),
-        
-        // New enrollments in previous period
-        prisma.enrollment.count({
-          where: {
-            enrolledAt: {
-              gte: compareStartDate,
-              lte: compareEndDate
-            }
-          }
-        }),
-        
-        // Average completion rate in previous period
-        prisma.enrollment.aggregate({
-          where: {
-            enrolledAt: { lte: compareEndDate }
-          },
-          _avg: {
-            completionPercentage: true
-          }
-        }).then(result => result._avg.completionPercentage || 0),
-        
-        // Average rating in previous period
-        prisma.courseReview.aggregate({
-          where: {
-            createdAt: {
-              lte: compareEndDate
-            }
-          },
-          _avg: {
-            rating: true
-          }
-        }).then(result => result._avg.rating || 0)
-      ]);
-
-      comparisonData = {
-        newCourses: {
-          current: newCourses,
-          previous: prevNewCourses,
-          percentChange: prevNewCourses > 0
-            ? ((newCourses - prevNewCourses) / prevNewCourses) * 100
-            : null
-        },
-        newEnrollments: {
-          current: newEnrollments,
-          previous: prevNewEnrollments,
-          percentChange: prevNewEnrollments > 0
-            ? ((newEnrollments - prevNewEnrollments) / prevNewEnrollments) * 100
-            : null
-        },
-        avgCompletionRate: {
-          current: avgCompletionRate,
-          previous: prevAvgCompletionRate,
-          percentChange: prevAvgCompletionRate > 0
-            ? ((avgCompletionRate - prevAvgCompletionRate) / prevAvgCompletionRate) * 100
-            : null
-        },
-        avgRating: {
-          current: avgRating,
-          previous: prevAvgRating,
-          percentChange: prevAvgRating > 0
-            ? ((avgRating - prevAvgRating) / prevAvgRating) * 100
-            : null
-        }
-      };
-    }
-
-    // Get recent activity for courses
-    const recentActivity = await prisma.activityLog.findMany({
+    // Get course enrollments for the current period
+    const currentPeriodEnrollments = await prisma.enrollment.findMany({
       where: {
-        resourceType: 'COURSE',
-        createdAt: {
+        enrolledAt: {
           gte: startDate,
-          lte: now
-        }
+          lte: now,
+        },
       },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      take: 10,
-      include: {
-        user: {
+      select: {
+        id: true,
+        enrolledAt: true,
+        course: {
           select: {
             id: true,
-            name: true,
-            image: true
-          }
-        }
-      }
+            title: true,
+            category: true,
+          },
+        },
+      },
     });
 
-    // Return the analytics data
-    return NextResponse.json({
-      timeframe,
-      metrics: {
-        totalCourses,
-        newCourses,
-        publishedCourses,
-        pendingApprovalCourses,
-        totalEnrollments,
-        newEnrollments,
-        avgCompletionRate,
-        avgRating
-      },
-      insights: {
-        mostPopularCategories,
-        statusDistribution
-      },
-      comparison: comparisonData,
-      recentActivity: recentActivity.map(activity => ({
-        id: activity.id,
-        action: activity.action,
-        resourceId: activity.resourceId,
-        user: activity.user,
-        timestamp: activity.createdAt,
-        details: activity.details ? JSON.parse(activity.details) : null
-      }))
-    });
-  } catch (error) {
-    console.error('[ADMIN_ANALYTICS_ERROR]', error);
-    
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      );
+    // Get course enrollments for the previous period if comparison is requested
+    let previousPeriodEnrollments = [];
+    if (compareWithPrevious && previousPeriodStartDate) {
+      previousPeriodEnrollments = await prisma.enrollment.findMany({
+        where: {
+          enrolledAt: {
+            gte: previousPeriodStartDate,
+            lt: startDate,
+          },
+        },
+        select: {
+          id: true,
+          courseId: true,
+        },
+      });
     }
+
+    // Process enrollment data
+    const courseStats = new Map();
     
+    // Process current period enrollments
+    currentPeriodEnrollments.forEach(enrollment => {
+      const courseId = enrollment.course.id;
+      if (!courseStats.has(courseId)) {
+        courseStats.set(courseId, {
+          id: courseId,
+          title: enrollment.course.title,
+          category: enrollment.course.category,
+          currentEnrollments: 0,
+          previousEnrollments: 0,
+          enrollmentDates: [],
+        });
+      }
+      const course = courseStats.get(courseId);
+      course.currentEnrollments++;
+      course.enrollmentDates.push(enrollment.enrolledAt);
+    });
+
+    // Process previous period enrollments if comparison is requested
+    if (compareWithPrevious) {
+      previousPeriodEnrollments.forEach(enrollment => {
+        const courseId = enrollment.courseId;
+        if (!courseStats.has(courseId)) {
+          courseStats.set(courseId, {
+            id: courseId,
+            title: 'Unknown Course',
+            category: 'Unknown',
+            currentEnrollments: 0,
+            previousEnrollments: 0,
+            enrollmentDates: [],
+          });
+        }
+        courseStats.get(courseId).previousEnrollments++;
+      });
+    }
+
+    // Convert map to array and calculate growth rates
+    const courses = Array.from(courseStats.values()).map(course => {
+      const growthRate = compareWithPrevious && course.previousEnrollments > 0
+        ? ((course.currentEnrollments - course.previousEnrollments) / course.previousEnrollments) * 100
+        : 0;
+      
+      // Calculate enrollment trend (daily/weekly/monthly based on timeframe)
+      let enrollmentTrend = 'stable';
+      if (course.enrollmentDates.length > 1) {
+        const sortedDates = [...course.enrollmentDates].sort((a, b) => a.getTime() - b.getTime());
+        const firstDate = sortedDates[0];
+        const lastDate = sortedDates[sortedDates.length - 1];
+        const daysDiff = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24);
+        
+        if (daysDiff > 0) {
+          const enrollmentsPerDay = sortedDates.length / daysDiff;
+          if (enrollmentsPerDay > 5) enrollmentTrend = 'increasing';
+          else if (enrollmentsPerDay < 2) enrollmentTrend = 'decreasing';
+        }
+      }
+
+      return {
+        ...course,
+        growthRate: Math.round(growthRate * 100) / 100, // Round to 2 decimal places
+        enrollmentTrend,
+      };
+    });
+
+    // Sort courses by number of enrollments (descending)
+    courses.sort((a, b) => b.currentEnrollments - a.currentEnrollments);
+
+    // Get top 5 courses
+    const topCourses = courses.slice(0, 5);
+
+    // Calculate total enrollments
+    const totalEnrollments = courses.reduce((sum, course) => sum + course.currentEnrollments, 0);
+    const previousTotalEnrollments = compareWithPrevious 
+      ? courses.reduce((sum, course) => sum + course.previousEnrollments, 0)
+      : 0;
+    
+    const totalGrowthRate = compareWithPrevious && previousTotalEnrollments > 0
+      ? ((totalEnrollments - previousTotalEnrollments) / previousTotalEnrollments) * 100
+      : 0;
+
+    // Calculate enrollments by category
+    const enrollmentsByCategory: Record<string, number> = {};
+    courses.forEach(course => {
+      if (!enrollmentsByCategory[course.category]) {
+        enrollmentsByCategory[course.category] = 0;
+      }
+      enrollmentsByCategory[course.category] += course.currentEnrollments;
+    });
+
+    // Prepare response data
+    const responseData = {
+      timeframe,
+      totalCourses: courses.length,
+      totalEnrollments,
+      totalGrowthRate: Math.round(totalGrowthRate * 100) / 100,
+      topCourses,
+      enrollmentsByCategory: Object.entries(enrollmentsByCategory).map(([category, count]) => ({
+        category,
+        count,
+      })),
+      courses: courses.map(course => ({
+        id: course.id,
+        title: course.title,
+        category: course.category,
+        enrollments: course.currentEnrollments,
+        growthRate: course.growthRate,
+        trend: course.enrollmentTrend,
+      })),
+    };
+
+    return NextResponse.json(responseData);
+  } catch (error) {
+    console.error('Error fetching course analytics:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch analytics data' },
+      { error: 'Failed to fetch course analytics' },
       { status: 500 }
     );
   }

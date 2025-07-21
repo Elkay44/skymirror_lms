@@ -53,10 +53,10 @@ const logProjectActivity = async (userId: string | number, action: string, proje
 // GET /api/courses/[courseId]/modules/[moduleId]/projects - Get all projects for a module
 export async function GET(
   request: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string } }
-) {
+  { params }: { params: Promise<{ courseId: string; moduleId: string }> }
+): Promise<Response> {
   try {
-    const { courseId, moduleId } = params;
+    const { courseId, moduleId } = await params;
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
@@ -122,10 +122,10 @@ export async function GET(
 // POST /api/courses/[courseId]/modules/[moduleId]/projects - Create a new project
 export async function POST(
   request: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string } }
-) {
+  { params }: { params: Promise<{ courseId: string; moduleId: string }> }
+): Promise<Response> {
   try {
-    const { courseId, moduleId } = params;
+    const { courseId, moduleId } = await params;
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 

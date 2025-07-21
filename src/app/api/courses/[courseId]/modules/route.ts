@@ -2,17 +2,17 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
-import { Module } from '@prisma/client';
+// Module type will be inferred from Prisma client
 
 export async function GET(
   request: Request,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
-  console.log(`🔍 GET /api/courses/${params.courseId}/modules - Fetching modules`);
   const startTime = Date.now();
+  const { courseId } = await params;
+  console.log(`🔍 GET /api/courses/${courseId}/modules - Fetching modules`);
   
   try {
-    const { courseId } = params;
     console.log(`📋 Processing request for course: ${courseId}`);
     
     // Authentication
@@ -161,10 +161,10 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
+  const { courseId } = await params;
   try {
-    const { courseId } = params;
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
@@ -223,10 +223,10 @@ export async function POST(
     };
     
     return NextResponse.json(responseModule, { status: 201 });
-  } catch (error) {
-    console.error('Error creating module:', error);
+  } catch (error: unknown) {
+    console.error('Error in GET /api/courses/[courseId]/modules:', error);
     return NextResponse.json(
-      { error: 'Failed to create module' },
+      { error: 'Failed to fetch modules' },
       { status: 500 }
     );
   }

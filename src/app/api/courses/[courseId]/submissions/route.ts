@@ -1,24 +1,82 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
-export async function GET(req: NextRequest, { params }: { params: { courseId: string } }) {
+// Define TypeScript interfaces for our data
+interface Attachment {
+  id: string;
+  url: string;
+  name: string;
+  type: string;
+}
+
+interface Feedback {
+  id: string;
+  content: string | null;
+  rating: number | null;
+  createdAt: Date;
+}
+
+interface Student {
+  id: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+}
+
+interface Project {
+  id: string;
+  title: string;
+  description: string | null;
+  courseId: string;
+}
+
+interface Submission {
+  id: string;
+  student: Student;
+  project: Project;
+  status: string;
+  submittedAt: Date;
+  feedback: Feedback | null;
+  attachments: Attachment[];
+}
+
+interface ProjectWithSubmissions extends Project {
+  submissions: Submission[];
+}
+
+interface SubmissionResponse {
+  id: string;
+  studentId: string;
+  studentName: string | null;
+  projectId: string;
+  projectTitle: string;
+  status: string;
+  submittedAt: Date;
+  hasFeedback: boolean;
+  attachmentCount: number;
+}
+
+export async function GET(
+  req: NextRequest, 
+  { params }: { params: Promise<{ courseId: string }> }
+) {
   try {
-    const courseId = params.courseId;
+    const { courseId } = await params;
     const searchParams = req.nextUrl.searchParams;
-    const status = searchParams.get('status') || 'approved';
+    const status = searchParams.get('status') || 'submitted';
     
     // Get the current user session
     const session = await getServerSession(authOptions);
     
-    if (!session || !session.user) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    // Verify the user is an instructor
+    // Get user with role
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email || '' },
+      where: { email: session.user.email },
       include: { role: true },
     });
     
@@ -26,128 +84,66 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
       return NextResponse.json({ error: 'Forbidden: User is not an instructor' }, { status: 403 });
     }
     
-    // Check if the course belongs to the instructor
+    // Verify the course exists and belongs to the instructor
     const course = await prisma.course.findUnique({
-      where: {
-        id: courseId,
-        instructorId: user.id,
-      },
+      where: { id: courseId, instructorId: user.id },
     });
     
     if (!course) {
       return NextResponse.json({ error: 'Course not found or not authorized' }, { status: 404 });
     }
     
-    // Get all projects for this course
-    const courseProjects = await prisma.project.findMany({
-      where: {
-        courseId,
-        isRequired: true,  // Only get required projects for certification
-      },
-      select: {
-        id: true,
-      },
-    });
-    
-    const projectIds = courseProjects.map(project => project.id);
-    
-    // Get students who have completed all required projects
-    const eligibleStudents = await prisma.user.findMany({
-      where: {
-        role: {
-          name: 'student',
-        },
-        projectSubmissions: {
-          some: {
-            projectId: {
-              in: projectIds,
-            },
-            status,
+    // Get all projects with their submissions for this course
+    const projects = await prisma.project.findMany({
+      where: { courseId },
+      include: {
+        submissions: {
+          where: { status },
+          include: {
+            student: true,
+            feedback: true,
+            attachments: true,
           },
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        walletAddress: true,
-        projectSubmissions: {
-          where: {
-            projectId: {
-              in: projectIds,
-            },
-            status,
-          },
-          select: {
-            id: true,
-            projectId: true,
-            status: true,
-            submittedAt: true,
-            project: {
-              select: {
-                id: true,
-                title: true,
-                courseId: true,
-              },
-            },
-          },
-        },
-        certificates: {
-          where: {
-            courseId,
-          },
-          select: {
-            id: true,
-          },
+          orderBy: { submittedAt: 'desc' as const },
         },
       },
     });
     
-    // Filter students who have completed all required projects but don't have a certificate yet
-    const submissions = [];
+    // Transform the data for the response
+    const response: SubmissionResponse[] = [];
     
-    for (const student of eligibleStudents) {
-      // Skip students who already have a certificate
-      if (student.certificates.length > 0) continue;
-      
-      // Check if the student has completed all required projects
-      const completedProjectIds = student.projectSubmissions.map(submission => submission.projectId);
-      const hasCompletedAllProjects = projectIds.every(projectId => completedProjectIds.includes(projectId));
-      
-      if (hasCompletedAllProjects) {
-        // For each completed project, add a submission entry for this student
-        student.projectSubmissions.forEach(submission => {
-          submissions.push({
-            id: submission.id,
-            studentId: student.id,
-            projectId: submission.projectId,
-            status: submission.status,
-            submittedAt: submission.submittedAt,
-            student: {
-              id: student.id,
-              name: student.name,
-              email: student.email,
-              walletAddress: student.walletAddress,
-            },
-            project: submission.project,
-          });
+    projects.forEach((project: ProjectWithSubmissions) => {
+      project.submissions.forEach((submission: Submission) => {
+        response.push({
+          id: submission.id,
+          studentId: submission.student.id,
+          studentName: submission.student.name,
+          projectId: project.id,
+          projectTitle: project.title,
+          status: submission.status,
+          submittedAt: submission.submittedAt,
+          hasFeedback: submission.feedback !== null,
+          attachmentCount: submission.attachments.length,
         });
-      }
-    }
+      });
+    });
     
-    // Sort submissions by student name and date
-    submissions.sort((a, b) => {
-      // First sort by student name
-      if (a.student.name < b.student.name) return -1;
-      if (a.student.name > b.student.name) return 1;
-      
-      // Then sort by submission date (newest first)
+    // Sort by student name and then by submission date (newest first)
+    response.sort((a, b) => {
+      if (a.studentName && b.studentName) {
+        const nameCompare = a.studentName.localeCompare(b.studentName);
+        if (nameCompare !== 0) return nameCompare;
+      }
       return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
     });
     
-    return NextResponse.json({ submissions });
+    return NextResponse.json({ submissions: response });
+    
   } catch (error) {
     console.error('Error fetching course submissions:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error' }, 
+      { status: 500 }
+    );
   }
 }

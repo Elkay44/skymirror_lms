@@ -4,31 +4,32 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { PrismaClient } from '@prisma/client';
 
 // Schema for updating a quiz
 const updateQuizSchema = z.object({
   title: z.string().min(1, "Title is required").optional(),
-  description: z.string().optional().nullable(),
-  instructions: z.string().optional().nullable(),
-  timeLimit: z.number().int().min(0).optional().nullable(),
-  passingScore: z.number().min(0).max(100).optional().nullable(),
+  description: z.string().optional(),
+  type: z.enum(["STANDARD", "PRACTICE", "ASSESSMENT"]).optional(),
+  timeLimit: z.number().int().min(0).optional(), // in minutes
+  passingScore: z.number().int().min(0).optional(),
   isPublished: z.boolean().optional(),
   allowReview: z.boolean().optional(),
-  attemptsAllowed: z.number().int().min(1).optional(),
+  attemptsAllowed: z.number().int().min(0).optional(),
   questions: z.array(
     z.object({
       id: z.string().optional(), // If updating existing question
       text: z.string().min(1, "Question text is required"),
-      type: z.enum(['MULTIPLE_CHOICE', 'SINGLE_CHOICE', 'TRUE_FALSE', 'SHORT_ANSWER']),
+      type: z.enum(["MULTIPLE_CHOICE", "SINGLE_CHOICE", "TRUE_FALSE", "SHORT_ANSWER"]),
       points: z.number().int().min(0).default(1),
       explanation: z.string().optional().nullable(),
+      position: z.number().int().min(0).default(0),
       options: z.array(
         z.object({
           id: z.string().optional(), // If updating existing option
-          text: z.string().min(1, "Option text is required"),
+          optionText: z.string().min(1, "Option text is required"),
           isCorrect: z.boolean(),
           explanation: z.string().optional().nullable(),
+          position: z.number().int().min(0).default(0)
         })
       ).min(1, "At least one option is required"),
     })
@@ -56,10 +57,11 @@ const logQuizActivity = async (userId: string | number, action: string, quizId: 
 // GET /api/courses/[courseId]/modules/[moduleId]/quizzes/[quizId] - Get quiz details
 export async function GET(
   request: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string; quizId: string } }
-) {
+  { params }: { params: Promise<{ courseId: string; moduleId: string; quizId: string }> }
+): Promise<Response> {
+  const { courseId, moduleId, quizId } = await params;
   try {
-    const { courseId, moduleId, quizId } = params;
+
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
@@ -147,7 +149,7 @@ export async function GET(
       studentData = {
         attempts,
         hasAttemptsLeft: attempts.length < quiz.attemptsAllowed,
-        bestScore: attempts.length > 0 ? Math.max(...attempts.map(a => a.score || 0)) : null
+        bestScore: attempts.length > 0 ? Math.max(...attempts.map((a: { score?: number | null }) => a.score || 0)) : null
       };
     }
 
@@ -194,10 +196,11 @@ function isPublishedQuizSelector() {
 // PATCH /api/courses/[courseId]/modules/[moduleId]/quizzes/[quizId] - Update a quiz
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string; quizId: string } }
-) {
+  { params }: { params: Promise<{ courseId: string; moduleId: string; quizId: string }> }
+): Promise<Response> {
+  const { courseId, moduleId, quizId } = await params;
   try {
-    const { courseId, moduleId, quizId } = params;
+
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
@@ -251,8 +254,6 @@ export async function PATCH(
 
     const { 
       title, 
-      description, 
-      instructions, 
       timeLimit,
       passingScore,
       isPublished,
@@ -264,16 +265,14 @@ export async function PATCH(
     // Build update data
     const updateData: any = {};
     if (title !== undefined) updateData.title = title;
-    if (description !== undefined) updateData.description = description;
-    if (instructions !== undefined) updateData.instructions = instructions;
     if (timeLimit !== undefined) updateData.timeLimit = timeLimit;
     if (passingScore !== undefined) updateData.passingScore = passingScore;
     if (isPublished !== undefined) updateData.isPublished = isPublished;
     if (allowReview !== undefined) updateData.allowReview = allowReview;
     if (attemptsAllowed !== undefined) updateData.attemptsAllowed = attemptsAllowed;
 
-    // Update quiz in a transaction if questions are provided
-    const updatedQuiz = await prisma.$transaction(async (tx: PrismaClient) => {
+    // Update quiz in a transaction to handle questions and options
+    const updatedQuiz = await prisma.$transaction(async (tx: any) => {
       // Update the quiz
       const updated = await tx.quiz.update({
         where: { id: quizId },
@@ -289,14 +288,15 @@ export async function PATCH(
         });
 
         // Create new questions and options
-        for (const question of questions) {
+        for (const question of questions.sort((a: any, b: any) => (a.position || 0) - (b.position || 0))) {
           const newQuestion = await tx.question.create({
             data: {
               text: question.text,
               type: question.type,
               points: question.points,
               explanation: question.explanation,
-              quizId
+              quizId,
+              position: question.position || 0
             }
           });
 
@@ -304,9 +304,10 @@ export async function PATCH(
           await tx.questionOption.createMany({
             data: question.options.map(option => ({
               questionId: newQuestion.id,
-              text: option.text,
+              optionText: option.optionText,
               isCorrect: option.isCorrect,
               explanation: option.explanation || null,
+              position: option.position
             }))
           });
         }
@@ -348,10 +349,11 @@ export async function PATCH(
 // DELETE /api/courses/[courseId]/modules/[moduleId]/quizzes/[quizId] - Delete a quiz
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string; quizId: string } }
-) {
+  { params }: { params: Promise<{ courseId: string; moduleId: string; quizId: string }> }
+): Promise<Response> {
+  const { courseId, moduleId, quizId } = await params;
   try {
-    const { courseId, moduleId, quizId } = params;
+
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
@@ -393,7 +395,7 @@ export async function DELETE(
     }
 
     // Delete quiz and related items in a transaction
-    await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       // Delete attempts
       await tx.quizAttempt.deleteMany({
         where: { quizId }

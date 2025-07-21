@@ -28,334 +28,302 @@ interface Forum {
   id: string;
   title: string;
   description: string | null;
-  courseId: string;
-  isGlobal: boolean;
-  postsCount: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ForumPageProps {
+  params: {
+    courseId: string;
+    forumId: string;
+  };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export default function ForumPage({ 
-  params 
+  params: paramsPromise 
 }: { 
-  params: { courseId: string; forumId: string } 
+  params: Promise<{ courseId: string; forumId: string }>;
 }) {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const { courseId, forumId } = params;
-  
-  const [isLoading, setIsLoading] = useState(true);
+  const [params, setParams] = useState<{ courseId: string; forumId: string } | null>(null);
   const [forum, setForum] = useState<Forum | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [newPostTitle, setNewPostTitle] = useState('');
-  const [newPostContent, setNewPostContent] = useState('');
-  
-  // Fetch forum data
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isCreatingPost, setIsCreatingPost] = useState(false);
+  const [newPost, setNewPost] = useState({
+    title: '',
+    content: '',
+    isPinned: false,
+    isLocked: false
+  });
+
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  // Load params when component mounts
   useEffect(() => {
-    const fetchForum = async () => {
+    const loadParams = async () => {
+      try {
+        const resolvedParams = await paramsPromise;
+        setParams(resolvedParams);
+      } catch (err) {
+        console.error('Error loading params:', err);
+        setError('Failed to load forum data');
+        setIsLoading(false);
+      }
+    };
+
+    loadParams();
+  }, [paramsPromise]);
+
+  // Load forum and posts when params are available
+  useEffect(() => {
+    if (!params) return;
+
+    const { courseId, forumId } = params;
+    
+    const fetchData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/courses/${courseId}/forums/${forumId}`);
+        setError(null);
         
-        if (response.ok) {
-          const data = await response.json();
-          setForum(data.forum);
-          setPosts(data.posts);
-        } else {
-          console.error('Failed to fetch forum');
-        }
-      } catch (error) {
-        console.error('Error fetching forum:', error);
+        // Fetch forum details
+        const forumRes = await fetch(`/api/courses/${courseId}/forums/${forumId}`);
+        if (!forumRes.ok) throw new Error('Failed to fetch forum');
+        const forumData = await forumRes.json();
+        setForum(forumData);
+        
+        // Fetch forum posts
+        const postsRes = await fetch(`/api/courses/${courseId}/forums/${forumId}/posts`);
+        if (!postsRes.ok) throw new Error('Failed to fetch posts');
+        const postsData = await postsRes.json();
+        setPosts(postsData);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load forum data');
       } finally {
         setIsLoading(false);
       }
     };
-    
-    if (session) {
-      fetchForum();
-    }
-  }, [courseId, forumId, session]);
-  
-  // Create new post
+
+    fetchData();
+  }, [params]);
+
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newPostTitle.trim() || !newPostContent.trim()) return;
+    if (!params) return;
     
     try {
-      const response = await fetch(`/api/courses/${courseId}/forums/${forumId}/posts`, {
+      const { courseId, forumId } = params;
+      const res = await fetch(`/api/courses/${courseId}/forums/${forumId}/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: newPostTitle,
-          content: newPostContent,
-        }),
+        body: JSON.stringify(newPost),
       });
       
-      if (response.ok) {
-        const newPost = await response.json();
-        setPosts([newPost, ...posts]);
-        setNewPostTitle('');
-        setNewPostContent('');
-        setIsCreateModalOpen(false);
-      } else {
-        console.error('Failed to create post');
-      }
-    } catch (error) {
-      console.error('Error creating post:', error);
-    }
-  };
-  
-  // Like a post
-  const handleLikePost = async (postId: string) => {
-    try {
-      const response = await fetch(`/api/courses/${courseId}/forums/${forumId}/posts/${postId}/like`, {
-        method: 'POST',
+      if (!res.ok) throw new Error('Failed to create post');
+      
+      // Refresh the posts
+      const postsRes = await fetch(`/api/courses/${courseId}/forums/${forumId}/posts`);
+      const postsData = await postsRes.json();
+      setPosts(postsData);
+      
+      // Reset form
+      setNewPost({
+        title: '',
+        content: '',
+        isPinned: false,
+        isLocked: false
       });
       
-      if (response.ok) {
-        setPosts(posts.map(post => 
-          post.id === postId ? { ...post, likes: post.likes + 1 } : post
-        ));
-      }
-    } catch (error) {
-      console.error('Error liking post:', error);
+      setIsCreatingPost(false);
+    } catch (err) {
+      console.error('Error creating post:', err);
+      setError('Failed to create post');
     }
   };
-  
-  // Add a comment to a post
-  const handleAddComment = async (postId: string, content: string) => {
-    try {
-      const response = await fetch(`/api/courses/${courseId}/forums/${forumId}/posts/${postId}/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ content }),
-      });
-      
-      if (response.ok) {
-        const newComment = await response.json();
-        setPosts(posts.map(post => 
-          post.id === postId 
-            ? { ...post, comments: [...post.comments, newComment] } 
-            : post
-        ));
-      }
-    } catch (error) {
-      console.error('Error adding comment:', error);
-    }
-  };
-  
-  // Delete a post
-  const handleDeletePost = async (postId: string) => {
-    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
-      return;
-    }
-    
-    try {
-      const response = await fetch(`/api/courses/${courseId}/forums/${forumId}/posts/${postId}`, {
-        method: 'DELETE',
-      });
-      
-      if (response.ok) {
-        setPosts(posts.filter(post => post.id !== postId));
-      }
-    } catch (error) {
-      console.error('Error deleting post:', error);
-    }
-  };
-  
-  // Edit a post
-  const handleEditPost = async (postId: string, newContent: string) => {
-    try {
-      const response = await fetch(`/api/courses/${courseId}/forums/${forumId}/posts/${postId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ content: newContent }),
-      });
-      
-      if (response.ok) {
-        setPosts(posts.map(post => 
-          post.id === postId ? { ...post, content: newContent, updatedAt: new Date().toISOString() } : post
-        ));
-      }
-    } catch (error) {
-      console.error('Error editing post:', error);
-    }
-  };
-  
+
   if (status === 'loading' || isLoading) {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       </DashboardLayout>
     );
   }
-  
-  if (status === 'unauthenticated') {
-    router.push('/login');
-    return null;
-  }
-  
-  return (
-    <DashboardLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back to forums link */}
-        <Link 
-          href={`/courses/${courseId}/forums`}
-          className="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-500 mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Forums
-        </Link>
-        
-        {/* Forum header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">{forum?.title || 'Forum'}</h1>
-            
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
-              New Post
-            </button>
-          </div>
-          {forum?.description && (
-            <p className="mt-2 text-sm text-gray-500">{forum.description}</p>
-          )}
-          <div className="mt-2 flex items-center">
-            <span className="text-sm text-gray-500">
-              {forum?.postsCount || 0} {forum?.postsCount === 1 ? 'post' : 'posts'}
-            </span>
-          </div>
-        </div>
-        
-        {/* Posts list */}
-        {posts.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-xl">
-            <h3 className="mt-2 text-lg font-medium text-gray-900">No posts yet</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Be the first to create a post in this forum!
-            </p>
-            <div className="mt-6">
-              <button
-                onClick={() => setIsCreateModalOpen(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
-                Create a Post
-              </button>
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="bg-red-50 border-l-4 border-red-400 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{error}</p>
             </div>
           </div>
-        ) : (
-          <div className="space-y-6">
-            {posts.map((post) => (
-              <ForumPost
-                key={post.id}
-                id={post.id}
-                title={post.title}
-                content={post.content}
-                authorId={post.authorId}
-                authorName={post.authorName}
-                authorImage={post.authorImage}
-                createdAt={post.createdAt}
-                updatedAt={post.updatedAt}
-                isPinned={post.isPinned}
-                isLocked={post.isLocked}
-                viewCount={post.viewCount}
-                likes={post.likes}
-                comments={post.comments}
-                courseId={courseId}
-                forumId={forumId}
-                onLike={() => handleLikePost(post.id)}
-                onReply={(content) => handleAddComment(post.id, content)}
-                onDelete={() => handleDeletePost(post.id)}
-                onEdit={(newContent) => handleEditPost(post.id, newContent)}
-              />
-            ))}
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!forum) {
+    return (
+      <DashboardLayout>
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">Forum not found</p>
+            </div>
           </div>
-        )}
-      </div>
-      
-      {/* Create Post Modal */}
-      {isCreateModalOpen && (
-        <div className="fixed inset-0 z-10 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={() => setIsCreateModalOpen(false)}></div>
-            
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            
-            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-              <div>
-                <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                  Create New Post
-                </h3>
-                <div className="mt-2">
-                  <p className="text-sm text-gray-500">
-                    Share your thoughts, questions, or insights with other students and instructors.
-                  </p>
-                </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <Link 
+                href={`/courses/${params?.courseId}/forums`}
+                className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-2"
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back to Forums
+              </Link>
+              <h3 className="text-lg leading-6 font-medium text-gray-900">{forum.title}</h3>
+              {forum.description && (
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  {forum.description}
+                </p>
+              )}
+            </div>
+            {session?.user && (
+              <button
+                type="button"
+                onClick={() => setIsCreatingPost(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <PlusCircle className="h-5 w-5 mr-2" />
+                New Post
+              </button>
+            )}
+          </div>
+        </div>
+
+        {isCreatingPost && (
+          <div className="bg-gray-50 p-4 border-b border-gray-200">
+            <h4 className="text-lg font-medium text-gray-900 mb-4">Create New Post</h4>
+            <form onSubmit={handleCreatePost}>
+              <div className="mb-4">
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  required
+                  value={newPost.title}
+                  onChange={(e) => setNewPost({...newPost, title: e.target.value})}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  placeholder="Enter post title"
+                />
               </div>
-              
-              <form onSubmit={handleCreatePost} className="mt-5 space-y-4">
-                <div>
-                  <label htmlFor="post-title" className="block text-sm font-medium text-gray-700">
-                    Title *
-                  </label>
-                  <input
-                    type="text"
-                    id="post-title"
-                    value={newPostTitle}
-                    onChange={(e) => setNewPostTitle(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Give your post a clear, descriptive title"
-                    required
-                  />
+              <div className="mb-4">
+                <label htmlFor="content" className="block text-sm font-medium text-gray-700">
+                  Content
+                </label>
+                <textarea
+                  id="content"
+                  rows={4}
+                  required
+                  value={newPost.content}
+                  onChange={(e) => setNewPost({...newPost, content: e.target.value})}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  placeholder="Write your post content here..."
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    <input
+                      id="isPinned"
+                      type="checkbox"
+                      checked={newPost.isPinned}
+                      onChange={(e) => setNewPost({...newPost, isPinned: e.target.checked})}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="isPinned" className="ml-2 block text-sm text-gray-700">
+                      Pin post
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id="isLocked"
+                      type="checkbox"
+                      checked={newPost.isLocked}
+                      onChange={(e) => setNewPost({...newPost, isLocked: e.target.checked})}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="isLocked" className="ml-2 block text-sm text-gray-700">
+                      Lock post
+                    </label>
+                  </div>
                 </div>
-                
-                <div>
-                  <label htmlFor="post-content" className="block text-sm font-medium text-gray-700">
-                    Content *
-                  </label>
-                  <textarea
-                    id="post-content"
-                    value={newPostContent}
-                    onChange={(e) => setNewPostContent(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Write your post content here..."
-                    rows={6}
-                    required
-                  />
-                </div>
-                
-                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                  <button
-                    type="submit"
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
-                  >
-                    Create Post
-                  </button>
+                <div className="flex space-x-2">
                   <button
                     type="button"
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                    onClick={() => setIsCreatingPost(false)}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     Cancel
                   </button>
+                  <button
+                    type="submit"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Create Post
+                  </button>
                 </div>
-              </form>
-            </div>
+              </div>
+            </form>
           </div>
+        )}
+
+        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+          <ul className="divide-y divide-gray-200">
+            {posts.length === 0 ? (
+              <li className="px-4 py-6 text-center text-gray-500">
+                No posts yet. Be the first to create one!
+              </li>
+            ) : (
+              posts.map((post) => (
+                <li key={post.id}>
+                  <ForumPost post={post} />
+                </li>
+              ))
+            )}
+          </ul>
         </div>
-      )}
+      </div>
     </DashboardLayout>
   );
 }

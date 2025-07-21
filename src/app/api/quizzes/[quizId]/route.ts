@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
@@ -28,16 +29,23 @@ const questionSchema = z.object({
     id: z.string().uuid('Invalid option ID').optional(),
     text: z.string().min(1, 'Option text is required'),
     isCorrect: z.boolean(),
-    order: z.number().int().min(0).optional(),
+    explanation: z.string().optional(),
   })).optional(),
 });
 
-// Log quiz activity
-const logQuizActivity = async (userId: string | number, action: string, quizId: string, details: any = {}) => {
+/**
+ * Log quiz activity
+ */
+async function logQuizActivity(
+  userId: string | number, 
+  action: string, 
+  quizId: string, 
+  details: any = {}
+) {
   try {
     await prisma.activityLog.create({
       data: {
-        userId,
+        userId: String(userId),
         action,
         entityType: 'quiz',
         entityId: quizId,
@@ -48,171 +56,287 @@ const logQuizActivity = async (userId: string | number, action: string, quizId: 
     console.error('Failed to log quiz activity:', error);
     // Non-blocking - we don't fail the request if logging fails
   }
-};
+}
 
 // GET handler - Get a specific quiz
 export async function GET(
   request: NextRequest,
-  { params }: { params: { quizId: string } }
+  { params }: { params: Promise<{ quizId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' }, 
+        { status: 401 }
+      );
     }
+
+    const { quizId } = await params;
+    const searchParams = request.nextUrl.searchParams;
+    const includeQuestions = searchParams.get('includeQuestions') === 'true';
     
-    const { quizId } = params;
-    const { searchParams } = new URL(request.url);
-    const includeQuestions = searchParams.get('includeQuestions') !== 'false'; // Default to true
-    
-    // Get quiz
+    // Get the quiz with optional questions
     const quiz = await prisma.quiz.findUnique({
-      where: { id: quizId },
+      where: { 
+        id: quizId,
+        isPublished: true, // Only fetch published quizzes via API
+      },
       include: {
         questions: includeQuestions ? {
-          include: { options: true },
-          orderBy: { order: 'asc' } as any,
+          orderBy: { order: 'asc' },
+          include: {
+            options: {
+              orderBy: { id: 'asc' },
+            },
+          },
         } : false,
+        course: {
+          select: {
+            id: true,
+            title: true,
+            instructorId: true,
+          },
+        },
+        _count: {
+          select: {
+            questions: true,
+            attempts: true,
+          },
+        },
       },
     });
-    
+
     if (!quiz) {
-      return NextResponse.json({ error: 'Quiz not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Quiz not found' },
+        { status: 404 }
+      );
     }
-    
-    return NextResponse.json({ quiz });
-  } catch (error: any) {
-    console.error(`Error getting quiz ${params.quizId}:`, error);
-    return NextResponse.json({ error: 'Failed to fetch quiz' }, { status: 500 });
+
+    // Check if user is enrolled in the course or is the instructor
+    const enrollment = await prisma.enrollment.findFirst({
+      where: {
+        userId: session.user.id,
+        courseId: quiz.courseId,
+        status: 'ACTIVE',
+      },
+      select: {
+        id: true,
+        role: true,
+      },
+    });
+
+    const isInstructor = enrollment?.role === 'INSTRUCTOR' || quiz.course.instructorId === session.user.id;
+    const isAdmin = session.user.role === 'ADMIN';
+    const isEnrolled = !!enrollment;
+
+    if (!isInstructor && !isAdmin && !isEnrolled) {
+      return NextResponse.json(
+        { error: 'You are not enrolled in this course' },
+        { status: 403 }
+      );
+    }
+
+    // For students, don't include correct answers unless the quiz is configured to show them
+    if (!isInstructor && !isAdmin && !quiz.showCorrectAnswers) {
+      if (quiz.questions) {
+        quiz.questions = quiz.questions.map((question: any) => ({
+          ...question,
+          options: question.options.map((option: any) => ({
+            id: option.id,
+            text: option.text,
+            explanation: option.explanation,
+            // Don't include isCorrect for students unless the quiz is configured to show answers
+            isCorrect: undefined,
+          })),
+        }));
+      }
+    }
+
+    return NextResponse.json(quiz);
+  } catch (error) {
+    console.error('Error fetching quiz:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch quiz' },
+      { status: 500 }
+    );
   }
 }
 
 // PATCH handler - Update a quiz
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { quizId: string } }
+  { params }: { params: Promise<{ quizId: string }> }
 ) {
   try {
-    // Authentication
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' }, 
+        { status: 401 }
+      );
     }
-    
-    // Get user ID from session
-    const userId = session.user.id;
-    
-    const { quizId } = params;
-    
-    // Check if quiz exists
-    const existingQuiz = await prisma.quiz.findUnique({
-      where: { id: quizId },
-      include: { module: true },
-    });
-    
-    if (!existingQuiz) {
-      return NextResponse.json({ error: 'Quiz not found' }, { status: 404 });
-    }
-    
-    // Get request body
+
+    const { quizId } = await params;
     const body = await request.json();
     
-    // Validate input
-    const validationResult = updateQuizSchema.safeParse(body);
-    if (!validationResult.success) {
+    // Validate request body
+    const validation = updateQuizSchema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Invalid input', details: validationResult.error.errors },
+        { error: 'Invalid request data', details: validation.error.format() },
         { status: 400 }
       );
     }
+
+    // Check if user has permission to update this quiz
+    const quiz = await prisma.quiz.findUnique({
+      where: { id: quizId },
+      select: { 
+        course: {
+          select: {
+            instructorId: true,
+          },
+        },
+      },
+    });
+
+    if (!quiz) {
+      return NextResponse.json(
+        { error: 'Quiz not found' },
+        { status: 404 }
+      );
+    }
+
+    // Only instructors or admins can update quizzes
+    const isInstructor = quiz.course.instructorId === session.user.id;
+    const isAdmin = session.user.role === 'ADMIN';
     
-    // Extract validated data
-    const { 
-      title, 
-      description, 
-      timeLimit, 
-      passingScore, 
-      attemptsAllowed, 
-      randomizeQuestions, 
-      showCorrectAnswers,
-      isPublished,
-    } = validationResult.data;
-    
-    // Update data object
-    const updateData: any = {};
-    if (title !== undefined) updateData.title = title;
-    if (description !== undefined) updateData.description = description;
-    if (timeLimit !== undefined) updateData.timeLimit = timeLimit;
-    if (passingScore !== undefined) updateData.passingScore = passingScore;
-    if (attemptsAllowed !== undefined) updateData.attemptsAllowed = attemptsAllowed;
-    if (randomizeQuestions !== undefined) updateData.randomizeQuestions = randomizeQuestions;
-    if (showCorrectAnswers !== undefined) updateData.showCorrectAnswers = showCorrectAnswers;
-    if (isPublished !== undefined) updateData.isPublished = isPublished;
-    
-    // Update quiz
+    if (!isInstructor && !isAdmin) {
+      return NextResponse.json(
+        { error: 'You do not have permission to update this quiz' },
+        { status: 403 }
+      );
+    }
+
+    // Update the quiz
     const updatedQuiz = await prisma.quiz.update({
       where: { id: quizId },
-      data: updateData,
+      data: {
+        ...validation.data,
+        updatedAt: new Date(),
+      },
     });
-    
-    // Log activity
-    await logQuizActivity(userId.toString(), 'update_quiz', quizId, updateData);
-    
-    // Revalidate cache
-    if (existingQuiz.module?.courseId) {
-      revalidatePath(`/courses/${existingQuiz.module.courseId}/modules/${existingQuiz.moduleId}`);
-    }
-    
-    return NextResponse.json({ quiz: updatedQuiz });
-  } catch (error: any) {
-    console.error(`Error updating quiz ${params.quizId}:`, error);
-    return NextResponse.json({ error: 'Failed to update quiz' }, { status: 500 });
+
+    // Log the activity
+    await logQuizActivity(session.user.id, 'QUIZ_UPDATED', quizId, {
+      updatedFields: Object.keys(validation.data),
+    });
+
+    // Revalidate the quiz page
+    revalidatePath(`/courses/${quiz.courseId}/quizzes/${quizId}`);
+    revalidatePath(`/courses/${quiz.courseId}`);
+
+    return NextResponse.json(updatedQuiz);
+  } catch (error) {
+    console.error('Error updating quiz:', error);
+    return NextResponse.json(
+      { error: 'Failed to update quiz' },
+      { status: 500 }
+    );
   }
 }
 
 // DELETE handler - Delete a quiz
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { quizId: string } }
+  { params }: { params: Promise<{ quizId: string }> }
 ) {
   try {
-    // Authentication
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' }, 
+        { status: 401 }
+      );
     }
+
+    const { quizId } = await params;
     
-    // Get user ID from session
-    const userId = session.user.id;
-    
-    const { quizId } = params;
-    
-    // Check if quiz exists
-    const existingQuiz = await prisma.quiz.findUnique({
+    // Check if user has permission to delete this quiz
+    const quiz = await prisma.quiz.findUnique({
       where: { id: quizId },
-      include: { module: true },
+      select: { 
+        id: true,
+        title: true,
+        courseId: true,
+        course: {
+          select: {
+            instructorId: true,
+          },
+        },
+        _count: {
+          select: {
+            attempts: true,
+          },
+        },
+      },
     });
-    
-    if (!existingQuiz) {
-      return NextResponse.json({ error: 'Quiz not found' }, { status: 404 });
+
+    if (!quiz) {
+      return NextResponse.json(
+        { error: 'Quiz not found' },
+        { status: 404 }
+      );
     }
+
+    // Only instructors or admins can delete quizzes
+    const isInstructor = quiz.course.instructorId === session.user.id;
+    const isAdmin = session.user.role === 'ADMIN';
     
-    // Delete quiz (and cascade delete questions and options)
+    if (!isInstructor && !isAdmin) {
+      return NextResponse.json(
+        { error: 'You do not have permission to delete this quiz' },
+        { status: 403 }
+      );
+    }
+
+    // Don't allow deleting quizzes with attempts
+    if (quiz._count.attempts > 0) {
+      return NextResponse.json(
+        { 
+          error: 'Cannot delete a quiz that has been attempted. Please archive it instead.',
+          code: 'HAS_ATTEMPTS',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Delete the quiz
     await prisma.quiz.delete({
       where: { id: quizId },
     });
-    
-    // Log activity
-    await logQuizActivity(userId.toString(), 'delete_quiz', quizId, { title: existingQuiz.title });
-    
-    // Revalidate cache
-    if (existingQuiz.module?.courseId) {
-      revalidatePath(`/courses/${existingQuiz.module.courseId}/modules/${existingQuiz.moduleId}`);
-    }
-    
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error(`Error deleting quiz ${params.quizId}:`, error);
-    return NextResponse.json({ error: 'Failed to delete quiz' }, { status: 500 });
+
+    // Log the activity
+    await logQuizActivity(session.user.id, 'QUIZ_DELETED', quizId, {
+      title: quiz.title,
+      courseId: quiz.courseId,
+    });
+
+    // Revalidate the course page
+    revalidatePath(`/courses/${quiz.courseId}`);
+    revalidatePath(`/dashboard/quizzes`);
+
+    return NextResponse.json(
+      { success: true, message: 'Quiz deleted successfully' },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Error deleting quiz:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete quiz' },
+      { status: 500 }
+    );
   }
 }

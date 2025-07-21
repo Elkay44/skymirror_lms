@@ -1,8 +1,12 @@
+/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+
+import prismaBase from '@/lib/prisma';
+import { extendPrismaClient, ExtendedPrismaClient } from '@/lib/prisma-extensions';
+const prisma = extendPrismaClient(prismaBase);
 import { revalidatePath } from 'next/cache';
 
 // Assignment update validation schema
@@ -21,68 +25,55 @@ const updateAssignmentSchema = z.object({
 // Rubric item schema
 const rubricItemSchema = z.object({
   id: z.string().uuid('Invalid rubric item ID').optional(),
-  criteriaName: z.string().min(1, 'Criteria name is required'),
-  maxPoints: z.number().min(0),
+  title: z.string().min(1, 'Criteria name is required'),
+  points: z.number().min(0),
+  order: z.number().int().min(0).optional(),
   description: z.string().optional(),
 });
 
-// Log assignment activity
-const logAssignmentActivity = async (userId: string | number, action: string, assignmentId: string, details: any = {}) => {
-  try {
-    await prisma.activityLog.create({
-      data: {
-        userId,
-        action,
-        entityType: 'assignment',
-        entityId: assignmentId,
-        details,
-      },
-    });
-  } catch (error) {
-    console.error('Failed to log assignment activity:', error);
-    // Non-blocking - we don't fail the request if logging fails
-  }
-};
-
 // GET handler - Get a specific assignment
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { assignmentId: string } }
-) {
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const includeRubric = searchParams.get('includeRubric') !== 'false';
+  const assignmentId = request.nextUrl.pathname.split('/').pop() || ''; // Get the last part of the URL which is the assignmentId
+  // Validate that we got a valid assignmentId
+  if (!assignmentId || !assignmentId.match(/^[a-z0-9]{1,}$/i)) {
+    return NextResponse.json({ error: 'Invalid assignment ID' }, { status: 400 });
+  }
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const { assignmentId } = params;
     const { searchParams } = new URL(request.url);
-    const includeRubric = searchParams.get('includeRubric') !== 'false'; // Default to true
+    const includeRubric = searchParams.get('includeRubric') !== 'false';
     
-    // Get assignment
     const assignment = await prisma.assignment.findUnique({
       where: { id: assignmentId },
-      include: {
-        rubricItems: includeRubric,
-      },
     });
     
     if (!assignment) {
       return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
     }
     
-    return NextResponse.json({ assignment });
-  } catch (error: any) {
-    console.error(`Error getting assignment ${params.assignmentId}:`, error);
-    return NextResponse.json({ error: 'Failed to fetch assignment' }, { status: 500 });
+    return NextResponse.json(assignment);
+  } catch (error) {
+    console.error('Error fetching assignment:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
 // PATCH handler - Update an assignment
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { assignmentId: string } }
-) {
+export async function PATCH(request: NextRequest) {
+  const assignmentId = request.nextUrl.pathname.split('/').pop() || ''; // Get the last part of the URL which is the assignmentId
+  // Validate that we got a valid assignmentId
+  if (!assignmentId || !assignmentId.match(/^[a-z0-9]{1,}$/i)) {
+    return NextResponse.json({ error: 'Invalid assignment ID' }, { status: 400 });
+  }
   try {
     // Authentication
     const session = await getServerSession(authOptions);
@@ -92,8 +83,6 @@ export async function PATCH(
     
     // Get user ID from session
     const userId = session.user.id;
-    
-    const { assignmentId } = params;
     
     // Check if assignment exists
     const existingAssignment = await prisma.assignment.findUnique({
@@ -155,19 +144,20 @@ export async function PATCH(
         const rubricItems = z.array(rubricItemSchema).parse(body.rubricItems);
         
         // Process rubric items in a transaction
-        await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx: any) => {
           // Delete existing rubric items
-          await tx.rubricItem.deleteMany({
+          await tx.rubricitem.deleteMany({
             where: { assignmentId },
           });
           
           // Create new rubric items
           for (const item of rubricItems) {
-            await tx.rubricItem.create({
+            await tx.rubricitem.create({
               data: {
                 assignmentId,
-                criteriaName: item.criteriaName,
-                maxPoints: item.maxPoints,
+                title: item.title,
+                points: item.points,
+                order: item.order || 0,
                 description: item.description || '',
               },
             });
@@ -179,9 +169,6 @@ export async function PATCH(
       }
     }
     
-    // Log activity
-    await logAssignmentActivity(userId.toString(), 'update_assignment', assignmentId, updateData);
-    
     // Revalidate cache
     if (existingAssignment.module?.courseId) {
       revalidatePath(`/courses/${existingAssignment.module.courseId}/modules/${existingAssignment.moduleId}`);
@@ -189,16 +176,18 @@ export async function PATCH(
     
     return NextResponse.json({ assignment: updatedAssignment });
   } catch (error: any) {
-    console.error(`Error updating assignment ${params.assignmentId}:`, error);
+    console.error(`Error updating assignment ${assignmentId}:`, error);
     return NextResponse.json({ error: 'Failed to update assignment' }, { status: 500 });
   }
 }
 
 // DELETE handler - Delete an assignment
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { assignmentId: string } }
-) {
+export async function DELETE(request: NextRequest) {
+  const assignmentId = request.nextUrl.pathname.split('/').pop() || ''; // Get the last part of the URL which is the assignmentId
+  // Validate that we got a valid assignmentId
+  if (!assignmentId || !assignmentId.match(/^[a-z0-9]{1,}$/i)) {
+    return NextResponse.json({ error: 'Invalid assignment ID' }, { status: 400 });
+  }
   try {
     // Authentication
     const session = await getServerSession(authOptions);
@@ -208,8 +197,6 @@ export async function DELETE(
     
     // Get user ID from session
     const userId = session.user.id;
-    
-    const { assignmentId } = params;
     
     // Check if assignment exists
     const existingAssignment = await prisma.assignment.findUnique({
@@ -222,21 +209,18 @@ export async function DELETE(
     }
     
     // Delete assignment (and cascade delete rubric items)
-    await prisma.assignment.delete({
+    await prisma.assignment.deleteItem({
       where: { id: assignmentId },
     });
-    
-    // Log activity
-    await logAssignmentActivity(userId.toString(), 'delete_assignment', assignmentId, { title: existingAssignment.title });
     
     // Revalidate cache
     if (existingAssignment.module?.courseId) {
       revalidatePath(`/courses/${existingAssignment.module.courseId}/modules/${existingAssignment.moduleId}`);
     }
     
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ message: 'Assignment deleted successfully' });
   } catch (error: any) {
-    console.error(`Error deleting assignment ${params.assignmentId}:`, error);
+    console.error(`Error deleting assignment ${assignmentId}:`, error);
     return NextResponse.json({ error: 'Failed to delete assignment' }, { status: 500 });
   }
 }

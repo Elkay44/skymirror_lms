@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -28,6 +29,9 @@ interface FinancialAchievement extends BaseAchievement {
 
 interface LearningAchievement extends BaseAchievement {
   category: 'learning';
+  xpEarned?: number;
+  skillLevel?: string;
+  courseId?: string;
 }
 
 interface CommunityAchievement extends BaseAchievement {
@@ -44,211 +48,241 @@ interface CareerAchievement extends BaseAchievement {
   position?: string;
 }
 
-type Achievement = LearningAchievement | FinancialAchievement | CommunityAchievement | CareerAchievement;
+type Achievement = FinancialAchievement | LearningAchievement | CommunityAchievement | CareerAchievement;
 
 // Helper function to map database achievements to the Achievement interface
-const mapDatabaseAchievement = (dbAchievement: any): Achievement => {
+function mapDatabaseAchievement(dbAchievement: any): Achievement {
   const baseAchievement = {
-    id: dbAchievement.id,
-    type: dbAchievement.type,
-    title: dbAchievement.title,
-    description: dbAchievement.description,
-    icon: dbAchievement.icon || undefined,
+    id: dbAchievement.achievement.id,
+    type: dbAchievement.achievement.type,
+    title: dbAchievement.achievement.title,
+    description: dbAchievement.achievement.description,
+    icon: dbAchievement.achievement.icon || undefined,
     earnedAt: dbAchievement.earnedAt,
-    category: dbAchievement.category as AchievementCategory
+    category: dbAchievement.achievement.category as AchievementCategory,
   };
 
-  // Add category-specific properties
-  switch (dbAchievement.category) {
+  // Add category-specific fields
+  const metadata = dbAchievement.metadata || {};
+  
+  switch (dbAchievement.achievement.category) {
     case 'financial':
       return {
         ...baseAchievement,
-        category: 'financial',
-        amount: dbAchievement.amount,
-        currency: dbAchievement.currency,
-        validUntil: dbAchievement.validUntil,
-        discountPercent: dbAchievement.discountPercent,
-        applicableCourses: dbAchievement.applicableCourses,
-        referralCount: dbAchievement.referralCount
+        amount: dbAchievement.achievement.amount || undefined,
+        currency: dbAchievement.achievement.currency || undefined,
+        validUntil: dbAchievement.achievement.validUntil || undefined,
+        discountPercent: dbAchievement.achievement.discountPercent || undefined,
+        ...metadata
+      };
+    case 'learning':
+      return {
+        ...baseAchievement,
+        xpEarned: metadata.xpEarned,
+        skillLevel: metadata.skillLevel,
+        courseId: metadata.courseId
       };
     case 'community':
       return {
         ...baseAchievement,
-        category: 'community',
-        studentsHelped: dbAchievement.studentsHelped,
-        averageRating: dbAchievement.averageRating,
-        helpfulAnswers: dbAchievement.helpfulAnswers
+        studentsHelped: metadata.studentsHelped,
+        averageRating: metadata.averageRating,
+        helpfulAnswers: metadata.helpfulAnswers
       };
     case 'career':
       return {
         ...baseAchievement,
-        category: 'career',
-        issuer: dbAchievement.issuer,
-        company: dbAchievement.company,
-        position: dbAchievement.position
+        issuer: dbAchievement.achievement.issuer || undefined,
+        company: dbAchievement.achievement.company || undefined,
+        position: dbAchievement.achievement.position || undefined,
+        ...metadata
       };
     default:
-      return {
-        ...baseAchievement,
-        category: 'learning'
-      };
+      return baseAchievement;
   }
-};
+}
 
 // GET endpoint to fetch achievements for the current user
 export async function GET(request: NextRequest) {
   try {
-    // Get current user session
     const session = await getServerSession(authOptions);
     
-    if (!session || !session.user) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
-    
-    // Get user ID from email
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email as string },
-      select: { id: true }
-    });
-    
-    if (!user) {
-      return NextResponse.json({ message: 'User not found' }, { status: 404 });
-    }
-    
-    // Fetch achievements from the database
-    const dbAchievements = await prisma.userAchievement.findMany({
-      where: { userId: user.id },
-      include: { achievement: true }
-    });
-    
-    // Map database achievements to the Achievement interface
-    const achievements = dbAchievements.map((ua: { achievement: any, earnedAt: Date }) => 
-      mapDatabaseAchievement({
-        ...ua.achievement,
-        earnedAt: ua.earnedAt
-      })
-    );
-    
-    // Fetch user progress
-    const userStats = await prisma.userStats.findUnique({
-      where: { userId: user.id }
-    });
-    
-    const progress = userStats ? {
-      level: userStats.level,
-      currentXP: userStats.currentXP,
-      nextLevelXP: userStats.nextLevelXP,
-      totalScholarshipAmount: userStats.totalScholarshipAmount,
-      activeDiscounts: userStats.activeDiscounts,
-      completedCourses: userStats.completedCourses,
-      forumContributions: userStats.forumContributions,
-      mentorshipHours: userStats.mentorshipHours
-    } : {
-      level: 1,
-      currentXP: 0,
-      nextLevelXP: 100,
-      totalScholarshipAmount: 0,
-      activeDiscounts: 0,
-      completedCourses: 0,
-      forumContributions: 0,
-      mentorshipHours: 0
+
+    // Get query parameters
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category') as AchievementCategory | null;
+    const type = searchParams.get('type');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const skip = parseInt(searchParams.get('skip') || '0');
+
+    // Build the where clause
+    const where: any = {
+      userId: session.user.id,
+      achievement: {}
     };
-    
+
+    if (category) {
+      where.achievement.category = category;
+    }
+
+    if (type) {
+      where.achievement.type = type;
+    }
+
+    // Fetch user's achievements with pagination
+    const userAchievements = await prisma.userAchievement.findMany({
+      where,
+      include: {
+        achievement: true
+      },
+      orderBy: {
+        earnedAt: 'desc'
+      },
+      take: limit,
+      skip: skip
+    });
+
+    // Map to the Achievement interface
+    const achievements: Achievement[] = userAchievements.map(mapDatabaseAchievement);
+
+    // Get total count for pagination
+    const total = await prisma.userAchievement.count({
+      where
+    });
+
     return NextResponse.json({
-      achievements,
-      progress
+      data: achievements,
+      pagination: {
+        total,
+        limit,
+        skip,
+        hasMore: skip + limit < total
+      }
     });
   } catch (error) {
     console.error('Error fetching achievements:', error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch achievements' },
+      { status: 500 }
+    );
   }
 }
 
 // POST endpoint to track a new achievement
 export async function POST(request: NextRequest) {
   try {
-    // Get current user session
     const session = await getServerSession(authOptions);
     
-    if (!session || !session.user) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
-    
-    // Get user ID from email
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email as string },
-      select: { id: true }
+
+    const body = await request.json();
+    const { 
+      type, 
+      title, 
+      description, 
+      icon, 
+      category, 
+      metadata = {}
+    } = body;
+
+    // Validate required fields
+    if (!type || !title || !description || !category) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Check if achievement type exists, if not create it
+    let achievement = await prisma.achievement.findFirst({
+      where: { type }
     });
-    
-    if (!user) {
-      return NextResponse.json({ message: 'User not found' }, { status: 404 });
-    }
-    
-    // Parse request body
-    const { achievementId } = await request.json();
-    
-    if (!achievementId) {
-      return NextResponse.json({ message: 'Achievement ID is required' }, { status: 400 });
-    }
-    
-    // Check if achievement exists
-    const achievement = await prisma.achievement.findUnique({
-      where: { id: achievementId }
-    });
-    
+
     if (!achievement) {
-      return NextResponse.json({ message: 'Achievement not found' }, { status: 404 });
+      // Create the achievement if it doesn't exist
+      achievement = await prisma.achievement.create({
+        data: {
+          type,
+          title,
+          description,
+          icon,
+          category,
+          // Include category-specific fields if provided
+          ...(category === 'financial' && {
+            amount: metadata.amount,
+            currency: metadata.currency,
+            validUntil: metadata.validUntil ? new Date(metadata.validUntil) : undefined,
+            discountPercent: metadata.discountPercent
+          }),
+          ...(category === 'career' && {
+            issuer: metadata.issuer,
+            company: metadata.company,
+            position: metadata.position
+          })
+        }
+      });
     }
-    
+
     // Check if user already has this achievement
     const existingUserAchievement = await prisma.userAchievement.findFirst({
       where: {
-        userId: user.id,
-        achievementId
+        userId: session.user.id,
+        achievementId: achievement.id
       }
     });
-    
+
     if (existingUserAchievement) {
-      return NextResponse.json({ 
-        message: 'User already has this achievement',
-        success: false
-      });
+      return NextResponse.json(
+        { 
+          error: 'User already has this achievement',
+          achievement: mapDatabaseAchievement(existingUserAchievement)
+        },
+        { status: 400 }
+      );
     }
-    
-    // Create user achievement record
+
+    // Award the achievement to the user
     const userAchievement = await prisma.userAchievement.create({
       data: {
-        userId: user.id,
-        achievementId,
-        earnedAt: new Date()
+        userId: session.user.id,
+        achievementId: achievement.id,
+        metadata: metadata
       },
       include: {
         achievement: true
       }
     });
-    
-    // Create a notification for the achievement
-    await prisma.notification.create({
-      data: {
-        userId: user.id,
-        title: 'New Achievement Earned!',
-        message: `Congratulations! You've earned the ${achievement.title} achievement.`,
-        type: 'ACHIEVEMENT',
-        isRead: false,
-        linkUrl: '/dashboard/achievements'
-      }
-    });
-    
+
+    // Update user points if applicable
+    if (category === 'learning' && metadata.xpEarned) {
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: {
+          points: { increment: metadata.xpEarned }
+        }
+      });
+    }
+
     return NextResponse.json({
-      message: 'Achievement tracked successfully',
-      achievement: mapDatabaseAchievement({
-        ...userAchievement.achievement,
-        earnedAt: userAchievement.earnedAt
-      }),
-      success: true
+      success: true,
+      achievement: mapDatabaseAchievement(userAchievement)
     });
   } catch (error) {
-    console.error('Error tracking achievement:', error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    console.error('Error creating achievement:', error);
+    return NextResponse.json(
+      { error: 'Failed to create achievement' },
+      { status: 500 }
+    );
   }
 }

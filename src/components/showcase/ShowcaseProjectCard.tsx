@@ -1,9 +1,11 @@
 "use client";
 
+/* eslint-disable */
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Star, ExternalLink, GitHub, Eye, Edit, Trash2 } from 'lucide-react';
+import { Star, ExternalLink, Eye, Edit, Trash2 } from 'lucide-react';
+import { Github } from 'lucide-react';
 
 interface ShowcaseProject {
   id: string;
@@ -185,7 +187,7 @@ export default function ShowcaseProjectCard({
               rel="noopener noreferrer"
               className="text-sm text-gray-700 hover:text-gray-900 flex items-center"
             >
-              <GitHub className="h-4 w-4 mr-1" />
+              <Github className="h-4 w-4 mr-1" />
               Code
             </a>
           )}

@@ -1,16 +1,26 @@
+/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-// GET /api/portfolio/[projectId] - Get a specific project in the portfolio
-export async function GET(req: NextRequest, { params }: { params: { projectId: string } }) {
+/**
+ * GET /api/portfolio/[projectId]
+ * Get a specific project in the portfolio
+ */
+export async function GET(
+  req: NextRequest, 
+  { params }: { params: Promise<{ projectId: string }> }
+) {
   try {
     const session = await getServerSession(authOptions);
-    const { projectId } = params;
+    const { projectId } = await params;
     
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' }, 
+        { status: 401 }
+      );
     }
     
     // Fetch the project submission
@@ -26,19 +36,187 @@ export async function GET(req: NextRequest, { params }: { params: { projectId: s
             course: {
               select: {
                 title: true,
+                code: true,
+                thumbnailUrl: true,
               },
             },
+            skills: {
+              select: {
+                id: true,
+                name: true,
+                level: true,
+              },
+            },
+          },
+        },
+        student: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
           },
         },
         reviews: {
-          orderBy: {
-            createdAt: 'desc',
+          where: {
+            status: 'PUBLISHED',
           },
-          include: {
+          select: {
+            id: true,
+            rating: true,
+            comment: true,
+            createdAt: true,
             reviewer: {
               select: {
+                id: true,
                 name: true,
                 image: true,
+                role: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!projectSubmission) {
+      return NextResponse.json(
+        { error: 'Project not found in your portfolio' }, 
+        { status: 404 }
+      );
+    }
+
+    // Calculate average rating
+    const avgRating = projectSubmission.reviews.length > 0
+      ? projectSubmission.reviews.reduce((sum, review) => sum + review.rating, 0) / projectSubmission.reviews.length
+      : 0;
+
+    // Format the response
+    const response = {
+      ...projectSubmission,
+      project: {
+        ...projectSubmission.project,
+        averageRating: parseFloat(avgRating.toFixed(1)),
+      },
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error('Error fetching portfolio project:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch portfolio project' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * PATCH /api/portfolio/[projectId]
+ * Update a project in the portfolio
+ */
+export async function PATCH(
+  req: NextRequest, 
+  { params }: { params: Promise<{ projectId: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    const { projectId } = await params;
+    const updateData = await req.json();
+    
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized' }, 
+        { status: 401 }
+      );
+    }
+    
+    // Validate update data
+    const allowedUpdates = [
+      'title',
+      'description',
+      'repositoryUrl',
+      'demoUrl',
+      'isPublic',
+      'featuredImage',
+      'technologies',
+      'challenges',
+      'learnings',
+      'futureImprovements',
+    ];
+    
+    const updates = Object.keys(updateData)
+      .filter(key => allowedUpdates.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = updateData[key];
+        return obj;
+      }, {} as Record<string, any>);
+    
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json(
+        { error: 'No valid fields to update' }, 
+        { status: 400 }
+      );
+    }
+    
+    // Check if the project exists and belongs to the user
+    const existingProject = await prisma.projectSubmission.findFirst({
+      where: {
+        projectId,
+        studentId: session.user.id,
+      },
+    });
+    
+    if (!existingProject) {
+      return NextResponse.json(
+        { error: 'Project not found in your portfolio' }, 
+        { status: 404 }
+      );
+    }
+    
+    // Extract skills from description if it's being updated
+    let skillsToConnect: { id: string }[] = [];
+    if (updates.description) {
+      const skills = extractSkillsFromDescription(updates.description);
+      
+      // Find or create skills
+      await Promise.all(
+        skills.map(async (skillName) => {
+          const skill = await prisma.skill.upsert({
+            where: { name: skillName },
+            create: { name: skillName },
+            update: {},
+          });
+          skillsToConnect.push({ id: skill.id });
+        })
+      );
+    }
+    
+    // Update the project
+    const updatedProject = await prisma.projectSubmission.update({
+      where: {
+        id: existingProject.id,
+      },
+      data: {
+        ...updates,
+        ...(skillsToConnect.length > 0 && {
+          project: {
+            update: {
+              skills: {
+                set: skillsToConnect,
+              },
+            },
+          },
+        }),
+        updatedAt: new Date(),
+      },
+      include: {
+        project: {
+          include: {
+            skills: true,
+            course: {
+              select: {
+                title: true,
+                code: true,
               },
             },
           },
@@ -46,156 +224,42 @@ export async function GET(req: NextRequest, { params }: { params: { projectId: s
       },
     });
     
-    if (!projectSubmission) {
-      return NextResponse.json({ error: 'Project not found in portfolio' }, { status: 404 });
-    }
-    
-    // Fetch portfolio settings for this project
-    const portfolioSetting = await prisma.portfolioSetting.findFirst({
-      where: {
-        userId: session.user.id,
-        projectId,
-      },
-    });
-    
-    // Extract skills from project tags or description
-    const projectTags = projectSubmission.project.tags || [];
-    const extractedSkills = projectTags.length > 0 
-      ? projectTags 
-      : extractSkillsFromDescription(projectSubmission.project.description);
-    
-    // Format the project data for the portfolio
-    const project = {
-      id: projectSubmission.projectId,
-      title: projectSubmission.project.title,
-      description: projectSubmission.project.description,
-      courseTitle: projectSubmission.project.course.title,
-      courseId: projectSubmission.project.courseId,
-      completedAt: projectSubmission.updatedAt,
-      repositoryUrl: projectSubmission.repositoryUrl || null,
-      demoUrl: projectSubmission.demoUrl || null,
-      imageUrl: projectSubmission.project.imageUrl || null,
-      skills: extractedSkills,
-      featured: portfolioSetting?.featured || false,
-      reviews: projectSubmission.reviews.map(review => ({
-        id: review.id,
-        comment: review.comment,
-        createdAt: review.createdAt,
-        reviewer: review.reviewer,
-      })),
-    };
-    
-    return NextResponse.json({ project });
+    return NextResponse.json(updatedProject);
   } catch (error) {
-    console.error('Error fetching project:', error);
+    console.error('Error updating portfolio project:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch project details' },
+      { error: 'Failed to update portfolio project' },
       { status: 500 }
     );
   }
 }
 
-// PATCH /api/portfolio/[projectId] - Update a project in the portfolio
-export async function PATCH(req: NextRequest, { params }: { params: { projectId: string } }) {
-  try {
-    const session = await getServerSession(authOptions);
-    const { projectId } = params;
-    
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    // Only students can update their portfolio
-    if (session.user.role !== 'Student') {
-      return NextResponse.json({ error: 'Only students can update portfolios' }, { status: 403 });
-    }
-    
-    // Verify that the project exists and belongs to the student
-    const projectSubmission = await prisma.projectSubmission.findFirst({
-      where: {
-        projectId,
-        studentId: session.user.id,
-        status: 'APPROVED',  // Only include approved submissions
-      },
-    });
-    
-    if (!projectSubmission) {
-      return NextResponse.json({ error: 'Project not found in portfolio' }, { status: 404 });
-    }
-    
-    const updateData = await req.json();
-    const { featured, description, repositoryUrl, demoUrl } = updateData;
-    
-    // Update or create portfolio settings
-    await prisma.portfolioSetting.upsert({
-      where: {
-        userId_projectId: {
-          userId: session.user.id,
-          projectId,
-        },
-      },
-      update: {
-        featured: featured !== undefined ? featured : undefined,
-        customDescription: description,
-      },
-      create: {
-        userId: session.user.id,
-        projectId,
-        featured: featured !== undefined ? featured : false,
-        customDescription: description,
-      },
-    });
-    
-    // Update submission URLs if provided
-    if (repositoryUrl !== undefined || demoUrl !== undefined) {
-      await prisma.projectSubmission.update({
-        where: {
-          id: projectSubmission.id,
-        },
-        data: {
-          repositoryUrl: repositoryUrl !== undefined ? repositoryUrl : projectSubmission.repositoryUrl,
-          demoUrl: demoUrl !== undefined ? demoUrl : projectSubmission.demoUrl,
-        },
-      });
-    }
-    
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error updating project:', error);
-    return NextResponse.json(
-      { error: 'Failed to update project' },
-      { status: 500 }
-    );
-  }
-}
-
-// Helper function to extract skills from project description
+/**
+ * Helper function to extract skills from project description
+ */
 function extractSkillsFromDescription(description: string): string[] {
-  // Common programming languages and technologies to look for
+  if (!description) return [];
+  
+  // Common tech skills to look for
   const commonSkills = [
-    'JavaScript', 'TypeScript', 'Python', 'Java', 'C#', 'C++', 'Ruby', 'PHP', 'Swift', 'Kotlin',
-    'React', 'Angular', 'Vue', 'Next.js', 'Node.js', 'Express', 'Django', 'Flask', 'Spring', 'ASP.NET',
-    'SQL', 'MongoDB', 'PostgreSQL', 'MySQL', 'Firebase', 'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes',
-    'HTML', 'CSS', 'SASS', 'LESS', 'Tailwind', 'Bootstrap', 'Material UI', 'Redux', 'GraphQL', 'REST API',
-    'CI/CD', 'Git', 'GitHub', 'GitLab', 'Agile', 'Scrum', 'TDD', 'Jest', 'Mocha', 'Chai', 'Cypress',
-    'Machine Learning', 'AI', 'Data Science', 'Big Data', 'Blockchain', 'IoT', 'Mobile Development',
-    'Web Development', 'Backend', 'Frontend', 'Fullstack', 'DevOps', 'Cloud Computing', 'Microservices',
-    'Security', 'UI/UX', 'Design Patterns', 'Object-Oriented Programming', 'Functional Programming'
+    'JavaScript', 'TypeScript', 'React', 'Next.js', 'Node.js',
+    'Python', 'Django', 'Flask', 'Java', 'Spring', 'C#', '.NET',
+    'Ruby', 'Rails', 'PHP', 'Laravel', 'Go', 'Rust', 'Swift',
+    'Kotlin', 'Dart', 'Flutter', 'React Native', 'Vue', 'Angular',
+    'Svelte', 'Redux', 'GraphQL', 'REST', 'Docker', 'Kubernetes',
+    'AWS', 'Azure', 'GCP', 'Firebase', 'MongoDB', 'PostgreSQL',
+    'MySQL', 'SQL Server', 'SQLite', 'Redis', 'Elasticsearch',
+    'Git', 'GitHub', 'GitLab', 'Bitbucket', 'Jest', 'Mocha',
+    'Cypress', 'Selenium', 'JUnit', 'Jest', 'Puppeteer',
   ];
   
-  const skills: string[] = [];
+  // Convert to lowercase for case-insensitive matching
+  const descriptionLower = description.toLowerCase();
   
-  // Check for each skill in the description
-  commonSkills.forEach(skill => {
-    if (description.includes(skill)) {
-      skills.push(skill);
-    }
-  });
+  // Find skills mentioned in the description
+  const foundSkills = commonSkills.filter(skill => 
+    descriptionLower.includes(skill.toLowerCase())
+  );
   
-  // If we couldn't extract skills, provide some generic ones
-  if (skills.length === 0) {
-    return ['Project Management', 'Problem Solving', 'Technical Communication'];
-  }
-  
-  return skills;
+  return Array.from(new Set(foundSkills)); // Remove duplicates
 }

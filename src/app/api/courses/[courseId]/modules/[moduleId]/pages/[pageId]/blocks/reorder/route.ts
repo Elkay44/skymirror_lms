@@ -15,9 +15,9 @@ const reorderBlocksSchema = z.object({
 });
 
 export async function PUT(
-  req: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string; pageId: string } }
-) {
+  request: NextRequest,
+  { params }: { params: Promise<{ courseId: string; moduleId: string; pageId: string }> }
+): Promise<Response> {
   try {
     const session = await getServerSession(authOptions);
     
@@ -25,10 +25,10 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    const { courseId, moduleId, pageId } = params;
+    const { courseId, moduleId, pageId } = await params;
     
     // Validate input data
-    const body = await req.json();
+    const body = await request.json();
     const validation = reorderBlocksSchema.safeParse(body);
     
     if (!validation.success) {

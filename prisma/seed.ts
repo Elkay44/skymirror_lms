@@ -23,9 +23,8 @@ async function main() {
     data: {
       name: 'Admin User',
       email: 'admin@example.com',
-      hashedPassword,
+      password: hashedPassword,
       role: 'ADMIN',
-      emailVerified: new Date(),
     },
   });
 

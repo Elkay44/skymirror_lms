@@ -83,68 +83,62 @@ function LoginContent() {
       
       // Regular login flow
       console.log('Attempting login with credentials');
+      
+      // Use a simple callback URL - always use the root path
+      // This prevents any URL construction issues
+      const safeCallbackUrl = '/';
+      
+      console.log('Using default callback URL');
+      
+      // Sign in without any URL handling
       const result = await signIn('credentials', {
         redirect: false,
         email: data.email,
         password: data.password,
-        role: data.role, // Include role in credentials for logging
-        callbackUrl
+        role: data.role,
+        // Don't pass callbackUrl at all to prevent any URL construction
+        callbackUrl: undefined
       });
 
       // Enhanced error handling with detailed diagnostics
       console.log('Sign in result:', result);
       
-      if (!result) {
-        console.error('Login failed: No result returned from signIn');
-        toast.error('Authentication service error. Please try again later.');
-        return;
-      }
-      
-      if (result.error) {
-        console.error('Login error details:', { 
-          error: result.error, 
-          url: result.url, 
-          status: result.status,
-          ok: result.ok
-        });
+      if (result?.error) {
+        // Handle specific error cases
+        let errorMessage = 'Login failed. Please try again.';
         
-        let errorMessage = 'Login failed';
-        
-        // More specific error messages based on error type
         if (result.error === 'CredentialsSignin') {
           errorMessage = 'Invalid email or password';
           console.debug('Debug: Check that the user exists and password matches');
-          // Check specific conditions
-          if (process.env.NODE_ENV !== 'production') {
-            console.debug('Running database check for user:', data.email);
-            // In real app, you might make an API call here to a debug endpoint
-            // that checks if user exists and has a password set
-          }
-        } else if (result.error.includes('CSRF')) {
-          errorMessage = 'Session expired. Please refresh and try again.';
+        } else if (result.error.includes('ECONNREFUSED')) {
+          errorMessage = 'Cannot connect to the authentication server';
+          console.error('Connection refused - is the backend server running?');
         } else {
-          errorMessage = `${errorMessage}: ${result.error}`;
+          errorMessage = result.error;
         }
         
         toast.error(errorMessage);
-      } else {
-        toast.success('Login successful!');
-        
-        // Wait a moment for the session to be fully updated
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Redirect based on selected role
-        const roleBasedRedirect = {
-          'STUDENT': '/dashboard/student',
-          'INSTRUCTOR': '/dashboard/instructor',
-          'MENTOR': '/dashboard/mentor'
-        };
-        
-        // Redirect to role-specific dashboard or the callback URL
-        const redirectPath = roleBasedRedirect[data.role as keyof typeof roleBasedRedirect] || callbackUrl;
-        console.log('Redirecting to:', redirectPath);
-        router.push(redirectPath);
+        console.error('Login failed:', { error: errorMessage });
+        return;
       }
+
+      // If we get here, login was successful
+      console.log('Login successful, redirecting...');
+      toast.success('Login successful!');
+      
+      // Define role-based redirect paths
+      const roleBasedRedirect = {
+        'STUDENT': '/dashboard/student',
+        'INSTRUCTOR': '/dashboard/instructor',
+        'MENTOR': '/dashboard/mentor'
+      };
+      
+      // Get the redirect path based on role
+      const redirectPath = roleBasedRedirect[data.role as keyof typeof roleBasedRedirect] || '/';
+      console.log('Redirecting to:', redirectPath);
+      
+      // Use window.location.href for reliable redirection
+      window.location.href = redirectPath;
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Authentication failed. Please try again.');

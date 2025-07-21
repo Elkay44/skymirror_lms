@@ -1,493 +1,571 @@
-/**
- * Prisma client extensions for models not directly defined in the schema
- * This allows us to work with models that might be created at runtime or through migrations
- */
+import { PrismaClient, Prisma } from '@prisma/client';
+import { ProjectResource } from '@/types/project-resource';
 
-import { PrismaClient } from '@prisma/client';
-import { Forum, ForumPost, ForumPostLike, ForumPostComment } from './types/forum-types';
-
-// Type for the extended PrismaClient
-export type ExtendedPrismaClient = PrismaClient & {
-  forum: {
-    findUnique: (args: any) => Promise<Forum | null>;
-    findMany: (args: any) => Promise<Forum[]>;
-    create: (args: any) => Promise<Forum>;
-    update: (args: any) => Promise<Forum>;
-    delete: (args: any) => Promise<Forum>;
-  };
-  forumPost: {
-    findUnique: (args: any) => Promise<ForumPost | null>;
-    findMany: (args: any) => Promise<ForumPost[]>;
-    create: (args: any) => Promise<ForumPost>;
-    update: (args: any) => Promise<ForumPost>;
-    delete: (args: any) => Promise<ForumPost>;
-  };
-  forumPostLike: {
-    findUnique: (args: any) => Promise<ForumPostLike | null>;
-    findMany: (args: any) => Promise<ForumPostLike[]>;
-    create: (args: any) => Promise<ForumPostLike>;
-    delete: (args: any) => Promise<ForumPostLike>;
-  };
-  forumPostComment: {
-    findUnique: (args: any) => Promise<ForumPostComment | null>;
-    findMany: (args: any) => Promise<ForumPostComment[]>;
-    create: (args: any) => Promise<ForumPostComment>;
-    update: (args: any) => Promise<ForumPostComment>;
-    delete: (args: any) => Promise<ForumPostComment>;
-  };
-  // Project-related models
-  project: {
-    findMany: (args: any) => Promise<any[]>;
-    findUnique: (args: any) => Promise<any>;
-    create: (args: any) => Promise<any>;
-    update: (args: any) => Promise<any>;
-    delete: (args: any) => Promise<any>;
-  };
-  projectSubmission: any;
-  projectResource: any;
-  page: any;
-  module: any; // Adding module model for reordering functionality
-  certification: any;
-  modulePrerequisite: any;
-  lessonPrerequisite: any;
-  discussionPost: any;
-  discussion: any; // Adding discussion model for search functionality
-  // Use proper types from @prisma/client when they exist, otherwise any
-  courseApprovalHistory: any;
-  notification: any;
-  learningGoal: any;
-  CourseApprovalHistory: any; // Properly capitalized to match schema
-  // Note model for course lesson notes
-  note: {
-    findUnique: (args: any) => Promise<any>;
-    findFirst: (args: any) => Promise<any>;
-    findMany: (args: any) => Promise<any[]>;
-    create: (args: any) => Promise<any>;
-    update: (args: any) => Promise<any>;
-    delete: (args: any) => Promise<any>;
-  };
-  // Assignment and Rubric models
-  assignment: {
-    findUnique: (args: any) => Promise<any>;
-    findFirst: (args: any) => Promise<any>;
-    findMany: (args: any) => Promise<any[]>;
-    create: (args: any) => Promise<any>;
-    update: (args: any) => Promise<any>;
-    delete: (args: any) => Promise<any>;
-    count: (args: any) => Promise<number>;
-  };
-  assignmentResource: {
-    findUnique: (args: any) => Promise<any>;
-    findFirst: (args: any) => Promise<any>;
-    findMany: (args: any) => Promise<any[]>;
-    create: (args: any) => Promise<any>;
-    createMany: (args: any) => Promise<any[]>;
-    update: (args: any) => Promise<any>;
-    delete: (args: any) => Promise<any>;
-  };
-  rubricItem: {
-    findUnique: (args: any) => Promise<any>;
-    findFirst: (args: any) => Promise<any>;
-    findMany: (args: any) => Promise<any[]>;
-    create: (args: any) => Promise<any>;
-    update: (args: any) => Promise<any>;
-    delete: (args: any) => Promise<any>;
-  };
-  criteriaLevel: {
-    findUnique: (args: any) => Promise<any>;
-    findFirst: (args: any) => Promise<any>;
-    findMany: (args: any) => Promise<any[]>;
-    create: (args: any) => Promise<any>;
-    createMany: (args: any) => Promise<any[]>;
-    update: (args: any) => Promise<any>;
-    delete: (args: any) => Promise<any>;
-  };
-  assignmentSubmission: {
-    findUnique: (args: any) => Promise<any>;
-    findFirst: (args: any) => Promise<any>;
-    findMany: (args: any) => Promise<any[]>;
-    create: (args: any) => Promise<any>;
-    update: (args: any) => Promise<any>;
-    delete: (args: any) => Promise<any>;
-  };
-  // Page content block model
-  pageContentBlock: {
-    findUnique: (args: any) => Promise<any>;
-    findFirst: (args: any) => Promise<any>;
-    findMany: (args: any) => Promise<any[]>;
-    create: (args: any) => Promise<any>;
-    update: (args: any) => Promise<any>;
-    delete: (args: any) => Promise<any>;
-    deleteMany: (args: any) => Promise<any>;
-  };
-  // Course version custom implementation
-  courseVersion: {
-    findUnique: (args: any) => Promise<any>;
-    findMany: (args: any) => Promise<any[]>;
-    create: (args: any) => Promise<any>;
-    update: (args: any) => Promise<any>;
-    delete: (args: any) => Promise<any>;
-    count: (args: any) => Promise<number>;
-  };
-  // ActivityLog model
-  activityLog: {
-    findUnique: (args: any) => Promise<any>;
-    findMany: (args: any) => Promise<any[]>;
-    create: (args: any) => Promise<any>;
-    update: (args: any) => Promise<any>;
-    delete: (args: any) => Promise<any>;
-    count: (args: any) => Promise<number>;
-  }
+// Extend the base PrismaClient to include our custom methods
+type PrismaClientWithExtensions = PrismaClient & {
+  $queryRawUnsafe: <T = any>(query: string, ...values: any[]) => Promise<T>;
+  $executeRawUnsafe: (query: string, ...values: any[]) => Promise<number>;
 };
 
-/**
- * Extend the Prisma client with forum-related models
- */
-export function extendPrismaClient(prismaClient: PrismaClient): ExtendedPrismaClient {
-  // Add forum model
-  (prismaClient as any).forum = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "Forum" WHERE id = ${args.where.id} LIMIT 1`,
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "Forum" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "Forum" ${formatInsertClause(args.data)} RETURNING *`,
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "Forum" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "Forum" WHERE id = ${args.where.id} RETURNING *`,
-  };
+// Base model type with common methods
+type BaseModel<T extends Record<string, any> = any> = {
+  findMany: (args?: any) => Promise<T[]>;
+  findUnique: (args: { where: { id: string } }) => Promise<T | null>;
+  findFirst: (args?: any) => Promise<T | null>;
+  create: (args: { data: Omit<T, 'id' | 'createdAt' | 'updatedAt'> }) => Promise<T>;
+  update: (args: { where: { id: string }; data: Partial<Omit<T, 'id' | 'createdAt' | 'updatedAt'>> }) => Promise<T>;
+  delete: (args: { where: { id: string } }) => Promise<T>;
+  count: (args?: any) => Promise<number>;
+  deleteMany: (args?: any) => Promise<{ count: number }>;
+  createMany: (args: { data: Array<Omit<T, 'id' | 'createdAt' | 'updatedAt'>> }) => Promise<{ count: number }>;
+};
 
-  // Add forumPost model
-  (prismaClient as any).forumPost = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ForumPost" WHERE id = ${args.where.id} LIMIT 1`,
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ForumPost" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "ForumPost" ${formatInsertClause(args.data)} RETURNING *`,
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "ForumPost" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "ForumPost" WHERE id = ${args.where.id} RETURNING *`,
-  };
-
-  // Add forumPostLike model
-  (prismaClient as any).forumPostLike = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ForumPostLike" WHERE id = ${args.where.id} LIMIT 1`,
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ForumPostLike" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "ForumPostLike" ${formatInsertClause(args.data)} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "ForumPostLike" WHERE id = ${args.where.id} RETURNING *`,
-  };
-
-  // Add forumPostComment model
-  (prismaClient as any).forumPostComment = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ForumPostComment" WHERE id = ${args.where.id} LIMIT 1`,
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ForumPostComment" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "ForumPostComment" ${formatInsertClause(args.data)} RETURNING *`,
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "ForumPostComment" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "ForumPostComment" WHERE id = ${args.where.id} RETURNING *`,
-  };
-
-  // Add modulePrerequisite model
-  (prismaClient as any).modulePrerequisite = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ModulePrerequisite" WHERE id = ${args.where.id} LIMIT 1`,
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ModulePrerequisite" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "ModulePrerequisite" ${formatInsertClause(args.data)} RETURNING *`,
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "ModulePrerequisite" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "ModulePrerequisite" WHERE id = ${args.where.id} RETURNING *`,
-    deleteMany: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "ModulePrerequisite" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`
-  };
-
-  // Add lessonPrerequisite model
-  (prismaClient as any).lessonPrerequisite = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "LessonPrerequisite" WHERE id = ${args.where.id} LIMIT 1`,
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "LessonPrerequisite" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "LessonPrerequisite" ${formatInsertClause(args.data)} RETURNING *`,
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "LessonPrerequisite" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "LessonPrerequisite" WHERE id = ${args.where.id} RETURNING *`,
-    deleteMany: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "LessonPrerequisite" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`
-  };
-
-  // Add discussionPost model
-  (prismaClient as any).discussionPost = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "DiscussionPost" WHERE id = ${args.where.id} LIMIT 1`,
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "DiscussionPost" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "DiscussionPost" ${formatInsertClause(args.data)} RETURNING *`,
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "DiscussionPost" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "DiscussionPost" WHERE id = ${args.where.id} RETURNING *`,
-    count: (args: any) => (prismaClient as any).$queryRaw`SELECT COUNT(*) FROM "DiscussionPost" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`
-  };
-
-  // Add courseApprovalHistory model using raw SQL queries to avoid Prisma client issues
-  (prismaClient as any).courseApprovalHistory = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "CourseApprovalHistory" WHERE id = ${args.where.id} LIMIT 1`,
-    findFirst: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "CourseApprovalHistory" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''} LIMIT 1`,
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "CourseApprovalHistory" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "CourseApprovalHistory" ${formatInsertClause(args.data)} RETURNING *`,
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "CourseApprovalHistory" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "CourseApprovalHistory" WHERE id = ${args.where.id} RETURNING *`,
-    deleteMany: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "CourseApprovalHistory" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    upsert: (args: any) => (prismaClient as any).$executeRaw`
-      INSERT INTO "CourseApprovalHistory" ${formatInsertClause(args.create)}
-      ON CONFLICT (id) DO UPDATE SET ${formatUpdateClause(args.update)}
-      RETURNING *
-    `,
-    count: (args: any) => (prismaClient as any).$queryRaw`SELECT COUNT(*) FROM "CourseApprovalHistory" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`
+// Extended Prisma client type
+export type ExtendedPrismaClient = PrismaClient & {
+  // Project-related models
+  project: BaseModel & {
+    count: (args?: any) => Promise<number>;
   };
   
-  // Add CourseApprovalHistory model with proper capitalization to match the schema
-  (prismaClient as any).CourseApprovalHistory = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "CourseApprovalHistory" WHERE id = ${args.where.id} LIMIT 1`,
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "CourseApprovalHistory" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "CourseApprovalHistory" ${formatInsertClause(args.data)} RETURNING *`,
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "CourseApprovalHistory" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "CourseApprovalHistory" WHERE id = ${args.where.id} RETURNING *`,
-    deleteMany: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "CourseApprovalHistory" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    count: (args: any) => (prismaClient as any).$queryRaw`SELECT COUNT(*) FROM "CourseApprovalHistory" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`
+  projectResource: BaseModel & {
+    deleteMany: (args?: any) => Promise<{ count: number }>;
+    findMany: (args?: any) => Promise<ProjectResource[]>;
+    findUnique: (args: { where: { id: string } }) => Promise<ProjectResource | null>;
+    create: (args: { data: Omit<ProjectResource, 'id' | 'createdAt' | 'updatedAt'> }) => Promise<ProjectResource>;
+    update: (args: { 
+      where: { id: string }; 
+      data: Partial<Omit<ProjectResource, 'id' | 'projectId' | 'createdAt' | 'updatedAt'>> 
+    }) => Promise<ProjectResource>;
+    delete: (args: { where: { id: string } }) => Promise<ProjectResource>;
   };
   
-  // Add assignment model implementation
-  (prismaClient as any).assignment = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "Assignment" WHERE id = ${args.where.id} LIMIT 1`,
-    findFirst: (args: any) => {
-      // Implement findFirst with flexible conditions
-      const whereClause = args.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-      return (prismaClient as any).$queryRaw`SELECT * FROM "Assignment" ${whereClause} LIMIT 1`;
-    },
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "Assignment" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => {
-      console.log('[PRISMA_EXT] Creating assignment with data:', args.data);
-      return (prismaClient as any).$executeRaw`INSERT INTO "Assignment" ${formatInsertClause(args.data)} RETURNING *`;
-    },
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "Assignment" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "Assignment" WHERE id = ${args.where.id} RETURNING *`,
-    count: (args: any) => (prismaClient as any).$queryRaw`SELECT COUNT(*) FROM "Assignment" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`
+  projectSubmission: BaseModel & {
+    deleteMany: (args?: any) => Promise<{ count: number }>;
   };
   
-  // Add assignmentResource model implementation
-  (prismaClient as any).assignmentResource = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "AssignmentResource" WHERE id = ${args.where.id} LIMIT 1`,
-    findFirst: (args: any) => {
-      const whereClause = args.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-      return (prismaClient as any).$queryRaw`SELECT * FROM "AssignmentResource" ${whereClause} LIMIT 1`;
-    },
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "AssignmentResource" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "AssignmentResource" ${formatInsertClause(args.data)} RETURNING *`,
-    createMany: (args: any) => {
-      // Handle bulk insert for assignment resources
-      const promises = args.data.map((item: any) => {
-        return (prismaClient as any).$executeRaw`INSERT INTO "AssignmentResource" ${formatInsertClause(item)} RETURNING *`;
-      });
-      return Promise.all(promises);
-    },
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "AssignmentResource" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "AssignmentResource" WHERE id = ${args.where.id} RETURNING *`
+  // Course-related models
+  course: BaseModel & {
+    findUnique: (args: {
+      where: { id: string };
+      select?: any;
+      include?: any;
+    }) => Promise<any>;
+    count: (args?: any) => Promise<number>;
   };
   
-  // Add rubricItem model implementation
-  (prismaClient as any).rubricItem = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "RubricItem" WHERE id = ${args.where.id} LIMIT 1`,
-    findFirst: (args: any) => {
-      const whereClause = args.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-      return (prismaClient as any).$queryRaw`SELECT * FROM "RubricItem" ${whereClause} LIMIT 1`;
-    },
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "RubricItem" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "RubricItem" ${formatInsertClause(args.data)} RETURNING *`,
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "RubricItem" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "RubricItem" WHERE id = ${args.where.id} RETURNING *`
+  // Assignment model
+  assignment: BaseModel & {
+    findUnique: (args: { 
+      where: { id: string };
+      include?: any;
+    }) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    create: (args: { data: any }) => Promise<any>;
+    update: (args: { where: { id: string }; data: any }) => Promise<any>;
+    deleteItem: (args: { where: { id: string } }) => Promise<any>;
+    deleteMany: (args?: any) => Promise<{ count: number }>;
+    count: (args?: any) => Promise<number>;
   };
   
-  // Add criteriaLevel model implementation
-  (prismaClient as any).criteriaLevel = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "CriteriaLevel" WHERE id = ${args.where.id} LIMIT 1`,
-    findFirst: (args: any) => {
-      const whereClause = args.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-      return (prismaClient as any).$queryRaw`SELECT * FROM "CriteriaLevel" ${whereClause} LIMIT 1`;
-    },
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "CriteriaLevel" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "CriteriaLevel" ${formatInsertClause(args.data)} RETURNING *`,
-    createMany: (args: any) => {
-      // Handle bulk insert for criteria levels
-      const promises = args.data.map((item: any) => {
-        return (prismaClient as any).$executeRaw`INSERT INTO "CriteriaLevel" ${formatInsertClause(item)} RETURNING *`;
-      });
-      return Promise.all(promises);
-    },
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "CriteriaLevel" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "CriteriaLevel" WHERE id = ${args.where.id} RETURNING *`
+  // Note model
+  note: BaseModel & {
+    findUnique: (args: { 
+      where: { id: string };
+      include?: any;
+    }) => Promise<any>;
+    findMany: (args?: { 
+      where?: any;
+      orderBy?: any;
+    }) => Promise<any[]>;
+    create: (args: { data: any }) => Promise<any>;
+    update: (args: { where: { id: string }; data: any }) => Promise<any>;
+    deleteItem: (args: { where: { id: string } }) => Promise<any>;
+    deleteMany: (args?: any) => Promise<{ count: number }>;
+    count: (args?: any) => Promise<number>;
   };
   
-  // Add assignmentSubmission model implementation
-  (prismaClient as any).assignmentSubmission = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "AssignmentSubmission" WHERE id = ${args.where.id} LIMIT 1`,
-    findFirst: (args: any) => {
-      // This implements findFirst which is similar to findUnique but with more flexible conditions
-      console.log('[PRISMA_EXT] Finding first assignment submission with args:', args);
-      const whereClause = args.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-      return (prismaClient as any).$queryRaw`SELECT * FROM "AssignmentSubmission" ${whereClause} LIMIT 1`;
-    },
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "AssignmentSubmission" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "AssignmentSubmission" ${formatInsertClause(args.data)} RETURNING *`,
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "AssignmentSubmission" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "AssignmentSubmission" WHERE id = ${args.where.id} RETURNING *`
+  // Module model
+  module: BaseModel & {
+    findUnique: (args: { 
+      where: { id: string };
+      include?: any;
+      select?: any;
+    }) => Promise<any>;
+    findFirst: (args: {
+      where: any;
+      include?: any;
+      select?: any;
+    }) => Promise<any>;
+    findMany: (args?: { 
+      where?: any;
+      orderBy?: any;
+      include?: any;
+    }) => Promise<any[]>;
+    create: (args: { data: any }) => Promise<any>;
+    update: (args: { where: { id: string }; data: any }) => Promise<any>;
+    deleteItem: (args: { where: { id: string } }) => Promise<any>;
+    deleteMany: (args?: any) => Promise<{ count: number }>;
+    count: (args?: any) => Promise<number>;
   };
+  
+  // Enrollment model
+  enrollment: BaseModel & {
+    findFirst: (args: any) => Promise<any | null>;
+  };
+  
+  // Activity log model
+  activityLog: {
+    create: (args: any) => Promise<any>;
+  };
+};
 
-  // Add courseVersion model using raw SQL queries
-  (prismaClient as any).courseVersion = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "CourseVersion" WHERE id = ${args.where.id} LIMIT 1`,
-    findMany: (args: any) => {
-      // Handle complex queries with skip, take, orderBy, include, etc.
-      const whereClause = args.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-      const orderByClause = args.orderBy ? `ORDER BY ${formatOrderByClause(args.orderBy)}` : '';
-      const limitClause = args.take ? `LIMIT ${args.take}` : '';
-      const offsetClause = args.skip ? `OFFSET ${args.skip}` : '';
+// Helper function to format WHERE clause for raw queries
+const formatWhereClause = (where: Record<string, unknown> | null | undefined): string => {
+  if (!where) return '';
+  
+  const conditions: string[] = [];
+  
+  for (const key in where) {
+    if (Object.prototype.hasOwnProperty.call(where, key)) {
+      const value = where[key];
       
-      return (prismaClient as any).$queryRaw`
-        SELECT * FROM "CourseVersion" 
-        ${whereClause}
-        ${orderByClause}
-        ${limitClause}
-        ${offsetClause}
-      `;
-    },
-    create: (args: any) => {
-      // Special handling for complex objects in create
-      const data = {...args.data};
-      if (data.snapshot && typeof data.snapshot === 'object') {
-        data.snapshot = JSON.stringify(data.snapshot);
+      if (value === null || value === undefined) {
+        conditions.push(`"${key}" IS NULL`);
+        continue;
       }
-      return (prismaClient as any).$executeRaw`INSERT INTO "CourseVersion" ${formatInsertClause(data)} RETURNING *`;
-    },
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "CourseVersion" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "CourseVersion" WHERE id = ${args.where.id} RETURNING *`,
-    count: (args: any) => (prismaClient as any).$queryRaw`SELECT COUNT(*) FROM "CourseVersion" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`
-  };
-
-  // Add project model implementation
-  (prismaClient as any).project = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "Project" WHERE id = ${args.where.id} LIMIT 1`,
-    findFirst: (args: any) => {
-      const whereClause = args.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-      return (prismaClient as any).$queryRaw`SELECT * FROM "Project" ${whereClause} LIMIT 1`;
-    },
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "Project" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => {
-      console.log('[PRISMA_EXT] Creating project with data:', args.data);
-      return (prismaClient as any).$executeRaw`INSERT INTO "Project" ${formatInsertClause(args.data)} RETURNING *`;
-    },
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "Project" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "Project" WHERE id = ${args.where.id} RETURNING *`,
-    count: (args: any) => (prismaClient as any).$queryRaw`SELECT COUNT(*) FROM "Project" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`
-  };
-  
-  // Add projectResource model implementation
-  (prismaClient as any).projectResource = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ProjectResource" WHERE id = ${args.where.id} LIMIT 1`,
-    findFirst: (args: any) => {
-      const whereClause = args.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-      return (prismaClient as any).$queryRaw`SELECT * FROM "ProjectResource" ${whereClause} LIMIT 1`;
-    },
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ProjectResource" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "ProjectResource" ${formatInsertClause(args.data)} RETURNING *`,
-    createMany: (args: any) => {
-      // Handle bulk insert for project resources
-      const promises = args.data.map((item: any) => {
-        return (prismaClient as any).$executeRaw`INSERT INTO "ProjectResource" ${formatInsertClause(item)} RETURNING *`;
-      });
-      return Promise.all(promises);
-    },
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "ProjectResource" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "ProjectResource" WHERE id = ${args.where.id} RETURNING *`
-  };
-  
-  // Add projectSubmission model implementation
-  (prismaClient as any).projectSubmission = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ProjectSubmission" WHERE id = ${args.where.id} LIMIT 1`,
-    findFirst: (args: any) => {
-      const whereClause = args.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-      return (prismaClient as any).$queryRaw`SELECT * FROM "ProjectSubmission" ${whereClause} LIMIT 1`;
-    },
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "ProjectSubmission" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "ProjectSubmission" ${formatInsertClause(args.data)} RETURNING *`,
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "ProjectSubmission" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "ProjectSubmission" WHERE id = ${args.where.id} RETURNING *`
-  };
-
-  // Add pageContentBlock model implementation
-  (prismaClient as any).pageContentBlock = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "PageContentBlock" WHERE id = ${args.where.id} LIMIT 1`,
-    findFirst: (args: any) => {
-      const whereClause = args.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-      return (prismaClient as any).$queryRaw`SELECT * FROM "PageContentBlock" ${whereClause} LIMIT 1`;
-    },
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "PageContentBlock" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''} ${args.orderBy ? `ORDER BY ${formatOrderByClause(args.orderBy)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "PageContentBlock" ${formatInsertClause(args.data)} RETURNING *`,
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "PageContentBlock" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "PageContentBlock" WHERE id = ${args.where.id} RETURNING *`,
-    deleteMany: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "PageContentBlock" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''} RETURNING *`
-  };
-
-  // Add Note model implementation using raw SQL queries
-  (prismaClient as any).note = {
-    findUnique: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "Note" WHERE id = ${args.where.id} LIMIT 1`,
-    findFirst: (args: any) => {
-      const whereClause = args.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-      return (prismaClient as any).$queryRaw`SELECT * FROM "Note" ${whereClause} LIMIT 1`;
-    },
-    findMany: (args: any) => (prismaClient as any).$queryRaw`SELECT * FROM "Note" ${args.where ? `WHERE ${formatWhereClause(args.where)}` : ''} ${args.orderBy ? `ORDER BY ${formatOrderByClause(args.orderBy)}` : ''}`,
-    create: (args: any) => (prismaClient as any).$executeRaw`INSERT INTO "Note" ${formatInsertClause(args.data)} RETURNING *`,
-    update: (args: any) => (prismaClient as any).$executeRaw`UPDATE "Note" SET ${formatUpdateClause(args.data)} WHERE id = ${args.where.id} RETURNING *`,
-    delete: (args: any) => (prismaClient as any).$executeRaw`DELETE FROM "Note" WHERE id = ${args.where.id} RETURNING *`
-  };
-
-  return prismaClient as ExtendedPrismaClient;
-}
-
-// Helper functions for SQL clause formatting
-function formatWhereClause(where: Record<string, any>): string {
-  return Object.entries(where)
-    .map(([key, value]) => {
+      
+      if (typeof value === 'object' && value !== null) {
+        if ('in' in value && Array.isArray((value as any).in)) {
+          const values = (value as any).in
+            .map((v: unknown) => 
+              v === null || v === undefined ? 'NULL' : 
+              typeof v === 'string' ? `'${v.replace(/'/g, "''")}'` :
+              v instanceof Date ? `'${v.toISOString()}'` :
+              `'${String(v)}'`
+            )
+            .join(',');
+          conditions.push(`"${key}" IN (${values})`);
+          continue;
+        }
+        
+        if ('equals' in value) {
+          const eqValue = (value as any).equals;
+          if (eqValue === null || eqValue === undefined) {
+            conditions.push(`"${key}" IS NULL`);
+          } else if (typeof eqValue === 'string') {
+            conditions.push(`"${key}" = '${eqValue.replace(/'/g, "''")}'`);
+          } else if (eqValue instanceof Date) {
+            conditions.push(`"${key}" = '${eqValue.toISOString()}'`);
+          } else if (typeof eqValue === 'object') {
+            conditions.push(`"${key}" = '${JSON.stringify(eqValue).replace(/'/g, "''")}'`);
+          } else {
+            conditions.push(`"${key}" = ${eqValue}`);
+          }
+          continue;
+        }
+        
+        // Handle other operators like gt, gte, lt, lte, contains, etc.
+        const operators = ['gt', 'gte', 'lt', 'lte', 'contains', 'startsWith', 'endsWith'];
+        const hasOperator = Object.keys(value).some(k => operators.includes(k));
+        
+        if (hasOperator) {
+          for (const op in value) {
+            if (operators.includes(op)) {
+              const opValue = (value as any)[op];
+              let sqlOp = '';
+              
+              switch (op) {
+                case 'gt': sqlOp = '>'; break;
+                case 'gte': sqlOp = '>='; break;
+                case 'lt': sqlOp = '<'; break;
+                case 'lte': sqlOp = '<='; break;
+                case 'contains': 
+                  conditions.push(`"${key}"::text LIKE '%${String(opValue).replace(/'/g, "''")}%'`);
+                  continue;
+                case 'startsWith':
+                  conditions.push(`"${key}"::text LIKE '${String(opValue).replace(/'/g, "''")}%'`);
+                  continue;
+                case 'endsWith':
+                  conditions.push(`"${key}"::text LIKE '%${String(opValue).replace(/'/g, "''")}'`);
+                  continue;
+                default:
+                  continue;
+              }
+              
+              if (opValue === null || opValue === undefined) continue;
+              
+              if (typeof opValue === 'string') {
+                conditions.push(`"${key}" ${sqlOp} '${opValue.replace(/'/g, "''")}'`);
+              } else if (opValue instanceof Date) {
+                conditions.push(`"${key}" ${sqlOp} '${opValue.toISOString()}'`);
+              } else if (typeof opValue === 'object') {
+                conditions.push(`"${key}" ${sqlOp} '${JSON.stringify(opValue).replace(/'/g, "''")}'`);
+              } else {
+                conditions.push(`"${key}" ${sqlOp} ${opValue}`);
+              }
+            }
+          }
+          continue;
+        }
+      }
+      
+      // Default equality check
       if (typeof value === 'string') {
-        return `"${key}" = '${value}'`;
+        conditions.push(`"${key}" = '${value.replace(/'/g, "''")}'`);
+      } else if (value instanceof Date) {
+        conditions.push(`"${key}" = '${value.toISOString()}'`);
+      } else if (typeof value === 'object') {
+        conditions.push(`"${key}" = '${JSON.stringify(value).replace(/'/g, "''")}'`);
       } else {
-        return `"${key}" = ${value}`;
+        conditions.push(`"${key}" = ${value}`);
       }
-    })
-    .join(' AND ');
-}
-
-function formatInsertClause(data: Record<string, any>): string {
-  const columns = Object.keys(data).map(key => `"${key}"`).join(', ');
-  const values = Object.values(data).map(value => {
-    if (typeof value === 'string') {
-      return `'${value}'`;
-    } else {
-      return value;
     }
-  }).join(', ');
-  
-  return `(${columns}) VALUES (${values})`;
-}
-
-function formatUpdateClause(data: Record<string, any>): string {
-  return Object.entries(data)
-    .map(([key, value]) => {
-      if (typeof value === 'string') {
-        return `"${key}" = '${value}'`;
-      } else {
-        return `"${key}" = ${value}`;
-      }
-    })
-    .join(', ');
-}
-
-function formatOrderByClause(orderBy: Record<string, any> | Array<Record<string, any>>): string {
-  if (Array.isArray(orderBy)) {
-    return orderBy.map(item => formatSingleOrderBy(item)).join(', ');
-  } else {
-    return formatSingleOrderBy(orderBy);
   }
-}
+  
+  return conditions.join(' AND ');
+};
 
-function formatSingleOrderBy(orderBy: Record<string, any>): string {
-  return Object.entries(orderBy)
-    .map(([key, value]) => {
-      if (typeof value === 'string') {
-        return `"${key}" ${value.toUpperCase()}`;
-      } else {
-        return `"${key}" ASC`; // Default to ASC if not a string
+// Helper function to format ORDER BY clause for raw queries
+const formatOrderByClause = (orderBy: unknown): string => {
+  if (!orderBy) return '';
+  
+  // Handle array of order by objects
+  if (Array.isArray(orderBy)) {
+    return orderBy
+      .map(ob => formatOrderByClause(ob))
+      .filter(Boolean)
+      .join(', ');
+  }
+  
+  // Handle single order by object
+  if (orderBy && typeof orderBy === 'object') {
+    const orderByObj = orderBy as Record<string, unknown>;
+    const orderBys: string[] = [];
+    
+    for (const key in orderByObj) {
+      if (Object.prototype.hasOwnProperty.call(orderByObj, key)) {
+        const value = orderByObj[key];
+        const direction = value === 'desc' || value === 'descending' ? 'DESC' : 'ASC';
+        orderBys.push(`"${key}" ${direction}`);
       }
-    })
-    .join(', ');
+    }
+    
+    return orderBys.join(', ');
+  }
+  
+  // Handle string input (e.g., 'name asc' or 'createdAt desc')
+  if (typeof orderBy === 'string') {
+    const [field, direction] = orderBy.trim().split(/\s+/);
+    if (!field) return '';
+    const dir = direction && (direction.toLowerCase() === 'desc' || direction.toLowerCase() === 'descending') 
+      ? 'DESC' 
+      : 'ASC';
+    return `"${field}" ${dir}`;
+  }
+  
+  return '';
+};
+
+// Helper function to format INSERT clause for raw queries
+const formatInsertClause = (data: Record<string, unknown>): string => {
+  const columns: string[] = [];
+  const values: string[] = [];
+  
+  for (const key in data) {
+    if (Object.prototype.hasOwnProperty.call(data, key)) {
+      const value = data[key];
+      columns.push(`"${key}"`);
+      
+      if (value === null || value === undefined) {
+        values.push('NULL');
+      } else if (typeof value === 'string') {
+        values.push(`'${value.replace(/'/g, "''")}'`);
+      } else if (value instanceof Date) {
+        values.push(`'${value.toISOString()}'`);
+      } else if (typeof value === 'object') {
+        values.push(`'${JSON.stringify(value).replace(/'/g, "''")}'`);
+      } else if (typeof value === 'boolean') {
+        values.push(value ? 'TRUE' : 'FALSE');
+      } else {
+        values.push(String(value));
+      }
+    }
+  }
+  
+  return `(${columns.join(', ')}) VALUES (${values.join(', ')})`;
+};
+
+// Helper function to format UPDATE clause for raw queries
+const formatUpdateClause = (data: Record<string, unknown>): string => {
+  const clauses: string[] = [];
+  
+  for (const key in data) {
+    if (Object.prototype.hasOwnProperty.call(data, key)) {
+      const value = data[key];
+      let clause: string;
+      
+      if (value === null || value === undefined) {
+        clause = `"${key}" = NULL`;
+      } else if (typeof value === 'string') {
+        clause = `"${key}" = '${value.replace(/'/g, "''")}'`;
+      } else if (value instanceof Date) {
+        clause = `"${key}" = '${value.toISOString()}'`;
+      } else if (typeof value === 'object') {
+        clause = `"${key}" = '${JSON.stringify(value).replace(/'/g, "''")}'`;
+      } else {
+        clause = `"${key}" = ${value}`;
+      }
+      
+      clauses.push(clause);
+    }
+  }
+  
+  return clauses.join(', ');
+};
+
+// Helper type for model data
+type ModelData<T> = T & {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// Create a model with common CRUD operations
+const createModel = <T extends Record<string, any>>(
+  prisma: PrismaClientWithExtensions, 
+  tableName: string
+): BaseModel<T> => ({
+  findMany: async (args: any = {}) => {
+    const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
+    const orderByClause = args?.orderBy ? `ORDER BY ${formatOrderByClause(args.orderBy)}` : '';
+    const limitClause = args?.take ? `LIMIT ${args.take}` : '';
+    const offsetClause = args?.skip ? `OFFSET ${args.skip}` : '';
+    
+    const query = `SELECT * FROM "${tableName}" ${whereClause} ${orderByClause} ${limitClause} ${offsetClause}`.trim();
+    const result = await prisma.$queryRawUnsafe<T[]>(query);
+    return Array.isArray(result) ? result : [];
+  },
+  
+  findUnique: async (args: { where: { id: string } }) => {
+    if (!args?.where?.id) {
+      throw new Error('findUnique requires a where.id condition');
+    }
+    const result = await prisma.$queryRawUnsafe<T[]>(
+      `SELECT * FROM "${tableName}" WHERE id = '${args.where.id}' LIMIT 1`
+    );
+    return Array.isArray(result) && result.length > 0 ? result[0] : null;
+  },
+  
+  findFirst: async (args: { where?: any } = {}) => {
+    const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
+    const result = await prisma.$queryRawUnsafe<T[]>(
+      `SELECT * FROM "${tableName}" ${whereClause} LIMIT 1`
+    );
+    return Array.isArray(result) && result.length > 0 ? result[0] : null;
+  },
+  
+  create: async (args: { data: Omit<T, 'id' | 'createdAt' | 'updatedAt'> }): Promise<T> => {
+    // Generate a new ID and timestamps
+    const id = `temp-${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+    
+    // Create the data with required fields
+    const dataWithId: ModelData<Omit<T, 'id' | 'createdAt' | 'updatedAt'>> = {
+      ...args.data,
+      id,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    // Convert data to SQL values
+    const columns = Object.keys(dataWithId).map(k => `"${k}"`).join(', ');
+    const values = Object.entries(dataWithId as Record<string, unknown>)
+      .map(([key, value]) => {
+        if (value === null || value === undefined) return 'NULL';
+        if (typeof value === 'string') return `'${value.replace(/'/g, "''")}'`;
+        if (value instanceof Date) return `'${value.toISOString()}'`;
+        if (typeof value === 'object' && value !== null) {
+          return `'${JSON.stringify(value).replace(/'/g, "''")}'`;
+        }
+        return `'${value}'`;
+      })
+      .join(', ');
+    
+    const result = await prisma.$queryRawUnsafe<T[]>(
+      `INSERT INTO "${tableName}" (${columns}) VALUES (${values}) RETURNING *`
+    );
+    
+    if (!Array.isArray(result) || result.length === 0) {
+      throw new Error('Failed to create record');
+    }
+    
+    return result[0] as T;
+  },
+  
+  update: async (args: { where: { id: string }; data: Partial<Omit<T, 'id' | 'createdAt' | 'updatedAt'>> }) => {
+    if (!args?.where?.id) {
+      throw new Error('update requires a where.id condition');
+    }
+    
+    // Ensure we're working with a plain object
+    const updateData = { ...args.data } as Record<string, unknown>;
+    updateData.updatedAt = new Date().toISOString();
+    
+    const updateClause = formatUpdateClause(updateData);
+    const result = await prisma.$queryRawUnsafe<T[]>(
+      `UPDATE "${tableName}" SET ${updateClause} WHERE id = '${args.where.id}' RETURNING *`
+    );
+    
+    if (!Array.isArray(result) || result.length === 0) {
+      throw new Error('Failed to update record');
+    }
+    
+    return result[0] as T;
+  },
+  
+  delete: async (args: { where: { id: string } }) => {
+    if (!args?.where?.id) {
+      throw new Error('delete requires a where.id condition');
+    }
+    const result = await prisma.$queryRawUnsafe<T[]>(
+      `DELETE FROM "${tableName}" WHERE id = '${args.where.id}' RETURNING *`
+    );
+    if (!Array.isArray(result) || result.length === 0) {
+      throw new Error('Failed to delete record');
+    }
+    return result[0] as T;
+  },
+  
+  count: async (args: { where?: any } = {}) => {
+    const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
+    const result = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
+      `SELECT COUNT(*) FROM "${tableName}" ${whereClause}`
+    );
+    if (!Array.isArray(result) || result.length === 0) {
+      return 0;
+    }
+    const count = result[0]?.count;
+    return count !== undefined ? Number(count) : 0;
+  },
+  
+  deleteMany: async (args: { where?: any } = {}) => {
+    const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
+    const count = await prisma.$executeRawUnsafe(
+      `DELETE FROM "${tableName}" ${whereClause}`
+    );
+    // Ensure count is a number
+    const countNum = typeof count === 'number' ? count : 0;
+    return { count: countNum };
+  },
+  
+  createMany: async (args: { data: Array<Omit<T, 'id' | 'createdAt' | 'updatedAt'>> }) => {
+    if (!Array.isArray(args?.data) || args.data.length === 0) {
+      throw new Error('createMany requires a non-empty data array');
+    }
+    
+    // Prepare data with IDs and timestamps
+    const now = new Date().toISOString();
+    const preparedData = args.data.map(item => {
+      const dataWithId = {
+        ...item,
+        id: `temp-${Math.random().toString(36).substr(2, 9)}`,
+        createdAt: now,
+        updatedAt: now,
+      };
+      return dataWithId as T & { id: string; createdAt: string; updatedAt: string };
+    });
+    
+    if (preparedData.length === 0) {
+      return { count: 0 };
+    }
+    
+    // Format values for SQL - handle different value types safely
+    const valueRows = [];
+    
+    for (const item of preparedData) {
+      const valueStrings: string[] = [];
+      const itemRecord = item as Record<string, unknown>;
+      
+      for (const key in itemRecord) {
+        if (Object.prototype.hasOwnProperty.call(itemRecord, key)) {
+          const value = itemRecord[key];
+          let sqlValue: string;
+          
+          if (value === null || value === undefined) {
+            sqlValue = 'NULL';
+          } else if (typeof value === 'string') {
+            sqlValue = `'${value.replace(/'/g, "''")}'`;
+          } else if (value instanceof Date) {
+            sqlValue = `'${value.toISOString()}'`;
+          } else if (typeof value === 'object') {
+            sqlValue = `'${JSON.stringify(value).replace(/'/g, "''")}'`;
+          } else {
+            sqlValue = `'${value}'`;
+          }
+          
+          valueStrings.push(sqlValue);
+        }
+      }
+      
+      valueRows.push(`(${valueStrings.join(', ')})`);
+    }
+    
+    const values = valueRows.join(', ');
+    const columns = Object.keys(preparedData[0]).map(col => `"${col}"`).join(', ');
+    
+    // Execute the batch insert
+    const count = await prisma.$executeRawUnsafe(
+      `INSERT INTO "${tableName}" (${columns}) VALUES ${values} ON CONFLICT DO NOTHING`
+    );
+    
+    // Ensure count is a number
+    const countNum = typeof count === 'number' ? count : 0;
+    return { count: countNum };
+  }
+});
+
+// Extend the Prisma client with our custom models
+export function extendPrismaClient(prisma: PrismaClient): ExtendedPrismaClient {
+  const extendedClient = prisma as unknown as ExtendedPrismaClient;
+
+  // Add project-related models
+  extendedClient.project = {
+    ...createModel(extendedClient, 'Project'),
+    count: (args?: any) => createModel(extendedClient, 'Project').count(args)
+  };
+  
+  extendedClient.projectResource = {
+    ...createModel(extendedClient, 'ProjectResource'),
+    deleteMany: (args?: any) => createModel(extendedClient, 'ProjectResource').deleteMany(args)
+  };
+  
+  extendedClient.projectSubmission = {
+    ...createModel(extendedClient, 'ProjectSubmission'),
+    deleteMany: (args?: any) => createModel(extendedClient, 'ProjectSubmission').deleteMany(args)
+  };
+  
+  // Add course-related models
+  extendedClient.course = {
+    ...createModel(extendedClient, 'Course'),
+    count: (args?: any) => createModel(extendedClient, 'Course').count(args)
+  };
+  
+  // Add enrollment model
+  extendedClient.enrollment = {
+    ...createModel(extendedClient, 'Enrollment'),
+    findFirst: (args: any) => createModel(extendedClient, 'Enrollment').findFirst(args)
+  };
+  
+  // Add activity log model
+  extendedClient.activityLog = {
+    create: async (args: any) => {
+      const insertClause = formatInsertClause(args.data);
+      const [result] = await extendedClient.$queryRawUnsafe(
+        `INSERT INTO "ActivityLog" ${insertClause} RETURNING *`
+      );
+      return result;
+    }
+  };
+
+  return extendedClient;
 }

@@ -5,10 +5,10 @@ import prisma from '@/lib/prisma';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
-    const { courseId } = params;
+    const { courseId } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {

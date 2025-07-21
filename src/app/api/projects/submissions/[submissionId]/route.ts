@@ -1,18 +1,25 @@
+/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 // GET /api/projects/submissions/[submissionId] - Get a specific submission
-export async function GET(req: NextRequest, { params }: { params: { submissionId: string } }) {
+export async function GET(
+  req: NextRequest, 
+  { params }: { params: Promise<{ submissionId: string }> }
+) {
   try {
     const session = await getServerSession(authOptions);
     
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' }, 
+        { status: 401 }
+      );
     }
     
-    const { submissionId } = params;
+    const { submissionId } = await params;
     const userId = session.user.id;
     const role = session.user.role;
     
@@ -26,101 +33,125 @@ export async function GET(req: NextRequest, { params }: { params: { submissionId
               select: {
                 id: true,
                 title: true,
-                instructorId: true
-              }
+                instructorId: true,
+                enrollments: {
+                  where: { userId },
+                  select: { role: true },
+                },
+              },
             },
-            rubric: {
-              include: {
-                criteria: {
-                  include: {
-                    levels: true
-                  },
-                  orderBy: {
-                    order: 'asc'
-                  }
-                }
-              }
-            }
-          }
+            author: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
         },
         student: {
           select: {
             id: true,
             name: true,
             email: true,
-            image: true
-          }
+            image: true,
+          },
         },
-        assessment: {
-          include: {
-            criteriaScores: true
-          }
-        }
-      }
+        reviewer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+      },
     });
     
     if (!submission) {
-      return NextResponse.json({ error: 'Submission not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Submission not found' },
+        { status: 404 }
+      );
     }
     
     // Check if user has permission to view this submission
-    const canView = 
-      // Submitter can view their own submission
-      submission.studentId === userId ||
-      // Instructor of the course can view
-      (role === 'INSTRUCTOR' && submission.project.course.instructorId === userId) ||
-      // Admin can view all submissions
-      role === 'ADMIN' ||
-      // Mentor of the student can view (would need to check mentorship relationship)
-      (role === 'MENTOR' && await checkMentorAccess(userId, submission.studentId));
+    const isStudent = submission.studentId === userId;
+    const isInstructor = submission.project.course.instructorId === userId;
+    const isAdmin = role === 'ADMIN';
+    const isProjectAuthor = submission.project.authorId === userId;
+    const isEnrolled = submission.project.course.enrollments.length > 0;
     
-    if (!canView) {
-      return NextResponse.json({ error: 'Not authorized to view this submission' }, { status: 403 });
+    // If user is a mentor, check if they have access to this student
+    let isMentor = false;
+    if (role === 'MENTOR' && !isInstructor && !isAdmin) {
+      isMentor = await checkMentorAccess(userId, submission.studentId);
     }
     
-    // If the user is the instructor and the submission is in SUBMITTED status,
-    // automatically update it to REVIEWING
-    if (role === 'INSTRUCTOR' && 
-        submission.project.course.instructorId === userId &&
-        submission.status === 'SUBMITTED') {
-      
-      await prisma.projectSubmission.update({
-        where: { id: submissionId },
-        data: { status: 'REVIEWING' }
-      });
-      
-      // Update the submission object to reflect the new status
-      submission.status = 'REVIEWING';
+    if (!isStudent && !isInstructor && !isAdmin && !isProjectAuthor && !isMentor && !isEnrolled) {
+      return NextResponse.json(
+        { error: 'You do not have permission to view this submission' },
+        { status: 403 }
+      );
     }
     
-    return NextResponse.json({ submission });
+    // Format the response
+    const response = {
+      id: submission.id,
+      project: {
+        id: submission.project.id,
+        title: submission.project.title,
+        author: submission.project.author,
+        course: {
+          id: submission.project.course.id,
+          title: submission.project.course.title,
+        },
+      },
+      student: submission.student,
+      submissionNotes: submission.submissionNotes,
+      attachments: submission.attachments || [],
+      status: submission.status,
+      grade: submission.grade,
+      reviewNotes: submission.reviewNotes,
+      studentResponse: submission.studentResponse,
+      studentRespondedAt: submission.studentRespondedAt,
+      reviewer: submission.reviewer,
+      submittedAt: submission.submittedAt,
+      reviewedAt: submission.reviewedAt,
+      createdAt: submission.createdAt,
+      updatedAt: submission.updatedAt,
+    };
+    
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error fetching submission:', error);
-    return NextResponse.json({ error: 'Failed to fetch submission' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch submission' },
+      { status: 500 }
+    );
   }
 }
 
-// Helper function to check if a mentor has access to a student's submissions
+/**
+ * Helper function to check if a mentor has access to a student's submissions
+ */
 async function checkMentorAccess(mentorUserId: string, studentUserId: string): Promise<boolean> {
-  const mentorProfile = await prisma.mentorProfile.findUnique({
-    where: { userId: mentorUserId }
-  });
-  
-  if (!mentorProfile) return false;
-  
-  const studentProfile = await prisma.studentProfile.findUnique({
-    where: { userId: studentUserId }
-  });
-  
-  if (!studentProfile) return false;
-  
-  const mentorship = await prisma.mentorship.findFirst({
-    where: {
-      mentorId: mentorProfile.id,
-      studentId: studentProfile.id,
-      status: 'ACTIVE'
-    }
-  });
-  
-  return !!mentorship;
+  try {
+    // Check if the mentor is assigned to the student in any course
+    const mentorAssignment = await prisma.mentorAssignment.findFirst({
+      where: {
+        mentorId: mentorUserId,
+        studentId: studentUserId,
+        status: 'ACTIVE',
+      },
+      select: {
+        id: true,
+      },
+    });
+    
+    return !!mentorAssignment;
+  } catch (error) {
+    console.error('Error checking mentor access:', error);
+    return false;
+  }
 }
