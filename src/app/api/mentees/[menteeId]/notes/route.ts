@@ -48,9 +48,9 @@ export async function PUT(
       );
     }
     
-    // Update or create mentee notes
-    const updatedNotes = await prisma.menteeNotes.upsert({
-      where: { 
+    // First, perform the upsert operation
+    await prisma.menteeNotes.upsert({
+      where: {
         menteeId_mentorId: {
           menteeId,
           mentorId: session.user.id
@@ -61,6 +61,14 @@ export async function PUT(
         menteeId,
         mentorId: session.user.id,
         notes
+      }
+    });
+    
+    // Then fetch the updated note with related data
+    const updatedNote = await prisma.menteeNotes.findFirst({
+      where: {
+        menteeId,
+        mentorId: session.user.id
       },
       include: {
         mentor: {
@@ -73,7 +81,7 @@ export async function PUT(
       },
     });
     
-    return NextResponse.json(updatedNotes);
+    return NextResponse.json(updatedNote);
   } catch (error) {
     console.error('Error updating mentee notes:', error);
     return NextResponse.json(

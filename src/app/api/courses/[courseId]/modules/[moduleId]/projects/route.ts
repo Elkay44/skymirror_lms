@@ -234,8 +234,8 @@ export async function POST(
       courseId
     });
     
-    const project = await prisma.$transaction(async (tx) => {
-      // Use standard Prisma create - not our extensions
+    const project = await prisma.$transaction(async (tx: any) => {
+      // Use standard Prisma create
       return tx.project.create({
         data: {
           title,

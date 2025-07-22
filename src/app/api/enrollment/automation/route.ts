@@ -71,26 +71,36 @@ export async function POST(req: Request) {
     });
 
     if (!user) {
-      user = await prisma.user.create({
+      // Generate a random password that will require reset on first login
+      const tempPassword = Math.random().toString(36).slice(-12);
+      
+      user = await (prisma as any).user.create({
         data: {
           email: data.email,
           name: data.name,
+          password: tempPassword, // This will be hashed by Prisma middleware
           role: 'STUDENT'
         }
       });
     }
 
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     // Get course details
-    const course = await prisma.course.findUnique({
+    const course = await (prisma as any).course.findUnique({
       where: { id: data.courseId },
       select: {
         id: true,
         title: true,
         enrollments: {
           where: {
-            userId: user.id
+            userId: user.id,
+            status: 'ACTIVE'
           }
-        }
+        },
+        learningPath: true
       }
     });
 
@@ -107,9 +117,9 @@ export async function POST(req: Request) {
     }
 
     // Create enrollment
-    const enrollment = await prisma.enrollment.create({
+    const enrollment = await (prisma as any).enrollment.create({
       data: {
-        userId: user.id,
+        userId: user!.id,
         courseId: course.id,
         status: 'ACTIVE',
         progress: 0
@@ -120,11 +130,11 @@ export async function POST(req: Request) {
     await sendWelcomeEmail(user.email, user.name || 'Student', course.title);
 
     // Create learning path if it doesn't exist
-    await prisma.learningPath.upsert({
-      where: { userId: user.id },
+    await (prisma as any).learningPath.upsert({
+      where: { userId: user!.id },
       update: {},
       create: {
-        userId: user.id,
+        userId: user!.id,
         preferences: data.metadata?.preferences || {},
         aiRecommendations: {}
       }

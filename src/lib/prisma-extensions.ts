@@ -1,5 +1,17 @@
+/* eslint-disable */
 import { PrismaClient, Prisma } from '@prisma/client';
 import { ProjectResource } from '@/types/project-resource';
+
+declare global {
+  // eslint-disable-next-line no-var
+  var prisma: PrismaClient | undefined;
+}
+
+const prisma = global.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV !== 'production') {
+  global.prisma = prisma;
+}
 
 // Extend the base PrismaClient to include our custom methods
 type PrismaClientWithExtensions = PrismaClient & {
@@ -7,24 +19,171 @@ type PrismaClientWithExtensions = PrismaClient & {
   $executeRawUnsafe: (query: string, ...values: any[]) => Promise<number>;
 };
 
+// Helper type for model data
+type ModelData<T = any> = T & {
+  id: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+};
+
 // Base model type with common methods
-type BaseModel<T extends Record<string, any> = any> = {
+type BaseModel<T = any> = {
   findMany: (args?: any) => Promise<T[]>;
   findUnique: (args: { where: { id: string } }) => Promise<T | null>;
   findFirst: (args?: any) => Promise<T | null>;
   create: (args: { data: Omit<T, 'id' | 'createdAt' | 'updatedAt'> }) => Promise<T>;
   update: (args: { where: { id: string }; data: Partial<Omit<T, 'id' | 'createdAt' | 'updatedAt'>> }) => Promise<T>;
+  upsert: (args: { 
+    where: any; 
+    create: any; 
+    update: any;
+  }) => Promise<T>;
   delete: (args: { where: { id: string } }) => Promise<T>;
   count: (args?: any) => Promise<number>;
   deleteMany: (args?: any) => Promise<{ count: number }>;
   createMany: (args: { data: Array<Omit<T, 'id' | 'createdAt' | 'updatedAt'>> }) => Promise<{ count: number }>;
+  $transaction: <T>(fn: (prisma: any) => Promise<T>) => Promise<T>;
 };
 
 // Extended Prisma client type
-export type ExtendedPrismaClient = PrismaClient & {
+export interface ExtendedPrismaClient extends PrismaClient {
+  // Add menteeNotes model to the extended client
+  menteeNotes: BaseModel<any> & {
+    upsert: (args: { where: any; create: any; update: any }) => Promise<any>;
+  };
+
+  // Add mentorSession model to the extended client
+  mentorSession: BaseModel<any> & {
+    findUnique: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    create: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+    count: (args?: any) => Promise<number>;
+  };
+  
+  // Add activityLog model to the extended client
+  activityLog: {
+    create: (args: { data: any }) => Promise<any>;
+  };
+  
+  // Add enrollment model to the extended client
+  enrollment: BaseModel<any> & {
+    findFirst: (args: any) => Promise<any>;
+  };
+  
+  // Transaction method overloads from PrismaClient
+  $transaction: {
+    <P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): Promise<unknown[]>;
+    <R>(fn: (prisma: Omit<ExtendedPrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'>) => Promise<R>, options?: { maxWait?: number; timeout?: number; isolationLevel?: Prisma.TransactionIsolationLevel }): Promise<R>;
+  };
+  
   // Project-related models
   project: BaseModel & {
     count: (args?: any) => Promise<number>;
+    create: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    findUnique: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+    upsert: (args: { where: any; create: any; update: any }) => Promise<any>;
+  };
+  
+  // Quiz-related models
+  quiz: BaseModel & {
+    count: (args?: any) => Promise<number>;
+    create: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    findUnique: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+    upsert: (args: { where: any; create: any; update: any }) => Promise<any>;
+  };
+  
+  // Quiz Attempt model
+  quizAttempt: BaseModel & {
+    count: (args?: any) => Promise<number>;
+    create: (args: any) => Promise<any>;
+  };
+  
+  // Learning Goal model
+  learningGoal: BaseModel & {
+    count: (args?: any) => Promise<number>;
+    create: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    findUnique: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+  };
+  
+  // Forum model
+  forum: BaseModel & {
+    count: (args?: any) => Promise<number>;
+    create: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    findUnique: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+  };
+  
+  // User Answer model
+  userAnswer: BaseModel & {
+    count: (args?: any) => Promise<number>;
+    create: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    findUnique: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+  };
+  
+  // Notification model
+  notification: BaseModel & {
+    count: (args?: any) => Promise<number>;
+    create: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    findUnique: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+  };
+  
+  // Course Version model
+  courseVersion: BaseModel & {
+    count: (args?: any) => Promise<number>;
+    create: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    findUnique: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+  };
+  
+  // Lesson model
+  lesson: BaseModel & {
+    count: (args?: any) => Promise<number>;
+    create: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    findUnique: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+  };
+  
+  // Question model
+  question: BaseModel & {
+    count: (args?: any) => Promise<number>;
+    create: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    findUnique: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+  };
+  
+  // Question Option model
+  questionOption: BaseModel & {
+    count: (args?: any) => Promise<number>;
+    create: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    findUnique: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
   };
   
   projectResource: BaseModel & {
@@ -106,16 +265,6 @@ export type ExtendedPrismaClient = PrismaClient & {
     deleteItem: (args: { where: { id: string } }) => Promise<any>;
     deleteMany: (args?: any) => Promise<{ count: number }>;
     count: (args?: any) => Promise<number>;
-  };
-  
-  // Enrollment model
-  enrollment: BaseModel & {
-    findFirst: (args: any) => Promise<any | null>;
-  };
-  
-  // Activity log model
-  activityLog: {
-    create: (args: any) => Promise<any>;
   };
 };
 
@@ -323,140 +472,158 @@ const formatUpdateClause = (data: Record<string, unknown>): string => {
   return clauses.join(', ');
 };
 
-// Helper type for model data
-type ModelData<T> = T & {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
 // Create a model with common CRUD operations
-const createModel = <T extends Record<string, any>>(
+const createModel = <T extends Record<string, any> = any>(
   prisma: PrismaClientWithExtensions, 
   tableName: string
-): BaseModel<T> => ({
-  findMany: async (args: any = {}) => {
-    const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-    const orderByClause = args?.orderBy ? `ORDER BY ${formatOrderByClause(args.orderBy)}` : '';
-    const limitClause = args?.take ? `LIMIT ${args.take}` : '';
-    const offsetClause = args?.skip ? `OFFSET ${args.skip}` : '';
-    
-    const query = `SELECT * FROM "${tableName}" ${whereClause} ${orderByClause} ${limitClause} ${offsetClause}`.trim();
-    const result = await prisma.$queryRawUnsafe<T[]>(query);
-    return Array.isArray(result) ? result : [];
-  },
+): BaseModel<ModelData<T>> & { tableName: string } => {
+  // Define the model type with required fields
+  type ModelType = T & {
+    id: string;
+    createdAt: Date | string;
+    updatedAt: Date | string;
+  };
   
-  findUnique: async (args: { where: { id: string } }) => {
-    if (!args?.where?.id) {
-      throw new Error('findUnique requires a where.id condition');
-    }
-    const result = await prisma.$queryRawUnsafe<T[]>(
-      `SELECT * FROM "${tableName}" WHERE id = '${args.where.id}' LIMIT 1`
-    );
-    return Array.isArray(result) && result.length > 0 ? result[0] : null;
-  },
+  // Helper to convert raw DB result to ModelType
+  const toModel = (data: any): ModelType => ({
+    ...data,
+    id: String(data.id),
+    createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+    updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
+  });
   
-  findFirst: async (args: { where?: any } = {}) => {
-    const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-    const result = await prisma.$queryRawUnsafe<T[]>(
-      `SELECT * FROM "${tableName}" ${whereClause} LIMIT 1`
-    );
-    return Array.isArray(result) && result.length > 0 ? result[0] : null;
-  },
-  
-  create: async (args: { data: Omit<T, 'id' | 'createdAt' | 'updatedAt'> }): Promise<T> => {
-    // Generate a new ID and timestamps
-    const id = `temp-${Math.random().toString(36).substr(2, 9)}`;
-    const now = new Date().toISOString();
+  const model: BaseModel<ModelType> & { tableName: string } = {
+    tableName,
+    $transaction: prisma.$transaction.bind(prisma),
+    async findMany(args?: any): Promise<ModelType[]> {
+      const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
+      const orderByClause = args?.orderBy ? `ORDER BY ${formatOrderByClause(args.orderBy)}` : '';
+      const limitClause = args?.take ? `LIMIT ${args.take}` : '';
+      const offsetClause = args?.skip ? `OFFSET ${args.skip}` : '';
+      
+      const query = `SELECT * FROM \`${tableName}\` ${whereClause} ${orderByClause} ${limitClause} ${offsetClause}`;
+      const results = await prisma.$queryRawUnsafe<any[]>(query);
+      return results.map(toModel);
+    },
     
-    // Create the data with required fields
-    const dataWithId: ModelData<Omit<T, 'id' | 'createdAt' | 'updatedAt'>> = {
-      ...args.data,
-      id,
-      createdAt: now,
-      updatedAt: now,
-    };
+    async update(args: { where: { id: string }; data: any }): Promise<ModelType> {
+      if (!args?.where?.id) throw new Error('update requires a where.id parameter');
+      if (!args?.data) throw new Error('update requires a data parameter');
+      
+      const setClause = formatUpdateClause({
+        ...args.data,
+        updatedAt: new Date().toISOString(),
+      });
+      
+      const query = `
+        UPDATE "${tableName}"
+        SET ${setClause}
+        WHERE id = '${args.where.id}'
+        RETURNING *
+      `;
+      
+      const result = await prisma.$queryRawUnsafe<ModelType[]>(query);
+      const updated = Array.isArray(result) ? result[0] : result;
+      if (!updated) throw new Error('Failed to update record');
+      return toModel(updated);
+    },
     
-    // Convert data to SQL values
-    const columns = Object.keys(dataWithId).map(k => `"${k}"`).join(', ');
-    const values = Object.entries(dataWithId as Record<string, unknown>)
-      .map(([key, value]) => {
-        if (value === null || value === undefined) return 'NULL';
-        if (typeof value === 'string') return `'${value.replace(/'/g, "''")}'`;
-        if (value instanceof Date) return `'${value.toISOString()}'`;
-        if (typeof value === 'object' && value !== null) {
-          return `'${JSON.stringify(value).replace(/'/g, "''")}'`;
-        }
-        return `'${value}'`;
-      })
-      .join(', ');
+    async delete(args: { where: { id: string } }): Promise<ModelType> {
+      if (!args?.where?.id) throw new Error('delete requires a where.id parameter');
+      
+      const query = `
+        DELETE FROM "${tableName}"
+        WHERE id = '${args.where.id}'
+        RETURNING *
+      `;
+      
+      const result = await prisma.$queryRawUnsafe<ModelType[]>(query);
+      const deleted = Array.isArray(result) ? result[0] : result;
+      if (!deleted) throw new Error('Failed to delete record');
+      return toModel(deleted);
+    },
     
-    const result = await prisma.$queryRawUnsafe<T[]>(
-      `INSERT INTO "${tableName}" (${columns}) VALUES (${values}) RETURNING *`
-    );
+    async count(args?: any): Promise<number> {
+      const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
+      const query = `SELECT COUNT(*) as count FROM "${tableName}" ${whereClause}`;
+      const result = await prisma.$queryRawUnsafe<Array<{ count: string }>>(query);
+      return parseInt(Array.isArray(result) ? result[0]?.count || '0' : '0', 10);
+    },
+    async findUnique(args: { where: { id: string } }): Promise<ModelType | null> {
+      if (!args?.where?.id) throw new Error('findUnique requires a where.id parameter');
+      const query = `SELECT * FROM \`${tableName}\` WHERE id = ? LIMIT 1`;
+      const results = await prisma.$queryRawUnsafe<any[]>(query, args.where.id);
+      return results[0] ? toModel(results[0]) : null;
+    },
+    async findFirst(args: { where?: any } = {}): Promise<ModelType | null> {
+      const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
+      const query = `SELECT * FROM \`${tableName}\` ${whereClause} LIMIT 1`;
+      const results = await prisma.$queryRawUnsafe<any[]>(query);
+      return results[0] ? toModel(results[0]) : null;
+    },
+    async create(args: { data: Omit<T, 'id' | 'createdAt' | 'updatedAt'> }): Promise<ModelType> {
+      if (!args?.data) throw new Error('create requires a data parameter');
+      
+      const now = new Date().toISOString();
+      const dataWithTimestamps: any = {
+        ...args.data,
+        createdAt: now,
+        updatedAt: now,
+      };
+      
+      const insertClause = formatInsertClause(dataWithTimestamps);
+      const query = `INSERT INTO "${tableName}" ${insertClause} RETURNING *`;
+      const result = await prisma.$queryRawUnsafe<ModelType[]>(query);
+      return toModel(Array.isArray(result) ? result[0] : result);
+    },
     
-    if (!Array.isArray(result) || result.length === 0) {
-      throw new Error('Failed to create record');
-    }
+    async upsert(args: { where: any; create: any; update: any }): Promise<ModelType> {
+      const { where, create, update } = args;
+      const whereClause = formatWhereClause(where);
+      
+      // First try to find existing record
+      const existing = await prisma.$queryRawUnsafe<any[]>(
+        `SELECT * FROM "${tableName}" ${whereClause} LIMIT 1`
+      );
+      
+      if (Array.isArray(existing) && existing.length > 0) {
+        // Update existing record
+        const setClause = formatUpdateClause(update);
+        const query = `
+          UPDATE "${tableName}"
+          SET ${setClause}, "updatedAt" = NOW()
+          ${whereClause}
+          RETURNING *
+        `;
+        
+        const result = await prisma.$queryRawUnsafe<ModelType[]>(
+          query,
+          ...Object.values(where as Record<string, unknown>),
+          ...Object.values(update as Record<string, unknown>)
+        );
+        
+        return toModel(Array.isArray(result) ? result[0] : result);
+      } else {
+        // Create new record with where conditions merged into create data
+        const createData = { ...create, ...where };
+        const insertClause = formatInsertClause({
+          ...createData,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+        
+        const query = `INSERT INTO "${tableName}" ${insertClause} RETURNING *`;
+        const result = await prisma.$queryRawUnsafe<ModelType[]>(query);
+        return toModel(Array.isArray(result) ? result[0] : result);
+      }
+    },
     
-    return result[0] as T;
-  },
-  
-  update: async (args: { where: { id: string }; data: Partial<Omit<T, 'id' | 'createdAt' | 'updatedAt'>> }) => {
-    if (!args?.where?.id) {
-      throw new Error('update requires a where.id condition');
-    }
-    
-    // Ensure we're working with a plain object
-    const updateData = { ...args.data } as Record<string, unknown>;
-    updateData.updatedAt = new Date().toISOString();
-    
-    const updateClause = formatUpdateClause(updateData);
-    const result = await prisma.$queryRawUnsafe<T[]>(
-      `UPDATE "${tableName}" SET ${updateClause} WHERE id = '${args.where.id}' RETURNING *`
-    );
-    
-    if (!Array.isArray(result) || result.length === 0) {
-      throw new Error('Failed to update record');
-    }
-    
-    return result[0] as T;
-  },
-  
-  delete: async (args: { where: { id: string } }) => {
-    if (!args?.where?.id) {
-      throw new Error('delete requires a where.id condition');
-    }
-    const result = await prisma.$queryRawUnsafe<T[]>(
-      `DELETE FROM "${tableName}" WHERE id = '${args.where.id}' RETURNING *`
-    );
-    if (!Array.isArray(result) || result.length === 0) {
-      throw new Error('Failed to delete record');
-    }
-    return result[0] as T;
-  },
-  
-  count: async (args: { where?: any } = {}) => {
-    const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-    const result = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
-      `SELECT COUNT(*) FROM "${tableName}" ${whereClause}`
-    );
-    if (!Array.isArray(result) || result.length === 0) {
-      return 0;
-    }
-    const count = result[0]?.count;
-    return count !== undefined ? Number(count) : 0;
-  },
-  
-  deleteMany: async (args: { where?: any } = {}) => {
-    const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
-    const count = await prisma.$executeRawUnsafe(
-      `DELETE FROM "${tableName}" ${whereClause}`
-    );
-    // Ensure count is a number
-    const countNum = typeof count === 'number' ? count : 0;
-    return { count: countNum };
-  },
+    async deleteMany(args?: any): Promise<{ count: number }> {
+      const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
+      const query = `DELETE FROM "${tableName}" ${whereClause} RETURNING id`;
+      const result = await prisma.$queryRawUnsafe<any[]>(query);
+      return { count: Array.isArray(result) ? result.length : 0 };
+    },
   
   createMany: async (args: { data: Array<Omit<T, 'id' | 'createdAt' | 'updatedAt'>> }) => {
     if (!Array.isArray(args?.data) || args.data.length === 0) {
@@ -522,12 +689,24 @@ const createModel = <T extends Record<string, any>>(
     const countNum = typeof count === 'number' ? count : 0;
     return { count: countNum };
   }
-});
+};
 
-// Extend the Prisma client with our custom models
+return model;
+}
+
 export function extendPrismaClient(prisma: PrismaClient): ExtendedPrismaClient {
+  // Create extended client with all models
   const extendedClient = prisma as unknown as ExtendedPrismaClient;
 
+  // Add menteeNotes model with upsert support
+  extendedClient.menteeNotes = {
+    ...createModel(extendedClient, 'menteeNotes'),
+    upsert: async (args: { where: any; create: any; update: any }) => {
+      const model = createModel(extendedClient, 'menteeNotes');
+      return model.upsert(args);
+    }
+  };
+  
   // Add project-related models
   extendedClient.project = {
     ...createModel(extendedClient, 'Project'),
@@ -544,26 +723,262 @@ export function extendPrismaClient(prisma: PrismaClient): ExtendedPrismaClient {
     deleteMany: (args?: any) => createModel(extendedClient, 'ProjectSubmission').deleteMany(args)
   };
   
+  // Add learning goal model
+  extendedClient.learningGoal = {
+    ...createModel(extendedClient, 'LearningGoal'),
+    count: (args?: any) => createModel(extendedClient, 'LearningGoal').count(args)
+  };
+  
+  // Add enrollment model with all required methods
+  extendedClient.enrollment = {
+    ...createModel(extendedClient, 'Enrollment'),
+    findMany: (args?: any) => createModel(extendedClient, 'Enrollment').findMany(args),
+    findUnique: (args: any) => createModel(extendedClient, 'Enrollment').findUnique(args),
+    findFirst: (args: any) => createModel(extendedClient, 'Enrollment').findFirst(args),
+    create: (args: any) => createModel(extendedClient, 'Enrollment').create(args),
+    update: (args: any) => createModel(extendedClient, 'Enrollment').update(args),
+    delete: (args: any) => createModel(extendedClient, 'Enrollment').delete(args),
+    count: (args?: any) => createModel(extendedClient, 'Enrollment').count(args)
+  };
+  
   // Add course-related models
   extendedClient.course = {
     ...createModel(extendedClient, 'Course'),
     count: (args?: any) => createModel(extendedClient, 'Course').count(args)
   };
   
-  // Add enrollment model
-  extendedClient.enrollment = {
-    ...createModel(extendedClient, 'Enrollment'),
-    findFirst: (args: any) => createModel(extendedClient, 'Enrollment').findFirst(args)
+  // Add quiz model
+  extendedClient.quiz = {
+    ...createModel(extendedClient, 'Quiz'),
+    count: (args?: any) => createModel(extendedClient, 'Quiz').count(args)
   };
   
-  // Add activity log model
+  // Add quiz attempt model
+  extendedClient.quizAttempt = {
+    ...createModel(extendedClient, 'QuizAttempt'),
+    count: (args?: any) => createModel(extendedClient, 'QuizAttempt').count(args)
+  };
+  
+  // Add forum model
+  extendedClient.forum = {
+    ...createModel(extendedClient, 'Forum'),
+    count: (args?: any) => createModel(extendedClient, 'Forum').count(args)
+  };
+  
+  // Add user answer model
+  extendedClient.userAnswer = {
+    ...createModel(extendedClient, 'UserAnswer'),
+    count: (args?: any) => createModel(extendedClient, 'UserAnswer').count(args)
+  };
+  
+  // Add notification model
+  extendedClient.notification = {
+    ...createModel(extendedClient, 'Notification'),
+    count: (args?: any) => createModel(extendedClient, 'Notification').count(args)
+  };
+  
+  // Add course version model
+  extendedClient.courseVersion = {
+    ...createModel(extendedClient, 'CourseVersion'),
+    count: (args?: any) => createModel(extendedClient, 'CourseVersion').count(args)
+  };
+  
+  // Add lesson model
+  extendedClient.lesson = {
+    ...createModel(extendedClient, 'Lesson'),
+    count: (args?: any) => createModel(extendedClient, 'Lesson').count(args)
+  };
+  
+  // Add question model
+  extendedClient.question = {
+    ...createModel(extendedClient, 'Question'),
+    count: (args?: any) => createModel(extendedClient, 'Question').count(args)
+  };
+  
+  // Add question option model
+  extendedClient.questionOption = {
+    ...createModel(extendedClient, 'QuestionOption'),
+    count: (args?: any) => createModel(extendedClient, 'QuestionOption').count(args)
+  };
+  
+  // Add activity log model with proper typing and error handling
   extendedClient.activityLog = {
-    create: async (args: any) => {
-      const insertClause = formatInsertClause(args.data);
-      const [result] = await extendedClient.$queryRawUnsafe(
-        `INSERT INTO "ActivityLog" ${insertClause} RETURNING *`
-      );
-      return result;
+    create: async (args: { data: any }) => {
+      if (!args?.data) {
+        throw new Error('activityLog.create requires a data parameter');
+      }
+      
+      try {
+        const dataWithTimestamps = {
+          ...args.data,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        
+        const insertClause = formatInsertClause(dataWithTimestamps);
+        const result = await extendedClient.$queryRawUnsafe<any[]>(
+          `INSERT INTO "ActivityLog" ${insertClause} RETURNING *`
+        );
+        
+        return Array.isArray(result) && result.length > 0 ? result[0] : null;
+      } catch (error) {
+        console.error('Error creating activity log:', error);
+        throw new Error('Failed to create activity log');
+      }
+    }
+  };
+
+  // Add enrollment model with proper typing and no duplicates
+  extendedClient.enrollment = {
+    ...createModel(extendedClient, 'Enrollment'),
+    findFirst: async (args: { where?: any } = {}) => {
+      try {
+        const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
+        const result = await extendedClient.$queryRawUnsafe<any[]>(
+          `SELECT * FROM "Enrollment" ${whereClause} LIMIT 1`
+        );
+        return result?.[0] || null;
+      } catch (error) {
+        console.error('Error in enrollment.findFirst:', error);
+        throw new Error('Failed to find enrollment');
+      }
+    },
+    findMany: (args?: any) => createModel(extendedClient, 'Enrollment').findMany(args),
+    findUnique: (args: any) => createModel(extendedClient, 'Enrollment').findUnique(args),
+    create: (args: any) => createModel(extendedClient, 'Enrollment').create(args),
+    update: (args: any) => createModel(extendedClient, 'Enrollment').update(args),
+    delete: (args: any) => createModel(extendedClient, 'Enrollment').delete(args),
+    count: (args?: any) => createModel(extendedClient, 'Enrollment').count(args),
+    deleteMany: (args?: any) => createModel(extendedClient, 'Enrollment').deleteMany(args)
+  };
+
+  // Define MentorSession type for better type safety
+  type MentorSession = {
+    id: string;
+    mentorId: string;
+    menteeId: string;
+    title: string;
+    description?: string | null;
+    scheduledAt: Date;
+    duration: number;
+    status: 'PENDING' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+    meetingLink?: string | null;
+    notes?: string | null;
+    recordingUrl?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+
+  // Add mentor session model with proper typing
+  extendedClient.mentorSession = {
+    ...createModel<MentorSession>(extendedClient, 'MentorSession'),
+    
+    findUnique: async (args: { where: { id: string } }): Promise<MentorSession | null> => {
+      try {
+        const result = await extendedClient.$queryRawUnsafe<MentorSession[]>(
+          `SELECT * FROM "MentorSession" WHERE id = $1 LIMIT 1`,
+          [args.where.id]
+        );
+        return result?.[0] || null;
+      } catch (error) {
+        console.error('Error in mentorSession.findUnique:', error);
+        throw new Error('Failed to fetch mentor session');
+      }
+    },
+    
+    findMany: async (args: {
+      where?: any;
+      orderBy?: any;
+      take?: number;
+      skip?: number;
+    } = {}): Promise<MentorSession[]> => {
+      try {
+        const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
+        const orderByClause = args?.orderBy ? `ORDER BY ${formatOrderByClause(args.orderBy)}` : '';
+        const limitClause = args?.take ? `LIMIT ${args.take}` : '';
+        const offsetClause = args?.skip ? `OFFSET ${args.skip}` : '';
+        
+        return await extendedClient.$queryRawUnsafe<MentorSession[]>(
+          `SELECT * FROM "MentorSession" ${whereClause} ${orderByClause} ${limitClause} ${offsetClause}`.trim()
+        );
+      } catch (error) {
+        console.error('Error in mentorSession.findMany:', error);
+        throw new Error('Failed to fetch mentor sessions');
+      }
+    },
+    
+    create: async (args: { data: Omit<MentorSession, 'id' | 'createdAt' | 'updatedAt'> }): Promise<MentorSession> => {
+      try {
+        const now = new Date();
+        const dataWithTimestamps = {
+          ...args.data,
+          createdAt: now,
+          updatedAt: now,
+        };
+        
+        const insertClause = formatInsertClause(dataWithTimestamps);
+        const result = await extendedClient.$queryRawUnsafe<MentorSession[]>(
+          `INSERT INTO "MentorSession" ${insertClause} RETURNING *`
+        );
+        
+        if (!result?.[0]) throw new Error('Failed to create mentor session');
+        return result[0];
+      } catch (error) {
+        console.error('Error in mentorSession.create:', error);
+        throw new Error('Failed to create mentor session');
+      }
+    },
+    
+    update: async (args: { 
+      where: { id: string }; 
+      data: Partial<Omit<MentorSession, 'id' | 'createdAt' | 'mentorId' | 'menteeId'>> 
+    }): Promise<MentorSession> => {
+      try {
+        const updateData = {
+          ...args.data,
+          updatedAt: new Date()
+        };
+        
+        const updateClause = formatUpdateClause(updateData);
+        const result = await extendedClient.$queryRawUnsafe<MentorSession[]>(
+          `UPDATE "MentorSession" ${updateClause} WHERE id = $1 RETURNING *`,
+          [args.where.id]
+        );
+        
+        if (!result?.[0]) throw new Error('Mentor session not found');
+        return result[0];
+      } catch (error) {
+        console.error('Error in mentorSession.update:', error);
+        throw new Error('Failed to update mentor session');
+      }
+    },
+    
+    delete: async (args: { where: { id: string } }): Promise<MentorSession> => {
+      try {
+        const result = await extendedClient.$queryRawUnsafe<MentorSession[]>(
+          'DELETE FROM "MentorSession" WHERE id = $1 RETURNING *',
+          [args.where.id]
+        );
+        
+        if (!result?.[0]) throw new Error('Mentor session not found');
+        return result[0];
+      } catch (error) {
+        console.error('Error in mentorSession.delete:', error);
+        throw new Error('Failed to delete mentor session');
+      }
+    },
+    
+    count: async (args: { where?: any } = {}): Promise<number> => {
+      try {
+        const whereClause = args?.where ? `WHERE ${formatWhereClause(args.where)}` : '';
+        const result = await extendedClient.$queryRawUnsafe<Array<{ count: string }>>(
+          `SELECT COUNT(*) FROM "MentorSession" ${whereClause}`
+        );
+        return parseInt(result?.[0]?.count || '0', 10);
+      } catch (error) {
+        console.error('Error in mentorSession.count:', error);
+        throw new Error('Failed to count mentor sessions');
+      }
     }
   };
 

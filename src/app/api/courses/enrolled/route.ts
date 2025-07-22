@@ -66,11 +66,11 @@ export async function GET(req: NextRequest) {
     });
 
     // Transform the data to match our Course type
-    const transformedCourses = courses.map(course => ({
+    const transformedCourses = courses.map((course: any) => ({
       ...course,
-      modules: course.modules.map(module => ({
+      modules: course.modules.map((module: any) => ({
         ...module,
-        lessons: module.lessons.map(lesson => ({
+        lessons: module.lessons.map((lesson: any) => ({
           ...lesson,
           completed: lesson.progress?.[0]?.completed || false,
           completedAt: lesson.progress?.[0]?.completedAt || null,

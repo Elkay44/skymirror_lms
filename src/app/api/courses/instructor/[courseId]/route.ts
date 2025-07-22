@@ -102,10 +102,10 @@ export async function GET(
       totalLessons: course.totalLessons || 0,
       totalQuizzes: course.totalQuizzes || 0,
       totalDuration: course.totalDuration || 0,
-      modules: course.modules.map(module => ({
+      modules: course.modules.map((module: any) => ({
         ...module,
         position: Number(module.position) || 0,
-        lessons: module.lessons.map(lesson => ({
+        lessons: (module.lessons || []).map((lesson: any) => ({
           ...lesson,
           position: Number(lesson.position) || 0,
           duration: Number(lesson.duration) || 0,
@@ -113,27 +113,27 @@ export async function GET(
             ...lesson.quiz,
             timeLimit: lesson.quiz.timeLimit ? Number(lesson.quiz.timeLimit) : null,
             passingScore: lesson.quiz.passingScore ? Number(lesson.quiz.passingScore) : 0,
-            questions: (lesson.quiz.questions || []).map(q => ({
+            questions: (lesson.quiz.questions || []).map((q: any) => ({
               ...q,
               position: Number(q.position) || 0,
               points: Number(q.points) || 1,
-              options: (q.options || []).map(o => ({
+              options: ((q.options as any[]) || []).map((o: any) => ({
                 ...o,
                 position: Number(o.position) || 0
               }))
             }))
           } : null
         })),
-        quizzes: (module.quizzes || []).map(quiz => ({
+        quizzes: (module.quizzes || []).map((quiz: any) => ({
           ...quiz,
           position: Number(quiz.position) || 0,
           timeLimit: quiz.timeLimit ? Number(quiz.timeLimit) : null,
           passingScore: quiz.passingScore ? Number(quiz.passingScore) : 0,
-          questions: (quiz.questions || []).map(q => ({
+          questions: (quiz.questions || []).map((q: any) => ({
             ...q,
             position: Number(q.position) || 0,
             points: Number(q.points) || 1,
-            options: (q.options || []).map(o => ({
+            options: ((q.options as any[]) || []).map((o: any) => ({
               ...o,
               position: Number(o.position) || 0
             }))
@@ -229,14 +229,12 @@ export async function PUT(
     }
 
     // Update the course
-    const updatedCourse = await prisma.course.update({
+    const updatedCourse = await (prisma as any).course.update({
       where: { id: courseId },
       data: {
         title,
         description,
-        shortDescription,
-        price: parseFloat(price) || 0,
-        discountPrice: discountPrice ? parseFloat(discountPrice) : null,
+        price: Number(price) || 0,
         level,
         language,
         categoryId: categoryId || null,

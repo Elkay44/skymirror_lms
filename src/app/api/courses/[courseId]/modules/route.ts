@@ -172,8 +172,13 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const course = await prisma.course.findUnique({
-      where: { id: courseId, instructorId: Number(userId) },
+    const course = await prisma.course.findFirst({
+      where: { 
+        id: courseId,
+        instructor: {
+          id: Number(userId)
+        }
+      },
     });
 
     if (!course) {

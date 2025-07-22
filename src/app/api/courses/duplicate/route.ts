@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     
     // Check if user has admin role or instructor role
     const user = await prisma.user.findUnique({
-      where: { id: userIdNum },
+      where: { id: userIdNum.toString() },
       select: { role: true }
     });
     

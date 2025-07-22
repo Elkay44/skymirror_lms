@@ -293,7 +293,7 @@ export async function PATCH(
     
     // Check if user has admin role
     const user = await prisma.user.findUnique({
-      where: { id: userIdNum },
+      where: { id: userIdNum.toString() },
       select: { role: true }
     });
     
@@ -504,7 +504,7 @@ export async function DELETE(
     
     // Check if user has admin role
     const user = await prisma.user.findUnique({
-      where: { id: userIdNum },
+      where: { id: userIdNum.toString() },
       select: { role: true }
     });
     

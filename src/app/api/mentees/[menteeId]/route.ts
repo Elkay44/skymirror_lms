@@ -47,33 +47,15 @@ export async function GET(
         id: true,
         name: true,
         email: true,
-        image: true,
-        bio: true,
-        location: true,
-        timezone: true,
+        studentProfile: {
+          select: {
+            bio: true,
+            learningGoals: true
+          }
+        },
         createdAt: true,
         updatedAt: true,
         // Include related data as needed
-        mentorSessions: {
-          where: { mentorId: session.user.id },
-          orderBy: { scheduledAt: 'desc' },
-          take: 5
-        },
-        learningGoals: {
-          where: { isActive: true },
-          orderBy: { createdAt: 'desc' },
-          take: 3
-        },
-        assignments: {
-          where: { status: { not: 'COMPLETED' } },
-          orderBy: { dueDate: 'asc' },
-          take: 5,
-          include: {
-            course: {
-              select: { title: true }
-            }
-          }
-        }
       }
     });
 

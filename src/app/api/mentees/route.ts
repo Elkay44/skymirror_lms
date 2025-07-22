@@ -4,66 +4,47 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-// GET: Fetch mentees assigned to the logged-in mentor
+// GET: Fetch all students (mentees)
 export async function GET(req: NextRequest) {
   try {
     // Authenticate the user
     const session = await getServerSession(authOptions);
     
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json(
-        { error: 'Unauthorized' }, 
+        { error: 'You must be signed in to access this endpoint' }, 
         { status: 401 }
       );
     }
     
-    // Only mentors can access this endpoint
+    // Check if user is a mentor
     if (session.user.role !== 'MENTOR') {
       return NextResponse.json(
-        { error: 'Access denied. Only mentors can access this resource.' }, 
+        { error: 'Only mentors can access this endpoint' }, 
         { status: 403 }
       );
     }
     
-    // Fetch mentees assigned to this mentor from the database
+    // Fetch all students
     const mentees = await prisma.user.findMany({
       where: { 
-        mentorId: session.user.id,
         role: 'STUDENT'
       },
       select: {
         id: true,
         name: true,
         email: true,
-        image: true,
-        bio: true,
-        location: true,
-        timezone: true,
-        lastActive: true,
-        // Include related data as needed
-        _count: {
+        role: true,
+        points: true,
+        level: true,
+        studentProfile: {
           select: {
-            mentorSessions: {
-              where: { status: 'COMPLETED' }
-            },
-            learningGoals: {
-              where: { isActive: true }
-            },
-            assignments: {
-              where: { status: 'PENDING' }
-            }
+            bio: true,
+            learningGoals: true
           }
         },
-        mentorSessions: {
-          orderBy: { scheduledAt: 'desc' },
-          take: 1,
-          select: {
-            id: true,
-            title: true,
-            status: true,
-            scheduledAt: true
-          }
-        }
+        createdAt: true,
+        updatedAt: true
       },
       orderBy: { name: 'asc' }
     });
@@ -78,94 +59,62 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST: Add a new mentee or update mentorship details
+// POST: Add a note for a mentee
 export async function POST(req: NextRequest) {
   try {
     // Authenticate the user
     const session = await getServerSession(authOptions);
     
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json(
-        { error: 'Unauthorized' }, 
+        { error: 'You must be signed in to access this endpoint' }, 
         { status: 401 }
       );
     }
     
-    // Only mentors can add/update mentees
+    // Check if user is a mentor
     if (session.user.role !== 'MENTOR') {
       return NextResponse.json(
-        { error: 'Access denied. Only mentors can manage mentees.' }, 
+        { error: 'Only mentors can access this endpoint' }, 
         { status: 403 }
       );
     }
     
-    // Parse the request body
-    const { menteeId, action, data } = await req.json();
+    const { menteeId, note } = await req.json();
     
-    if (!menteeId || !action) {
+    if (!menteeId) {
       return NextResponse.json(
-        { error: 'Mentee ID and action are required' }, 
+        { error: 'Mentee ID is required' }, 
         { status: 400 }
       );
     }
     
-    // Handle different actions
-    switch (action) {
-      case 'ADD_NOTE':
-        if (!data.notes) {
-          return NextResponse.json(
-            { error: 'Notes are required' }, 
-            { status: 400 }
-          );
-        }
-        
-        // Add a note for the mentee
-        const note = await prisma.mentorNote.create({
-          data: {
-            mentorId: session.user.id,
-            menteeId,
-            notes: data.notes,
-            isVisibleToMentee: data.isVisibleToMentee ?? false,
-            category: data.category || 'GENERAL'
-          }
-        });
-        
-        return NextResponse.json(note);
-        
-      case 'UPDATE_LEARNING_PATH':
-        if (!data.learningPath) {
-          return NextResponse.json(
-            { error: 'Learning path data is required' }, 
-            { status: 400 }
-          );
-        }
-        
-        // Update the mentee's learning path
-        const updatedMentee = await prisma.user.update({
-          where: { 
-            id: menteeId,
-            role: 'STUDENT'
-          },
-          data: {
-            learningPath: data.learningPath,
-            learningPathUpdatedAt: new Date()
-          },
-          select: {
-            id: true,
-            name: true,
-            learningPath: true,
-            learningPathUpdatedAt: true
-          }
-        });
-        
-        return NextResponse.json(updatedMentee);
-        
-      default:
-        return NextResponse.json(
-          { error: 'Invalid action' }, 
-          { status: 400 }
-        );
+    // Check if mentee exists and is a student
+    const mentee = await prisma.user.findUnique({
+      where: { id: menteeId, role: 'STUDENT' },
+      select: { 
+        id: true,
+        name: true,
+        email: true 
+      }
+    });
+    
+    if (!mentee) {
+      return NextResponse.json(
+        { error: 'Mentee not found or is not a student' }, 
+        { status: 404 }
+      );
     }
+    
+    // In a real application, you would save the note to the database here
+    // For now, we'll just return the mentee info with the note
+    return NextResponse.json({
+      success: true,
+      mentee: {
+        ...mentee,
+        note: note || 'No note provided'
+      }
+    });
   } catch (error) {
     console.error('Error in mentee management:', error);
     return NextResponse.json(

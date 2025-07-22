@@ -45,12 +45,10 @@ export async function POST(
     }
 
     // Check if user is enrolled in the course
-    const enrollment = await prisma.enrollment.findUnique({
+    const enrollment = await prisma.enrollment.findFirst({
       where: {
-        userId_courseId: {
-          userId: user.id,
-          courseId,
-        },
+        userId: user.id,
+        courseId,
       },
     });
 

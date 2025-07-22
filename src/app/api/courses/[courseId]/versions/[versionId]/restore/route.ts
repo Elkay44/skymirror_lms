@@ -3,6 +3,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+
+// Extend the transaction client type to include our custom models
+type ExtendedTransactionClient = ReturnType<typeof prisma.$extends> & {
+  course: typeof prisma.course;
+  module: typeof prisma.module;
+  quiz: typeof prisma.quiz;
+  courseVersion: typeof prisma.courseVersion;
+};
 import { withErrorHandling } from '@/lib/api-response';
 
 interface VersionedModule {
@@ -117,11 +125,11 @@ export async function POST(
       quizzes: VersionedQuiz[];
     };
     
-    // Start transaction
-    const result = await prisma.$transaction(async (tx) => {
+    // Start transaction with typed client
+    const result = await prisma.$transaction(async (tx: any) => {
       // 1. Create backup if requested
       if (options.createBackup) {
-        const currentCourse = await tx.course.findUnique({
+        const currentCourse = await (tx as any).course.findUnique({
           where: { id: courseId },
           include: {
             modules: {

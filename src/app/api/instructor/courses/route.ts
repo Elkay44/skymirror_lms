@@ -68,8 +68,8 @@ export async function GET() {
     // Transform courses data and calculate statistics
     const transformedCourses = courses.map(course => {
       // Get unique students enrolled in this course
-      const uniqueStudentIds = new Set();
-      course.enrollments.forEach(enrollment => {
+      const uniqueStudentIds = new Set<string>();
+      course.enrollments.forEach((enrollment: { user: { id: string } }) => {
         uniqueStudentIds.add(enrollment.user.id);
       });
       
@@ -84,13 +84,13 @@ export async function GET() {
       let courseCompletedLessons = 0;
       let courseTotalLessons = 0;
       
-      course.modules.forEach(module => {
-        module.lessons.forEach(lesson => {
+      course.modules.forEach((module: { lessons: Array<{ progress: Array<{ completed: boolean }> }> }) => {
+        module.lessons.forEach((lesson: { progress: Array<{ completed: boolean }> }) => {
           courseTotalLessons++;
           totalLessons++;
           
           // Count completed lessons
-          const completedCount = lesson.progress.filter(p => p.completed).length;
+          const completedCount = lesson.progress.filter((p: { completed: boolean }) => p.completed).length;
           if (completedCount > 0) {
             courseCompletedLessons += completedCount;
             totalCompletedLessons += completedCount;

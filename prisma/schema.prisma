@@ -25,10 +25,12 @@ model User {
   needsOnboarding Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  sessions        Session[]
-  studentProfile  StudentProfile?
-  mentorProfile   MentorProfile?
-  userAchievements UserAchievement[]
+  sessions             Session[]
+  studentProfile       StudentProfile?
+  mentorProfile        MentorProfile?
+  userAchievements     UserAchievement[]
+  mentorSessions       MentorSession[] @relation("MentorSessions")
+  menteeSessions       MentorSession[] @relation("MenteeSessions")
 }
 
 model StudentProfile {
@@ -79,4 +81,26 @@ model UserAchievement {
   metadata      Json?      // For storing additional data like referral count, etc.
   
   @@unique([userId, achievementId])
+}
+
+model MentorSession {
+  id          String   @id @default(cuid())
+  mentorId    String
+  menteeId    String
+  title       String
+  description String?
+  status      String   @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+  scheduledAt DateTime
+  duration    Int      // Duration in minutes
+  meetingUrl  String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  mentor      User     @relation("MentorSessions", fields: [mentorId], references: [id])
+  mentee      User     @relation("MenteeSessions", fields: [menteeId], references: [id])
+  
+  @@index([mentorId])
+  @@index([menteeId])
 }

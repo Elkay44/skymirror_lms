@@ -71,10 +71,12 @@ export async function GET(
         console.log('Admin access granted');
       } else {
         // Check if instructor teaches this course
-        const course = await prisma.course.findUnique({
+        const course = await prisma.course.findFirst({
           where: {
             id: courseId,
-            instructorId: parseInt(userId.toString(), 10)
+            instructor: {
+              id: parseInt(userId.toString(), 10)
+            }
           }
         });
         
@@ -287,10 +289,12 @@ export async function PATCH(
     
     // For instructors, verify they teach this course
     if (role === 'INSTRUCTOR') {
-      const course = await prisma.course.findUnique({
+      const course = await prisma.course.findFirst({
         where: {
           id: courseId,
-          instructorId: parseInt(userId.toString(), 10) // Convert string userId to number
+          instructor: {
+            id: parseInt(userId.toString(), 10) // Convert string userId to number
+          }
         }
       });
       

@@ -419,10 +419,10 @@ export async function GET(req: NextRequest) {
     });
 
     // Transform the data for the client
-    const coursesWithStats = courses.map(course => {
+    const coursesWithStats = courses.map((course: any) => {
       // Count lessons for each course
-      const lessonCount = course.modules.reduce((total, module) => {
-        return total + module.lessons.length;
+      const lessonCount = course.modules.reduce((total: number, module: any) => {
+        return total + (module.lessons?.length || 0);
       }, 0);
 
       // Check if the user is enrolled in this course
@@ -497,7 +497,7 @@ export async function PATCH(req: NextRequest) {
     
     // Check if user has admin role
     const user = await prisma.user.findUnique({
-      where: { id: userIdNum },
+      where: { id: userIdNum?.toString() },
       select: { role: true }
     });
     
@@ -562,18 +562,18 @@ export async function PATCH(req: NextRequest) {
         // For delete, check if non-admin users are trying to delete courses with active enrollments
         if (!isAdmin) {
           // Check for active enrollments
-          const coursesWithEnrollments = await prisma.enrollment.groupBy({
-            by: ['courseId'],
+          const enrollments = await prisma.enrollment.findMany({
             where: {
               courseId: { in: courseIds },
               status: 'ACTIVE'
             },
-            _count: { courseId: true }
+            select: { courseId: true }
           });
           
           // Create map of courses with enrollments
-          const enrollmentMap = coursesWithEnrollments.reduce((map, item) => {
-            map[item.courseId] = item._count.courseId;
+          const enrollmentMap = enrollments.reduce((map: Record<string, number>, item) => {
+            const courseId = item.courseId;
+            map[courseId] = (map[courseId] || 0) + 1;
             return map;
           }, {} as Record<string, number>);
           

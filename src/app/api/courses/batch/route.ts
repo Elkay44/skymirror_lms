@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     
     // Check user permission - must be an instructor or admin
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: userId.toString() },
       select: { role: true }
     });
     
@@ -66,7 +66,9 @@ export async function POST(req: NextRequest) {
       const coursesCount = await prisma.course.count({
         where: {
           id: { in: courseIds },
-          instructorId: userId
+          instructor: {
+            id: Number(userId)
+          }
         }
       });
       

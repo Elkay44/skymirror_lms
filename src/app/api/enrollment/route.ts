@@ -108,7 +108,7 @@ export async function POST(request: Request) {
     
     // Award points to the user for enrolling in a new course
     await prisma.user.update({
-      where: { id: userId },
+      where: { id: String(userId) },
       data: {
         points: { increment: 10 }, // Add 10 points for enrolling in a course
       },

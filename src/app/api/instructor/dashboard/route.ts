@@ -38,7 +38,7 @@ export async function GET() {
     
     // Check if the user is an instructor or admin
     const user = await prisma.user.findUnique({
-      where: { id: instructorId },
+      where: { id: String(instructorId) },
       select: { role: true },
     });
     
@@ -104,7 +104,7 @@ export async function GET() {
     });
 
     // Get recent activities
-    const recentActivities = await prisma.activityLog.findMany({
+    const recentActivities = await (prisma as any).activityLog.findMany({
       where: {
         course: {
           instructorId: instructorId,
@@ -133,16 +133,19 @@ export async function GET() {
     });
 
     // Calculate total students across all courses
-    const uniqueUserIds = await prisma.enrollment.groupBy({
-      by: ['userId'],
+    const enrollments = await (prisma as any).enrollment.findMany({
       where: {
         course: {
           instructorId: instructorId,
         },
       },
+      select: {
+        userId: true,
+      },
+      distinct: ['userId'],
     });
     
-    const totalStudents = uniqueUserIds.length;
+    const totalStudents = enrollments.length;
 
     // Get course completion statistics
     const courses = await prisma.course.findMany({
@@ -190,7 +193,7 @@ export async function GET() {
             enrolledAt: enrollment.createdAt,
           };
         }),
-        recentActivities: recentActivities.map(activity => {
+        recentActivities: recentActivities.map((activity: any) => {
           // Handle cases where user or course might be null
           const userName = 'user' in activity ? (activity as any).user?.name || 'Unknown' : 'System';
           const userEmail = 'user' in activity ? (activity as any).user?.email || '' : '';
@@ -210,7 +213,7 @@ export async function GET() {
           const enrollmentsCount = course.enrollments?.length || 0;
           const modules = course.modules || [];
           const totalLessons = modules.reduce(
-            (sum, module) => sum + (module?._count?.lessons || 0),
+            (sum: number, module: { _count?: { lessons?: number } }) => sum + (module?._count?.lessons || 0),
             0
           );
 

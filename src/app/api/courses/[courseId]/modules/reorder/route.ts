@@ -18,10 +18,12 @@ export async function PATCH(
     const userId = session.user.id;
     
     // Verify user is course instructor
-    const course = await prisma.course.findUnique({
+    const course = await prisma.course.findFirst({
       where: { 
         id: courseId,
-        instructorId: Number(userId)
+        instructor: {
+          id: Number(userId)
+        }
       },
     });
     

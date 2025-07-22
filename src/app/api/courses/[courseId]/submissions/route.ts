@@ -77,16 +77,21 @@ export async function GET(
     // Get user with role
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { role: true },
+      select: { id: true, role: true },
     });
     
-    if (!user || user.role.name !== 'instructor') {
+    if (!user || user.role !== 'INSTRUCTOR') {
       return NextResponse.json({ error: 'Forbidden: User is not an instructor' }, { status: 403 });
     }
     
     // Verify the course exists and belongs to the instructor
-    const course = await prisma.course.findUnique({
-      where: { id: courseId, instructorId: user.id },
+    const course = await prisma.course.findFirst({
+      where: { 
+        id: courseId,
+        instructor: {
+          id: user.id
+        }
+      },
     });
     
     if (!course) {

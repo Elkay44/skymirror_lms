@@ -28,12 +28,10 @@ export async function GET(
     }
 
     // Check if user is enrolled in the course or is the instructor
-    const enrollment = await prisma.enrollment.findUnique({
+    const enrollment = await prisma.enrollment.findFirst({
       where: {
-        userId_courseId: {
-          userId: user.id,
-          courseId,
-        },
+        userId: user.id,
+        courseId,
       },
     });
 

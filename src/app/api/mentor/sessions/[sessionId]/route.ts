@@ -7,7 +7,7 @@ import prisma from '@/lib/prisma';
 // GET: Fetch a specific session by ID
 export async function GET(
   req: NextRequest, 
-  { params }: { params: Promise<{ sessionId: string }> }
+  { params }: { params: { sessionId: string } }
 ) {
   try {
     // Authenticate the user
@@ -28,7 +28,7 @@ export async function GET(
       );
     }
     
-    const { sessionId } = await params;
+    const { sessionId } = params;
     
     if (!sessionId) {
       return NextResponse.json(
@@ -48,8 +48,7 @@ export async function GET(
           select: {
             id: true,
             name: true,
-            email: true,
-            image: true
+            email: true
           }
         },
         meeting: {
@@ -84,7 +83,7 @@ export async function GET(
 // PATCH: Update a specific session (change status, update details, etc.)
 export async function PATCH(
   req: NextRequest, 
-  { params }: { params: Promise<{ sessionId: string }> }
+  { params }: { params: { sessionId: string } }
 ) {
   try {
     // Authenticate the user
@@ -105,7 +104,7 @@ export async function PATCH(
       );
     }
     
-    const { sessionId } = await params;
+    const { sessionId } = params;
     
     if (!sessionId) {
       return NextResponse.json(
@@ -188,7 +187,7 @@ export async function PATCH(
 // DELETE: Cancel/delete a session
 export async function DELETE(
   req: NextRequest, 
-  { params }: { params: Promise<{ sessionId: string }> }
+  { params }: { params: { sessionId: string } }
 ) {
   try {
     // Authenticate the user
@@ -209,7 +208,7 @@ export async function DELETE(
       );
     }
     
-    const { sessionId } = await params;
+    const { sessionId } = params;
     
     if (!sessionId) {
       return NextResponse.json(

@@ -203,12 +203,12 @@ export async function POST(
         ...course,
         modules: undefined,
       },
-      modules: course.modules.map(module => ({
+      modules: course.modules.map((module: any) => ({
         ...module,
         lessons: module.lessons,
-        quizzes: module.quizzes.map(quiz => ({
+        quizzes: module.quizzes.map((quiz: any) => ({
           ...quiz,
-          questions: quiz.questions.map(question => ({
+          questions: quiz.questions.map((question: any) => ({
             ...question,
             options: question.options,
           })),
