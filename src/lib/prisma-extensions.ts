@@ -79,6 +79,62 @@ export type ExtendedPrismaClient = PrismaClient & {
     delete: (args: any) => Promise<any>;
     count: (args?: any) => Promise<number>;
   };
+
+  // Add page model to the extended client
+  page: BaseModel<any> & {
+    findUnique: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    create: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+    count: (args?: any) => Promise<number>;
+  };
+
+  // Add pageView model to the extended client
+  pageView: BaseModel<any> & {
+    findUnique: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    create: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    upsert: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+    count: (args?: any) => Promise<number>;
+  };
+
+  // Add skill model to the extended client
+  skill: BaseModel<any> & {
+    findUnique: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    findFirst: (args?: any) => Promise<any>;
+    create: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+    count: (args?: any) => Promise<number>;
+  };
+
+  // Add review model to the extended client
+  review: BaseModel<any> & {
+    findUnique: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    findFirst: (args?: any) => Promise<any>;
+    create: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+    count: (args?: any) => Promise<number>;
+    upsert: (args: any) => Promise<any>;
+  };
+
+  // Add portfolioSetting model to the extended client
+  portfolioSetting: BaseModel<any> & {
+    findUnique: (args: any) => Promise<any>;
+    findMany: (args?: any) => Promise<any[]>;
+    findFirst: (args?: any) => Promise<any>;
+    create: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+    count: (args?: any) => Promise<number>;
+    upsert: (args: any) => Promise<any>;
+  };
   
   // Add menteeNotes model to the extended client
   menteeNotes: BaseModel<any> & {
@@ -778,7 +834,119 @@ export function extendPrismaClient(prisma: PrismaClient): ExtendedPrismaClient {
     update: (args: any) => createModel(extendedClient, 'Message').update(args),
     updateMany: (args: any) => createModel(extendedClient, 'Message').updateMany(args),
     delete: (args: any) => createModel(extendedClient, 'Message').delete(args),
-    count: (args?: any) => createModel(extendedClient, 'Message').count(args)
+    count: (args?: any) => createModel(extendedClient, 'Message').count(args),
+  };
+
+  // Add page model with all required methods
+  extendedClient.page = {
+    ...createModel(extendedClient, 'Page'),
+    findMany: (args?: any) => createModel(extendedClient, 'Page').findMany(args),
+    findUnique: (args: any) => createModel(extendedClient, 'Page').findUnique(args),
+    create: (args: any) => createModel(extendedClient, 'Page').create(args),
+    update: (args: any) => createModel(extendedClient, 'Page').update(args),
+    delete: (args: any) => createModel(extendedClient, 'Page').delete(args),
+    count: (args?: any) => createModel(extendedClient, 'Page').count(args),
+  };
+
+  // Add pageView model with all required methods including upsert
+  extendedClient.pageView = {
+    ...createModel(extendedClient, 'PageView'),
+    findMany: (args?: any) => createModel(extendedClient, 'PageView').findMany(args),
+    findUnique: (args: any) => createModel(extendedClient, 'PageView').findUnique(args),
+    create: (args: any) => createModel(extendedClient, 'PageView').create(args),
+    update: (args: any) => createModel(extendedClient, 'PageView').update(args),
+    upsert: async (args: any) => {
+      // First try to update
+      try {
+        const updated = await createModel(extendedClient, 'PageView').update({
+          where: args.where,
+          data: args.update || {}
+        });
+        return updated;
+      } catch (error: any) {
+        // If update fails, try to create
+        if (error?.code === 'P2025') { // Record not found
+          return createModel(extendedClient, 'PageView').create({
+            data: { ...args.where, ...(args.create || {}) }
+          });
+        }
+        throw error;
+      }
+    },
+    delete: (args: any) => createModel(extendedClient, 'PageView').delete(args),
+    count: (args?: any) => createModel(extendedClient, 'PageView').count(args),
+  };
+
+  // Add skill model with all required methods
+  extendedClient.skill = {
+    ...createModel(extendedClient, 'Skill'),
+    findMany: (args?: any) => createModel(extendedClient, 'Skill').findMany(args),
+    findUnique: (args: any) => createModel(extendedClient, 'Skill').findUnique(args),
+    findFirst: (args?: any) => createModel(extendedClient, 'Skill').findFirst(args),
+    create: (args: any) => createModel(extendedClient, 'Skill').create(args),
+    update: (args: any) => createModel(extendedClient, 'Skill').update(args),
+    delete: (args: any) => createModel(extendedClient, 'Skill').delete(args),
+    count: (args?: any) => createModel(extendedClient, 'Skill').count(args),
+  };
+
+  // Add review model with all required methods including upsert
+  extendedClient.review = {
+    ...createModel(extendedClient, 'Review'),
+    findMany: (args?: any) => createModel(extendedClient, 'Review').findMany(args),
+    findUnique: (args: any) => createModel(extendedClient, 'Review').findUnique(args),
+    findFirst: (args?: any) => createModel(extendedClient, 'Review').findFirst(args),
+    create: (args: any) => createModel(extendedClient, 'Review').create(args),
+    update: (args: any) => createModel(extendedClient, 'Review').update(args),
+    delete: (args: any) => createModel(extendedClient, 'Review').delete(args),
+    count: (args?: any) => createModel(extendedClient, 'Review').count(args),
+    upsert: async (args: any) => {
+      try {
+        // Try to update first
+        const updated = await createModel(extendedClient, 'Review').update({
+          where: args.where,
+          data: args.update || {}
+        });
+        return updated;
+      } catch (error: any) {
+        // If update fails with not found error, create
+        if (error?.code === 'P2025') {
+          return createModel(extendedClient, 'Review').create({
+            data: { ...args.where, ...(args.create || {}) }
+          });
+        }
+        throw error;
+      }
+    },
+  };
+
+  // Add portfolioSetting model with all required methods including upsert
+  extendedClient.portfolioSetting = {
+    ...createModel(extendedClient, 'PortfolioSetting'),
+    findMany: (args?: any) => createModel(extendedClient, 'PortfolioSetting').findMany(args),
+    findUnique: (args: any) => createModel(extendedClient, 'PortfolioSetting').findUnique(args),
+    findFirst: (args?: any) => createModel(extendedClient, 'PortfolioSetting').findFirst(args),
+    create: (args: any) => createModel(extendedClient, 'PortfolioSetting').create(args),
+    update: (args: any) => createModel(extendedClient, 'PortfolioSetting').update(args),
+    delete: (args: any) => createModel(extendedClient, 'PortfolioSetting').delete(args),
+    count: (args?: any) => createModel(extendedClient, 'PortfolioSetting').count(args),
+    upsert: async (args: any) => {
+      try {
+        // Try to update first
+        const updated = await createModel(extendedClient, 'PortfolioSetting').update({
+          where: args.where,
+          data: args.update || {}
+        });
+        return updated;
+      } catch (error: any) {
+        // If update fails with not found error, create
+        if (error?.code === 'P2025') {
+          return createModel(extendedClient, 'PortfolioSetting').create({
+            data: { ...args.where, ...(args.create || {}) }
+          });
+        }
+        throw error;
+      }
+    },
   };
 
   // Add menteeNotes model with upsert support

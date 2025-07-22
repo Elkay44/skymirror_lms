@@ -39,17 +39,23 @@ export async function GET(req: NextRequest) {
       },
     });
     
-    // Fetch portfolio settings for projects that have been featured
+    // Fetch portfolio settings for the user
     const portfolioSettings = await prisma.portfolioSetting.findMany({
       where: {
         userId: session.user.id,
       },
     });
     
+    // Get the user's portfolio visibility setting
+    const userPortfolioSetting = portfolioSettings.find(setting => setting.userId === session.user.id && setting.projectId === null);
+    const isPortfolioVisible = userPortfolioSetting?.isVisible ?? false;
+    
     // Map of project IDs to their featured status
     const featuredProjects = new Map();
     portfolioSettings.forEach(setting => {
-      featuredProjects.set(setting.projectId, setting.featured);
+      if (setting.projectId) {
+        featuredProjects.set(setting.projectId, setting.featured);
+      }
     });
     
     // Format the project data for the portfolio
@@ -75,7 +81,10 @@ export async function GET(req: NextRequest) {
       };
     });
     
-    return NextResponse.json({ projects });
+    return NextResponse.json({ 
+      isVisible: isPortfolioVisible,
+      projects 
+    });
   } catch (error) {
     console.error('Error fetching portfolio:', error);
     return NextResponse.json(
@@ -102,10 +111,12 @@ export async function POST(req: NextRequest) {
     const { visibility } = await req.json();
     
     // Update the user's portfolio visibility setting
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: {
-        portfolioVisibility: visibility,
+    await prisma.portfolioSetting.upsert({
+      where: { userId: session.user.id },
+      update: { isVisible: visibility === 'public' },
+      create: { 
+        userId: session.user.id,
+        isVisible: visibility === 'public'
       },
     });
     

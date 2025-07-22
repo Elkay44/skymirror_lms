@@ -2,6 +2,26 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
 
+// Define a custom type that includes all the fields we need
+type UserWithProfile = {
+  id: string;
+  name: string | null;
+  email: string;
+  password: string;
+  role: string;
+  points: number;
+  level: number;
+  needsOnboarding: boolean;
+  bio?: string | null;
+  location?: string | null;
+  expertise?: string | null;
+  yearsOfExperience?: number | null;
+  education?: string | null;
+  teachingPhilosophy?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 // GET /api/profile/instructor - Fetch instructor profile data
 export async function GET() {
   try {
@@ -87,24 +107,37 @@ export async function PUT(request: Request) {
       teachingPhilosophy 
     } = data;
 
-    // Find the user
+    // Find the user with type assertion to our custom type
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-    });
+    }) as unknown as UserWithProfile | null;
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // First update only the standard user fields that are part of the base User model
-    const updatedUser = await prisma.user.update({
+    // Prepare the update data with only defined fields
+    const updateData: Partial<UserWithProfile> = {
+      name: name ?? user.name,
+    };
+
+    // Only include fields in the update if they are provided
+    if (bio !== undefined) updateData.bio = bio;
+    if (location !== undefined) updateData.location = location;
+    if (expertise !== undefined) updateData.expertise = expertise;
+    if (education !== undefined) updateData.education = education;
+    if (teachingPhilosophy !== undefined) updateData.teachingPhilosophy = teachingPhilosophy;
+    if (yearsOfExperience !== undefined) {
+      updateData.yearsOfExperience = typeof yearsOfExperience === 'string' 
+        ? parseInt(yearsOfExperience) 
+        : yearsOfExperience;
+    }
+
+    // Perform the update with type assertion
+    const updatedUser = await (prisma.user as any).update({
       where: { email: session.user.email },
-      data: {
-        name: name || user.name,
-        bio: bio !== undefined ? bio : user.bio,
-        location: location !== undefined ? location : user.location
-      },
-    });
+      data: updateData,
+    }) as unknown as UserWithProfile;
     
     // Log all instructor-specific fields for debugging
     console.log(`Updating instructor profile for user ${updatedUser.id}:`, {

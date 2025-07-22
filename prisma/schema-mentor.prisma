@@ -90,7 +90,7 @@ model Enrollment {
   userId    String
   course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId  String
-  status    String    @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+  status    EnrollmentStatus @default(NOT_STARTED)
   enrolledAt DateTime  @default(now())
   completedAt DateTime?
   createdAt  DateTime  @default(now())
@@ -135,6 +135,13 @@ model MentorProfile {
   mentorships      Mentorship[] @relation("MentorRelation")
   careerPaths      CareerPath[]
   reviews          MentorReview[]
+}
+
+enum EnrollmentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  DROPPED
 }
 
 // Student profile with additional mentorship-related data

@@ -36,9 +36,8 @@ export async function GET() {
         await prisma.studentProfile.create({
           data: {
             userId: user.id,
-            interests: 'Learning new technologies',
-            goals: 'Complete my first certification',
-            preferredLearningStyle: 'visual',
+            bio: 'New student',
+            learningGoals: 'Complete my first certification',
           },
         });
         console.log('Successfully created student profile');
@@ -90,34 +89,37 @@ export async function PUT(request: Request) {
     }
 
     // Update the user's general information
-    const updatedUser = await prisma.user.update({
-      where: { email: session.user.email },
-      data: {
-        name: name || user.name,
-        bio: bio !== undefined ? bio : user.bio,
-        location: location !== undefined ? location : user.location,
-      },
-    });
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (location !== undefined) updateData.location = location;
+
+    if (Object.keys(updateData).length > 0) {
+      await prisma.user.update({
+        where: { email: session.user.email },
+        data: updateData,
+      });
+    }
 
     // Check if the user has a student profile
     if (user.studentProfile) {
       // Update existing student profile
-      await prisma.studentProfile.update({
-        where: { userId: user.id },
-        data: {
-          interests: studentProfile?.interests || user.studentProfile.interests,
-          goals: studentProfile?.goals || user.studentProfile.goals,
-          preferredLearningStyle: studentProfile?.preferredLearningStyle || user.studentProfile.preferredLearningStyle,
-        },
-      });
+      const profileUpdate: any = {};
+      if (bio !== undefined) profileUpdate.bio = bio;
+      if (studentProfile?.learningGoals !== undefined) profileUpdate.learningGoals = studentProfile.learningGoals;
+      
+      if (Object.keys(profileUpdate).length > 0) {
+        await prisma.studentProfile.update({
+          where: { userId: user.id },
+          data: profileUpdate,
+        });
+      }
     } else if (user.role === 'STUDENT') {
       // Create a new student profile if it doesn't exist
       await prisma.studentProfile.create({
         data: {
           userId: user.id,
-          interests: studentProfile?.interests || '',
-          goals: studentProfile?.goals || '',
-          preferredLearningStyle: studentProfile?.preferredLearningStyle || '',
+          bio: bio || 'New student',
+          learningGoals: studentProfile?.learningGoals || 'Set your learning goals',
         },
       });
     }

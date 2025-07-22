@@ -88,7 +88,7 @@ export async function GET(
 
     // Calculate average rating
     const avgRating = projectSubmission.reviews.length > 0
-      ? projectSubmission.reviews.reduce((sum, review) => sum + review.rating, 0) / projectSubmission.reviews.length
+      ? projectSubmission.reviews.reduce((sum: number, review: { rating: number }) => sum + review.rating, 0) / projectSubmission.reviews.length
       : 0;
 
     // Format the response
@@ -191,40 +191,70 @@ export async function PATCH(
       );
     }
     
-    // Update the project
-    const updatedProject = await prisma.projectSubmission.update({
-      where: {
-        id: existingProject.id,
-      },
+    // Update the project submission data
+    await prisma.projectSubmission.update({
+      where: { id: existingProject.id },
       data: {
         ...updates,
-        ...(skillsToConnect.length > 0 && {
-          project: {
-            update: {
-              skills: {
-                set: skillsToConnect,
-              },
-            },
-          },
-        }),
         updatedAt: new Date(),
       },
-      include: {
-        project: {
-          include: {
-            skills: true,
-            course: {
-              select: {
-                title: true,
-                code: true,
-              },
+    });
+
+    // If there are skills to connect, update the project's skills
+    if (skillsToConnect.length > 0) {
+      await prisma.project.update({
+        where: { id: existingProject.projectId },
+        data: {
+          skills: {
+            set: skillsToConnect,
+          },
+        },
+      });
+    }
+
+    // Then fetch the updated submission with all relations using separate queries
+    const [submission, projectWithSkills, reviews] = await Promise.all([
+      // Get the updated submission
+      prisma.projectSubmission.findUnique({
+        where: { id: existingProject.id },
+      }),
+      // Get project with skills
+      prisma.project.findUnique({
+        where: { id: existingProject.projectId },
+        include: {
+          skills: true,
+          course: {
+            select: {
+              title: true,
+              code: true,
             },
           },
         },
+      }),
+      // Get reviews
+      prisma.review.findMany({
+        where: { projectSubmissionId: existingProject.id },
+      }),
+    ]);
+
+    if (!submission || !projectWithSkills) {
+      return NextResponse.json(
+        { error: 'Failed to fetch updated project submission' },
+        { status: 500 }
+      );
+    }
+
+    // Combine the data
+    const result = {
+      ...submission,
+      project: {
+        ...projectWithSkills,
+        skills: projectWithSkills.skills || [],
       },
-    });
-    
-    return NextResponse.json(updatedProject);
+      reviews: reviews || [],
+    };
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error updating portfolio project:', error);
     return NextResponse.json(
