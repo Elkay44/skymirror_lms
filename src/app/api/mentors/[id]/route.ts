@@ -8,8 +8,10 @@ import prisma from '@/lib/prisma';
  * GET /api/mentors/[id]
  * Get details of a specific mentor
  */
+import { NextRequest } from 'next/server';
+
 export async function GET(
-  req: Request, 
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -24,7 +26,7 @@ export async function GET(
     
     const { id: mentorId } = await params;
     
-    // Get mentor with user information, active mentorships, and reviews
+    // Get mentor with basic user information
     const mentor = await prisma.mentorProfile.findUnique({
       where: { id: mentorId },
       include: {
@@ -33,69 +35,8 @@ export async function GET(
             id: true,
             name: true,
             email: true,
-            image: true,
-            bio: true,
-            location: true,
-            timezone: true,
-            website: true,
-            socialLinks: true,
             createdAt: true,
             updatedAt: true,
-          },
-        },
-        skills: {
-          select: {
-            id: true,
-            name: true,
-            level: true,
-            yearsOfExperience: true,
-          },
-        },
-        experiences: {
-          where: {
-            current: false,
-          },
-          orderBy: {
-            endDate: 'desc',
-          },
-          take: 3,
-        },
-        education: {
-          orderBy: {
-            endYear: 'desc',
-          },
-          take: 2,
-        },
-        reviews: {
-          where: {
-            status: 'PUBLISHED',
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                image: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-          take: 5,
-        },
-        _count: {
-          select: {
-            mentorships: {
-              where: {
-                status: 'ACTIVE',
-              },
-            },
-            reviews: {
-              where: {
-                status: 'PUBLISHED',
-              },
-            },
           },
         },
       },
@@ -108,33 +49,37 @@ export async function GET(
       );
     }
 
-    // Calculate average rating
-    const avgRating = await prisma.mentorReview.aggregate({
-      where: {
-        mentorId,
-        status: 'PUBLISHED',
-      },
-      _avg: {
-        rating: true,
-      },
-    });
-
-    // Get mentor's availability
-    const availability = await prisma.mentorAvailability.findMany({
-      where: {
-        mentorId,
-      },
-      orderBy: [
-        { dayOfWeek: 'asc' },
-        { startTime: 'asc' },
-      ],
-    });
+    // Get additional mentor data using raw SQL to avoid type issues
+    const [avgRating, availability] = await Promise.all([
+      // Get average rating
+      prisma.$queryRaw`
+        SELECT AVG(rating) as average_rating
+        FROM "MentorReview"
+        WHERE "mentorId" = ${mentorId} AND status = 'PUBLISHED'
+      ` as Promise<{ average_rating: number | null }[]>,
+      
+      // Get availability
+      prisma.$queryRaw`
+        SELECT *
+        FROM "MentorAvailability"
+        WHERE "mentorId" = ${mentorId}
+        ORDER BY "dayOfWeek" ASC, "startTime" ASC
+      ` as Promise<Array<{
+        id: string;
+        mentorId: string;
+        dayOfWeek: number;
+        startTime: string;
+        endTime: string;
+        createdAt: Date;
+        updatedAt: Date;
+      }>>
+    ]);
 
     // Format the response
     const response = {
       ...mentor,
-      rating: avgRating._avg.rating || 0,
-      availability,
+      rating: avgRating[0]?.average_rating ? Number(avgRating[0].average_rating) : 0,
+      availability: availability || [],
     };
 
     return NextResponse.json(response);

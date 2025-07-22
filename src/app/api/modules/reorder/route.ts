@@ -44,17 +44,26 @@ export async function PATCH(request: NextRequest) {
 
     // Check if the user is authorized to modify this course
     console.log(`🔐 Checking authorization for course ${courseId}...`);
+    
+    // First get the course
     const course = await prisma.course.findUnique({
       where: { 
-        id: courseId,
-        instructorId: Number(session.user.id)
+        id: courseId
       }
     });
 
     if (!course) {
+      console.log(`❌ Course not found: ${courseId}`);
+      return NextResponse.json({ 
+        error: 'Course not found'
+      }, { status: 404 });
+    }
+
+    // Then check if the current user is the instructor
+    if (course.instructorId !== Number(session.user.id)) {
       console.log(`❌ Authorization failed: User ${session.user.id} not authorized for course ${courseId}`);
       return NextResponse.json({ 
-        error: 'Course not found or you are not authorized to modify it'
+        error: 'You are not authorized to modify this course'
       }, { status: 403 });
     }
     console.log('✅ Authorization check passed');

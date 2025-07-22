@@ -25,12 +25,12 @@ export async function GET(
     const { id: mentorshipId } = await params;
     
     // Get the mentorship with detailed information
-    const mentorship = await prisma.mentorship.findUnique({
+    const mentorship = await prisma.mentorSession.findUnique({
       where: { 
         id: mentorshipId,
         // Ensure the requesting user is either the mentor or mentee
         OR: [
-          { mentor: { userId: session.user.id } },
+          { mentorId: session.user.id },
           { menteeId: session.user.id },
         ],
       },
@@ -41,9 +41,7 @@ export async function GET(
               select: {
                 id: true,
                 name: true,
-                email: true,
-                image: true,
-                bio: true,
+                email: session.user.role === 'ADMIN',
               },
             },
             skills: {
@@ -121,7 +119,7 @@ export async function GET(
 
 /**
  * PATCH /api/mentorships/[id]
- * Update a mentorship's status or details
+ * Update a mentor session's status or details
  */
 export async function PATCH(
   req: Request, 
@@ -137,91 +135,63 @@ export async function PATCH(
       );
     }
     
-    const { id: mentorshipId } = await params;
+    const { id: sessionId } = await params;
     const updateData = await req.json();
     
-    // Validate the update data
+    // Check if the mentor session exists and the user has permission
+    const existingSession = await prisma.mentorSession.findUnique({
+      where: { 
+        id: sessionId,
+        OR: [
+          { mentorId: session.user.id },
+          { menteeId: session.user.id },
+        ],
+      },
+    });
+    
+    if (!existingSession) {
+      return NextResponse.json(
+        { error: 'Mentor session not found or access denied' },
+        { status: 404 }
+      );
+    }
+    
+    // Define allowed updates and prepare the update data
     const allowedUpdates = [
       'status',
-      'goals',
-      'expectations',
-      'communicationPreference',
-      'meetingFrequency',
-      'nextMeetingAt',
       'notes',
+      'meetingUrl',
+      'scheduledAt',
+      'duration'
     ];
     
     const updates = Object.keys(updateData)
       .filter(key => allowedUpdates.includes(key))
       .reduce((obj, key) => {
-        obj[key] = updateData[key];
+        // Handle special cases for date and number fields
+        if (key === 'scheduledAt' && updateData[key]) {
+          obj[key] = new Date(updateData[key]);
+        } else if (key === 'duration' && updateData[key]) {
+          obj[key] = parseInt(updateData[key]);
+        } else if (updateData[key] !== undefined) {
+          obj[key] = updateData[key];
+        }
         return obj;
       }, {} as Record<string, any>);
     
     if (Object.keys(updates).length === 0) {
       return NextResponse.json(
-        { error: 'No valid fields to update' }, 
+        { error: 'No valid fields to update' },
         { status: 400 }
       );
     }
     
-    // Check if the user has permission to update this mentorship
-    const existingMentorship = await prisma.mentorship.findUnique({
-      where: { id: mentorshipId },
-      select: {
-        mentor: {
-          select: { userId: true },
-        },
-        menteeId: true,
-      },
-    });
+    // Add updatedAt timestamp
+    updates.updatedAt = new Date();
     
-    if (!existingMentorship) {
-      return NextResponse.json(
-        { error: 'Mentorship not found' }, 
-        { status: 404 }
-      );
-    }
-    
-    const isMentor = existingMentorship.mentor.userId === session.user.id;
-    const isMentee = existingMentorship.menteeId === session.user.id;
-    
-    if (!isMentor && !isMentee) {
-      return NextResponse.json(
-        { error: 'You do not have permission to update this mentorship' }, 
-        { status: 403 }
-      );
-    }
-    
-    // If updating status, add validation
-    if (updates.status) {
-      const validStatuses = [
-        'PENDING',
-        'ACTIVE',
-        'PAUSED',
-        'COMPLETED',
-        'CANCELLED',
-      ];
-      
-      if (!validStatuses.includes(updates.status)) {
-        return NextResponse.json(
-          { error: 'Invalid status value' }, 
-          { status: 400 }
-        );
-      }
-      
-      // Add status-specific validations
-      if (updates.status === 'COMPLETED' && !isMentor) {
-        return NextResponse.json(
-          { error: 'Only mentors can complete a mentorship' }, 
-          { status: 403 }
-        );
-      }
-    }
-    
-    // Update the mentorship
-    const updatedMentorship = await prisma.mentorship.update({
-      where: { id: mentorshipId },
+    // Update the mentor session
+    const updatedSession = await prisma.mentorSession.update({
+      where: { id: sessionId },
       data: updates,
       include: {
         mentor: {
@@ -230,7 +200,7 @@ export async function PATCH(
               select: {
                 id: true,
                 name: true,
-                email: true,
+                email: session.user.role === 'ADMIN',
               },
             },
           },
@@ -239,26 +209,17 @@ export async function PATCH(
           select: {
             id: true,
             name: true,
-            email: true,
+            email: session.user.role === 'ADMIN',
           },
         },
       },
     });
     
-    // Log the update
-    await prisma.mentorshipHistory.create({
-      data: {
-        mentorshipId,
-        changedBy: session.user.id,
-        changes: updates,
-      },
-    });
-    
-    return NextResponse.json(updatedMentorship);
+    return NextResponse.json(updatedSession);
   } catch (error) {
-    console.error('Error updating mentorship:', error);
+    console.error('Error updating mentor session:', error);
     return NextResponse.json(
-      { error: 'Failed to update mentorship' },
+      { error: 'Failed to update mentor session' },
       { status: 500 }
     );
   }

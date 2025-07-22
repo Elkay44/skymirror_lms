@@ -14,7 +14,7 @@ export async function GET() {
       );
     }
 
-    const mentorships = await prisma.mentorship.findMany({
+    const mentorships = await prisma.mentorSession.findMany({
       where: {
         student: {
           userId: Number(session.user.id)

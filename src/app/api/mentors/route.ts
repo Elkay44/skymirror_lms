@@ -2,165 +2,122 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
-import { MentorProfile, Prisma } from '@prisma/client';
-
-// Types for the mentor data
-interface MentorUser {
-  id: string;
-  name: string | null;
-  email: string | null;
-  image: string | null;
-  bio: string | null;
-  role: string;
-}
-
-interface MentorCounts {
-  mentorships: number;
-  careerPaths: number;
-  reviews: number;
-}
-
-interface MentorProfileWithCounts extends MentorProfile {
-  user: MentorUser | null;
-  _count: MentorCounts;
-  // Add missing properties from MentorProfile
-  id: string;
-  userId: number;
-  bio: string | null;
-  specialties: string | null;
-  experience: string | null;
-  availability: string | null;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 // Response type for the frontend
-interface MentorResponse {
+type MentorResponse = {
   id: string;
-  userId: number;
-  name: string;
-  email?: string;
-  image: string | null;
+  userId: string;
+  name: string | null;
+  email: string | null;
   bio: string | null;
   role: string;
-  specialties: string[];
-  experience: string | null;
-  availability: string | null;
   rating: number;
   reviewCount: number;
-  isActive: boolean;
+  isAvailable: boolean;
   stats: {
-    menteeCount: number;
-    careerPathsCount: number;
-    reviewCount: number;
+    mentorships: number;
+    reviews: number;
   };
   createdAt: string;
-}
+};
 
 /**
  * GET /api/mentors
- * Get a list of all available mentors
+ * Get a list of all available mentors with optional filtering
  */
-export async function GET(req: Request) {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
-    
+
     // Parse query parameters
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const specialtyFilter = searchParams.get('specialty');
     const availableOnly = searchParams.get('available') === 'true';
-    
+
     // Build the where clause for filtering
     const where: any = {};
     
     if (availableOnly) {
-      where.isAvailable = true;
+      where.availability = { not: null };
     }
     
     if (specialtyFilter) {
-      // Use contains to search within the comma-separated specialties
-      where.specialties = {
+      where.bio = {
         contains: specialtyFilter,
+        mode: 'insensitive'
       };
     }
-    
-    // Get mentors with their user information
+
+    // Get all mentor profiles with their user data and session count
     const mentors = await prisma.mentorProfile.findMany({
-      where: {
-        isActive: true, // Only show active mentors
-        ...(specialtyFilter && {
-          specialties: {
-            contains: specialtyFilter
-          }
-        }),
-        ...(availableOnly && {
-          availability: {
-            not: null
-          }
-        })
-      },
-      include: {
+      where,
+      select: {
+        id: true,
+        userId: true,
+        bio: true,
         user: {
           select: {
             id: true,
             name: true,
-            email: session?.user?.role === 'ADMIN',
-            image: true,
-            bio: true,
+            email: session.user.role === 'ADMIN',
             role: true,
-          }
+            createdAt: true,
+          },
         },
-        _count: {
-          select: {
-            mentorships: true,
-            careerPaths: true,
-            reviews: true
-          }
-        }
       },
-      orderBy: [
-        { userId: 'desc' } // Default ordering by user ID
-      ]
-    }) as unknown as MentorProfileWithCounts[];
-    
-    // Transform the data to make it more frontend-friendly
+      orderBy: {
+        user: {
+          name: 'asc'
+        }
+      }
+    });
+
+    // Get session counts for each mentor
+    const mentorIds = mentors.map(mentor => mentor.id);
+    const sessionCounts = await prisma.mentorSession.groupBy({
+      by: ['mentorId'],
+      where: {
+        mentorId: { in: mentorIds }
+      },
+      _count: {
+        id: true
+      }
+    });
+
+    // Create a map of mentorId to session count
+    const sessionCountMap = new Map(
+      sessionCounts.map(item => [item.mentorId, item._count.id])
+    );
+
+    // Transform the data to match the MentorResponse type
     const formattedMentors: MentorResponse[] = mentors.map(mentor => {
-      const mentorUser = mentor.user || {} as MentorUser;
-      const counts = mentor._count || {} as MentorCounts;
-      
-      // Calculate review count safely
-      const reviewCount = Number(counts.reviews || 0);
+      const sessionCount = sessionCountMap.get(mentor.id) || 0;
       
       return {
         id: mentor.id,
         userId: mentor.userId,
-        name: mentorUser.name || 'Mentor',
-        email: session?.user?.role === 'ADMIN' ? mentorUser.email || undefined : undefined,
-        image: mentorUser.image,
-        bio: mentor.bio || mentorUser.bio || '',
-        role: mentorUser.role || 'MENTOR',
-        specialties: mentor.specialties ? 
-          mentor.specialties.split(',').map(s => s.trim()).filter(Boolean) : 
-          [],
-        experience: mentor.experience || null,
-        availability: mentor.availability,
+        name: mentor.user?.name || 'Mentor',
+        email: session.user.role === 'ADMIN' ? mentor.user?.email || null : null,
+        bio: mentor.bio,
+        role: mentor.user?.role || 'MENTOR',
         rating: 0, // Default rating (can be calculated from reviews if needed)
-        reviewCount,
-        isActive: mentor.isActive,
+        reviewCount: 0, // Default review count
+        isAvailable: true, // Default availability
         stats: {
-          menteeCount: Number(counts.mentorships || 0),
-          careerPathsCount: Number(counts.careerPaths || 0),
-          reviewCount
+          mentorships: sessionCount,
+          reviews: 0, // Default reviews count
         },
-        createdAt: mentor.createdAt.toISOString()
+        createdAt: mentor.user?.createdAt.toISOString() || new Date().toISOString(),
       };
     });
-    
+
     return NextResponse.json(formattedMentors);
   } catch (error) {
     console.error('Error fetching mentors:', error);
@@ -175,17 +132,20 @@ export async function GET(req: Request) {
  * POST /api/mentors
  * Create or update a mentor profile for the current user
  */
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
-    
+
     // Check if user role is appropriate for being a mentor
     const user = await prisma.user.findUnique({
-      where: { id: Number(session.user.id) },
+      where: { id: session.user.id },
       select: { role: true }
     });
     
@@ -195,64 +155,34 @@ export async function POST(req: Request) {
         { status: 403 }
       );
     }
+
+    const data = await request.json();
     
-    const { 
-      bio, 
-      specialties,
-      experience,
-      availability,
-      isActive
-    } = await req.json();
-    
-    // Format specialties as comma-separated string if it's an array
-    const formattedSpecialties = Array.isArray(specialties)
-      ? specialties.join(',')
-      : specialties;
-    
-    // Check if mentor profile already exists
-    const existingProfile = await prisma.mentorProfile.findUnique({
-      where: { userId: Number(session.user.id) }
+    // Create or update the mentor profile
+    const mentor = await prisma.mentorProfile.upsert({
+      where: { userId: session.user.id },
+      update: {
+        bio: data.bio,
+        // Add other fields as needed
+      },
+      create: {
+        userId: session.user.id,
+        bio: data.bio,
+        // Add other fields as needed
+      },
     });
-    
-    let mentorProfile;
-    
-    if (existingProfile) {
-      // Update existing profile
-      const updateData: Prisma.MentorProfileUpdateInput = {
-        bio: bio ?? existingProfile.bio,
-        specialties: formattedSpecialties ?? existingProfile.specialties,
-        experience: experience ?? existingProfile.experience,
-        availability: availability ?? existingProfile.availability,
-        isActive: isActive ?? existingProfile.isActive,
-        updatedAt: new Date(),
-      };
-      
-      mentorProfile = await prisma.mentorProfile.update({
-        where: { userId: Number(session.user.id) },
-        data: updateData
-      });
-    } else {
-      // Create new profile
-      const createData: Prisma.MentorProfileCreateInput = {
-        user: { connect: { id: Number(session.user.id) } },
-        bio: bio ?? null,
-        specialties: formattedSpecialties || null,
-        experience: experience ?? null,
-        availability: availability ?? null,
-        isActive: isActive ?? true,
-      };
-      
-      mentorProfile = await prisma.mentorProfile.create({
-        data: createData
-      });
-    }
-    
-    return NextResponse.json(mentorProfile);
+
+    return NextResponse.json(mentor);
   } catch (error) {
-    console.error('Error creating/updating mentor profile:', error);
-    return NextResponse.json(
-      { error: 'Failed to create/update mentor profile' },
-      { status: 500 }
-    );
+    console.error('Error updating mentor profile:', error);
+    return handleError(error);
   }
+}
+
+function handleError(error: any) {
+  console.error('Error:', error);
+  return NextResponse.json(
+    { error: 'Failed to update mentor profile' },
+    { status: 500 }
+  );
 }

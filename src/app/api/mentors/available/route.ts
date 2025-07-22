@@ -56,10 +56,9 @@ export async function GET(req: Request) {
           select: {
             id: true,
             name: true,
-            image: true,
-            bio: true,
+            // Only include fields that exist in the User model
+            // image, bio, level are not in the base User model
             role: true,
-            level: true, // For experience level
             createdAt: true,
           },
         },
@@ -69,36 +68,27 @@ export async function GET(req: Request) {
       },
     });
     
-    // Format the response
+    // Format the response with only the fields that exist in the models
     const formattedMentors = mentors.map((mentor) => {
-      // Generate a random rating for demo purposes (in production, this would come from actual reviews)
-      const rating = 4 + Math.random();
-      const reviewCount = Math.floor(Math.random() * 100) + 10;
-      
-      // Parse specialties from string to array
-      const specialtiesArray = mentor.specialties ? 
-        mentor.specialties.split(',').map(s => s.trim()) : 
-        ['Mentoring', 'Career Guidance'];
-      
       // Calculate years of experience based on account creation date
       const accountCreationDate = mentor.user.createdAt;
       const currentDate = new Date();
       const yearsOfExperience = Math.max(1, Math.floor((currentDate.getTime() - accountCreationDate.getTime()) / (1000 * 60 * 60 * 24 * 365)));
       
+      // Return only the fields that exist in the models
       return {
         id: mentor.id,
         userId: mentor.user.id,
         name: mentor.user.name || 'Mentor',
-        title: `${specialtiesArray[0]} Specialist`,
-        avatarUrl: mentor.user.image,
-        rating: parseFloat(rating.toFixed(1)),
-        reviewCount: reviewCount,
-        specialties: specialtiesArray,
-        hourlyRate: mentor.hourlyRate || 50,
-        availability: mentor.availability || 'Flexible schedule',
-        description: mentor.user.bio || 'Experienced mentor ready to help you succeed.',
-        isAvailableNow: Math.random() > 0.5, // Randomly set availability for demo
-        yearsOfExperience: yearsOfExperience,
+        role: mentor.user.role,
+        createdAt: mentor.user.createdAt,
+        // Include basic mentor profile fields
+        bio: mentor.bio,
+        yearsOfExperience,
+        // Add any additional fields that are needed by the frontend with default values
+        rating: 4.5, // Default rating
+        reviewCount: 10, // Default review count
+        isAvailable: true, // Default availability
       };
     });
     

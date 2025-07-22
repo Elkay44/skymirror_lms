@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 // GET endpoint to fetch user's conversations
 export async function GET(req: NextRequest) {
@@ -129,8 +128,11 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error fetching conversations:', error);
+    const errorMessage = error instanceof Error ? error.message : 
+                       typeof error === 'string' ? error : 
+                       'Failed to fetch conversations';
     return NextResponse.json(
-      { error: error?.message || String(error) || 'Failed to fetch conversations' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

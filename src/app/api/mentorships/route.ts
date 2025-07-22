@@ -3,192 +3,104 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-// Define base types for the mentorship data
-type User = {
-  id: number;
+// Define types based on Prisma schema
+interface User {
+  id: string;
   name: string | null;
   email: string;
-  image: string | null;
-};
-
-type StudentProfile = {
-  id: string;
-  user: User;
+  role: string;
   createdAt: Date;
   updatedAt: Date;
-  userId: number;
-  interests: string | null;
-  goals: string | null;
-  preferredLearningStyle: string | null;
-  careerPathId: string | null;
-};
+}
 
-type MentorProfile = {
+interface MentorProfile {
   id: string;
-  user: User;
-  createdAt: Date;
-  updatedAt: Date;
-  userId: number;
+  userId: string;
   bio: string | null;
-  expertise: string[];
-  availability: string | null;
-  isActive: boolean;
-};
-
-type Conversation = {
-  id: string;
-  lastActivity: Date;
-  _count: { messages: number };
-};
-
-type CheckIn = {
-  id: string;
-  scheduledFor: Date;
-  completedAt: Date | null;
-  progress: string | null;
-  summary: string | null;
-  mentorshipId: string;
   createdAt: Date;
   updatedAt: Date;
-  nextSteps: string | null;
-  mood: string | null;
-};
+  user: User;
+}
 
-type MentorshipBase = {
+interface StudentProfile {
   id: string;
-  status: string;
-  startDate: Date;
-  endDate: Date | null;
-  notes?: string | null;
+  userId: string;
+  bio: string | null;
+  learningGoals: string;
   createdAt: Date;
   updatedAt: Date;
-  studentId: string;
+  user: User;
+}
+
+type MentorSessionStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+
+interface MentorSession {
+  id: string;
   mentorId: string;
-};
-
-type MentorshipWithRelations = MentorshipBase & {
-  student: StudentProfile;
-  mentor: MentorProfile;
-  conversations: Conversation[];
-  checkIns: CheckIn[];
-  _count: {
-    conversations: number;
-    checkIns: number;
-  };
-  userRole?: 'mentor' | 'student';
-};
-
-type FormattedMentorship = {
-  id: string;
-  status: string;
-  startDate: Date;
-  endDate: Date | null;
+  menteeId: string;
+  title: string;
+  description: string | null;
+  status: MentorSessionStatus;
+  scheduledAt: Date;
+  duration: number;
+  meetingUrl: string | null;
   notes: string | null;
-  userRole: 'mentor' | 'student';
-  otherParty: {
+  createdAt: Date;
+  updatedAt: Date;
+  mentor: MentorProfile;
+  mentee: StudentProfile;
+}
+
+interface FormattedMentorSession {
+  id: string;
+  title: string;
+  description: string | null;
+  status: MentorSessionStatus;
+  scheduledAt: Date;
+  duration: number;
+  meetingUrl: string | null;
+  notes: string | null;
+  mentor: {
     id: string;
-    userId: number;
     name: string | null;
     email: string;
-    image: string | null;
+    bio: string | null;
   };
-  lastConversation: {
+  mentee: {
     id: string;
-    lastActivity: Date;
-    messageCount: number;
-  } | null;
-  lastCheckIn: {
-    scheduledFor: Date;
-    completed: boolean;
-  } | null;
-  conversationCount: number;
-  checkInCount: number;
+    name: string | null;
+    email: string;
+  };
   createdAt: Date;
   updatedAt: Date;
-};
+}
 
 /**
  * GET /api/mentorships
- * Get all mentorships for the current user (either as mentor or student)
+ * Get all mentor sessions for the current user (either as mentor or mentee)
  */
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' }, 
+        { status: 401 }
+      );
     }
     
     const { searchParams } = new URL(req.url);
-    const status = searchParams.get('status');
-    const role = searchParams.get('role') as 'mentor' | 'student' | null; // 'mentor' or 'student'
+    const status = searchParams.get('status') as MentorSessionStatus | null;
+    const role = searchParams.get('role') as 'mentor' | 'mentee' | null;
     
-    // Check if user has a mentor profile
-    const mentorProfile = await prisma.mentorProfile.findUnique({
-      where: { userId: Number(session.user.id) },
-      select: { id: true }
-    });
+    let sessions: MentorSession[] = [];
     
-    // Check if user has a student profile
-    const studentProfile = await prisma.studentProfile.findUnique({
-      where: { userId: Number(session.user.id) },
-      select: { id: true }
-    });
-    
-    // Build query conditions based on role
-    let mentorships: any[] = [];
-    
-    // Handle filtering based on role
-    if (role === 'mentor' && mentorProfile) {
-      // Get mentorships where user is the mentor
-      mentorships = await prisma.mentorship.findMany({
+    if (role === 'mentor') {
+      // Get sessions where user is the mentor
+      sessions = await prisma.mentorSession.findMany({
         where: {
-          mentorId: mentorProfile.id,
-          ...(status ? { status } : {})
-        },
-        include: {
-          student: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  image: true,
-                }
-              }
-            }
-          },
-          conversations: {
-            select: {
-              id: true,
-              lastActivity: true,
-              _count: { select: { messages: true } }
-            },
-            orderBy: { lastActivity: 'desc' },
-            take: 1
-          },
-          checkIns: {
-            orderBy: { scheduledFor: 'desc' },
-            take: 1
-          },
-          _count: {
-            select: {
-              conversations: true,
-              checkIns: true
-            }
-          }
-        },
-        orderBy: [
-          { status: 'asc' },
-          { updatedAt: 'desc' }
-        ]
-      });
-    } else if (role === 'student' && studentProfile) {
-      // Get mentorships where user is the student
-      mentorships = await prisma.mentorship.findMany({
-        where: {
-          studentId: studentProfile.id,
+          mentor: { userId: session.user.id },
           ...(status ? { status } : {})
         },
         include: {
@@ -199,212 +111,122 @@ export async function GET(req: Request) {
                   id: true,
                   name: true,
                   email: true,
-                  image: true,
-                }
-              }
-            }
-          },
-          conversations: {
-            select: {
-              id: true,
-              lastActivity: true,
-              _count: { select: { messages: true } }
+                },
+              },
             },
-            orderBy: { lastActivity: 'desc' },
-            take: 1
           },
-          checkIns: {
-            orderBy: { scheduledFor: 'desc' },
-            take: 1
+          mentee: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
           },
-          _count: {
-            select: {
-              conversations: true,
-              checkIns: true
-            }
-          }
         },
-        orderBy: [
-          { status: 'asc' },
-          { updatedAt: 'desc' }
-        ]
+        orderBy: {
+          scheduledAt: 'desc',
+        },
+      });
+    } else if (role === 'mentee') {
+      // Get sessions where user is the mentee
+      sessions = await prisma.mentorSession.findMany({
+        where: {
+          mentee: { userId: session.user.id },
+          ...(status ? { status } : {})
+        },
+        include: {
+          mentor: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          mentee: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          scheduledAt: 'desc',
+        },
       });
     } else {
-      // If no specific role requested, get all mentorships for the user
-      const mentorMentorships = mentorProfile ? await prisma.mentorship.findMany({
-        where: {
-          mentorId: mentorProfile.id,
-          ...(status ? { status } : {})
-        },
-        include: {
-          student: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  image: true,
-                }
-              }
-            }
+      // Get all sessions where user is either mentor or mentee
+      const [asMentor, asMentee] = await Promise.all([
+        prisma.mentorSession.findMany({
+          where: {
+            mentor: { userId: session.user.id },
+            ...(status ? { status } : {})
           },
-          conversations: {
-            select: {
-              id: true,
-              lastActivity: true,
-              _count: { select: { messages: true } }
-            },
-            orderBy: { lastActivity: 'desc' },
-            take: 1
+          include: {
+            mentor: { include: { user: true } },
+            mentee: { include: { user: true } },
           },
-          _count: {
-            select: {
-              conversations: true,
-              checkIns: true
-            }
-          }
-        }
-      }) : [];
+        }),
+        prisma.mentorSession.findMany({
+          where: {
+            mentee: { userId: session.user.id },
+            ...(status ? { status } : {})
+          },
+          include: {
+            mentor: { include: { user: true } },
+            mentee: { include: { user: true } },
+          },
+        }),
+      ]);
       
-      const studentMentorships = studentProfile ? await prisma.mentorship.findMany({
-        where: {
-          studentId: studentProfile.id,
-          ...(status ? { status } : {})
-        },
-        include: {
-          mentor: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  image: true,
-                }
-              }
-            }
-          },
-          conversations: {
-            select: {
-              id: true,
-              lastActivity: true,
-              _count: { select: { messages: true } }
-            },
-            orderBy: { lastActivity: 'desc' },
-            take: 1
-          },
-          _count: {
-            select: {
-              conversations: true,
-              checkIns: true
-            }
-          }
-        }
-      }) : [];
-      
-      // Combine both types of mentorships
-      mentorships = [
-        ...mentorMentorships.map(m => ({ ...m, userRole: 'mentor' })),
-        ...studentMentorships.map(m => ({ ...m, userRole: 'student' }))
-      ];
-      
-      // Sort by updated date
-      mentorships.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      // Combine and deduplicate sessions
+      const allSessions = [...asMentor, ...asMentee];
+      const sessionMap = new Map(allSessions.map(session => [session.id, session]));
+      sessions = Array.from(sessionMap.values());
     }
     
-    // Format the response for easier consumption
-    interface FormattedMentorship {
-      id: string;
-      status: string;
-      startDate: Date | null;
-      endDate: Date | null;
-      notes: string | null;
-      userRole: 'mentor' | 'student';
-      otherParty: {
-        id: string;
-        userId: string;
-        name: string;
-        email: string;
-        image: string;
-      };
-      lastConversation: {
-        id: string;
-        lastActivity: Date;
-        messageCount: number;
-      } | null;
-      lastCheckIn: {
-        scheduledFor: Date;
-        completed: boolean;
-      } | null;
-      conversationCount: number;
-      checkInCount: number;
-      createdAt: Date;
-      updatedAt: Date;
-    }
-    
-    const formattedMentorships = mentorships.map((mentorship: any): FormattedMentorship => {
-      // Determine user role based on the presence of student or mentor in the query
-      const isMentor = role === 'mentor' || (mentorship as any).userRole === 'mentor';
-      
-      // Safely access the other party (mentor or student) based on user role
-      const otherParty = isMentor
-        ? {
-            id: mentorship.student.id,
-            userId: mentorship.student.user.id,
-            name: mentorship.student.user.name,
-            email: mentorship.student.user.email,
-            image: mentorship.student.user.image,
-          }
-        : {
-            id: mentorship.mentor.id,
-            userId: mentorship.mentor.user.id,
-            name: mentorship.mentor.user.name,
-            email: mentorship.mentor.user.email,
-            image: mentorship.mentor.user.image,
-          };
-      
-      // Format the response object with proper type safety
-      const result: FormattedMentorship = {
-        id: mentorship.id,
-        status: mentorship.status,
-        startDate: mentorship.startDate,
-        endDate: mentorship.endDate,
-        notes: mentorship.notes || null,
-        userRole: isMentor ? 'mentor' : 'student',
-        otherParty,
-        lastConversation: mentorship.conversations?.[0] ? {
-          id: mentorship.conversations[0].id,
-          lastActivity: mentorship.conversations[0].lastActivity,
-          messageCount: mentorship.conversations[0]._count?.messages || 0
-        } : null,
-        lastCheckIn: mentorship.checkIns?.[0] ? {
-          scheduledFor: mentorship.checkIns[0].scheduledFor,
-          completed: !!mentorship.checkIns[0].completedAt
-        } : null,
-        conversationCount: mentorship._count?.conversations || 0,
-        checkInCount: mentorship._count?.checkIns || 0,
-        createdAt: mentorship.createdAt,
-        updatedAt: mentorship.updatedAt
-      };
-      
-      return result;
-    });
-    
-    return NextResponse.json(formattedMentorships);
-  } catch (error) {
-    console.error('Error fetching mentorships:', error);
-    
-    // Return more detailed error information in development
-    const errorMessage = process.env.NODE_ENV === 'development' 
-      ? error instanceof Error ? error.message : 'Unknown error occurred'
-      : 'Failed to fetch mentorships';
-      
-    return NextResponse.json(
-      { 
-        error: errorMessage,
-        stack: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
+    // Format the response
+    const formattedSessions: FormattedMentorSession[] = sessions.map(session => ({
+      id: session.id,
+      title: session.title,
+      description: session.description,
+      status: session.status,
+      scheduledAt: session.scheduledAt,
+      duration: session.duration,
+      meetingUrl: session.meetingUrl,
+      notes: session.notes,
+      mentor: {
+        id: session.mentor.id,
+        name: session.mentor.user.name,
+        email: session.mentor.user.email,
+        bio: session.mentor.bio,
       },
+      mentee: {
+        id: session.mentee.id,
+        name: session.mentee.user.name,
+        email: session.mentee.user.email,
+      },
+      createdAt: session.createdAt,
+      updatedAt: session.updatedAt,
+    }));
+    
+    return NextResponse.json(formattedSessions);
+  } catch (error) {
+    console.error('Error fetching mentor sessions:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch mentor sessions' },
       { status: 500 }
     );
   }
@@ -412,39 +234,53 @@ export async function GET(req: Request) {
 
 /**
  * POST /api/mentorships
- * Request a new mentorship with a mentor
+ * Schedule a new mentor session
  */
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
     
-    const { mentorId, notes } = await req.json() as { mentorId: string; notes?: string };
+    const { 
+      mentorId, 
+      title, 
+      description, 
+      scheduledAt, 
+      duration,
+      meetingUrl 
+    } = await req.json();
     
-    if (!mentorId) {
+    // Validate required fields
+    if (!mentorId || !title || !scheduledAt || !duration) {
       return NextResponse.json(
-        { error: 'Mentor ID is required' },
+        { error: 'Missing required fields' },
         { status: 400 }
       );
     }
     
-    // Get or create student profile
-    let studentProfile = await prisma.studentProfile.findUnique({
-      where: { userId: Number(session.user.id) }
+    // Check if user has a student profile
+    const studentProfile = await prisma.studentProfile.findUnique({
+      where: { userId: session.user.id },
+      include: { user: true }
     });
     
     if (!studentProfile) {
-      studentProfile = await prisma.studentProfile.create({
-        data: { userId: Number(session.user.id) }
-      });
+      return NextResponse.json(
+        { error: 'Student profile not found' },
+        { status: 404 }
+      );
     }
     
     // Check if mentor exists
     const mentorProfile = await prisma.mentorProfile.findUnique({
-      where: { id: mentorId }
+      where: { id: mentorId },
+      include: { user: true }
     });
     
     if (!mentorProfile) {
@@ -454,72 +290,100 @@ export async function POST(req: Request) {
       );
     }
     
-    // Check if mentorship already exists
-    const existingMentorship = await prisma.mentorship.findUnique({
+    // Check for scheduling conflicts
+    const conflictingSession = await prisma.mentorSession.findFirst({
       where: {
-        mentorId_studentId: {
-          mentorId,
-          studentId: studentProfile.id
-        }
-      }
+        OR: [
+          { mentorId: mentorId },
+          { menteeId: studentProfile.id }
+        ],
+        scheduledAt: {
+          lte: new Date(new Date(scheduledAt).getTime() + duration * 60 * 1000),
+        },
+        status: { in: ['SCHEDULED', 'IN_PROGRESS'] },
+        NOT: {
+          scheduledAt: {
+            gte: new Date(new Date(scheduledAt).getTime() + duration * 60 * 1000),
+          },
+        },
+      },
     });
     
-    if (existingMentorship) {
+    if (conflictingSession) {
       return NextResponse.json(
-        { error: 'Mentorship already exists', mentorship: existingMentorship },
-        { status: 400 }
+        { error: 'There is a scheduling conflict with an existing session' },
+        { status: 409 }
       );
     }
     
-    // Create new mentorship
-    const mentorship = await prisma.mentorship.create({
+    // Create new mentor session
+    const newSession = await prisma.mentorSession.create({
       data: {
-        mentorId,
-        studentId: studentProfile.id,
-        status: 'PENDING',
-        ...(notes ? { notes } : {})
-      }
+        title,
+        description,
+        scheduledAt: new Date(scheduledAt),
+        duration,
+        meetingUrl: meetingUrl || null,
+        status: 'SCHEDULED',
+        mentor: { connect: { id: mentorId } },
+        mentee: { connect: { id: studentProfile.id } },
+      },
+      include: {
+        mentor: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+        mentee: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
     });
     
-    // Create initial conversation
-    const conversation = await prisma.conversation.create({
-      data: {
-        mentorshipId: mentorship.id,
-        topic: 'Introduction'
-      }
-    });
+    // Format the response
+    const formattedSession: FormattedMentorSession = {
+      id: newSession.id,
+      title: newSession.title,
+      description: newSession.description,
+      status: newSession.status as MentorSessionStatus,
+      scheduledAt: newSession.scheduledAt,
+      duration: newSession.duration,
+      meetingUrl: newSession.meetingUrl,
+      notes: newSession.notes,
+      mentor: {
+        id: newSession.mentor.id,
+        name: newSession.mentor.user.name,
+        email: newSession.mentor.user.email,
+        bio: newSession.mentor.bio,
+      },
+      mentee: {
+        id: newSession.mentee.id,
+        name: newSession.mentee.user.name,
+        email: newSession.mentee.user.email,
+      },
+      createdAt: newSession.createdAt,
+      updatedAt: newSession.updatedAt,
+    };
     
-    // Add system message to the conversation
-    await prisma.message.create({
-      data: {
-        conversation: { connect: { id: conversation.id } },
-        sender: { connect: { id: Number(session.user.id) } },
-        content: `${session.user.name || 'A student'} has requested mentorship. Please review and respond.`,
-        isRead: false
-      }
-    });
-    
-    // Send welcome message from student if notes provided
-    if (notes) {
-      await prisma.message.create({
-        data: {
-          conversation: { connect: { id: conversation.id } },
-          sender: { connect: { id: Number(session.user.id) } },
-          content: notes,
-          isRead: false
-        }
-      });
-    }
-    
-    return NextResponse.json({
-      success: true,
-      mentorship,
-      conversation
-    });
+    return NextResponse.json(formattedSession, { status: 201 });
   } catch (error) {
-    console.error('Error creating mentorship:', error);
+    console.error('Error creating mentor session:', error);
     return NextResponse.json(
-      { error: 'Failed to create mentorship' },
+      { error: 'Failed to create mentor session' },
       { status: 500 }
     );
   }
