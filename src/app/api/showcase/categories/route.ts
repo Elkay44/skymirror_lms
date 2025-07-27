@@ -4,52 +4,45 @@ import prisma from '@/lib/prisma';
 // GET /api/showcase/categories - Get showcase categories with project counts
 export async function GET(req: NextRequest) {
   try {
-    // Get categories with counts from the database
-    const categoryCounts = await prisma.showcaseProject.groupBy({
-      by: ['category'],
-      _count: {
-        id: true,
+    // Get all unique tags from showcase projects
+    const allProjects = await prisma.showcaseProject.findMany({
+      select: {
+        tags: true,
       },
-      orderBy: {
-        _count: {
-          id: 'desc',
-        },
-      },
-    });
-    
-    // Get category metadata from the settings table
-    const categorySettings = await prisma.setting.findMany({
       where: {
-        category: 'showcase_category',
+        isPublished: true,
       },
     });
     
-    // Map of category IDs to their metadata
-    const categoryMap = new Map();
-    categorySettings.forEach(setting => {
-      try {
-        const metadata = JSON.parse(setting.value);
-        categoryMap.set(setting.key, metadata);
-      } catch (e) {
-        console.error(`Error parsing category metadata for ${setting.key}:`, e);
+    // Count occurrences of each tag
+    const tagCounts = new Map<string, number>();
+    allProjects.forEach(project => {
+      if (project.tags) {
+        const tags = project.tags.split(',').map(tag => tag.trim());
+        tags.forEach(tag => {
+          if (tag) {
+            tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+          }
+        });
       }
     });
     
-    // Format the response
-    const categories = categoryCounts.map(category => {
-      const metadata = categoryMap.get(category.category) || {};
-      
-      return {
-        id: category.category,
-        name: metadata.name || category.category,
-        description: metadata.description || '',
-        icon: metadata.icon || null,
-        color: metadata.color || null,
-        count: category._count.id,
-      };
-    });
-    
-    return NextResponse.json({ categories });
+    // Convert to array of { name, count } objects
+    const categoryCounts = Array.from(tagCounts.entries())
+      .map(([name, count]) => ({
+        id: name,
+        name,
+        slug: name.toLowerCase().replace(/\s+/g, '-'),
+        count,
+        description: '',
+        icon: '',
+        color: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    return NextResponse.json({ categories: categoryCounts });
   } catch (error) {
     console.error('Error fetching showcase categories:', error);
     return NextResponse.json(

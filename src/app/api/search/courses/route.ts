@@ -222,38 +222,29 @@ export async function GET(req: NextRequest) {
     });
     
     // Format the results to return to the client
-    const formattedResults = await Promise.all(courses.map(async (course) => {
-      // Get average rating for each course
-      const ratingStats = await prisma.courseRating.aggregate({
-        where: { courseId: course.id },
-        _avg: { rating: true },
-        _count: true
-      });
-      
-      return {
-        id: course.id,
-        title: course.title,
-        description: course.description,
-        imageUrl: course.imageUrl,
-        price: course.price,
-        status: course.status,
-        isPublished: course.isPublished,
-        createdAt: course.createdAt,
-        updatedAt: course.updatedAt,
-        category: course.category,
-        level: course.level,
-        language: course.language,
-        tags: course.tags as string[],
-        moduleCount: course.modules.length,
-        enrollmentCount: course._count.enrollments,
-        averageRating: ratingStats._avg.rating || 0,
-        ratingCount: ratingStats._count,
-        instructor: {
-          id: course.instructor.id,
-          name: course.instructor.name,
-          image: course.instructor.image
-        }
-      };
+    const formattedResults = courses.map((course) => ({
+      id: course.id,
+      title: course.title,
+      description: course.description,
+      imageUrl: course.imageUrl,
+      price: course.price,
+      status: course.status,
+      isPublished: course.isPublished,
+      createdAt: course.createdAt,
+      updatedAt: course.updatedAt,
+      category: course.category,
+      level: course.level,
+      language: course.language,
+      tags: course.tags as string[],
+      moduleCount: course.modules.length,
+      enrollmentCount: course._count?.enrollments || 0,
+      averageRating: course.averageRating || 0,
+      ratingCount: course.totalReviews || 0,
+      instructor: {
+        id: course.instructor.id,
+        name: course.instructor.name,
+        image: course.instructor.image
+      }
     }));
     
     // Return search results with pagination info
@@ -452,38 +443,30 @@ export async function POST(req: NextRequest) {
       }
     });
     
-    // Format the results (identical to GET handler)
-    const formattedResults = await Promise.all(courses.map(async (course) => {
-      const ratingStats = await prisma.courseRating.aggregate({
-        where: { courseId: course.id },
-        _avg: { rating: true },
-        _count: true
-      });
-      
-      return {
-        id: course.id,
-        title: course.title,
-        description: course.description,
-        imageUrl: course.imageUrl,
-        price: course.price,
-        status: course.status,
-        isPublished: course.isPublished,
-        createdAt: course.createdAt,
-        updatedAt: course.updatedAt,
-        category: course.category,
-        level: course.level,
-        language: course.language,
-        tags: course.tags as string[],
-        moduleCount: course.modules.length,
-        enrollmentCount: course._count.enrollments,
-        averageRating: ratingStats._avg.rating || 0,
-        ratingCount: ratingStats._count,
-        instructor: {
-          id: course.instructor.id,
-          name: course.instructor.name,
-          image: course.instructor.image
-        }
-      };
+    // Format the results (using the averageRating field from the Course model)
+    const formattedResults = courses.map((course) => ({
+      id: course.id,
+      title: course.title,
+      description: course.description,
+      imageUrl: course.imageUrl,
+      price: course.price,
+      status: course.status,
+      isPublished: course.isPublished,
+      createdAt: course.createdAt,
+      updatedAt: course.updatedAt,
+      category: course.category,
+      level: course.level,
+      language: course.language,
+      tags: course.tags as string[],
+      moduleCount: course.modules.length,
+      enrollmentCount: course._count?.enrollments || 0,
+      averageRating: course.averageRating || 0,
+      ratingCount: course.totalReviews || 0,
+      instructor: {
+        id: course.instructor.id,
+        name: course.instructor.name,
+        image: course.instructor.image
+      }
     }));
     
     // Return search results with pagination info

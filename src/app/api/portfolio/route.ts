@@ -59,27 +59,48 @@ export async function GET(req: NextRequest) {
     });
     
     // Format the project data for the portfolio
-    const projects = projectSubmissions.map(submission => {
-      // Extract skills from project tags or description
-      const projectTags = submission.project.tags || [];
-      const extractedSkills = projectTags.length > 0 
-        ? projectTags 
-        : extractSkillsFromDescription(submission.project.description);
+    const projects = await Promise.all(projectSubmissions.map(async (submission) => {
+      // Extract skills from project description since Project model doesn't have tags
+      // If you want to use tags, you should use the ShowcaseProject model
+      const extractedSkills = extractSkillsFromDescription(submission.project.description || '');
       
-      return {
-        id: submission.projectId,
-        title: submission.project.title,
-        description: submission.project.description,
-        courseTitle: submission.project.course.title,
-        courseId: submission.project.courseId,
-        completedAt: submission.updatedAt,
-        repositoryUrl: submission.repositoryUrl || null,
-        demoUrl: submission.demoUrl || null,
-        imageUrl: submission.project.imageUrl || null,
-        skills: extractedSkills,
-        featured: featuredProjects.get(submission.projectId) || false,
-      };
-    });
+      try {
+        // Get the showcase project if it exists
+        const showcaseProject = await prisma.showcaseProject.findFirst({
+          where: { submissionId: submission.id },
+          select: { demoUrl: true, featuredImage: true, sourceCodeUrl: true }
+        });
+
+        return {
+          id: submission.projectId,
+          title: submission.project.title,
+          description: submission.project.description,
+          courseTitle: submission.project.course.title,
+          courseId: submission.project.courseId,
+          completedAt: submission.updatedAt,
+          repositoryUrl: showcaseProject?.sourceCodeUrl || null,
+          demoUrl: showcaseProject?.demoUrl || null,
+          imageUrl: showcaseProject?.featuredImage || null,
+          skills: extractedSkills,
+          featured: featuredProjects.get(submission.projectId) || false,
+        };
+      } catch (error) {
+        console.error(`Error fetching showcase project for submission ${submission.id}:`, error);
+        return {
+          id: submission.projectId,
+          title: submission.project.title,
+          description: submission.project.description,
+          courseTitle: submission.project.course.title,
+          courseId: submission.project.courseId,
+          completedAt: submission.updatedAt,
+          repositoryUrl: null,
+          demoUrl: null,
+          imageUrl: null,
+          skills: extractedSkills,
+          featured: featuredProjects.get(submission.projectId) || false,
+        };
+      }
+    }));
     
     return NextResponse.json({ 
       isVisible: isPortfolioVisible,

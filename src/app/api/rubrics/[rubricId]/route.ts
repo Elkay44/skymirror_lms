@@ -1,69 +1,79 @@
-/* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
+// Helper function to get the authenticated user's ID
+async function getUserId(session: any): Promise<string> {
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized: User not authenticated');
+  }
+  return session.user.id;
+}
+
+// Helper function to check if user is an instructor for a course
+async function isCourseInstructor(
+  prisma: any,
+  courseId: string,
+  userId: string
+): Promise<boolean> {
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { instructorId: true }
+  });
+  
+  return course?.instructorId === userId;
+}
+
+// Helper function to get a rubric with its related data
+async function getRubricWithItems(
+  prisma: any,
+  rubricId: string
+): Promise<any | null> {
+  return prisma.rubric.findUnique({
+    where: { id: rubricId },
+    include: {
+      items: {
+        include: {
+          criteria: {
+            include: {
+              levels: true
+            },
+            orderBy: {
+              order: 'asc'
+            }
+          }
+        },
+        orderBy: {
+          order: 'asc'
+        }
+      },
+      assignments: {
+        include: {
+          module: {
+            include: {
+              course: true
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
 // GET /api/rubrics/[rubricId] - Get a specific rubric
 export async function GET(
-  req: NextRequest, 
-  { params }: { params: Promise<{ rubricId: string }> }
+  request: NextRequest
 ) {
+  const url = new URL(request.url);
+  const pathSegments = url.pathname.split('/');
+  const rubricId = pathSegments[pathSegments.length - 1];
+  
   try {
     const session = await getServerSession(authOptions);
-    const { rubricId } = await params;
+    const userId = await getUserId(session);
     
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' }, 
-        { status: 401 }
-      );
-    }
-    
-    // Get the rubric
-    const rubric = await prisma.rubric.findUnique({
-      where: { id: rubricId },
-      include: {
-        criteria: {
-          include: {
-            levels: {
-              orderBy: {
-                score: 'asc',
-              },
-            },
-          },
-          orderBy: {
-            order: 'asc',
-          },
-        },
-        project: {
-          include: {
-            course: {
-              select: {
-                id: true,
-                title: true,
-                instructorId: true,
-                enrollments: {
-                  where: {
-                    userId: session.user.id,
-                  },
-                  select: {
-                    role: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-    });
+    const rubric = await getRubricWithItems(prisma, rubricId);
     
     if (!rubric) {
       return NextResponse.json(
@@ -72,23 +82,11 @@ export async function GET(
       );
     }
     
-    // Check permissions
-    const isInstructor = rubric.project.course.instructorId === session.user.id;
-    const isAdmin = session.user.role === 'ADMIN';
-    const isEnrolled = rubric.project.course.enrollments.length > 0;
-    
-    // Only allow access to instructors, admins, or enrolled students
-    if (!isInstructor && !isAdmin && !isEnrolled) {
+    // Check if user has access to this rubric
+    const courseId = rubric.assignments[0]?.module?.courseId;
+    if (courseId && !(await isCourseInstructor(prisma, courseId, userId))) {
       return NextResponse.json(
-        { error: 'You do not have permission to view this rubric' },
-        { status: 403 }
-      );
-    }
-    
-    // For students, only return published rubrics
-    if (!isInstructor && !isAdmin && !rubric.isPublished) {
-      return NextResponse.json(
-        { error: 'This rubric is not available yet' },
+        { error: 'Unauthorized: You do not have permission to access this rubric' },
         { status: 403 }
       );
     }
@@ -105,166 +103,86 @@ export async function GET(
 
 // PATCH /api/rubrics/[rubricId] - Update a rubric
 export async function PATCH(
-  req: NextRequest, 
-  { params }: { params: Promise<{ rubricId: string }> }
+  request: NextRequest
 ) {
+  const url = new URL(request.url);
+  const pathSegments = url.pathname.split('/');
+  const rubricId = pathSegments[pathSegments.length - 1];
+  
   try {
     const session = await getServerSession(authOptions);
-    const { rubricId } = await params;
+    const userId = await getUserId(session);
     
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' }, 
-        { status: 401 }
-      );
-    }
-    
-    // Parse request body
-    const body = await req.json();
-    const { 
-      name, 
-      description, 
-      isPublished, 
-      criteria,
-      projectId 
-    } = body;
-    
-    // Validate request body
-    if (!name || typeof name !== 'string') {
-      return NextResponse.json(
-        { error: 'Name is required and must be a string' },
-        { status: 400 }
-      );
-    }
-    
-    // Get the current rubric to check permissions
-    const currentRubric = await prisma.rubric.findUnique({
+    // Get the rubric with its assignments
+    const rubric = await prisma.rubric.findUnique({
       where: { id: rubricId },
       include: {
-        project: {
-          select: {
-            course: {
-              select: {
-                instructorId: true,
-              },
-            },
-          },
-        },
-      },
+        assignments: {
+          include: {
+            module: {
+              include: {
+                course: true
+              }
+            }
+          }
+        }
+      }
     });
     
-    if (!currentRubric) {
+    if (!rubric) {
       return NextResponse.json(
         { error: 'Rubric not found' },
         { status: 404 }
       );
     }
     
-    // Only instructors and admins can update rubrics
-    const isInstructor = currentRubric.project.course.instructorId === session.user.id;
-    const isAdmin = session.user.role === 'ADMIN';
-    
-    if (!isInstructor && !isAdmin) {
+    // Check if the user is an instructor for the course
+    const courseId = rubric.assignments[0]?.module?.course?.id;
+    if (courseId && !(await isCourseInstructor(prisma, courseId, userId))) {
       return NextResponse.json(
-        { error: 'You do not have permission to update this rubric' },
+        { error: 'Unauthorized' },
         { status: 403 }
       );
     }
     
-    // Start a transaction to update the rubric and its criteria
-    const [updatedRubric] = await prisma.$transaction([
+    // Parse the request body
+    const data = await request.json();
+    
+    // Start a transaction to update the rubric and its items
+    await prisma.$transaction([
       // Update the rubric
       prisma.rubric.update({
         where: { id: rubricId },
         data: {
-          name,
-          description,
-          isPublished: isPublished || false,
-          projectId,
-          updatedAt: new Date(),
-        },
-        include: {
-          criteria: {
-            include: {
-              levels: true,
-            },
-            orderBy: {
-              order: 'asc',
-            },
-          },
-        },
+          title: data.title || undefined,
+          description: data.description || undefined,
+          isDefault: data.isDefault || false
+        }
       }),
-      // Delete existing criteria and levels
-      prisma.rubricCriteriaLevel.deleteMany({
-        where: {
-          criteria: {
-            rubricId,
-          },
-        },
+      
+      // Delete existing items
+      prisma.rubricItem.deleteMany({
+        where: { rubricId: rubricId }
       }),
-      prisma.rubricCriteria.deleteMany({
-        where: {
-          rubricId,
-        },
-      }),
+      
+      // Create new rubric items
+      ...(data.items && data.items.length > 0 ? data.items.map((item: any) => 
+        prisma.rubricItem.create({
+          data: {
+            title: item.title,
+            description: item.description,
+            points: item.points || 0,
+            order: item.order || 0,
+            rubricId: rubricId
+          }
+        })
+      ) : [])
     ]);
     
-    // Create new criteria and levels if provided
-    if (Array.isArray(criteria) && criteria.length > 0) {
-      for (const [index, criterion] of criteria.entries()) {
-        const { levels, ...criterionData } = criterion;
-        
-        const createdCriterion = await prisma.rubricCriteria.create({
-          data: {
-            ...criterionData,
-            order: index,
-            rubricId,
-            levels: {
-              create: levels.map((level: any, levelIndex: number) => ({
-                ...level,
-                order: levelIndex,
-              })),
-            },
-          },
-          include: {
-            levels: true,
-          },
-        });
-      }
-    }
+    // Fetch the updated rubric with its items
+    const updatedRubric = await getRubricWithItems(prisma, rubricId);
     
-    // Fetch the updated rubric with all its relationships
-    const fullRubric = await prisma.rubric.findUnique({
-      where: { id: rubricId },
-      include: {
-        criteria: {
-          include: {
-            levels: {
-              orderBy: {
-                score: 'asc',
-              },
-            },
-          },
-          orderBy: {
-            order: 'asc',
-          },
-        },
-        project: {
-          select: {
-            id: true,
-            title: true,
-            course: {
-              select: {
-                id: true,
-                title: true,
-              },
-            },
-          },
-        },
-      },
-    });
-    
-    return NextResponse.json(fullRubric);
+    return NextResponse.json(updatedRubric);
   } catch (error) {
     console.error('Error updating rubric:', error);
     return NextResponse.json(
@@ -276,39 +194,30 @@ export async function PATCH(
 
 // DELETE /api/rubrics/[rubricId] - Delete a rubric
 export async function DELETE(
-  req: NextRequest, 
-  { params }: { params: Promise<{ rubricId: string }> }
+  request: NextRequest
 ) {
+  const url = new URL(request.url);
+  const pathSegments = url.pathname.split('/');
+  const rubricId = pathSegments[pathSegments.length - 1];
+  
   try {
     const session = await getServerSession(authOptions);
-    const { rubricId } = await params;
-    
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' }, 
-        { status: 401 }
-      );
-    }
+    const userId = await getUserId(session);
     
     // Get the rubric to check permissions
     const rubric = await prisma.rubric.findUnique({
       where: { id: rubricId },
       include: {
-        project: {
-          select: {
-            course: {
-              select: {
-                instructorId: true,
-              },
-            },
-          },
-        },
-        _count: {
-          select: {
-            assessments: true,
-          },
-        },
-      },
+        assignments: {
+          include: {
+            module: {
+              include: {
+                course: true
+              }
+            }
+          }
+        }
+      }
     });
     
     if (!rubric) {
@@ -318,54 +227,26 @@ export async function DELETE(
       );
     }
     
-    // Only instructors and admins can delete rubrics
-    const isInstructor = rubric.project.course.instructorId === session.user.id;
-    const isAdmin = session.user.role === 'ADMIN';
-    
-    if (!isInstructor && !isAdmin) {
+    // Check if user has permission to delete this rubric
+    const courseId = rubric.assignments[0]?.module?.course?.id;
+    if (courseId && !(await isCourseInstructor(prisma, courseId, userId))) {
       return NextResponse.json(
-        { error: 'You do not have permission to delete this rubric' },
+        { error: 'Unauthorized: You do not have permission to delete this rubric' },
         { status: 403 }
       );
     }
     
-    // Check if the rubric is used in any assessments
-    if (rubric._count.assessments > 0) {
-      return NextResponse.json(
-        { 
-          error: 'Cannot delete a rubric that is being used in assessments',
-          code: 'RUBRIC_IN_USE',
-        },
-        { status: 400 }
-      );
-    }
-    
-    // Start a transaction to delete the rubric and its related data
+    // Delete the rubric and its items in a transaction
     await prisma.$transaction([
-      // Delete criteria levels first (due to foreign key constraints)
-      prisma.rubricCriteriaLevel.deleteMany({
-        where: {
-          criteria: {
-            rubricId,
-          },
-        },
+      prisma.rubricItem.deleteMany({
+        where: { rubricId: rubricId }
       }),
-      // Then delete criteria
-      prisma.rubricCriteria.deleteMany({
-        where: {
-          rubricId,
-        },
-      }),
-      // Finally delete the rubric
       prisma.rubric.delete({
-        where: { id: rubricId },
-      }),
+        where: { id: rubricId }
+      })
     ]);
     
-    return NextResponse.json(
-      { success: true, message: 'Rubric deleted successfully' },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: 'Rubric deleted successfully' });
   } catch (error) {
     console.error('Error deleting rubric:', error);
     return NextResponse.json(

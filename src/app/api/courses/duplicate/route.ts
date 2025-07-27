@@ -25,11 +25,11 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    const userIdNum = Number(session.user.id);
+    const userId = session.user.id;
     
     // Check if user has admin role or instructor role
     const user = await prisma.user.findUnique({
-      where: { id: userIdNum.toString() },
+      where: { id: userId },
       select: { role: true }
     });
     
@@ -66,6 +66,35 @@ export async function POST(req: NextRequest) {
             }
           }
         }
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        slug: true,
+        instructorId: true,
+        requirements: true,
+        learningOutcomes: true,
+        targetAudience: true,
+        difficulty: true,
+        price: true,
+        language: true,
+        shortDescription: true,
+        image: true,
+        modules: {
+          include: {
+            lessons: true,
+            quizzes: {
+              include: {
+                questions: {
+                  include: {
+                    options: true
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     });
     
@@ -77,7 +106,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Check if user is admin or the owner of the course
-    if (!isAdmin && originalCourse.instructorId !== userIdNum) {
+    if (!isAdmin && originalCourse.instructorId !== userId) {
       return NextResponse.json(
         { error: 'You do not have permission to duplicate this course' },
         { status: 403 }
@@ -91,15 +120,15 @@ export async function POST(req: NextRequest) {
     const newCourse = await prisma.course.create({
       data: {
         title: duplicateTitle,
-        description: originalCourse.description,
-        imageUrl: originalCourse.imageUrl,
-        difficulty: originalCourse.difficulty,
-        isPublished: false, // Always start as unpublished
-        price: originalCourse.price,
-        instructorId: userIdNum, // Set the current user as instructor
+        description: originalCourse.description || '',
+        slug: `${originalCourse.slug}-copy-${Date.now()}`,
+        instructorId: userId, // Set the current user as instructor
         requirements: originalCourse.requirements,
         learningOutcomes: originalCourse.learningOutcomes,
         targetAudience: originalCourse.targetAudience,
+        difficulty: originalCourse.difficulty,
+        isPublished: false, // Always start as unpublished
+        price: originalCourse.price,
         status: 'DRAFT', // Always start as draft
         language: originalCourse.language,
         shortDescription: originalCourse.shortDescription,

@@ -69,13 +69,13 @@ export async function GET(
       select: { instructorId: true },
     });
 
-    const isInstructor = course?.instructorId === parseInt(userId.toString(), 10);
+    const isInstructor = course?.instructorId === userId.toString();
 
     if (!isInstructor) {
       // Check if user is enrolled
       const enrollment = await prisma.enrollment.findFirst({
         where: { 
-          userId: parseInt(userId.toString(), 10), 
+          userId: userId.toString(), 
           courseId, 
           status: { in: ['ACTIVE', 'COMPLETED'] } 
         },
@@ -123,7 +123,7 @@ export async function GET(
           SELECT id, status, "submittedAt", grade, feedback, "userId"
           FROM "ProjectSubmission" 
           WHERE "projectId" = ${projectId} 
-          AND "userId" = ${parseInt(userId.toString(), 10)}
+          AND "userId" = '${userId.toString()}'
         `
     ) as Array<{
       id: string;
@@ -138,7 +138,7 @@ export async function GET(
       ...project,
       resources,
       submissions: isInstructor ? submissions : submissions.filter(sub => 
-        sub.userId === parseInt(userId.toString(), 10)
+        sub.userId.toString() === userId.toString()
       )
     };
 
@@ -172,7 +172,7 @@ export async function PATCH(
     // Ensure user is an instructor for this course
     const [course] = await prisma.$queryRaw`
       SELECT id FROM "Course" 
-      WHERE id = ${courseId} AND "instructorId" = ${parseInt(userId.toString(), 10)}
+      WHERE id = '${courseId}' AND "instructorId" = '${userId.toString()}'
       LIMIT 1
     ` as any[];
 

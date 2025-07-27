@@ -86,7 +86,7 @@ export async function GET(
     
     // Check if user has access to this project
     const isAuthor = project.authorId === userId;
-    const isCollaborator = project.collaborators.some(c => c.user.id === userId);
+    const isCollaborator = project.collaborators.some((c: { user: { id: string } }) => c.user.id === userId);
     const isInstructor = project.course?.instructorId === userId;
     const isEnrolled = project.course?.enrollments?.length > 0;
     
@@ -179,7 +179,7 @@ export async function PATCH(
     const isAuthor = project.author.id === userId;
     const isInstructor = project.course?.instructorId === userId;
     const isAdmin = session.user.role === 'ADMIN';
-    const isCollaborator = project.collaborators.some(c => c.role === 'ADMIN' || c.role === 'EDITOR');
+    const isCollaborator = project.collaborators.some((c: { role: string }) => c.role === 'ADMIN' || c.role === 'EDITOR');
     
     if (!isAuthor && !isInstructor && !isAdmin && !isCollaborator) {
       return NextResponse.json(

@@ -20,7 +20,7 @@ export async function GET(
       );
     }
     
-    const userId = Number(session.user.id);
+    const userId = session.user.id;
     
     // Check if user is instructor for this course or admin
     const course = await prisma.course.findUnique({
@@ -36,7 +36,7 @@ export async function GET(
     }
     
     const isAdmin = session.user.role === 'ADMIN';
-    const isInstructor = course.instructorId === userId;
+    const isInstructor = course.instructorId === userId.toString();
     
     if (!isAdmin && !isInstructor) {
       return NextResponse.json(

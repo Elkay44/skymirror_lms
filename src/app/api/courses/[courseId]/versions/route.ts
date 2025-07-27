@@ -1,13 +1,8 @@
-/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
-import prismaBase from '@/lib/prisma';
+import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
-import { extendPrismaClient } from '@/lib/prisma-extensions';
-
-// Extend the prisma client with our custom extensions
-const prisma = extendPrismaClient(prismaBase);
 
 // Schema for creating a version
 const createVersionSchema = z.object({

@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     }
     
     // Check if progress already exists for this user and lesson
-    const existingProgress = await prisma.progress.findUnique({
+    const existingProgress = await prisma.lessonProgress.findUnique({
       where: {
         userId_lessonId: {
           userId: session.user.id,
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     
     if (existingProgress) {
       // Update existing progress
-      progress = await prisma.progress.update({
+      progress = await prisma.lessonProgress.update({
         where: {
           id: existingProgress.id
         },
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       });
     } else {
       // Create new progress record
-      progress = await prisma.progress.create({
+      progress = await prisma.lessonProgress.create({
         data: {
           user: { connect: { id: session.user.id } },
           lesson: { connect: { id: lessonId } },
@@ -120,7 +120,7 @@ export async function POST(request: Request) {
     });
     
     // Get all completed lessons for this user and course
-    const completedLessons = await prisma.progress.findMany({
+    const completedLessons = await prisma.lessonProgress.findMany({
       where: {
         userId: session.user.id,
         completed: true,

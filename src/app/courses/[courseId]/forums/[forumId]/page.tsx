@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import ForumPost from '@/components/forums/ForumPost';
@@ -41,12 +41,15 @@ interface ForumPageProps {
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default function ForumPage({ 
-  params: paramsPromise 
-}: { 
-  params: Promise<{ courseId: string; forumId: string }>;
-}) {
-  const [params, setParams] = useState<{ courseId: string; forumId: string } | null>(null);
+import { Params } from 'next/dist/shared/lib/router/utils/route-matcher';
+
+interface PageParams extends Params {
+  courseId: string;
+  forumId: string;
+}
+
+export default function ForumPage() {
+  const params = useParams<PageParams>();
   const [forum, setForum] = useState<Forum | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,21 +65,36 @@ export default function ForumPage({
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Load params when component mounts
+  // Load forum and posts when component mounts
   useEffect(() => {
-    const loadParams = async () => {
+    if (!params?.courseId || !params?.forumId) return;
+    
+    const fetchData = async () => {
       try {
-        const resolvedParams = await paramsPromise;
-        setParams(resolvedParams);
+        setIsLoading(true);
+        setError(null);
+        
+        // Fetch forum details
+        const forumRes = await fetch(`/api/courses/${params.courseId}/forums/${params.forumId}`);
+        if (!forumRes.ok) throw new Error('Failed to fetch forum');
+        const forumData = await forumRes.json();
+        setForum(forumData);
+        
+        // Fetch forum posts
+        const postsRes = await fetch(`/api/courses/${params.courseId}/forums/${params.forumId}/posts`);
+        if (!postsRes.ok) throw new Error('Failed to fetch posts');
+        const postsData = await postsRes.json();
+        setPosts(postsData);
       } catch (err) {
-        console.error('Error loading params:', err);
-        setError('Failed to load forum data');
+        console.error('Error fetching data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load forum data');
+      } finally {
         setIsLoading(false);
       }
     };
 
-    loadParams();
-  }, [paramsPromise]);
+    fetchData();
+  }, [params]);
 
   // Load forum and posts when params are available
   useEffect(() => {
@@ -317,7 +335,23 @@ export default function ForumPage({
             ) : (
               posts.map((post) => (
                 <li key={post.id}>
-                  <ForumPost post={post} />
+                  <ForumPost 
+                    id={post.id}
+                    title={post.title}
+                    content={post.content}
+                    authorId={post.authorId}
+                    authorName={post.authorName}
+                    authorImage={post.authorImage}
+                    createdAt={post.createdAt}
+                    updatedAt={post.updatedAt}
+                    isPinned={post.isPinned}
+                    isLocked={post.isLocked}
+                    viewCount={post.viewCount}
+                    likes={post.likes}
+                    comments={post.comments}
+                    courseId={params.courseId}
+                    forumId={params.forumId}
+                  />
                 </li>
               ))
             )}

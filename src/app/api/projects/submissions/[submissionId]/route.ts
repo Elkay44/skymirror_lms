@@ -137,19 +137,24 @@ export async function GET(
  */
 async function checkMentorAccess(mentorUserId: string, studentUserId: string): Promise<boolean> {
   try {
-    // Check if the mentor is assigned to the student in any course
-    const mentorAssignment = await prisma.mentorAssignment.findFirst({
+    // Check if there's an active mentor-mentee relationship through MentorSession
+    const activeSession = await prisma.mentorSession.findFirst({
       where: {
         mentorId: mentorUserId,
-        studentId: studentUserId,
-        status: 'ACTIVE',
+        menteeId: studentUserId,
+        status: {
+          in: ['SCHEDULED', 'IN_PROGRESS']
+        },
+        scheduledAt: {
+          gte: new Date() // Only consider future or ongoing sessions
+        }
       },
       select: {
         id: true,
       },
     });
     
-    return !!mentorAssignment;
+    return !!activeSession;
   } catch (error) {
     console.error('Error checking mentor access:', error);
     return false;

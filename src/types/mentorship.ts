@@ -1,25 +1,79 @@
-export interface Mentor {
+export interface User {
   id: string;
-  name: string;
-  image?: string;
+  name: string | null;
+  email: string;
   role: string;
-  bio: string;
-  specialties: string[];
-  rating: number;
-  reviewCount: number;
-  languages: string[];
-  availability: {
-    days: string[];
-    timeRange: string;
-  };
-  experience: string;
-  sessionRate: number;
-  education: string;
-  isAvailable: boolean;
-  location?: string;
+  image?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MentorProfile {
+  id: string;
+  userId: string;
+  bio: string | null;
+  specialties?: string[];
+  experience?: string;
+  education?: string;
+  sessionRate?: number;
+  isAvailable?: boolean;
   timezone?: string;
-  sessionTypes: Array<'video' | 'audio' | 'in-person'>;
-  responseTime?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  user: User;
+}
+
+export interface StudentProfile {
+  id: string;
+  userId: string;
+  bio: string | null;
+  learningGoals: string;
+  createdAt: Date;
+  updatedAt: Date;
+  user: User;
+}
+
+export type MentorSessionStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+
+export interface MentorSession {
+  id: string;
+  mentorId: string;
+  menteeId: string;
+  title: string;
+  description: string | null;
+  status: MentorSessionStatus;
+  scheduledAt: Date;
+  duration: number;
+  meetingUrl: string | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  mentor: MentorProfile;
+  mentee: StudentProfile;
+}
+
+export interface FormattedMentorSession {
+  id: string;
+  title: string;
+  description: string | null;
+  status: MentorSessionStatus;
+  scheduledAt: Date;
+  duration: number;
+  meetingUrl: string | null;
+  notes: string | null;
+  mentor: {
+    id: string;
+    name: string | null;
+    email: string;
+    bio: string | null;
+  };
+  mentee: {
+    id: string;
+    name: string | null;
+    email: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface MentorshipRequest {
@@ -29,19 +83,19 @@ export interface MentorshipRequest {
     name: string;
     image?: string;
   };
-  status: 'pending' | 'accepted' | 'rejected' | 'cancelled';
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
   requestedDate: Date | string;
   messages: Array<{
     id: string;
-    sender: 'mentor' | 'student';
+    sender: 'MENTOR' | 'STUDENT';
     content: string;
     timestamp: Date | string;
   }>;
   scheduledSessions?: Array<{
     id: string;
     date: Date | string;
-    status: 'scheduled' | 'completed' | 'cancelled';
-    meetingLink?: string;
+    status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+    meetingUrl?: string;
   }>;
   lastMessage?: {
     content: string;

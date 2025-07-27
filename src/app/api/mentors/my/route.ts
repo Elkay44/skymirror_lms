@@ -3,6 +3,24 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
+type MentorshipWithMentorAndCheckIns = {
+  id: string;
+  mentor: {
+    user: {
+      id: string;
+      name: string | null;
+      email: string | null;
+      image: string | null;
+    };
+  };
+  checkIns: Array<{
+    id: string;
+    scheduledFor: Date;
+    completedAt: Date | null;
+  }>;
+  [key: string]: any;
+};
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -14,10 +32,10 @@ export async function GET() {
       );
     }
 
-    const mentorships = await prisma.mentorSession.findMany({
+    const mentorships = await prisma.mentorship.findMany({
       where: {
         student: {
-          userId: Number(session.user.id)
+          userId: session.user.id
         },
         status: 'ACTIVE'
       },
@@ -36,7 +54,12 @@ export async function GET() {
         },
         checkIns: {
           orderBy: {
-            createdAt: 'desc'
+            scheduledFor: 'asc'  // Get the next upcoming check-in
+          },
+          where: {
+            scheduledFor: {
+              gte: new Date()  // Only future check-ins
+            }
           },
           take: 1
         }
@@ -44,7 +67,7 @@ export async function GET() {
       orderBy: {
         createdAt: 'desc'
       }
-    });
+    }) as unknown as MentorshipWithMentorAndCheckIns[];
 
     // Transform the data to include next session date
     const formattedMentorships = mentorships.map(mentorship => ({

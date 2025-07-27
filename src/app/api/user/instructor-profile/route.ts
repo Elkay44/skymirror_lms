@@ -35,30 +35,58 @@ export async function PATCH(req: NextRequest) {
       bio
     } = data;
     
-    // Update instructor profile
-    const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        expertise,
-        yearsOfExperience,
-        education,
-        teachingPhilosophy,
-        bio
-      },
-      select: {
-        id: true,
-        name: true,
-        expertise: true,
-        yearsOfExperience: true,
-        education: true,
-        teachingPhilosophy: true,
-        bio: true
-      }
+    // Check if mentor profile exists
+    const existingProfile = await prisma.mentorProfile.findUnique({
+      where: { userId: user.id }
     });
+
+    // Update or create mentor profile
+    const updatedProfile = await (existingProfile
+      ? prisma.mentorProfile.update({
+          where: { id: existingProfile.id },
+          data: {
+            bio,
+            // Add any additional fields that exist in your MentorProfile model
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
+          }
+        })
+      : prisma.mentorProfile.create({
+          data: {
+            userId: user.id,
+            bio,
+            // Add any additional fields that exist in your MentorProfile model
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
+          }
+        }));
+
+    // Prepare response data
+    const responseData = {
+      id: updatedProfile.user.id,
+      name: updatedProfile.user.name,
+      email: updatedProfile.user.email,
+      bio: updatedProfile.bio,
+      // Include any additional fields from the mentor profile
+    };
     
     return NextResponse.json({
       message: 'Instructor profile updated successfully',
-      profile: updatedUser
+      profile: responseData
     });
   } catch (error) {
     console.error('Error updating instructor profile:', error);

@@ -73,7 +73,7 @@ export async function POST(
     // Check if the user is the course instructor or an assigned mentor
     const isInstructor = submission.project.course.instructorId === userId;
     const isAssignedMentor = submission.project.course.enrollments.some(
-      e => e.role === 'MENTOR' && e.id === userId
+      (e: { role: string; id: string }) => e.role === 'MENTOR' && e.id === userId
     );
     
     if (!isInstructor && !isAssignedMentor) {

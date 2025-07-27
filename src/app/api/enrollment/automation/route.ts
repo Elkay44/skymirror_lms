@@ -126,8 +126,10 @@ export async function POST(req: Request) {
       }
     });
 
-    // Send welcome email
-    await sendWelcomeEmail(user.email, user.name || 'Student', course.title);
+    // Send welcome email if email exists
+    if (user.email) {
+      await sendWelcomeEmail(user.email, user.name || 'Student', course.title);
+    }
 
     // Create learning path if it doesn't exist
     await (prisma as any).learningPath.upsert({

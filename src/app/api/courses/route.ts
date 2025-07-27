@@ -124,43 +124,44 @@ export async function POST(req: NextRequest) {
 
 // GET /api/courses - Get all available courses with filtering, search, and pagination
 export async function GET(req: NextRequest) {
-  return withErrorHandling(async () => {
+  console.log('=== STARTING COURSES API HANDLER ===');
+  console.log('Request URL:', req.url);
+  
+  // Log all request headers for debugging
+  const requestHeaders: Record<string, string> = {};
+  req.headers.forEach((value, key) => {
+    requestHeaders[key] = value;
+  });
+  console.log('Request Headers:', requestHeaders);
+  
+  try {
     // Get the user session to check if they're authenticated
+    console.log('Getting user session...');
     const session = await getServerSession(authOptions);
-    const userId = session?.user?.id ? toNumber(session?.user?.id) : undefined;
+    console.log('Session:', session ? {
+      userId: session.user?.id,
+      email: session.user?.email,
+      role: session.user?.role,
+      expires: session.expires
+    } : 'No active session');
     
-    // Extract query parameters for filtering and pagination
-    const url = new URL(req.url);
+    // Extract query parameters
+    console.log('Extracting query parameters...');
+    const { searchParams } = new URL(req.url);
+    const queryParams = Object.fromEntries(searchParams.entries());
+    console.log('Query Parameters:', queryParams);
     
-    // Get array parameters (which can have multiple values)
-    const categories = url.searchParams.getAll('categories');
-    const tags = url.searchParams.getAll('tags');
-    const difficulties = url.searchParams.getAll('difficulties') as ('BEGINNER' | 'INTERMEDIATE' | 'ADVANCED')[];
-    const statuses = url.searchParams.getAll('statuses') as ('DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'PENDING_APPROVAL')[];
-    const instructorIds = url.searchParams.getAll('instructorIds').map(id => parseInt(id));
-    const languages = url.searchParams.getAll('languages');
+    // Parse pagination and filter parameters with validation
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '10')));
+    const search = searchParams.get('search') || '';
+    const category = searchParams.get('category') || '';
+    const difficulty = searchParams.get('difficulty') as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | null;
+    const status = searchParams.get('status') as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | null;
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc';
     
-    // Get single-value parameters
-    const searchParams: Record<string, string> = {};
-    url.searchParams.forEach((value, key) => {
-      // Skip array parameters that we've already processed
-      if (!['categories', 'tags', 'difficulties', 'statuses', 'instructorIds', 'languages'].includes(key)) {
-        searchParams[key] = value;
-      }
-    });
-    
-    // Parse and validate the search parameters
-    const parsedParams = courseSearchSchema.parse({
-      ...searchParams,
-      categories: categories.length ? categories : undefined,
-      tags: tags.length ? tags : undefined,
-      difficulties: difficulties.length ? difficulties : undefined,
-      statuses: statuses.length ? statuses : undefined,
-      instructorIds: instructorIds.length ? instructorIds : undefined,
-      languages: languages.length ? languages : undefined,
-    });
-    
-    const {
+    console.log('Processed Parameters:', {
       page,
       limit,
       search,
@@ -168,174 +169,53 @@ export async function GET(req: NextRequest) {
       difficulty,
       status,
       sortBy,
-      sortOrder,
-      instructorId,
-      language,
-      price,
-      minPrice,
-      maxPrice,
-      featured,
-      withEnrollmentStats,
-      createdAfter,
-      createdBefore,
-      updatedAfter,
-      updatedBefore
-    } = parsedParams;
+      sortOrder
+    });
     
-    // Calculate pagination offsets
+    // Calculate pagination
     const skip = (page - 1) * limit;
     
-    // Build the where clause based on filters and user role
-    let whereClause: any = {};
+    // Build the where clause
+    const whereClause: any = {};
     
     // For non-authenticated users or regular students, only show published courses
     if (!session?.user?.role || session.user.role === 'STUDENT') {
       whereClause.isPublished = true;
-      whereClause.status = 'PUBLISHED';
     } else if (session.user.role === 'INSTRUCTOR') {
-      // For instructors, show their own courses regardless of status, but only published courses from others
+      // For instructors, show their own courses regardless of published status, but only published courses from others
       whereClause.OR = [
-        { instructorId: toNumber(session.user.id) },
-        { isPublished: true, status: 'PUBLISHED' }
+        { instructorId: session.user.id },
+        { isPublished: true }
       ];
     }
-    // Admins can see all courses
     
-    // Filter by search query
+    // Apply search filter
     if (search) {
-      const searchConditions = {
-        OR: [
-          { title: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
-          { shortDescription: { contains: search, mode: 'insensitive' } },
-          { tags: { contains: search, mode: 'insensitive' } }
-        ]
-      };
-      
-      whereClause = {
-        AND: [
-          whereClause,
-          searchConditions
-        ]
-      };
-    }
-    
-    // Filter by single category or multiple categories
-    if (category || (parsedParams.categories && parsedParams.categories.length > 0)) {
-      if (category) {
-        whereClause.category = { name: category };
-      } else if (parsedParams.categories) {
-        whereClause.category = { name: { in: parsedParams.categories } };
-      }
-    }
-    
-    // Filter by single difficulty or multiple difficulties
-    if (difficulty || (parsedParams.difficulties && parsedParams.difficulties.length > 0)) {
-      if (difficulty) {
-        whereClause.difficulty = difficulty;
-      } else if (parsedParams.difficulties) {
-        whereClause.difficulty = { in: parsedParams.difficulties };
-      }
-    }
-    
-    // Filter by status or multiple statuses
-    if (status || (parsedParams.statuses && parsedParams.statuses.length > 0)) {
-      if (status) {
-        whereClause.status = status;
-      } else if (parsedParams.statuses) {
-        whereClause.status = { in: parsedParams.statuses };
-      }
-    }
-    
-    // Filter by single instructor or multiple instructors
-    if (instructorId || (parsedParams.instructorIds && parsedParams.instructorIds.length > 0)) {
-      if (instructorId) {
-        whereClause.instructorId = toNumber(instructorId);
-      } else if (parsedParams.instructorIds) {
-        whereClause.instructorId = { in: parsedParams.instructorIds };
-      }
-    }
-    
-    // Filter by single language or multiple languages
-    if (language || (parsedParams.languages && parsedParams.languages.length > 0)) {
-      if (language) {
-        whereClause.language = language;
-      } else if (parsedParams.languages) {
-        whereClause.language = { in: parsedParams.languages };
-      }
-    }
-    
-    // Filter by tags
-    if (parsedParams.tags && parsedParams.tags.length > 0) {
-      // Since tags are stored as a JSON string, we need a special approach
-      const tagConditions = parsedParams.tags.map(tag => ({
-        tags: { contains: tag, mode: 'insensitive' }
-      }));
-      
       whereClause.OR = [
-        ...(whereClause.OR || []),
-        ...tagConditions
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { shortDescription: { contains: search, mode: 'insensitive' } }
       ];
     }
     
-    // Filter by price
-    if (price === 'free') {
-      whereClause.price = 0;
-    } else if (price === 'paid') {
-      whereClause.price = { gt: 0 };
+    // Apply category filter
+    if (category) {
+      whereClause.category = category;
     }
     
-    // Filter by price range if specified
-    if (minPrice !== undefined || maxPrice !== undefined) {
-      whereClause.price = {};
-      
-      if (minPrice !== undefined) {
-        whereClause.price.gte = minPrice;
-      }
-      
-      if (maxPrice !== undefined) {
-        whereClause.price.lte = maxPrice;
-      }
+    // Apply difficulty filter
+    if (difficulty) {
+      whereClause.level = difficulty;
     }
     
-    // Filter by featured status
-    if (featured !== undefined) {
-      whereClause.isFeatured = featured;
+    // Apply status filter (only for admins and instructors)
+    if (status && (session?.user?.role === 'ADMIN' || session?.user?.role === 'INSTRUCTOR')) {
+      whereClause.status = status;
     }
     
-    // Filter by creation date range
-    if (createdAfter || createdBefore) {
-      whereClause.createdAt = {};
-      
-      if (createdAfter) {
-        whereClause.createdAt.gte = new Date(createdAfter);
-      }
-      
-      if (createdBefore) {
-        whereClause.createdAt.lte = new Date(createdBefore);
-      }
-    }
+    // Set up sorting
+    let orderBy: any = { createdAt: 'desc' };
     
-    // Filter by last update date range
-    if (updatedAfter || updatedBefore) {
-      whereClause.updatedAt = {};
-      
-      if (updatedAfter) {
-        whereClause.updatedAt.gte = new Date(updatedAfter);
-      }
-      
-      if (updatedBefore) {
-        whereClause.updatedAt.lte = new Date(updatedBefore);
-      }
-    }
-    
-    // Get total count for pagination info
-    const totalCount = await prisma.course.count({
-      where: whereClause,
-    });
-    
-    // Define the sorting criteria
-    let orderBy: any = {};
     switch (sortBy) {
       case 'title':
         orderBy = { title: sortOrder };
@@ -343,21 +223,11 @@ export async function GET(req: NextRequest) {
       case 'price':
         orderBy = { price: sortOrder };
         break;
-      case 'popularity':
-        orderBy = {
-          enrollments: {
-            _count: sortOrder
-          }
-        };
-        break;
       case 'rating':
         orderBy = { averageRating: sortOrder };
         break;
       case 'enrollmentCount':
-        orderBy = { enrollmentCount: sortOrder };
-        break;
-      case 'completionRate':
-        orderBy = { completionRate: sortOrder };
+        orderBy = { totalStudents: sortOrder };
         break;
       case 'updatedAt':
         orderBy = { updatedAt: sortOrder };
@@ -365,124 +235,157 @@ export async function GET(req: NextRequest) {
       case 'createdAt':
       default:
         orderBy = { createdAt: sortOrder };
-        break;
     }
     
-    // Fetch courses with pagination and filtering
-    const courses = await prisma.course.findMany({
-      where: whereClause,
-      orderBy,
-      skip,
-      take: limit,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        imageUrl: true,
-        difficulty: true,
-        price: true,
-        language: true,
-        shortDescription: true,
-        createdAt: true,
-        instructor: {
+    try {
+      // Execute the query with pagination and include related data
+      const [courses, totalCount] = await Promise.all([
+        prisma.course.findMany({
+          where: whereClause,
+          orderBy,
+          skip,
+          take: limit,
           select: {
             id: true,
-            name: true,
+            title: true,
+            description: true,
+            shortDescription: true,
             image: true,
-          },
-        },
-        modules: {
-          select: {
-            id: true,
-            lessons: {
+            level: true,
+            price: true,
+            language: true,
+            createdAt: true,
+            updatedAt: true,
+            instructor: {
               select: {
                 id: true,
-              },
+                name: true,
+                email: true,
+                image: true,
+                role: true
+              }
             },
-          },
-        },
-        enrollments: userId ? {
-          where: {
-            userId: userId,
-          },
-          select: {
-            id: true,
-            status: true,
-          },
-        } : undefined,
+            modules: {
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                order: true,
+                _count: {
+                  select: { lessons: true }
+                }
+              },
+              orderBy: { order: 'asc' }
+            },
+            _count: {
+              select: {
+                enrollments: true,
+                modules: true
+              }
+            }
+          }
+        }),
+        prisma.course.count({ where: whereClause })
+      ]);
+      
+      console.log(`Fetched ${courses.length} courses successfully`);
+      
+      // Define types for the modules
+      interface ModuleWithCount {
         _count: {
-          select: {
-            enrollments: true,
-          },
-        },
-      },
-    });
-
-    // Transform the data for the client
-    const coursesWithStats = courses.map((course: any) => {
-      // Count lessons for each course
-      const lessonCount = course.modules.reduce((total: number, module: any) => {
-        return total + (module.lessons?.length || 0);
-      }, 0);
-
-      // Check if the user is enrolled in this course
-      const isEnrolled = course.enrollments && course.enrollments.length > 0;
-      
-      // Get enrollment status if enrolled
-      const enrollmentStatus = isEnrolled ? course.enrollments[0].status : null;
-      
-      return {
-        id: course.id,
-        title: course.title,
-        description: course.description,
-        shortDescription: course.shortDescription,
-        imageUrl: course.imageUrl || `/course-placeholders/${Math.floor(Math.random() * 5) + 1}.jpg`,
-        difficulty: course.difficulty,
-        price: course.price,
-        language: course.language,
-        createdAt: course.createdAt,
-        instructor: course.instructor,
-        lessonCount,
-        isEnrolled,
-        enrollmentStatus,
-        enrollmentCount: course._count.enrollments,
-        moduleCount: course.modules.length
-      };
-    });
-
-    // Return the courses with pagination metadata
-    return NextResponse.json({
-      courses: coursesWithStats,
-      pagination: {
-        page,
-        limit,
-        totalItems: totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-        hasMore: skip + courses.length < totalCount,
-        currentPage: page,
-        itemsPerPage: limit,
-        nextPage: skip + courses.length < totalCount ? page + 1 : null,
-        prevPage: page > 1 ? page - 1 : null
-      },
-      filters: {
-        search: search || null,
-        category: category || null,
-        categories: parsedParams.categories || [],
-        difficulty: difficulty || null,
-        difficulties: parsedParams.difficulties || [],
-        status: status || null,
-        statuses: parsedParams.statuses || [],
-        language: language || null,
-        languages: parsedParams.languages || [],
-        price: price || 'all',
-        priceRange: minPrice !== undefined || maxPrice !== undefined 
-          ? { min: minPrice, max: maxPrice }
-          : null,
-        sortBy,
-        sortOrder
+          lessons: number;
+        };
+        id: string;
+        title: string;
+        description: string | null;
+        order: number;
       }
-    });
-  }, 'Failed to fetch courses');
+
+      // Transform the data for the client
+      const coursesWithStats = courses.map(course => {
+        // Calculate total lesson count
+        const lessonCount = course.modules.reduce((total: number, module: ModuleWithCount) => {
+          return total + (module._count?.lessons || 0);
+        }, 0);
+        
+        return {
+          id: course.id,
+          title: course.title,
+          description: course.description || '',
+          shortDescription: course.shortDescription || '',
+          imageUrl: course.image || '/course-placeholder.jpg',
+          difficulty: course.level || 'BEGINNER',
+          price: course.price || 0,
+          language: course.language || 'en',
+          createdAt: course.createdAt,
+          updatedAt: course.updatedAt,
+          instructor: {
+            id: course.instructor.id,
+            name: course.instructor.name || 'Unknown Instructor',
+            avatarUrl: course.instructor.image || undefined,
+            title: 'Instructor',
+            email: course.instructor.email
+          },
+          lessonCount,
+          isEnrolled: false, // Will be set by the client if needed
+          isFavorite: false, // Will be set by the client if needed
+          isNew: new Date().getTime() - new Date(course.createdAt).getTime() < 30 * 24 * 60 * 60 * 1000, // New if created in the last 30 days
+          isBestSeller: false, // Could be based on enrollment count or other criteria
+          progress: 0, // Will be set by the client if needed
+          modules: course.modules.map((module: ModuleWithCount) => ({
+            id: module.id,
+            title: module.title,
+            description: module.description || '',
+            order: module.order,
+            lessons: [] // Will be loaded separately if needed
+          })),
+          rating: 0, // Will be set by the client if needed
+          reviewCount: 0, // Will be set by the client if needed
+          studentCount: course._count?.enrollments || 0,
+          moduleCount: course._count?.modules || 0,
+          promoVideo: '' // Will be set if available
+        };
+      });
+      
+      // Return the paginated response
+      return NextResponse.json({
+        courses: coursesWithStats,
+        pagination: {
+          page,
+          limit,
+          totalItems: totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          hasMore: skip + courses.length < totalCount
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error in courses API:', {
+        message: (error as Error).message,
+        stack: (error as Error).stack,
+        name: (error as Error).name
+      });
+      
+      return NextResponse.json(
+        { 
+          error: 'Failed to fetch courses',
+          details: (error as Error).message,
+          stack: process.env.NODE_ENV === 'development' ? (error as Error).stack : undefined
+        },
+        { status: 500 }
+      );
+    }
+  } catch (error) {
+    console.error('Unexpected error in courses API:', error);
+    return NextResponse.json(
+      { 
+        error: 'Internal Server Error',
+        message: 'An unexpected error occurred',
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      },
+      { status: 500 }
+    );
+  }
 }
 
 // POST /api/courses/batch - Perform batch operations on courses

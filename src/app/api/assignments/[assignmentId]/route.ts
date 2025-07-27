@@ -1,12 +1,8 @@
-/* eslint-disable */
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-
-import prismaBase from '@/lib/prisma';
-import { extendPrismaClient, ExtendedPrismaClient } from '@/lib/prisma-extensions';
-const prisma = extendPrismaClient(prismaBase);
+import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 // Assignment update validation schema

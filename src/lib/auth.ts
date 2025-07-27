@@ -3,7 +3,7 @@
 import { AuthOptions, User, Session, DefaultSession } from 'next-auth';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { prisma } from './prisma';
+import prisma from './prisma-extensions';
 import bcrypt from 'bcryptjs';
 import { JWT } from 'next-auth/jwt';
 import { logger } from './logger';

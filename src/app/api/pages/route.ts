@@ -112,6 +112,8 @@ export async function POST(request: NextRequest) {
         moduleId,
         description: description || '',
         isPublished: isPublished ?? false,
+        createdBy: userId.toString(),
+        updatedBy: userId.toString(),
       },
     });
     

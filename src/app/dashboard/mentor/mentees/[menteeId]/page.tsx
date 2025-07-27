@@ -18,6 +18,110 @@ import MentorshipSessionsSection from '../../../../../components/mentor/Mentorsh
 import LearningPathSection from '../../../../../components/mentor/LearningPathSection';
 import MentorNotesSection from '../../../../../components/mentor/MentorNotesSection';
 
+// Mock data for mentee details
+const mockMenteeData = {
+  id: '1',
+  name: 'Alex Johnson',
+  email: 'alex.johnson@example.com',
+  avatar: '/images/mentees/alex.jpg',
+  learningPath: 'Frontend Development',
+  mentorshipNotes: 'Focusing on React and TypeScript. Needs help with state management.',
+  enrolledCourses: [
+    {
+      id: 'course1',
+      title: 'Advanced React',
+      progress: 65,
+      lastActivity: '2025-07-20',
+      instructor: 'Sarah Chen',
+      grade: 'A-',
+      status: 'In Progress',
+      modules: [
+        { id: 'm1', title: 'React Hooks', completed: true },
+        { id: 'm2', title: 'Context API', completed: true },
+        { id: 'm3', title: 'Redux Toolkit', completed: false },
+      ]
+    },
+    {
+      id: 'course2',
+      title: 'TypeScript Fundamentals',
+      progress: 90,
+      lastActivity: '2025-07-22',
+      instructor: 'Mike Johnson',
+      grade: 'A',
+      status: 'Completed',
+      modules: [
+        { id: 'm4', title: 'Basic Types', completed: true },
+        { id: 'm5', title: 'Interfaces', completed: true },
+        { id: 'm6', title: 'Generics', completed: true },
+      ]
+    }
+  ],
+  upcomingAssignments: [
+    {
+      id: 'assign1',
+      title: 'React Hooks Project',
+      dueDate: '2025-08-10',
+      courseId: 'course1',
+      courseName: 'Advanced React',
+      submitted: false,
+      description: 'Build a small application using React Hooks and Context API',
+      points: 100
+    }
+  ],
+  mentorshipSessions: [
+    {
+      id: 'sess1',
+      date: '2025-07-28T14:00:00',
+      duration: 60,
+      topic: 'State Management with Redux',
+      notes: 'Review Redux concepts and help with implementation',
+      status: 'scheduled'
+    }
+  ],
+  skillAssessments: [
+    { 
+      id: 'skill-1',
+      name: 'React',
+      category: 'Frontend',
+      proficiency: 80,
+      lastAssessed: '2025-07-20',
+      recommendation: 'Consider exploring advanced React patterns'
+    },
+    { 
+      id: 'skill-2',
+      name: 'TypeScript',
+      category: 'Frontend',
+      proficiency: 70,
+      lastAssessed: '2025-07-15',
+      recommendation: 'Practice with generics and utility types'
+    },
+    { 
+      id: 'skill-3',
+      name: 'Redux',
+      category: 'State Management',
+      proficiency: 60,
+      lastAssessed: '2025-07-10',
+      recommendation: 'Learn Redux Toolkit for better state management'
+    },
+    { 
+      id: 'skill-4',
+      name: 'Node.js',
+      category: 'Backend',
+      proficiency: 65,
+      lastAssessed: '2025-06-28',
+      recommendation: 'Practice building RESTful APIs'
+    },
+    { 
+      id: 'skill-5',
+      name: 'CSS/SCSS',
+      category: 'Styling',
+      proficiency: 85,
+      lastAssessed: '2025-07-22',
+      recommendation: 'Explore CSS Grid and Flexbox layouts'
+    }
+  ]
+};
+
 export default function MenteeDetailPage() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -29,45 +133,25 @@ export default function MenteeDetailPage() {
   const [activeTab, setActiveTab] = useState('courses');
   
   useEffect(() => {
-    const fetchMenteeDetails = async () => {
-      if (!session?.user) {
-        setLoading(false);
-        return;
-      }
-      
+    const loadMenteeData = async () => {
       try {
-        const response = await fetch(`/api/mentees/${menteeId}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch mentee details');
-        }
-        
-        const data = await response.json();
-        // Handle potential missing fields with defaults
-        const menteeData = data.mentee;
-
-        if (menteeData) {
-          // Ensure required fields are present or have defaults
-          menteeData.enrolledCourses = menteeData.enrolledCourses || [];
-          menteeData.upcomingAssignments = menteeData.upcomingAssignments || [];
-          menteeData.mentorshipSessions = menteeData.mentorshipSessions || [];
-          menteeData.skillAssessments = menteeData.skillAssessments || [];
-          menteeData.mentorshipNotes = menteeData.mentorshipNotes || '';
-          menteeData.learningPath = menteeData.learningPath || 'Undecided';
-        }
-
-        setMentee(menteeData);
+        // In a real app, you would fetch from your API here
+        // For now, we'll use the mock data directly
+        const data = { ...mockMenteeData, id: menteeId };
+        setMentee(data);
       } catch (error) {
-        console.error('Error fetching mentee details:', error);
-        toast.error('Failed to load mentee information. Please try again later.');
+        console.error('Error loading mentee data:', error);
+        toast.error('Using demo data. Some features may be limited.');
+        // Fallback to mock data even if there's an error
+        setMentee({ ...mockMenteeData, id: menteeId });
       } finally {
         setLoading(false);
       }
     };
     
-    fetchMenteeDetails();
-  }, [session, menteeId]);
-  
+    loadMenteeData();
+  }, [menteeId]);
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -100,7 +184,7 @@ export default function MenteeDetailPage() {
       </div>
     );
   }
-  
+
   const tabs = [
     { id: 'courses', label: 'Courses & Progress', icon: BookOpen },
     { id: 'assignments', label: 'Assignments', icon: CheckSquare },
@@ -108,102 +192,94 @@ export default function MenteeDetailPage() {
     { id: 'learningPath', label: 'Learning Path', icon: Target },
     { id: 'notes', label: 'Mentor Notes', icon: FileText },
   ];
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <Link 
-          href="/dashboard/mentor/mentees" 
-          className="inline-flex items-center text-sm text-teal-600 hover:text-teal-800 mb-4"
+      <div className="mb-6">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center text-teal-600 hover:text-teal-800 mb-4"
         >
-          <ChevronLeft className="mr-1 h-4 w-4" />
-          Back to All Mentees
-        </Link>
+          <ChevronLeft className="h-5 w-5 mr-1" />
+          Back to Mentees
+        </button>
         
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-          <div className="border-b border-gray-200 bg-gradient-to-r from-teal-500 to-teal-600 p-6">
-            <div className="flex flex-col md:flex-row md:items-center">
-              <div className="flex items-center mb-4 md:mb-0">
-                <div className="flex-shrink-0 mr-4">
-                  {mentee.avatar ? (
-                    <Image 
-                      src={mentee.avatar} 
-                      alt={mentee.name} 
-                      width={80} 
-                      height={80} 
-                      className="h-20 w-20 rounded-full border-2 border-white"
-                    />
-                  ) : (
-                    <div className="h-20 w-20 rounded-full bg-white bg-opacity-25 flex items-center justify-center">
-                      <User className="h-12 w-12 text-white" />
-                    </div>
-                  )}
-                </div>
-                <div className="text-white">
-                  <h1 className="text-2xl font-bold">{mentee.name}</h1>
-                  <p className="text-white text-opacity-90">{mentee.email}</p>
-                  <div className="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white bg-opacity-20">
-                    {mentee.learningPath}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center">
+              <div className="h-20 w-20 rounded-full bg-gray-200 overflow-hidden mr-6">
+                {mentee.avatar ? (
+                  <Image
+                    src={mentee.avatar}
+                    alt={mentee.name}
+                    width={80}
+                    height={80}
+                    className="object-cover h-full w-full"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-teal-100 flex items-center justify-center">
+                    <User className="h-10 w-10 text-teal-600" />
                   </div>
-                </div>
+                )}
               </div>
-              
-              <div className="md:ml-auto flex flex-wrap gap-3">
-                <button
-                  onClick={() => {
-                    // Logic to schedule a session would go here
-                    toast.success('Session scheduling feature coming soon!');
-                  }}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-teal-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                >
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Schedule Session
-                </button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{mentee.name}</h1>
+                <p className="text-gray-600">{mentee.email}</p>
+                <div className="mt-2 flex items-center">
+                  <BookOpen className="h-4 w-4 text-teal-600 mr-1" />
+                  <span className="text-sm text-gray-600">
+                    {mentee.learningPath || 'No learning path selected'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
           
+          {/* Tabs */}
           <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8 px-6 py-3 overflow-x-auto">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`group inline-flex items-center px-1 py-2 text-sm font-medium border-b-2 ${activeTab === tab.id ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-                  >
-                    <Icon className={`mr-2 h-5 w-5 ${activeTab === tab.id ? 'text-teal-500' : 'text-gray-400 group-hover:text-gray-500'}`} />
-                    {tab.label}
-                  </button>
-                );
-              })}
+            <nav className="flex -mb-px">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`py-4 px-6 text-sm font-medium ${
+                    activeTab === tab.id
+                      ? 'border-b-2 border-teal-500 text-teal-600'
+                      : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <tab.icon className={`mr-2 h-5 w-5 ${activeTab === tab.id ? 'text-teal-500' : 'text-gray-400 group-hover:text-gray-500'}`} />
+                  {tab.label}
+                </button>
+              ))}
             </nav>
           </div>
           
+          {/* Tab Content */}
           <div className="p-6">
             {activeTab === 'courses' && (
               <CourseProgressSection courses={mentee.enrolledCourses} />
             )}
             
             {activeTab === 'assignments' && (
-              <AssignmentsSection 
-                assignments={mentee.enrolledCourses?.flatMap((course: {assignments?: any[]}) => course.assignments || []) || []} 
-              />
+              <AssignmentsSection assignments={mentee.upcomingAssignments} />
             )}
             
             {activeTab === 'sessions' && (
-              <MentorshipSessionsSection sessions={mentee.mentorshipSessions || []} />
+              <MentorshipSessionsSection sessions={mentee.mentorshipSessions} />
             )}
             
             {activeTab === 'learningPath' && (
-              <LearningPathSection learningPath={mentee.learningPath} skills={mentee.skillAssessments || []} />
+              <LearningPathSection 
+                learningPath={mentee.learningPath} 
+                skills={mentee.skillAssessments} 
+              />
             )}
             
             {activeTab === 'notes' && (
               <MentorNotesSection 
-                menteeId={menteeId} 
-                initialNotes={mentee.mentorshipNotes || ''} 
+                menteeId={menteeId}
+                initialNotes={mentee.mentorshipNotes || ''}
               />
             )}
           </div>

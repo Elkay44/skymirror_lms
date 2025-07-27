@@ -82,25 +82,30 @@ export default function AchievementsPage() {
         const response = await fetch('/api/achievements');
         
         if (!response.ok) {
-          // Silently fail and show empty state
-          setAchievements([]);
-          setProgress({
-            level: 0,
-            currentXP: 0,
-            nextLevelXP: 0,
-            totalScholarshipAmount: 0,
-            activeDiscounts: 0,
-            completedCourses: 0,
-            forumContributions: 0,
-            mentorshipHours: 0
-          });
-          setIsLoading(false);
-          return;
+          throw new Error('Failed to fetch achievements');
         }
         
-        const data = await response.json();
-        setAchievements(data.achievements);
-        setProgress(data.progress);
+        const responseData = await response.json();
+        
+        // The API returns { data: Achievement[], pagination: {...} }
+        const achievementsData = responseData.data || [];
+        
+        // Set achievements from the response data
+        setAchievements(Array.isArray(achievementsData) ? achievementsData : []);
+        
+        // Update progress - these values should come from your user profile or another endpoint
+        // For now, we'll set default values
+        setProgress({
+          level: 1,
+          currentXP: 0,
+          nextLevelXP: 1000,
+          totalScholarshipAmount: 0,
+          activeDiscounts: 0,
+          completedCourses: achievementsData.filter((a: Achievement) => a.type === 'course_completed').length,
+          forumContributions: achievementsData.filter((a: Achievement) => a.category === 'community').length,
+          mentorshipHours: 0
+        });
+        
         setIsLoading(false);
       } catch (error: any) {
         // Silently fail and show empty state
@@ -138,7 +143,8 @@ export default function AchievementsPage() {
     });
   };
   
-  if (isLoading) {
+  // Add a loading state that shows until progress is loaded
+  if (isLoading || progress === null) {
     return (
       <div className="min-h-screen bg-gray-50 flex justify-center items-center">
         <div className="animate-spin h-10 w-10 border-4 border-blue-600 rounded-full border-t-transparent"></div>
@@ -176,21 +182,21 @@ export default function AchievementsPage() {
                   <Zap className="h-5 w-5 text-blue-500" />
                 </div>
                 <div className="flex items-end">
-                  <span className="text-3xl font-bold text-blue-800">{progress.level}</span>
+                  <span className="text-3xl font-bold text-blue-800">{progress?.level ?? 0}</span>
                 </div>
                 <div className="mt-4">
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-blue-700">{progress.currentXP} XP</span>
-                    <span className="text-blue-700">{progress.nextLevelXP} XP</span>
+                    <span className="text-blue-700">{progress?.currentXP ?? 0} XP</span>
+                    <span className="text-blue-700">{progress?.nextLevelXP ?? 100} XP</span>
                   </div>
                   <div className="w-full bg-blue-200 rounded-full h-2.5">
                     <div 
                       className="bg-blue-600 h-2.5 rounded-full" 
-                      style={{ width: `${(progress.currentXP / progress.nextLevelXP) * 100}%` }}
+                      style={{ width: `${((progress?.currentXP ?? 0) / (progress?.nextLevelXP || 100)) * 100}%` }}
                     ></div>
                   </div>
                   <p className="text-xs text-blue-700 mt-2">
-                    {progress.nextLevelXP - progress.currentXP} XP needed for next level
+                    {(progress?.nextLevelXP ?? 100) - (progress?.currentXP ?? 0)} XP needed for next level
                   </p>
                 </div>
               </div>
@@ -202,12 +208,12 @@ export default function AchievementsPage() {
                   <Gift className="h-5 w-5 text-green-500" />
                 </div>
                 <div className="flex items-end">
-                  <span className="text-3xl font-bold text-green-800">${progress.totalScholarshipAmount}</span>
+                  <span className="text-3xl font-bold text-green-800">${progress?.totalScholarshipAmount ?? 0}</span>
                 </div>
                 <div className="mt-4">
                   <div className="flex items-center">
                     <Percent className="h-4 w-4 text-green-600 mr-1" />
-                    <span className="text-sm text-green-700">{progress.activeDiscounts} Active Discounts</span>
+                    <span className="text-sm text-green-700">{progress?.activeDiscounts ?? 0} Active Discounts</span>
                   </div>
                 </div>
               </div>
@@ -219,7 +225,7 @@ export default function AchievementsPage() {
                   <BookOpen className="h-5 w-5 text-purple-500" />
                 </div>
                 <div className="flex items-end">
-                  <span className="text-3xl font-bold text-purple-800">{progress.completedCourses}</span>
+                  <span className="text-3xl font-bold text-purple-800">{progress?.completedCourses ?? 0}</span>
                   <span className="ml-1 text-purple-700 mb-1">Courses</span>
                 </div>
                 <div className="mt-4">
@@ -237,13 +243,13 @@ export default function AchievementsPage() {
                   <Users className="h-5 w-5 text-orange-500" />
                 </div>
                 <div className="flex items-end">
-                  <span className="text-3xl font-bold text-orange-800">{progress.forumContributions}</span>
+                  <span className="text-3xl font-bold text-orange-800">{progress?.forumContributions ?? 0}</span>
                   <span className="ml-1 text-orange-700 mb-1">Contributions</span>
                 </div>
                 <div className="mt-4">
                   <div className="flex items-center">
                     <Clock className="h-4 w-4 text-orange-600 mr-1" />
-                    <span className="text-sm text-orange-700">{progress.mentorshipHours} Mentorship Hours</span>
+                    <span className="text-sm text-orange-700">{progress?.mentorshipHours ?? 0} Mentorship Hours</span>
                   </div>
                 </div>
               </div>

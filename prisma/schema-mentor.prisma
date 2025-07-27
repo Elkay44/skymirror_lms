@@ -8,6 +8,15 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+// Enums
+enum EnrollmentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  DROPPED
+}
+
 // User model for authentication and profile
 model User {
   id              String        @id @default(cuid())
@@ -26,6 +35,9 @@ model User {
   enrollments     Enrollment[]
   progress        Progress[]
   createdCourses  Course[]      @relation("CourseInstructor")
+  lessonProgress  LessonProgress[]
+  quizAttempts    QuizAttempt[]
+  certificates    Certificate[]
   
   // Mentorship relations
   mentorProfile   MentorProfile?
@@ -50,8 +62,13 @@ model Course {
   instructorId  String
   modules       Module[]
   enrollments   Enrollment[]
+  certificates  Certificate[]
+  quizzes       Quiz[]
+  lessons       Lesson[]
   tags          String?       // Comma-separated tags
   careerPaths   CareerPath[]  // Associated career paths
+  
+  @@map("courses")
 }
 
 // Module model (sections within a course)
@@ -63,24 +80,116 @@ model Module {
   course      Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId    String
   lessons     Lesson[]
+  quizzes     Quiz[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  
+  @@map("modules")
 }
 
 // Lesson model (content within modules)
 model Lesson {
-  id          String      @id @default(cuid())
-  title       String
-  description String?
-  content     String?     // Can store HTML or markdown content
-  videoUrl    String?     // URL to video content if any
-  duration    Int?        // Duration in minutes
-  position    Int         // Order in the module
-  module      Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  moduleId    String
-  progress    Progress[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id            String      @id @default(cuid())
+  title         String
+  description   String?
+  content       String?     // Can store HTML or markdown content
+  videoUrl      String?     // URL to video content if any
+  position      Int         // Order in the module
+  duration      Int?        // Duration in minutes
+  isPublished   Boolean     @default(false)
+  module        Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId      String
+  resources     Resource[]  // Associated learning resources
+  progress      LessonProgress[]
+  order         Int         // Order within the module
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  @@map("lessons")
+}
+
+// Quiz model
+model Quiz {
+  id            String       @id @default(cuid())
+  title         String
+  description   String?
+  questions     Json         // Array of questions
+  passingScore  Float        @default(70.0)
+  timeLimit     Int?         // Time limit in minutes
+  maxAttempts   Int?         // Maximum number of attempts allowed
+  module        Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId      String
+  attempts      QuizAttempt[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  @@map("quizzes")
+}
+
+// Enrollment model
+model Enrollment {
+  id           String       @id @default(cuid())
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  course       Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId     String
+  status       EnrollmentStatus @default(NOT_STARTED)
+  progress     Float        @default(0.0)
+  completedAt  DateTime?
+  certificate  Certificate?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+// Lesson Progress model
+model LessonProgress {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId    String
+  isCompleted Boolean  @default(false)
+  completedAt DateTime?
+  score       Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([userId, lessonId])
+  @@map("lesson_progress")
+}
+
+// Quiz Attempt model
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quizId      String
+  score       Float
+  passed      Boolean
+  answers     Json     // User's answers
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  
+  @@map("quiz_attempts")
+}
+
+// Certificate model
+model Certificate {
+  id           String     @id @default(cuid())
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  course       Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId     String
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
+  enrollmentId String     @unique
+  issuedAt     DateTime   @default(now())
+  downloadUrl  String?
+  
+  @@map("certificates")
 }
 
 // Enrollment model (tracks user enrollment in courses)

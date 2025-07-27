@@ -92,7 +92,7 @@ export async function GET(
       },
       orderBy: { createdAt: 'desc' },
       take: limit + 1, // Take one extra to determine if there are more
-      cursor: cursor ? { id: cursor } : undefined,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}), // Skip the cursor itself
     });
 
     // Determine if there are more messages to load

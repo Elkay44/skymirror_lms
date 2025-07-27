@@ -48,16 +48,20 @@ export async function GET(req: NextRequest) {
             image: true,
           },
         },
-        course: {
+        submission: {
           select: {
-            id: true,
-            title: true,
+            project: {
+              select: {
+                id: true,
+                title: true,
+              },
+            },
           },
         },
       },
       orderBy: [
-        { featured: 'desc' },
-        { showcasedAt: 'desc' },
+        { featuredAt: 'desc' },
+        { createdAt: 'desc' },
       ],
       skip: (page - 1) * limit,
       take: limit,
@@ -65,32 +69,41 @@ export async function GET(req: NextRequest) {
     
     // Track view (increment view counter)
     for (const project of projects) {
-      // Only record the view once per request to avoid spamming
-      await prisma.showcaseProject.update({
-        where: { id: project.id },
-        data: { viewCount: { increment: 1 } },
-      });
+      // Increment view count for the project
+      if (project.id) {
+        await prisma.showcaseProject.update({
+          where: { id: project.id },
+          data: {
+            views: { increment: 1 },
+          },
+        });
+      }
     }
     
-    // Format the response
+    // Format the response data
     const formattedProjects = projects.map(project => ({
       id: project.id,
       title: project.title,
       description: project.description,
-      studentId: project.studentId,
-      studentName: project.student.name,
-      studentImage: project.student.image,
-      courseId: project.courseId,
-      courseTitle: project.course.title,
-      submissionId: project.submissionId,
-      repositoryUrl: project.repositoryUrl,
+      student: {
+        id: project.student.id,
+        name: project.student.name,
+        avatar: project.student.image,
+      },
+      project: project.submission?.project ? {
+        id: project.submission.project.id,
+        title: project.submission.project.title,
+      } : null,
       demoUrl: project.demoUrl,
-      imageUrl: project.imageUrl,
-      featured: project.featured,
-      category: project.category,
-      tags: project.tags,
-      showcasedAt: project.showcasedAt,
-      viewCount: project.viewCount,
+      repositoryUrl: project.sourceCodeUrl,
+      imageUrl: project.featuredImage,
+      featured: !!project.featuredAt,
+      featuredAt: project.featuredAt,
+      tags: project.tags ? project.tags.split(',').map(tag => tag.trim()) : [],
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+      views: project.views,
+      likes: project.likes,
     }));
     
     // Return the projects and pagination info

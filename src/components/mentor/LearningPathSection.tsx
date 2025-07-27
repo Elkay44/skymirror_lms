@@ -142,7 +142,7 @@ const LearningPathSection: React.FC<LearningPathSectionProps> = ({ learningPath,
           {Object.keys(skillsByCategory).length > 0 ? (
             <div className="space-y-8">
               {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
-                <div key={category} className="space-y-4">
+                <div key={`category-${category}`} className="space-y-4">
                   <h4 className="text-md font-medium text-gray-900 border-b border-gray-200 pb-2">{category}</h4>
                   
                   <div className="grid grid-cols-1 gap-4">

@@ -162,9 +162,11 @@ export async function GET() {
         };
 
         // Helper function to safely get instructor name
-        const getInstructorName = (instructor: string | Instructor): string => {
+        const getInstructorName = (instructor: string | Instructor | any): string => {
+          if (!instructor) return 'Unknown Instructor';
           if (typeof instructor === 'string') return instructor;
-          return instructor?.name || 'Unknown Instructor';
+          // Handle both Instructor type and the user object type
+          return instructor.name || 'Unknown Instructor';
         };
 
         // Helper function to determine course level

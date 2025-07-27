@@ -17,7 +17,29 @@ export async function GET(req: NextRequest) {
     const role = session.user.role;
     const userId = session.user.id;
     
-    let projects = [];
+    let projects: Array<{
+      id: string;
+      title: string;
+      description: string | null;
+      instructions: string | null;
+      dueDate: Date | null;
+      pointsValue: number;
+      isPublished: boolean;
+      courseId: string;
+      moduleId: string | null;
+      isRequiredForCertification: boolean;
+      createdAt: Date;
+      updatedAt: Date;
+      _count?: { submissions: number };
+      submissions?: Array<{
+        id: string;
+        status: string;
+        submittedAt: Date | null;
+      }>;
+      course?: {
+        title: string;
+      };
+    }> = [];
     
     // Different logic based on user role
     if (role === 'INSTRUCTOR') {
@@ -27,7 +49,7 @@ export async function GET(req: NextRequest) {
         const course = await prisma.course.findFirst({
           where: {
             id: courseId,
-            instructorId: parseInt(userId.toString(), 10) // Convert string userId to number for comparison
+            instructorId: userId
           }
         });
         
@@ -132,7 +154,7 @@ export async function GET(req: NextRequest) {
     } else if (role === 'MENTOR') {
       // Mentors see projects from their mentees' courses
       const mentorProfile = await prisma.mentorProfile.findUnique({
-        where: { userId: parseInt(userId.toString(), 10) } // Convert string userId to number
+        where: { userId: userId }
       });
       
       if (!mentorProfile) {

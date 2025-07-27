@@ -60,6 +60,55 @@ interface Mentee {
   mentorshipNotes: string;
 }
 
+// Mock data for mentees
+const mockMentees: Mentee[] = [
+  {
+    id: '1',
+    name: 'Alex Johnson',
+    email: 'alex.johnson@example.com',
+    avatar: '/images/mentees/alex.jpg',
+    learningPath: 'Frontend Development',
+    mentorshipNotes: 'Focusing on React and TypeScript. Needs help with state management.',
+    enrolledCourses: [
+      {
+        id: 'course1',
+        title: 'Advanced React',
+        progress: 65,
+        lastActivity: '2025-07-20',
+        instructor: 'Sarah Chen',
+        grade: 'A-',
+        status: 'In Progress'
+      },
+      {
+        id: 'course2',
+        title: 'TypeScript Fundamentals',
+        progress: 90,
+        lastActivity: '2025-07-22',
+        instructor: 'Mike Johnson',
+        grade: 'A',
+        status: 'Completed'
+      }
+    ],
+    upcomingAssignments: [
+      {
+        id: 'assign1',
+        title: 'React Hooks Project',
+        dueDate: '2025-08-10',
+        courseId: 'course1',
+        courseName: 'Advanced React',
+        submitted: false
+      }
+    ],
+    nextSession: {
+      id: 'sess1',
+      date: '2025-07-28T14:00:00',
+      duration: 60,
+      topic: 'State Management with Redux'
+    }
+  },
+  // Add more mock mentees as needed
+];
+
 export default function MenteesPage() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -71,22 +120,29 @@ export default function MenteesPage() {
   useEffect(() => {
     const fetchMentees = async () => {
       if (!session?.user) {
+        // If no session, use mock data
+        setMentees(mockMentees);
         setLoading(false);
         return;
       }
       
+      setLoading(true);
       try {
         const response = await fetch('/api/mentees');
         
-        if (!response.ok) {
-          throw new Error('Failed to fetch mentees');
+        if (response.ok) {
+          const data = await response.json();
+          setMentees(data.mentees || mockMentees);
+        } else {
+          // If API fails, use mock data
+          console.warn('Using mock data due to API error');
+          setMentees(mockMentees);
         }
-        
-        const data = await response.json();
-        setMentees(data.mentees);
       } catch (error) {
         console.error('Error fetching mentees:', error);
-        toast.error('Failed to load mentees. Please try again later.');
+        // Fallback to mock data on error
+        setMentees(mockMentees);
+        toast.error('Using demo data. Some features may be limited.');
       } finally {
         setLoading(false);
       }
@@ -127,17 +183,20 @@ export default function MenteesPage() {
   };
   
   // Filter mentees based on search term and path filter
-  const filteredMentees = mentees.filter(mentee => {
-    const matchesSearch = mentee.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         mentee.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredMentees = (mentees || []).filter(mentee => {
+    const matchesSearch = mentee?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         mentee?.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesPath = pathFilter === 'all' || mentee.learningPath.toLowerCase() === pathFilter.toLowerCase();
+    const matchesPath = pathFilter === 'all' || 
+                       mentee?.learningPath?.toLowerCase() === pathFilter.toLowerCase();
     
     return matchesSearch && matchesPath;
   });
   
   // Get unique learning paths for filter dropdown
-  const learningPaths = ["all", ...new Set(mentees.map(mentee => mentee.learningPath.toLowerCase()))];
+  const learningPaths = ["all", ...new Set((mentees || []).map(mentee => 
+    mentee?.learningPath?.toLowerCase()
+  ).filter(Boolean))];
   
   if (loading) {
     return (

@@ -95,16 +95,18 @@ export async function GET(req: NextRequest) {
     } 
     // Instructors can see their own drafts
     else if (userRole === 'INSTRUCTOR') {
-      if (status === 'ALL') {
-        whereConditions.OR = [
-          { isPublished: true },
-          { instructorId: userId }
-        ];
-      } else if (status === 'DRAFT') {
+      if (status === 'DRAFT') {
         whereConditions.status = 'DRAFT';
         whereConditions.instructorId = userId;
       } else if (status !== 'ALL') {
+        // For non-DRAFT statuses, filter by status
         whereConditions.status = status;
+      } else {
+        // For 'ALL' status, show both published and instructor's drafts
+        whereConditions.OR = [
+          { status: 'PUBLISHED' },
+          { instructorId: userId, status: 'DRAFT' }
+        ];
       }
     }
     // Admins can see all courses based on status filter
@@ -112,6 +114,7 @@ export async function GET(req: NextRequest) {
       if (status !== 'ALL') {
         whereConditions.status = status;
       }
+      // For 'ALL' status, no status filter is applied (show all courses)
     }
     
     // Handle includeDrafts for instructors and admins
@@ -226,10 +229,10 @@ export async function GET(req: NextRequest) {
     if (sortBy === 'rating') {
       courses = courses.sort((a, b) => {
         const avgRatingA = a.reviews.length > 0
-          ? a.reviews.reduce((sum, r) => sum + r.rating, 0) / a.reviews.length
+          ? a.reviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / a.reviews.length
           : 0;
         const avgRatingB = b.reviews.length > 0
-          ? b.reviews.reduce((sum, r) => sum + r.rating, 0) / b.reviews.length
+          ? b.reviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / b.reviews.length
           : 0;
         return sortOrder === 'asc' ? avgRatingA - avgRatingB : avgRatingB - avgRatingA;
       });
@@ -242,12 +245,17 @@ export async function GET(req: NextRequest) {
     const formattedCourses = courses.map(course => {
       // Calculate average rating
       const avgRating = course.reviews.length > 0
-        ? course.reviews.reduce((sum, r) => sum + r.rating, 0) / course.reviews.length
+        ? course.reviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / course.reviews.length
         : 0;
       
       // Count total lessons across all modules
       const totalLessons = course.modules.reduce(
-        (sum, module) => sum + module._count.lessons, 0
+        (sum: number, module: { _count: { lessons: number } }) => sum + module._count.lessons, 0
+      );
+      
+      // Calculate total duration
+      const totalDuration = course.modules.reduce(
+        (sum: number, module: { duration?: number }) => sum + (module.duration || 0), 0
       );
       
       return {

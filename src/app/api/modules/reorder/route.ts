@@ -60,7 +60,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Then check if the current user is the instructor
-    if (course.instructorId !== Number(session.user.id)) {
+    if (course.instructorId !== session.user.id) {
       console.log(`❌ Authorization failed: User ${session.user.id} not authorized for course ${courseId}`);
       return NextResponse.json({ 
         error: 'You are not authorized to modify this course'

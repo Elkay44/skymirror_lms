@@ -15,17 +15,114 @@ export async function GET(req: NextRequest) {
     const userId = session.user.id;
     const role = session.user.role;
     
-    // Check if the user is an instructor or admin
+    // Check if the user is an instructor, admin, or mentor
     if (role !== 'INSTRUCTOR' && role !== 'ADMIN' && role !== 'MENTOR') {
-      return NextResponse.json({ error: 'Forbidden - Instructor access required' }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden - Access denied' }, { status: 403 });
     }
     
-    // Get all submissions for courses taught by this instructor
-    // For mentors, this would show submissions from their mentees
-    let submissions = [];
+    // Define the submission type
+    type SubmissionWithDetails = {
+      id: string;
+      projectId: string;
+      studentId: string;
+      submissionNotes: string | null;
+      attachments: string[];
+      status: string;
+      grade: number | null;
+      reviewNotes: string | null;
+      submittedAt: Date | null;
+      reviewedAt: Date | null;
+      reviewerId: string | null;
+      createdAt: Date;
+      updatedAt: Date;
+      project: {
+        id: string;
+        title: string;
+        course: {
+          id: string;
+          title: string;
+        };
+      };
+      student: {
+        id: string;
+        name: string | null;
+        email: string | null;
+        image: string | null;
+      };
+      reviewer?: {
+        id: string;
+        name: string | null;
+        email: string | null;
+      } | null;
+    };
     
+    // For mentors, get active mentees from mentor sessions
+    if (role === 'MENTOR') {
+      // Get active mentor sessions
+      const activeSessions = await prisma.mentorSession.findMany({
+        where: {
+          mentorId: userId,
+          status: {
+            in: ['SCHEDULED', 'IN_PROGRESS']
+          },
+          scheduledAt: {
+            gte: new Date()
+          }
+        },
+        select: {
+          menteeId: true
+        }
+      });
+      
+      if (activeSessions.length === 0) {
+        return NextResponse.json({ submissions: [] });
+      }
+      
+      const menteeIds = activeSessions.map(session => session.menteeId);
+      
+      // Get submissions from mentees
+      const submissions = await prisma.projectSubmission.findMany({
+        where: {
+          studentId: { in: menteeIds }
+        },
+        include: {
+          project: {
+            include: {
+              course: {
+                select: {
+                  id: true,
+                  title: true
+                }
+              }
+            }
+          },
+          student: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true
+            }
+          },
+          reviewer: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        },
+        orderBy: {
+          submittedAt: 'desc'
+        }
+      });
+      
+      return NextResponse.json({ submissions });
+    }
+    
+    // For instructors, get submissions from their courses
     if (role === 'INSTRUCTOR') {
-      submissions = await prisma.projectSubmission.findMany({
+      const submissions = await prisma.projectSubmission.findMany({
         where: {
           project: {
             course: {
@@ -51,97 +148,65 @@ export async function GET(req: NextRequest) {
               email: true,
               image: true
             }
-          }
-        },
-        orderBy: [
-          { submittedAt: 'desc' }
-        ]
-      });
-    } else if (role === 'MENTOR') {
-      // Get mentor profile
-      const mentorProfile = await prisma.mentorProfile.findUnique({
-        where: { userId },
-        include: {
-          mentorships: {
-            where: { status: 'ACTIVE' },
-            include: {
-              student: true
+          },
+          reviewer: {
+            select: {
+              id: true,
+              name: true,
+              email: true
             }
           }
+        },
+        orderBy: {
+          submittedAt: 'desc'
         }
       });
       
-      if (!mentorProfile) {
-        return NextResponse.json({ error: 'Mentor profile not found' }, { status: 404 });
-      }
-      
-      // Get all student IDs this mentor is responsible for
-      const studentIds = mentorProfile.mentorships.map(m => m.student.userId);
-      
-      // Get submissions from these students
-      submissions = await prisma.projectSubmission.findMany({
-        where: {
-          studentId: { in: studentIds }
-        },
-        include: {
-          project: {
-            include: {
-              course: {
-                select: {
-                  id: true,
-                  title: true
-                }
-              }
-            }
-          },
-          student: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true
-            }
-          }
-        },
-        orderBy: [
-          { submittedAt: 'desc' }
-        ]
-      });
-    } else if (role === 'ADMIN') {
-      // Admins can see all submissions
-      submissions = await prisma.projectSubmission.findMany({
-        include: {
-          project: {
-            include: {
-              course: {
-                select: {
-                  id: true,
-                  title: true
-                }
-              }
-            }
-          },
-          student: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true
-            }
-          }
-        },
-        orderBy: [
-          { submittedAt: 'desc' }
-        ]
-      });
+      return NextResponse.json({ submissions });
     }
     
-    return NextResponse.json({
-      submissions,
-      totalCount: submissions.length
-    });
+    // For admins, get all submissions
+    if (role === 'ADMIN') {
+      const submissions = await prisma.projectSubmission.findMany({
+        include: {
+          project: {
+            include: {
+              course: {
+                select: {
+                  id: true,
+                  title: true
+                }
+              }
+            }
+          },
+          student: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true
+            }
+          },
+          reviewer: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        },
+        orderBy: {
+          submittedAt: 'desc'
+        }
+      });
+      
+      return NextResponse.json({ submissions });
+    }
+    
+    return NextResponse.json({ submissions: [] });
+    
   } catch (error) {
-    console.error('Error fetching instructor submissions:', error);
+    console.error('Error fetching submissions:', error);
     return NextResponse.json(
       { error: 'Failed to fetch submissions' },
       { status: 500 }

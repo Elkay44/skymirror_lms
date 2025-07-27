@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
     });
 
     // Get course enrollments for the previous period if comparison is requested
-    let previousPeriodEnrollments = [];
+    let previousPeriodEnrollments: Array<{ id: string; courseId: string }> = [];
     if (compareWithPrevious && previousPeriodStartDate) {
       previousPeriodEnrollments = await prisma.enrollment.findMany({
         where: {

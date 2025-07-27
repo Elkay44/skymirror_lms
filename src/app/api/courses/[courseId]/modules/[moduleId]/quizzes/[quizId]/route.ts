@@ -78,13 +78,13 @@ export async function GET(
       select: { instructorId: true },
     });
 
-    const isInstructor = course?.instructorId === parseInt(userId.toString(), 10);
+    const isInstructor = course?.instructorId === userId.toString();
 
     if (!isInstructor) {
       // Check if user is enrolled
       const enrollment = await prisma.enrollment.findFirst({
         where: { 
-          userId: parseInt(userId.toString(), 10), 
+          userId: userId.toString(), 
           courseId, 
           status: { in: ['ACTIVE', 'COMPLETED'] } 
         },
@@ -148,7 +148,7 @@ export async function GET(
 
       studentData = {
         attempts,
-        hasAttemptsLeft: attempts.length < quiz.attemptsAllowed,
+        hasAttemptsLeft: quiz.attemptsAllowed === null || attempts.length < quiz.attemptsAllowed,
         bestScore: attempts.length > 0 ? Math.max(...attempts.map((a: { score?: number | null }) => a.score || 0)) : null
       };
     }

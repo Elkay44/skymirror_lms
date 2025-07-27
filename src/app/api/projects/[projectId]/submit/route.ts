@@ -95,7 +95,6 @@ export async function POST(
           reviewerId: null,
           reviewNotes: null,
           grade: null,
-          status: 'SUBMITTED',
         },
       });
     } else {

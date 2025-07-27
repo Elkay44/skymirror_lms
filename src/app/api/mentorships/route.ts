@@ -2,78 +2,14 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
-
-// Define types based on Prisma schema
-interface User {
-  id: string;
-  name: string | null;
-  email: string;
-  role: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface MentorProfile {
-  id: string;
-  userId: string;
-  bio: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  user: User;
-}
-
-interface StudentProfile {
-  id: string;
-  userId: string;
-  bio: string | null;
-  learningGoals: string;
-  createdAt: Date;
-  updatedAt: Date;
-  user: User;
-}
-
-type MentorSessionStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-
-interface MentorSession {
-  id: string;
-  mentorId: string;
-  menteeId: string;
-  title: string;
-  description: string | null;
-  status: MentorSessionStatus;
-  scheduledAt: Date;
-  duration: number;
-  meetingUrl: string | null;
-  notes: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  mentor: MentorProfile;
-  mentee: StudentProfile;
-}
-
-interface FormattedMentorSession {
-  id: string;
-  title: string;
-  description: string | null;
-  status: MentorSessionStatus;
-  scheduledAt: Date;
-  duration: number;
-  meetingUrl: string | null;
-  notes: string | null;
-  mentor: {
-    id: string;
-    name: string | null;
-    email: string;
-    bio: string | null;
-  };
-  mentee: {
-    id: string;
-    name: string | null;
-    email: string;
-  };
-  createdAt: Date;
-  updatedAt: Date;
-}
+import {
+  MentorSession,
+  MentorSessionStatus,
+  FormattedMentorSession,
+  MentorProfile,
+  StudentProfile,
+  User
+} from '@/types/mentorship';
 
 /**
  * GET /api/mentorships
@@ -94,14 +30,14 @@ export async function GET(req: Request) {
     const status = searchParams.get('status') as MentorSessionStatus | null;
     const role = searchParams.get('role') as 'mentor' | 'mentee' | null;
     
-    let sessions: MentorSession[] = [];
+    let sessions = [];
     
     if (role === 'mentor') {
       // Get sessions where user is the mentor
-      sessions = await prisma.mentorSession.findMany({
+      sessions = (await prisma.mentorSession.findMany({
         where: {
           mentor: { userId: session.user.id },
-          ...(status ? { status } : {})
+          ...(status ? { status: status as any } : {})
         },
         include: {
           mentor: {
@@ -111,6 +47,7 @@ export async function GET(req: Request) {
                   id: true,
                   name: true,
                   email: true,
+                  image: true,
                 },
               },
             },
@@ -122,6 +59,7 @@ export async function GET(req: Request) {
                   id: true,
                   name: true,
                   email: true,
+                  image: true,
                 },
               },
             },
@@ -130,13 +68,13 @@ export async function GET(req: Request) {
         orderBy: {
           scheduledAt: 'desc',
         },
-      });
+      })) as unknown as MentorSession[];
     } else if (role === 'mentee') {
       // Get sessions where user is the mentee
-      sessions = await prisma.mentorSession.findMany({
+      sessions = (await prisma.mentorSession.findMany({
         where: {
           mentee: { userId: session.user.id },
-          ...(status ? { status } : {})
+          ...(status ? { status: status as any } : {})
         },
         include: {
           mentor: {
@@ -165,14 +103,14 @@ export async function GET(req: Request) {
         orderBy: {
           scheduledAt: 'desc',
         },
-      });
+      })) as unknown as MentorSession[];
     } else {
       // Get all sessions where user is either mentor or mentee
       const [asMentor, asMentee] = await Promise.all([
         prisma.mentorSession.findMany({
           where: {
             mentor: { userId: session.user.id },
-            ...(status ? { status } : {})
+            ...(status ? { status: status as any } : {})
           },
           include: {
             mentor: { include: { user: true } },
@@ -182,45 +120,50 @@ export async function GET(req: Request) {
         prisma.mentorSession.findMany({
           where: {
             mentee: { userId: session.user.id },
-            ...(status ? { status } : {})
+            ...(status ? { status: status as any } : {})
           },
           include: {
             mentor: { include: { user: true } },
             mentee: { include: { user: true } },
           },
         }),
-      ]);
+      ]) as [any[], any[]];
       
       // Combine and deduplicate sessions
       const allSessions = [...asMentor, ...asMentee];
       const sessionMap = new Map(allSessions.map(session => [session.id, session]));
-      sessions = Array.from(sessionMap.values());
+      sessions = Array.from(sessionMap.values()) as any[];
     }
     
     // Format the response
-    const formattedSessions: FormattedMentorSession[] = sessions.map(session => ({
-      id: session.id,
-      title: session.title,
-      description: session.description,
-      status: session.status,
-      scheduledAt: session.scheduledAt,
-      duration: session.duration,
-      meetingUrl: session.meetingUrl,
-      notes: session.notes,
-      mentor: {
-        id: session.mentor.id,
-        name: session.mentor.user.name,
-        email: session.mentor.user.email,
-        bio: session.mentor.bio,
-      },
-      mentee: {
-        id: session.mentee.id,
-        name: session.mentee.user.name,
-        email: session.mentee.user.email,
-      },
-      createdAt: session.createdAt,
-      updatedAt: session.updatedAt,
-    }));
+    const formattedSessions = sessions.map(session => {
+      const mentor = session.mentor as MentorProfile;
+      const mentee = session.mentee as StudentProfile;
+      
+      return {
+        id: session.id,
+        title: session.title,
+        description: session.description,
+        status: session.status as MentorSessionStatus,
+        scheduledAt: session.scheduledAt,
+        duration: session.duration,
+        meetingUrl: session.meetingUrl,
+        notes: session.notes,
+        mentor: {
+          id: mentor.id,
+          name: mentor.user?.name || null,
+          email: mentor.user?.email || '',
+          bio: mentor.bio,
+        },
+        mentee: {
+          id: mentee.id,
+          name: mentee.user?.name || null,
+          email: mentee.user?.email || '',
+        },
+        createdAt: session.createdAt,
+        updatedAt: session.updatedAt,
+      } as FormattedMentorSession;
+    });
     
     return NextResponse.json(formattedSessions);
   } catch (error) {
@@ -250,11 +193,14 @@ export async function POST(req: Request) {
     const { 
       mentorId, 
       title, 
-      description, 
+      description = null, 
       scheduledAt, 
       duration,
-      meetingUrl 
+      meetingUrl = null,
+      notes = null
     } = await req.json();
+    
+    const menteeId = session.user.id;
     
     // Validate required fields
     if (!mentorId || !title || !scheduledAt || !duration) {
@@ -316,17 +262,18 @@ export async function POST(req: Request) {
       );
     }
     
-    // Create new mentor session
+    // Create the session with mentor and mentee data
     const newSession = await prisma.mentorSession.create({
       data: {
         title,
         description,
+        status: 'SCHEDULED' as MentorSessionStatus,
         scheduledAt: new Date(scheduledAt),
         duration,
         meetingUrl: meetingUrl || null,
-        status: 'SCHEDULED',
+        notes: notes || null,
         mentor: { connect: { id: mentorId } },
-        mentee: { connect: { id: studentProfile.id } },
+        mentee: { connect: { userId: menteeId } },
       },
       include: {
         mentor: {
@@ -336,6 +283,7 @@ export async function POST(req: Request) {
                 id: true,
                 name: true,
                 email: true,
+                image: true,
               },
             },
           },
@@ -347,14 +295,18 @@ export async function POST(req: Request) {
                 id: true,
                 name: true,
                 email: true,
+                image: true,
               },
             },
           },
         },
       },
-    });
-    
+    }) as unknown as MentorSession;
+
     // Format the response
+    const mentor = newSession.mentor as MentorProfile;
+    const mentee = newSession.mentee as StudentProfile;
+    
     const formattedSession: FormattedMentorSession = {
       id: newSession.id,
       title: newSession.title,
@@ -365,15 +317,15 @@ export async function POST(req: Request) {
       meetingUrl: newSession.meetingUrl,
       notes: newSession.notes,
       mentor: {
-        id: newSession.mentor.id,
-        name: newSession.mentor.user.name,
-        email: newSession.mentor.user.email,
-        bio: newSession.mentor.bio,
+        id: mentor.id,
+        name: mentor.user?.name || null,
+        email: mentor.user?.email || '',
+        bio: mentor.bio || null,
       },
       mentee: {
-        id: newSession.mentee.id,
-        name: newSession.mentee.user.name,
-        email: newSession.mentee.user.email,
+        id: mentee.id,
+        name: mentee.user?.name || null,
+        email: mentee.user?.email || '',
       },
       createdAt: newSession.createdAt,
       updatedAt: newSession.updatedAt,

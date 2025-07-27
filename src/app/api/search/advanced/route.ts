@@ -471,126 +471,15 @@ async function performSearch(
     }
   }
   
-  // Search in discussions if requested
-  if (types.includes('discussion')) {
-    const discussionWhere: any = {
-      OR: [
-        { title: { contains: query, mode: 'insensitive' } },
-        { content: { contains: query, mode: 'insensitive' } },
-      ],
-      ...commonWhere
-    };
-    
-    // Handle access control for discussions
-    if (userRole === 'ADMIN') {
-      // Admins can see all discussions
-    } else if (userRole === 'INSTRUCTOR' && userId) {
-      // Instructors can see discussions in their courses
-      discussionWhere.forum = {
-        module: {
-          course: {
-            instructorId: userId
-          }
-        }
-      };
-    } else if (userId) {
-      // Students can see discussions in courses they're enrolled in
-      discussionWhere.forum = {
-        module: {
-          course: {
-            enrollments: {
-              some: {
-                userId
-              }
-            }
-          }
-        }
-      };
-    } else {
-      // Guest users can't see any discussions
-      discussionWhere.id = 'no-results'; // This ensures no results
-    }
-    
-    // Count total discussions matching criteria
-    const discussionsCount = await prisma.forumPost.count({ 
-      where: discussionWhere 
-    });
-    totalCount += discussionsCount;
-    
-    // Only fetch if we need discussions for this page
-    if (discussionsCount > 0) {
-      // Get discussions matching the search
-      const discussions = await prisma.forumPost.findMany({
-        where: discussionWhere,
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true
-            }
-          },
-          forum: {
-            select: {
-              id: true,
-              title: true,
-              module: {
-                select: {
-                  id: true,
-                  title: true,
-                  course: {
-                    select: {
-                      id: true,
-                      title: true,
-                      imageUrl: true,
-                      slug: true
-                    }
-                  }
-                }
-              }
-            }
-          },
-          _count: {
-            select: {
-              comments: true,
-              likes: true
-            }
-          }
-        },
-        orderBy: {
-          createdAt: sort.order === 'asc' ? 'asc' : 'desc'
-        },
-        take: types.length === 1 ? limit : Math.ceil(limit / types.length),
-        skip: types.length === 1 ? skip : 0
-      });
-      
-      // Map discussions to search results
-      discussions.forEach(discussion => {
-        const titleScore = calculateRelevance(discussion.title, true);
-        const contentScore = calculateRelevance(discussion.content);
-        
-        const relevanceScore = Math.max(titleScore, contentScore);
-        
-        searchResults.push({
-          id: discussion.id,
-          title: discussion.title,
-          description: discussion.content,
-          type: 'discussion',
-          imageUrl: null,
-          url: `/forum/post/${discussion.id}`,
-          relevanceScore,
-          highlightedText: extractHighlight(discussion.content),
-          metadata: {
-            forumId: discussion.forumId,
-            likes: discussion._count?.likes || 0,
-            comments: discussion._count?.comments || 0,
-            isPinned: discussion.isPinned || false,
-            createdAt: discussion.createdAt,
-            type: 'discussion' // Default type since the field doesn't exist in ForumPost model
-          }
-        });
-      });
-    }
+  // Search in discussions if requested - Temporarily disabled as the required model doesn't exist
+  if (false && types.includes('discussion')) {
+    // Discussion search functionality has been temporarily disabled
+    // as the required Prisma model (forumPost) is not defined in the schema.
+    // To enable this feature, you'll need to:
+    // 1. Define the forumPost model in your Prisma schema
+    // 2. Uncomment this code block
+    // 3. Update the model name and field names as needed
+    console.log('Discussion search is currently disabled');
   }
   
   // If sorting by relevance, sort the combined results

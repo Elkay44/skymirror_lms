@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
       
       // Check if user is instructor or mentor for this course
       const isInstructor = project.course.instructorId === session.user.id;
-      const isMentor = project.course.mentors.some(mentor => mentor.userId === session.user.id);
+      const isMentor = project.course.mentors.some((mentor: { userId: string | number }) => mentor.userId === session.user.id);
       
       if (!isInstructor && !isMentor) {
         return NextResponse.json(
