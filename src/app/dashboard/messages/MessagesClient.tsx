@@ -44,14 +44,24 @@ export default function MessagesClient() {
     const fetchConversations = async () => {
       try {
         setIsLoading(true);
+        setError(null);
         const response = await fetch('/api/conversations');
         if (!response.ok) {
-          throw new Error('Failed to fetch conversations');
+          throw new Error(`Failed to fetch conversations: ${response.status} ${response.statusText}`);
         }
         const data = await response.json();
+        // Ensure data is an array before setting it
+        if (!Array.isArray(data)) {
+          console.error('Expected an array of conversations but got:', data);
+          setConversations([]);
+          setError('Invalid data format received from server');
+          return;
+        }
         setConversations(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error('Error fetching conversations:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred while loading conversations');
+        setConversations([]); // Ensure conversations is always an array
       } finally {
         setIsLoading(false);
       }
@@ -102,17 +112,27 @@ export default function MessagesClient() {
   };
 
   // Filter conversations based on search query
-  const filteredConversations = conversations.filter(conversation => {
+  const filteredConversations = Array.isArray(conversations) ? conversations.filter(conversation => {
     if (!searchQuery) return true;
     const search = searchQuery.toLowerCase();
+    
+    // Safely handle potentially undefined properties
+    const participantNames = conversation.participants?.map(p => 
+      p?.name?.toLowerCase() || ''
+    ) || [];
+    
+    const participantRoles = conversation.participants?.map(p => 
+      p?.role?.toLowerCase() || ''
+    ) || [];
+    
+    const lastMessageContent = conversation.lastMessage?.content?.toLowerCase() || '';
+    
     return (
-      conversation.participants.some(p => 
-        p.name.toLowerCase().includes(search) ||
-        p.role.toLowerCase().includes(search)
-      ) ||
-      conversation.lastMessage?.content.toLowerCase().includes(search)
+      participantNames.some(name => name.includes(search)) ||
+      participantRoles.some(role => role.includes(search)) ||
+      lastMessageContent.includes(search)
     );
-  });
+  }) : [];
 
   if (status === 'loading' || isLoading) {
     return (
