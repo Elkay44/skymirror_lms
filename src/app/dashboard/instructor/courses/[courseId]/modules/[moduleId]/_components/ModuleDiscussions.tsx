@@ -394,7 +394,7 @@ export function ModuleDiscussions({ courseId, moduleId }: ModuleDiscussionsProps
                             <MoreHorizontal size={16} />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent sideOffset={8} className="w-56">
                           <DropdownMenuItem onClick={() => handleTogglePinned(activeDiscussion)}>
                             <Pin size={16} className="mr-2" />
                             {activeDiscussion.isPinned ? 'Unpin Discussion' : 'Pin Discussion'}

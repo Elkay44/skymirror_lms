@@ -2,11 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import ForumPost from '@/components/forums/ForumPost';
 import { ArrowLeft, PlusCircle } from 'lucide-react';
+
+type PageParams = {
+  courseId: string;
+  forumId: string;
+};
 
 interface Post {
   id: string;
@@ -33,23 +39,15 @@ interface Forum {
   updatedAt: string;
 }
 
+// Type for the forum page props
 interface ForumPageProps {
-  params: {
-    courseId: string;
-    forumId: string;
-  };
+  params: PageParams;
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-import { Params } from 'next/dist/shared/lib/router/utils/route-matcher';
-
-interface PageParams extends Params {
-  courseId: string;
-  forumId: string;
-}
-
 export default function ForumPage() {
-  const params = useParams<PageParams>();
+  const params = useParams() as PageParams;
+  const { courseId, forumId } = params;
   const [forum, setForum] = useState<Forum | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -67,40 +65,7 @@ export default function ForumPage() {
 
   // Load forum and posts when component mounts
   useEffect(() => {
-    if (!params?.courseId || !params?.forumId) return;
-    
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        // Fetch forum details
-        const forumRes = await fetch(`/api/courses/${params.courseId}/forums/${params.forumId}`);
-        if (!forumRes.ok) throw new Error('Failed to fetch forum');
-        const forumData = await forumRes.json();
-        setForum(forumData);
-        
-        // Fetch forum posts
-        const postsRes = await fetch(`/api/courses/${params.courseId}/forums/${params.forumId}/posts`);
-        if (!postsRes.ok) throw new Error('Failed to fetch posts');
-        const postsData = await postsRes.json();
-        setPosts(postsData);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load forum data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [params]);
-
-  // Load forum and posts when params are available
-  useEffect(() => {
-    if (!params) return;
-
-    const { courseId, forumId } = params;
+    if (!courseId || !forumId) return;
     
     const fetchData = async () => {
       try {
@@ -127,21 +92,23 @@ export default function ForumPage() {
     };
 
     fetchData();
-  }, [params]);
+  }, [courseId, forumId]);
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!params) return;
+    if (!courseId || !forumId) return;
     
     try {
-      const { courseId, forumId } = params;
       const res = await fetch(`/api/courses/${courseId}/forums/${forumId}/posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newPost),
+        body: JSON.stringify({
+          ...newPost,
+          authorId: session?.user?.id
+        }),
       });
       
       if (!res.ok) throw new Error('Failed to create post');
@@ -346,11 +313,41 @@ export default function ForumPage() {
                     updatedAt={post.updatedAt}
                     isPinned={post.isPinned}
                     isLocked={post.isLocked}
-                    viewCount={post.viewCount}
-                    likes={post.likes}
-                    comments={post.comments}
-                    courseId={params.courseId}
-                    forumId={params.forumId}
+                    viewCount={post.viewCount || 0}
+                    likes={post.likes || 0}
+                    comments={post.comments || []}
+                    courseId={courseId}
+                    forumId={forumId}
+                    onLike={() => {
+                      // Handle like functionality
+                      setPosts(posts.map(p => 
+                        p.id === post.id 
+                          ? { ...p, likes: (p.likes || 0) + 1 } 
+                          : p
+                      ));
+                    }}
+                    onReply={(content) => {
+                      // Handle reply functionality
+                      console.log('Replying to post:', post.id, 'with content:', content);
+                    }}
+                    onDelete={() => {
+                      // Handle delete functionality
+                      if (confirm('Are you sure you want to delete this post?')) {
+                        setPosts(posts.filter(p => p.id !== post.id));
+                      }
+                    }}
+                    onReport={() => {
+                      // Handle report functionality
+                      alert('Post has been reported');
+                    }}
+                    onEdit={(newContent) => {
+                      // Handle edit functionality
+                      setPosts(posts.map(p => 
+                        p.id === post.id 
+                          ? { ...p, content: newContent, updatedAt: new Date().toISOString() } 
+                          : p
+                      ));
+                    }}
                   />
                 </li>
               ))

@@ -366,46 +366,100 @@ export default function QuizPage({
                       <div className="mt-2">
                         {question.type === 'multiple_choice' && (
                           <MultipleChoiceQuestion
-                            question={question}
-                            value={userAnswer || ''}
-                            onChange={(value) => handleAnswerChange(question.id, value)}
-                            disabled={submitted}
+                            id={question.id}
+                            questionText={question.question}
+                            questionType={question.type}
+                            points={question.points}
+                            options={question.options?.map(opt => ({
+                              id: opt.id,
+                              optionText: opt.text,
+                              position: question.options?.indexOf(opt) || 0
+                            })) || []}
+                            selectedOptionIds={userAnswer ? [userAnswer] : []}
+                            correctOptionIds={question.options?.filter(opt => opt.isCorrect).map(opt => opt.id) || []}
+                            isReview={submitted}
+                            onAnswer={(answer) => handleAnswerChange(question.id, answer[0])}
                           />
                         )}
                         
                         {question.type === 'true_false' && (
                           <TrueFalseQuestion
-                            question={question}
-                            value={userAnswer || ''}
-                            onChange={(value) => handleAnswerChange(question.id, value)}
-                            disabled={submitted}
+                            id={question.id}
+                            questionText={question.question}
+                            questionType={question.type}
+                            points={question.points}
+                            correctAnswer={question.correctAnswer as boolean | undefined}
+                            userAnswer={userAnswer as boolean | undefined}
+                            isReview={submitted}
+                            onAnswer={(answer) => handleAnswerChange(question.id, answer)}
                           />
                         )}
                         
                         {question.type === 'fill_blank' && (
                           <FillBlankQuestion
-                            question={question}
-                            value={userAnswer || []}
-                            onChange={(value) => handleAnswerChange(question.id, value)}
-                            disabled={submitted}
+                            id={question.id}
+                            questionText={question.question}
+                            questionType={question.type}
+                            points={question.points}
+                            correctAnswers={((): string[] => {
+                              if (!question.correctAnswer) return [];
+                              if (Array.isArray(question.correctAnswer)) {
+                                return question.correctAnswer.filter((item): item is string => 
+                                  typeof item === 'string'
+                                );
+                              }
+                              return [String(question.correctAnswer)];
+                            })()}
+                            userAnswer={userAnswer as string | undefined}
+                            isReview={submitted}
+                            onAnswer={(answer) => handleAnswerChange(question.id, answer)}
                           />
                         )}
                         
                         {question.type === 'short_answer' && (
                           <ShortAnswerQuestion
-                            question={question}
-                            value={userAnswer || ''}
-                            onChange={(value) => handleAnswerChange(question.id, value)}
-                            disabled={submitted}
+                            id={question.id}
+                            questionText={question.question}
+                            questionType={question.type}
+                            points={question.points}
+                            correctAnswers={((): string[] => {
+                              if (!question.correctAnswer) return [];
+                              if (Array.isArray(question.correctAnswer)) {
+                                return question.correctAnswer.filter((item): item is string => 
+                                  typeof item === 'string'
+                                );
+                              }
+                              return [String(question.correctAnswer)];
+                            })()}
+                            userAnswer={userAnswer as string | undefined}
+                            isReview={submitted}
+                            onAnswer={(answer) => handleAnswerChange(question.id, answer)}
                           />
                         )}
                         
                         {question.type === 'matching' && (
                           <MatchingQuestion
-                            question={question}
-                            value={userAnswer || {}}
-                            onChange={(value) => handleAnswerChange(question.id, value)}
-                            disabled={submitted}
+                            id={question.id}
+                            questionText={question.question}
+                            questionType={question.type}
+                            points={question.points}
+                            items={question.options?.filter(opt => !opt.matchId).map(opt => ({
+                              id: opt.id,
+                              text: opt.text
+                            })) || []}
+                            matches={question.options?.filter(opt => opt.matchId).map(opt => ({
+                              id: opt.id,
+                              text: opt.text
+                            })) || []}
+                            correctPairs={question.options
+                              ?.filter(opt => opt.matchId && opt.isCorrect)
+                              .map(opt => ({
+                                itemId: opt.id,
+                                matchId: opt.matchId || ''
+                              })) || []}
+                            userPairs={userAnswer as { itemId: string; matchId: string }[] || []}
+                            isReview={submitted}
+                            onAnswer={(pairs) => handleAnswerChange(question.id, pairs)}
                           />
                         )}
                       </div>

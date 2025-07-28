@@ -113,7 +113,15 @@ export default function ForumsPage({
               forums.map((forum) => (
                 <li key={forum.id}>
                   <ForumCard 
-                    forum={forum}
+                    id={forum.id}
+                    title={forum.title}
+                    description={forum.description}
+                    courseId={forum.courseId}
+                    isGlobal={forum.isGlobal}
+                    postsCount={forum.postsCount}
+                    lastPostAt={forum.lastPostAt}
+                    lastPostAuthor={forum.lastPostAuthor}
+                    className="hover:shadow-md transition-shadow"
                     onClick={() => router.push(`/courses/${params?.courseId}/forums/${forum.id}`)}
                   />
                 </li>

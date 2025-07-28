@@ -14,6 +14,7 @@ interface ForumCardProps {
   lastPostAt?: string | null;
   lastPostAuthor?: string | null;
   className?: string;
+  onClick?: () => void;
 }
 
 export default function ForumCard({
@@ -26,6 +27,7 @@ export default function ForumCard({
   lastPostAt,
   lastPostAuthor,
   className = '',
+  onClick,
 }: ForumCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   
@@ -39,9 +41,10 @@ export default function ForumCard({
 
   return (
     <div
-      className={`rounded-xl border border-gray-200 bg-white hover:shadow-md overflow-hidden transition-all duration-200 ${className}`}
+      className={`rounded-xl border border-gray-200 bg-white hover:shadow-md overflow-hidden transition-all duration-200 ${className} cursor-pointer`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={onClick}
     >
       <div className="p-6">
         <div className="flex items-start justify-between">
