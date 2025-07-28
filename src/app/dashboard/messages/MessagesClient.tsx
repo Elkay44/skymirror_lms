@@ -45,23 +45,54 @@ export default function MessagesClient() {
       try {
         setIsLoading(true);
         setError(null);
+        
+        // Add a delay to show loading state (optional, can be removed)
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         const response = await fetch('/api/conversations');
+        
         if (!response.ok) {
           throw new Error(`Failed to fetch conversations: ${response.status} ${response.statusText}`);
         }
+        
         const data = await response.json();
-        // Ensure data is an array before setting it
-        if (!Array.isArray(data)) {
-          console.error('Expected an array of conversations but got:', data);
+        
+        // Handle case where the API returns an empty object
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+          if (Object.keys(data).length === 0) {
+            console.log('No conversations found, initializing with empty array');
+            setConversations([]);
+            return;
+          }
+          
+          // If the response has a data property that might contain the array
+          if (data.data && Array.isArray(data.data)) {
+            setConversations(data.data);
+            return;
+          }
+          
+          // If we get here, the format is unexpected
+          console.warn('Unexpected response format from /api/conversations:', data);
+          setError('Unexpected response format from server');
           setConversations([]);
-          setError('Invalid data format received from server');
           return;
         }
-        setConversations(data);
+        
+        // If we get an array, use it directly
+        if (Array.isArray(data)) {
+          setConversations(data);
+          return;
+        }
+        
+        // Fallback for any other case
+        console.warn('Unexpected response format from /api/conversations:', data);
+        setError('Unexpected response format from server');
+        setConversations([]);
+        
       } catch (err) {
         console.error('Error fetching conversations:', err);
         setError(err instanceof Error ? err.message : 'An error occurred while loading conversations');
-        setConversations([]); // Ensure conversations is always an array
+        setConversations([]);
       } finally {
         setIsLoading(false);
       }
@@ -223,8 +254,30 @@ export default function MessagesClient() {
                 {/* Conversation list */}
                 <div className="flex-1 overflow-y-auto">
                   {filteredConversations.length === 0 ? (
-                    <div className="p-4 text-center text-gray-500">
-                      {isLoading ? 'Loading conversations...' : 'No conversations found'}
+                    <div className="p-8 text-center">
+                      <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gray-100">
+                        <MessageSquare className="h-12 w-12 text-gray-400" />
+                      </div>
+                      <h3 className="mt-4 text-lg font-medium text-gray-900">No conversations yet</h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {isLoading 
+                          ? 'Loading conversations...' 
+                          : searchQuery 
+                            ? 'No conversations match your search.'
+                            : 'Start a new conversation to get started.'
+                        }
+                      </p>
+                      {!isLoading && !searchQuery && (
+                        <div className="mt-6">
+                          <button
+                            type="button"
+                            className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                          >
+                            <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
+                            New Message
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <ul className="divide-y divide-gray-200">
