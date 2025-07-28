@@ -21,38 +21,54 @@ async function safeParseJSON(response: Response): Promise<any> {
 }
 
 export async function getModules(courseId: string): Promise<Module[]> {
+  if (!courseId) {
+    const error = new Error('No course ID provided');
+    error.name = 'InvalidCourseIdError';
+    throw error;
+  }
+
+  // Add timestamp to prevent browser caching
+  const timestamp = new Date().getTime();
+  const url = `${API_BASE_URL}/${courseId}/modules?t=${timestamp}`;
+  
+  console.log(`[getModules] Fetching modules from: ${url}`);
+  console.log(`[getModules] Course ID: ${courseId}`);
+  
   try {
-    // Add timestamp to prevent browser caching
-    const timestamp = new Date().getTime();
-    const url = `${API_BASE_URL}/${courseId}/modules?t=${timestamp}`;
-    
-    console.log(`Fetching modules from: ${url}`);
-    
     const response = await fetch(url, {
-      // Include credentials to ensure the session cookie is sent
       credentials: 'include',
       cache: 'no-store',
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
-        'Expires': '0'
+        'Expires': '0',
+        'Accept': 'application/json'
       }
     });
     
+    console.log(`[getModules] Response status: ${response.status}`);
+    
     if (!response.ok) {
-      const errorText = await response.text();
+      let errorText = '';
+      try {
+        errorText = await response.text();
+        console.log(`[getModules] Error response:`, errorText);
+        
+        // Try to parse as JSON if possible
+        if (errorText) {
+          try {
+            const errorData = JSON.parse(errorText);
+            console.log('[getModules] Parsed error data:', errorData);
+          } catch (e) {
+            console.log('[getModules] Could not parse error response as JSON');
+          }
+        }
+      } catch (e) {
+        console.error('[getModules] Error reading error response:', e);
+      }
       
       if (response.status === 404) {
-        let errorMessage = 'Course not found';
-        try {
-          if (errorText) {
-            const errorData = JSON.parse(errorText);
-            errorMessage = errorData.error || errorMessage;
-          }
-        } catch (e) {
-          // If we can't parse the error, use the default message
-        }
-        const error = new Error(errorMessage);
+        const error = new Error('Course not found');
         error.name = 'CourseNotFoundError';
         throw error;
       }
@@ -65,11 +81,29 @@ export async function getModules(courseId: string): Promise<Module[]> {
     }
     
     const data = await safeParseJSON(response);
-    console.log(`Received ${data?.data?.length || 0} modules from server`);
-    return data.data || [];
-  } catch (error) {
-    console.error('Error in getModules:', error);
-    throw error;
+    console.log(`[getModules] Received ${data?.data?.length || 0} modules from server`);
+    console.log('[getModules] Modules data:', data);
+    
+    if (!data || !Array.isArray(data.data)) {
+      console.error('[getModules] Invalid response format, expected array of modules');
+      return [];
+    }
+    
+    return data.data;
+  } catch (error: unknown) {
+    console.error('[getModules] Error:', error);
+    
+    // Check if it's one of our known error types
+    if (error instanceof Error) {
+      if (error.name === 'CourseNotFoundError' || error.name === 'ModuleFetchError') {
+        throw error;
+      }
+    }
+    
+    // For other errors, wrap them in a generic error
+    const genericError = new Error('Failed to fetch modules. Please try again.');
+    genericError.name = 'ModuleFetchError';
+    throw genericError;
   }
 }
 

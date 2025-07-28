@@ -1,115 +1,437 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Plus, Loader2, BookOpen } from 'lucide-react';
 import { ErrorBoundary } from '@/components/error-boundary';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
 import { PageLayout } from '../../_components/PageLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { getModules } from '@/lib/api/modules';
-import { Module } from '@/types/module';
+import { Card, CardContent } from '@/components/ui/card';
+import { getModules, createModule, updateModule, deleteModule, reorderModules } from '@/lib/api/modules';
+import type { Module, ModuleStatus, CreateModuleRequest, UpdateModuleRequest } from '@/types/module';
+import { ModuleForm } from '../_components/ModuleForm';
+import { SortableModuleCard } from '../_components/SortableModuleCard';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 
-function CourseModulesContent() {
+interface CourseModulesContentProps {}
+
+const CourseModulesContent: React.FC<CourseModulesContentProps> = () => {
   const router = useRouter();
-  const { courseId } = useParams<{ courseId: string }>();
+  const params = useParams<{ courseId: string }>();
   const [modules, setModules] = useState<Module[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingModule, setEditingModule] = useState<Module | undefined>(undefined);
+  const [error, setError] = useState<Error | null>(null);
+  
+  // Get courseId from params with proper type checking
+  const courseId = useMemo(() => params?.courseId, [params]);
+  
+  // Log the course ID for debugging
+  useEffect(() => {
+    console.log('[CourseModulesContent] Course ID from params:', courseId);
+    if (!courseId) {
+      const err = new Error('No course ID provided');
+      console.error('[CourseModulesContent]', err.message);
+      setError(err);
+    }
+  }, [courseId]);
+
+  // Initialize sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Fetch modules
   const fetchModules = useCallback(async () => {
-    if (!courseId) return;
+    if (!courseId) {
+      const err = new Error('No course ID provided');
+      err.name = 'InvalidCourseIdError';
+      throw err;
+    }
+    
+    console.log('[CourseModulesContent] Fetching modules for course:', courseId);
     
     try {
       setIsLoading(true);
+      setError(null);
+      
       const data = await getModules(courseId);
-      setModules(data);
-    } catch (error: any) {
-      if (error.name === 'CourseNotFoundError') {
-        throw error; // Let the error boundary handle this
+      console.log('[CourseModulesContent] Modules data received:', data);
+      
+      if (!Array.isArray(data)) {
+        const err = new Error('Invalid response format: expected array of modules');
+        console.error('[CourseModulesContent]', err.message, 'Received:', data);
+        throw err;
       }
-      console.error('Error fetching modules:', error);
-      toast.error(error.message || 'Failed to load modules. Please try again.');
+      
+      // Sort modules by order
+      const sortedModules = [...data].sort((a, b) => (a.order || 0) - (b.order || 0));
+      setModules(sortedModules);
+      return sortedModules;
+    } catch (err: unknown) {
+      console.error('[CourseModulesContent] Error in fetchModules:', err);
+      
+      if (err instanceof Error) {
+        if (err.name === 'CourseNotFoundError') {
+          console.error(`[CourseModulesContent] Course not found with ID: ${courseId}`);
+          // Re-throw to be caught by the error boundary
+          const notFoundError = new Error('COURSE_NOT_FOUND');
+          notFoundError.name = 'CourseNotFoundError';
+          throw notFoundError;
+        }
+        
+        // Set error state for other errors
+        setError(err);
+        toast.error(`Error: ${err.message}`);
+      } else {
+        // Handle non-Error objects
+        const unknownError = new Error('An unknown error occurred');
+        setError(unknownError);
+        toast.error('An unexpected error occurred');
+      }
+      return [];
     } finally {
       setIsLoading(false);
     }
   }, [courseId]);
-
+  
+  // Initial data fetch
   useEffect(() => {
-    fetchModules();
+    fetchModules().catch(console.error);
   }, [fetchModules]);
 
+  // Handle module creation
+  const handleCreateModule = useCallback(async (data: CreateModuleRequest) => {
+    if (!courseId) {
+      toast.error(' course ID provided');
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      await createModule(courseId, {
+        ...data,
+        description: data.description || '', // Ensure description is not undefined
+        status: data.status || 'draft', // Default to draft if not provided
+      });
+      toast.success('Module created successfully');
+      setIsFormOpen(false);
+      await fetchModules();
+    } catch (err) {
+      const error = err as Error;
+      console.error('Error creating module:', error);
+      toast.error(error.message || 'Failed to create module');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [courseId, fetchModules]);
+
+  // Handle module update
+  const handleUpdateModule = useCallback(async (id: string, data: UpdateModuleRequest) => {
+    if (!courseId) {
+      toast.error('No course ID provided');
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      await updateModule(courseId, id, {
+        ...data,
+        // Ensure required fields are present
+        title: data.title || 'Untitled Module',
+        description: data.description || '',
+        status: data.status || 'draft',
+      });
+      toast.success('Module updated successfully');
+      setEditingModule(undefined);
+      await fetchModules();
+    } catch (err) {
+      const error = err as Error;
+      console.error('Error updating module:', error);
+      toast.error(error.message || 'Failed to update module');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [courseId, fetchModules]);
+
+  // Handle module deletion
+  const handleDeleteModule = useCallback(async (id: string) => {
+    if (!confirm('Are you sure you want to delete this module? This action cannot be undone.')) return;
+    if (!courseId) {
+      toast.error('No course ID provided');
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      await deleteModule(courseId, id);
+      toast.success('Module deleted successfully');
+      await fetchModules();
+    } catch (err) {
+      const error = err as Error;
+      console.error('Error deleting module:', error);
+      toast.error(error.message || 'Failed to delete module');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [courseId, fetchModules]);
+
+  // Handle module reordering
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) return;
+    
+    setModules((currentModules) => {
+      const oldIndex = currentModules.findIndex((item) => item.id === active.id);
+      const newIndex = currentModules.findIndex((item) => item.id === over.id);
+      
+      if (oldIndex === -1 || newIndex === -1) return currentModules;
+      
+      const newItems = arrayMove(currentModules, oldIndex, newIndex);
+      
+      // Update order in the database
+      const updates = newItems.map((item, index) => ({
+        id: item.id,
+        order: index + 1,
+      }));
+      
+      // Optimistically update the UI
+      const reorderedModules = newItems.map((item, index) => ({
+        ...item,
+        order: index + 1,
+      }));
+      
+      // Update the database in the background
+      if (courseId) {
+        reorderModules(courseId, updates).catch((err) => {
+          console.error('Failed to update module order:', err);
+          toast.error('Failed to save module order');
+          // Revert on error
+          fetchModules();
+        });
+      }
+      
+      return reorderedModules;
+    });
+  }, [courseId, fetchModules]);
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="sr-only">Loading modules...</span>
+        </div>
+      );
+    }
+    
+    if (error) {
+      return (
+        <div className="text-center py-12">
+          <p className="text-red-500 mb-4">Error: {error.message}</p>
+          <Button onClick={() => fetchModules()}>
+            Retry
+          </Button>
+        </div>
+      );
+    }
+    
+    if (modules.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900">No modules</h3>
+          <p className="mt-1 text-sm text-gray-500">Get started by creating a new module.</p>
+          <div className="mt-6">
+            <Button onClick={() => setIsFormOpen(true)}>
+              <Plus className="-ml-1 mr-2 h-5 w-5" />
+              New Module
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={modules.map(module => module.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-4">
+            {modules.map((module) => (
+              <SortableModuleCard
+                key={module.id}
+                module={module}
+                onEdit={() => setEditingModule(module)}
+                onDelete={handleDeleteModule}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+    );
+  };
   return (
     <PageLayout
       title="Course Modules"
-      description="Manage your course modules and content"
-      actions={[
-        <Button key="add-module" onClick={() => setIsFormOpen(true)}>
+      description="Manage your course modules and their content"
+      actions={
+        <Button 
+          onClick={() => setIsFormOpen(true)} 
+          disabled={isLoading}
+          className="flex items-center"
+        >
           <Plus className="mr-2 h-4 w-4" />
-          Add Module
+          New Module
         </Button>
-      ]}
+      }
     >
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {modules.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-8">
-                <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No modules yet</h3>
-                <p className="mt-1 text-sm text-gray-500">Get started by creating your first module.</p>
-                <div className="mt-6">
-                  <Button onClick={() => setIsFormOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Module
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {modules.map((module) => (
-                <Card key={module.id}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <div>
-                      <CardTitle className="text-lg">{module.title}</CardTitle>
-                      {module.description && (
-                        <CardDescription>{module.description}</CardDescription>
-                      )}
-                    </div>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      <div className="space-y-4">
+        <Card>
+          <CardContent className="pt-6">
+            {renderContent()}
+          </CardContent>
+        </Card>
+
+        {/* Module Form Modal */}
+        <ModuleForm
+          module={editingModule}
+          courseId={courseId || ''}
+          modules={modules}
+          open={isFormOpen || !!editingModule}
+          onOpenChange={(open) => {
+            if (!open) {
+              setIsFormOpen(false);
+              setEditingModule(undefined);
+            } else {
+              setIsFormOpen(true);
+            }
+          }}
+          onSuccess={() => {
+            setIsFormOpen(false);
+            setEditingModule(undefined);
+            fetchModules();
+          }}
+          createModule={handleCreateModule}
+          updateModule={handleUpdateModule}
+        />
+      </div>
     </PageLayout>
   );
 }
 
+interface CourseError extends Error {
+  name: string;
+  message: string;
+  stack?: string;
+}
+
 export default function CourseModulesPage() {
   const router = useRouter();
+  const [error, setError] = useState<CourseError | null>(null);
+  const [courseId] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const pathParts = window.location.pathname.split('/');
+      return pathParts[pathParts.indexOf('courses') + 1];
+    }
+    return '';
+  });
   
   const handleCourseNotFound = useCallback(() => {
-    toast.error('Course not found. It may have been deleted or you may not have access.');
-    router.push('/dashboard/instructor/courses');
+    console.error('Course not found, redirecting to courses list');
+    toast.error('The requested course was not found or you do not have permission to view it.');
+    // Use replace instead of push to prevent going back to the not-found page
+    router.replace('/dashboard/instructor/courses');
   }, [router]);
 
+  // Handle errors from the content component
+  const handleError = useCallback((error: unknown) => {
+    console.error('Error in CourseModulesContent:', error);
+    
+    if (error instanceof Error) {
+      setError(error as CourseError);
+      
+      if (error.name === 'CourseNotFoundError') {
+        handleCourseNotFound();
+      } else {
+        toast.error('An error occurred while loading the course modules.');
+      }
+    } else {
+      // Handle non-Error objects
+      const unknownError = new Error('An unknown error occurred') as CourseError;
+      setError(unknownError);
+      toast.error('An unexpected error occurred.');
+    }
+  }, [handleCourseNotFound]);
+
+  if (error) {
+    if (error.name === 'CourseNotFoundError') {
+      return (
+        <PageLayout
+          title="Course Not Found"
+          description="The requested course could not be found"
+        >
+          <div className="text-center py-12">
+            <BookOpen className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Course Not Found</h2>
+            <p className="text-gray-600 mb-6">The course you're looking for doesn't exist or you don't have permission to view it.</p>
+            <Button onClick={() => router.push('/dashboard/instructor/courses')}>
+              Back to Courses
+            </Button>
+          </div>
+        </PageLayout>
+      );
+    }
+    
+    // For other errors, show a generic error message
+    return (
+      <PageLayout
+        title="Error Loading Course"
+        description="An error occurred while loading the course"
+      >
+        <div className="text-center py-12">
+          <BookOpen className="mx-auto h-12 w-12 text-red-500 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h2>
+          <p className="text-gray-600 mb-6">We couldn't load the course modules. Please try again later.</p>
+          <div className="space-x-4">
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+            <Button onClick={() => router.push('/dashboard/instructor/courses')}>
+              Back to Courses
+            </Button>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // Handle initial course not found case
+  useEffect(() => {
+    const courseError = error as CourseError | null;
+    if (courseError?.name === 'CourseNotFoundError') {
+      handleCourseNotFound();
+    }
+  }, [error, handleCourseNotFound]);
+
   return (
-    <ErrorBoundary 
-      onError={(error: Error) => {
-        if (error.name === 'CourseNotFoundError') {
-          handleCourseNotFound();
-        }
-      }}
-    >
+    <ErrorBoundary onError={handleError}>
       <CourseModulesContent />
     </ErrorBoundary>
   );
