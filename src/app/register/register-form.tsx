@@ -64,6 +64,7 @@ export default function RegisterForm() {
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     try {
+      // First, register the user
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -83,21 +84,13 @@ export default function RegisterForm() {
         throw new Error(result.message || 'Registration failed');
       }
 
-      // Sign in the user after successful registration
-      const signInResult = await signIn('credentials', {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-        callbackUrl,
-      });
-
-      if (signInResult?.error) {
-        throw new Error(signInResult.error);
-      }
-
-      toast.success('Registration successful!');
-      router.push(callbackUrl);
-      router.refresh();
+      // Instead of auto-signin, redirect to login page with success message
+      toast.success('Registration successful! Please sign in with your new account.');
+      
+      // Redirect to login page with email pre-filled
+      const loginUrl = new URL('/login', window.location.origin);
+      loginUrl.searchParams.set('email', data.email);
+      router.push(loginUrl.toString());
     } catch (error: any) {
       console.error('Registration error:', error);
       toast.error(error.message || 'Registration failed. Please try again.');

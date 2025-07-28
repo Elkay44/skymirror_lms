@@ -218,9 +218,9 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
             />
           </div>
           <Select
-            value={searchParams.status || urlSearchParams.get('status') || ''}
+            value={searchParams.status || urlSearchParams.get('status') || 'all'}
             onValueChange={(value) => {
-              router.push(`?status=${value}`);
+              router.push(value === 'all' ? '?' : `?status=${value}`);
             }}
           >
             <SelectTrigger className="w-[180px]">
@@ -228,7 +228,7 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Students</SelectItem>
+              <SelectItem value="all">All Students</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="inactive">Inactive</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>

@@ -40,10 +40,28 @@ export async function getModules(courseId: string): Promise<Module[]> {
     });
     
     if (!response.ok) {
-      // Log more detailed error information
       const errorText = await response.text();
-      console.error('Module fetch error:', response.status, errorText);
-      throw new Error(`Failed to fetch modules: ${response.status}`);
+      
+      if (response.status === 404) {
+        let errorMessage = 'Course not found';
+        try {
+          if (errorText) {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.error || errorMessage;
+          }
+        } catch (e) {
+          // If we can't parse the error, use the default message
+        }
+        const error = new Error(errorMessage);
+        error.name = 'CourseNotFoundError';
+        throw error;
+      }
+      
+      const error = new Error(
+        errorText || `Failed to fetch modules: ${response.status} - ${response.statusText}`
+      );
+      error.name = 'ModuleFetchError';
+      throw error;
     }
     
     const data = await safeParseJSON(response);
