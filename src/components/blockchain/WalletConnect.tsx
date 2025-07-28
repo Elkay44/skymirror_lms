@@ -1,5 +1,16 @@
 "use client";
 
+declare global {
+  interface Window {
+    ethereum?: {
+      isMetaMask?: boolean;
+      request: (request: { method: string; params?: any[] }) => Promise<any>;
+      on: (event: string, callback: (...args: any[]) => void) => void;
+      removeListener: (event: string, callback: (...args: any[]) => void) => void;
+    };
+  }
+}
+
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Shield, ExternalLink, AlertTriangle, Check } from 'lucide-react';
@@ -85,45 +96,67 @@ const WalletConnect = () => {
       window.location.reload();
     };
     
-    // Subscribe to events
-    window.ethereum.on('accountsChanged', handleAccountsChanged);
-    window.ethereum.on('chainChanged', handleChainChanged);
-    
-    // Cleanup function
-    return () => {
-      window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-      window.ethereum.removeListener('chainChanged', handleChainChanged);
-    };
+    // Subscribe to events if ethereum is available
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+
+      // Clean up event listeners on component unmount
+      return () => {
+        window.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum?.removeListener('chainChanged', handleChainChanged);
+      };
+    }
   }, [isMetaMaskInstalled]);
   
   // Connect wallet function
   const connectWallet = async () => {
-    if (!isMetaMaskInstalled) {
+    if (!isMetaMaskInstalled || !window.ethereum) {
       setWalletState(prev => ({
         ...prev,
-        error: 'MetaMask is not installed. Please install MetaMask to connect your wallet.',
+        error: 'Please install MetaMask to connect your wallet.'
       }));
       return;
     }
+    
+    setWalletState(prev => ({ ...prev, isSaving: true, error: null, success: null }));
     
     try {
       // Request account access
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
       
+      const address = accounts[0];
+      
+      // Save wallet address to the server
+      const response = await fetch('/api/user/wallet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ walletAddress: address }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save wallet address');
+      }
+      
       setWalletState({
         isConnected: true,
-        address: accounts[0],
+        address,
         chainId,
         isSaving: false,
         error: null,
-        success: null,
+        success: 'Wallet connected successfully!',
       });
+      
+      setSavedWalletAddress(address);
     } catch (error) {
       console.error('Error connecting wallet:', error);
       setWalletState(prev => ({
         ...prev,
-        error: 'Failed to connect wallet. Please try again.',
+        isSaving: false,
+        error: error instanceof Error ? error.message : 'Failed to connect wallet',
       }));
     }
   };

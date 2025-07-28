@@ -16,7 +16,10 @@ describe('Progress Tracking', () => {
       data: {
         email: 'student@test.com',
         name: 'Test Student',
-        role: 'STUDENT'
+        role: 'STUDENT',
+        points: 0,
+        level: 1,
+        needsOnboarding: false
       }
     });
     userId = user.id;
@@ -24,8 +27,16 @@ describe('Progress Tracking', () => {
     const course = await prisma.course.create({
       data: {
         title: 'Test Course',
+        slug: 'test-course',
         description: 'Test Description',
-        instructorId: userId, // Using same user as instructor for simplicity
+        image: 'https://example.com/thumbnail.jpg',
+        isPublished: true,
+        price: 0,
+        category: 'TEST',
+        level: 'BEGINNER',
+        language: 'en',
+        totalHours: 1,
+        instructorId: userId // Using same user as instructor for simplicity
       }
     });
     courseId = course.id;
@@ -45,9 +56,11 @@ describe('Progress Tracking', () => {
       const lesson = await prisma.lesson.create({
         data: {
           title: `Lesson ${i}`,
-          content: `Content ${i}`,
+          description: `Description for lesson ${i}`,
           moduleId,
-          order: i
+          order: i,
+          isPublished: true,
+          duration: 10
         }
       });
       lessonIds.push(lesson.id);
@@ -57,7 +70,9 @@ describe('Progress Tracking', () => {
       data: {
         userId,
         courseId,
-        status: 'ACTIVE'
+        status: 'ACTIVE',
+        progress: 0,
+        enrolledAt: new Date()
       }
     });
     enrollmentId = enrollment.id;
@@ -65,14 +80,14 @@ describe('Progress Tracking', () => {
 
   afterAll(async () => {
     // Clean up test data
-    await prisma.lessonProgress.deleteMany({
+    await prisma.lessonView.deleteMany({
       where: {
         userId
       }
     });
     await prisma.lesson.deleteMany({
       where: {
-        moduleId
+        id: { in: lessonIds }
       }
     });
     await prisma.module.deleteMany({
@@ -103,62 +118,73 @@ describe('Progress Tracking', () => {
     expect(progress).toBe(0);
   });
 
-  it('should calculate correct progress when lessons are completed', async () => {
-    // Complete first lesson
-    await prisma.lessonProgress.create({
+  it('should calculate correct progress when lessons are viewed', async () => {
+    // View first lesson
+    await prisma.lessonView.create({
       data: {
         lessonId: lessonIds[0],
         userId,
-        status: 'COMPLETED'
+        viewCount: 1
       }
     });
 
     let progress = await calculateCourseProgress(enrollmentId);
-    expect(progress).toBeCloseTo(33.33, 2); // 1/3 lessons completed
+    expect(progress).toBe(33); // 1/3 lessons viewed (33%)
 
-    // Complete second lesson
-    await prisma.lessonProgress.create({
+    // View second lesson
+    await prisma.lessonView.create({
       data: {
         lessonId: lessonIds[1],
         userId,
-        status: 'COMPLETED'
+        viewCount: 1
       }
     });
 
     progress = await calculateCourseProgress(enrollmentId);
-    expect(progress).toBeCloseTo(66.67, 2); // 2/3 lessons completed
+    expect(progress).toBe(67); // 2/3 lessons viewed (67%)
 
-    // Complete third lesson
-    await prisma.lessonProgress.create({
+    // View third lesson
+    await prisma.lessonView.create({
       data: {
         lessonId: lessonIds[2],
         userId,
-        status: 'COMPLETED'
+        viewCount: 1
       }
     });
 
     progress = await calculateCourseProgress(enrollmentId);
-    expect(progress).toBe(100); // All lessons completed
+    expect(progress).toBe(100); // All lessons viewed (100%)
   });
 
-  it('should not count in-progress lessons as completed', async () => {
-    // Reset progress
-    await prisma.lessonProgress.deleteMany({
+  it('should handle multiple views of the same lesson', async () => {
+    // Reset views
+    await prisma.lessonView.deleteMany({
       where: {
         userId
       }
     });
 
-    // Mark one lesson as in-progress
-    await prisma.lessonProgress.create({
-      data: {
-        lessonId: lessonIds[0],
-        userId,
-        status: 'IN_PROGRESS'
-      }
-    });
+    // View the same lesson multiple times
+    for (let i = 0; i < 3; i++) {
+      await prisma.lessonView.upsert({
+        where: {
+          id: `${userId}-${lessonIds[0]}` // Create a unique ID for the view
+        },
+        update: {
+          viewCount: { increment: 1 },
+          lastViewed: new Date()
+        },
+        create: {
+          id: `${userId}-${lessonIds[0]}`,
+          lessonId: lessonIds[0],
+          userId,
+          viewCount: 1,
+          lastViewed: new Date()
+        }
+      });
+    }
 
     const progress = await calculateCourseProgress(enrollmentId);
-    expect(progress).toBe(0); // In-progress lessons don't count towards completion
+    expect(progress).toBe(33); // Still only 1/3 lessons viewed
   });
 });

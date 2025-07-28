@@ -96,7 +96,7 @@ export function Toaster() {
             "bg-white dark:bg-gray-800",
             "border border-gray-200 dark:border-gray-700",
             "text-gray-900 dark:text-gray-50",
-            toast.type === "destructive" && "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
+            toast.type === "destructive" ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400" : ""
           )}
         >
           <div className="flex-1">

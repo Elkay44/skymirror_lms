@@ -172,7 +172,13 @@ export default function ProjectSubmissions() {
       setSubmissions(prev => 
         prev.map(sub => 
           sub.id === selectedSubmission.id 
-            ? { ...sub, status: reviewStatus, feedback, grade: grade !== '' ? Number(grade) : undefined, reviewedAt: new Date().toISOString() } 
+            ? { 
+                ...sub, 
+                status: reviewStatus as 'SUBMITTED' | 'REVIEWING' | 'APPROVED' | 'REJECTED' | 'REVISION_REQUESTED', 
+                feedback, 
+                grade: grade !== '' ? Number(grade) : undefined, 
+                reviewedAt: new Date().toISOString() 
+              }
             : sub
         )
       );

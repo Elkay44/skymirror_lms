@@ -52,6 +52,21 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // e.g., 'course_approval', 'enrollment', etc.
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  metadata  Json?    // Store additional data as JSON
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
 model Authenticator {
   credentialID         String  @id
   credentialPublicKey  String  @unique
@@ -98,6 +113,8 @@ model User {
   lessonViews        LessonView[]
   certifications     Certification[]
   quizAttempts       QuizAttempt[]
+  activityLogs       ActivityLog[]
+  notifications      Notification[]
   
   @@map("users")
 }
@@ -131,6 +148,7 @@ model Course {
   projects         Project[]         @relation("CourseProjects")
   enrollments      Enrollment[]
   certifications   Certification[]
+  activityLogs     ActivityLog[]
   
   @@map("courses")
 }
@@ -170,6 +188,7 @@ model Module {
   pages            Page[]
   quizzes          Quiz[]
   assignments      Assignment[]
+  activityLogs     ActivityLog[]
   
   @@map("modules")
 }
@@ -190,6 +209,7 @@ model Lesson {
   // Relations
   module           Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   views            LessonView[]
+  activityLogs     ActivityLog[]
   
   @@map("lessons")
 }
@@ -462,6 +482,7 @@ model Enrollment {
   course            Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   certification     Certification?   @relation(name: "EnrollmentCertification")
   certificationId   String?          @unique
+  activityLogs      ActivityLog[]
   
   @@unique([userId, courseId])
   @@map("enrollments")
@@ -528,6 +549,7 @@ model Quiz {
   module         Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   questions      Question[]
   attempts       QuizAttempt[]
+  activityLogs    ActivityLog[]
   
   @@map("quizzes")
 }
@@ -605,4 +627,34 @@ model UserAnswer {
   selectedOption  QuestionOption? @relation(fields: [optionId], references: [id], onDelete: Cascade)
   
   @@map("user_answers")
+}
+
+model ActivityLog {
+  id           String    @id @default(cuid())
+  userId       String
+  courseId     String?
+  moduleId     String?
+  lessonId     String?
+  enrollmentId String?
+  quizId       String?
+  type         String
+  details      String?   @db.Text
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // Relations
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course       Course?    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  module       Module?    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  lesson       Lesson?    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  quiz         Quiz?      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([courseId])
+  @@index([moduleId])
+  @@index([lessonId])
+  @@index([enrollmentId])
+  @@index([type])
+  @@map("activity_logs")
 }

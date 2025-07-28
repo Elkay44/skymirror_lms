@@ -91,11 +91,31 @@ export default function MessagesPage() {
         
         // Update conversations to mark as read
         setConversations(prevConversations => 
-          prevConversations.map(conv => 
-            conv.id === activeConversationId
-              ? { ...conv, unreadCount: 0, lastMessage: conv.lastMessage ? { ...conv.lastMessage, isRead: true } : null }
-              : conv
-          )
+          prevConversations.map(conv => {
+            if (conv.id === activeConversationId) {
+              if (conv.lastMessage) {
+                return {
+                  ...conv,
+                  unreadCount: 0,
+                  lastMessage: {
+                    ...conv.lastMessage,
+                    isRead: true
+                  }
+                };
+              }
+              return {
+                ...conv,
+                unreadCount: 0,
+                lastMessage: {
+                  content: '',
+                  timestamp: new Date(),
+                  senderId: '',
+                  isRead: true
+                }
+              };
+            }
+            return conv;
+          })
         );
       } catch (err) {
         console.error('Error fetching messages:', err);
@@ -116,14 +136,14 @@ export default function MessagesPage() {
   // Get primary recipient for the conversation (the other user in 1:1 conversations)
   const getPrimaryRecipient = () => {
     if (!activeConversation) {
-      return { name: '', role: '' };
+      return { name: '', role: 'STUDENT' as const };
     }
     
     // For group chats, return the conversation name
     if (activeConversation.isGroupChat && activeConversation.courseName) {
       return { 
         name: activeConversation.courseName,
-        role: 'GROUP'
+        role: 'STUDENT' as const // Default to STUDENT for group chats
       };
     }
     
@@ -133,30 +153,33 @@ export default function MessagesPage() {
     );
     
     if (otherParticipants.length === 0) {
-      return { name: '', role: '' };
+      return { name: '', role: 'STUDENT' as const };
     }
     
     // Return the first other participant (in 1:1 conversations, this is the only other participant)
     return {
       name: otherParticipants[0].name || '',
-      role: otherParticipants[0].role || ''
+      role: (otherParticipants[0].role || 'STUDENT') as 'STUDENT' | 'INSTRUCTOR' | 'MENTOR'
     };
   };
   
   // Handle sending a new message
-  const handleSendMessage = async (content: string, attachments?: Attachment[]) => {
+  const handleSendMessage = async (content: string, attachments?: File[]) => {
     if (!activeConversationId || !content.trim()) return;
     
     try {
+      const formData = new FormData();
+      formData.append('content', content);
+      
+      if (attachments) {
+        attachments.forEach((file, index) => {
+          formData.append(`attachments[${index}]`, file);
+        });
+      }
+      
       const response = await fetch(`/api/messages/${activeConversationId}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          content,
-          attachments
-        })
+        body: formData
       });
       
       if (!response.ok) {

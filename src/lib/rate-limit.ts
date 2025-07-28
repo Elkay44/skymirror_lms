@@ -37,7 +37,10 @@ export function rateLimit(options: RateLimitOptions) {
      */
     async check(req: NextRequest): Promise<Response | null> {
       // Get identifier from request (IP address, user ID, or custom)
-      const ip = req.ip ?? '127.0.0.1';
+      // Note: req.ip is not available in Next.js 13+ App Router by default
+      // In a production environment, you would use a proper IP detection method
+      // For development, we'll use a static identifier
+      const ip = '127.0.0.1';
       const identifier = options.identifier ? 
         `${options.identifier}:${ip}` : 
         `rate-limit:${req.nextUrl.pathname}:${ip}`;

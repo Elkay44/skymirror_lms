@@ -1,4 +1,26 @@
-import { Mentor, MentorshipRequest } from '@/types/mentorship';
+import { MentorshipRequest } from '@/types/mentorship';
+
+export interface Mentor {
+  id: string;
+  name: string;
+  image?: string;
+  role: string;
+  bio: string;
+  specialties: string[];
+  rating: number;
+  reviewCount: number;
+  languages: string[];
+  availability: {
+    days: string[];
+    timeRange: string;
+  };
+  experience: string;
+  education: string;
+  sessionRate: number;
+  responseTime: string;
+  isAvailable: boolean;
+  sessionTypes: string[];
+}
 
 const API_BASE = '/api';
 

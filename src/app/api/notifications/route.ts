@@ -22,19 +22,21 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Define the notification type for type safety
-    interface Notification {
+    // Define the notification type based on our Prisma model
+    type PrismaNotification = {
       id: string;
+      userId: string;
+      type: string;
       title: string;
       message: string;
-      type: string;
       isRead: boolean;
+      metadata: any;
       createdAt: Date;
-      linkUrl: string | null;
-    }
+      updatedAt: Date;
+      linkUrl?: string | null;
+    };
     
-    // Use a try/catch block specifically for the notifications query
-    // This helps handle cases where the notifications table might not exist yet
+    // Define the formatted notification type for the API response
     interface FormattedNotification {
       id: string;
       title: string;
@@ -55,14 +57,14 @@ export async function GET() {
       });
 
       // Format the response
-      formattedNotifications = (notifications as Notification[]).map((notification) => ({
+      formattedNotifications = notifications.map((notification: PrismaNotification) => ({
         id: notification.id,
         title: notification.title,
         message: notification.message,
         type: notification.type,
         isRead: notification.isRead,
         createdAt: notification.createdAt.toISOString(),
-        linkUrl: notification.linkUrl,
+        linkUrl: notification.linkUrl || null,
       }));
     } catch (notificationError) {
       // If there's an error with the notifications table, just return an empty array

@@ -133,21 +133,37 @@ export async function issueCertificate({
       throw new Error('Student does not have a wallet address');
     }
 
+    // Check if approvedSubmissions exists and is an array
+    if (!eligibility.approvedSubmissions || !Array.isArray(eligibility.approvedSubmissions)) {
+      throw new Error('No approved submissions found for certification');
+    }
+
     // Prepare project data for verification
     const projectData = await prepareProjectData(eligibility.approvedSubmissions);
 
     // Create a certification record in our database
+    const enrollment = await prisma.enrollment.findFirst({
+      where: {
+        userId: studentId,
+        courseId,
+      },
+    });
+
+    if (!enrollment) {
+      throw new Error('Enrollment not found');
+    }
+
     const certification = await prisma.certification.create({
       data: {
-        title: `${course.title} Certificate`,
-        description: `Certificate of completion for ${course.title}`,
-        certificateType,
-        studentId,
+        userId: studentId,
         courseId,
+        enrollmentId: enrollment.id,
         expiresAt,
-        submissions: {
-          connect: eligibility.approvedSubmissions.map(sub => ({ id: sub.id })),
-        },
+        metadata: JSON.stringify({
+          title: `${course.title} Certificate`,
+          description: `Certificate of completion for ${course.title}`,
+          certificateType,
+        }),
       },
     });
 
@@ -182,11 +198,17 @@ export async function issueCertificate({
     const updatedCertification = await prisma.certification.update({
       where: { id: certification.id },
       data: {
-        tokenId: result.tokenId,
-        txHash: result.txHash,
-        ipfsMetadataUrl: tokenURI,
-        verificationUrl: `https://skymirror.academy/verify/${result.tokenId}`,
-        verificationCode: result.tokenId,
+        verificationUrl: `https://explorer.certify.com/certificate/${result.txHash}`,
+        metadata: JSON.stringify({
+          ...(certification.metadata ? JSON.parse(certification.metadata) : {}),
+          tokenId: result.tokenId,
+          txHash: result.txHash,
+          ipfsHash: tokenURI,
+        }),
+      },
+      include: {
+        user: true,
+        course: true,
       },
     });
 
@@ -206,13 +228,9 @@ export async function verifyCertificateById(certificationId: string) {
     const certification = await prisma.certification.findUnique({
       where: { id: certificationId },
       include: {
-        student: true,
+        user: true,
         course: true,
-        submissions: {
-          include: {
-            project: true,
-          },
-        },
+        projectSubmission: true,
       },
     });
 
@@ -220,7 +238,10 @@ export async function verifyCertificateById(certificationId: string) {
       return { valid: false, reason: 'Certificate not found in database' };
     }
 
-    if (certification.isRevoked) {
+    // Parse metadata to check for revocation status
+    const metadata = certification.metadata ? JSON.parse(certification.metadata) : {};
+    
+    if (metadata.isRevoked) {
       return { valid: false, reason: 'Certificate has been revoked', certification };
     }
 
@@ -228,30 +249,33 @@ export async function verifyCertificateById(certificationId: string) {
       return { valid: false, reason: 'Certificate has expired', certification };
     }
 
-    if (!certification.tokenId) {
+    const tokenId = metadata.tokenId;
+    if (!tokenId) {
       return { valid: false, reason: 'Certificate not issued on blockchain', certification };
     }
 
     // Verify on blockchain
-    const blockchainVerification = await certificateService.verifyCertificate(certification.tokenId);
+    const blockchainVerification = await certificateService.verifyCertificate(tokenId);
 
     if (!blockchainVerification.valid) {
       return { valid: false, reason: 'Certificate verification failed on blockchain', certification };
     }
 
-    // Prepare project data for hash verification
-    const projectData = await prepareProjectData(certification.submissions);
-    const projectVerification = await certificateService.verifyProjectData(
-      certification.tokenId,
-      projectData
-    );
+    // If there's a project submission, verify its data
+    if (certification.projectSubmission) {
+      const projectData = await prepareProjectData([certification.projectSubmission]);
+      const projectVerification = await certificateService.verifyProjectData(
+        tokenId,
+        projectData
+      );
 
-    if (!projectVerification.valid) {
-      return {
-        valid: false,
-        reason: 'Project data verification failed',
-        certification,
-      };
+      if (!projectVerification.valid) {
+        return { 
+          valid: false, 
+          reason: 'Project data verification failed', 
+          certification 
+        };
+      }
     }
 
     return {
@@ -287,17 +311,20 @@ export async function revokeCertificate({
       throw new Error('Certificate not found');
     }
 
-    if (certification.isRevoked) {
+    // Parse metadata to check revocation status
+    const metadata = certification.metadata ? JSON.parse(certification.metadata) : {};
+    
+    if (metadata.isRevoked) {
       throw new Error('Certificate already revoked');
     }
 
-    if (!certification.tokenId) {
+    if (!metadata.tokenId) {
       throw new Error('Certificate not issued on blockchain');
     }
 
     // Revoke on blockchain
     const result = await certificateService.revokeCertificate({
-      tokenId: certification.tokenId,
+      tokenId: metadata.tokenId,
       reason,
       privateKey,
     });
@@ -306,8 +333,12 @@ export async function revokeCertificate({
     const updatedCertification = await prisma.certification.update({
       where: { id: certificationId },
       data: {
-        isRevoked: true,
-        revokedAt: new Date(),
+        metadata: JSON.stringify({
+          ...metadata,
+          isRevoked: true,
+          revokedAt: new Date().toISOString(),
+          revocationReason: reason,
+        }),
       },
     });
 
@@ -328,19 +359,22 @@ export async function revokeCertificate({
 export async function getStudentCertificates(studentId: string) {
   try {
     const certifications = await prisma.certification.findMany({
-      where: { studentId },
+      where: { 
+        userId: studentId,
+      },
       include: {
         course: true,
-        submissions: {
-          include: {
-            project: true,
-          },
-        },
+        projectSubmission: true,
+        user: true,
       },
       orderBy: { issuedAt: 'desc' },
     });
 
-    return certifications;
+    // Parse metadata for each certification
+    return certifications.map(cert => ({
+      ...cert,
+      metadata: cert.metadata ? JSON.parse(cert.metadata) : {},
+    }));
   } catch (error) {
     console.error('Error getting student certificates:', error);
     throw new Error(`Failed to get student certificates: ${(error as Error).message}`);
@@ -355,13 +389,17 @@ export async function getCourseCertificates(courseId: string) {
     const certifications = await prisma.certification.findMany({
       where: { courseId },
       include: {
-        student: true,
-        submissions: true,
+        user: true,
+        projectSubmission: true,
       },
       orderBy: { issuedAt: 'desc' },
     });
 
-    return certifications;
+    // Parse metadata for each certification
+    return certifications.map(cert => ({
+      ...cert,
+      metadata: cert.metadata ? JSON.parse(cert.metadata) : {},
+    }));
   } catch (error) {
     console.error('Error getting course certificates:', error);
     throw new Error(`Failed to get course certificates: ${(error as Error).message}`);

@@ -10,30 +10,45 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Search, MessageSquare, Clock, Check, X, User, Star } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
-import { fetchMentors, requestMentorship, fetchMyMentorships, cancelMentorshipRequest } from "@/services/mentorship";
-import { Mentor, MentorshipRequest } from "@/types/mentorship";
+import { Mentor, fetchMentors, requestMentorship, fetchMyMentorships, cancelMentorshipRequest } from "@/services/mentorship";
 
-interface MentorWithTitle extends Omit<Mentor, 'languages' | 'availability'> {
-  title?: string;
-  availability: {
-    days: string[];
-    timeRange: string;
+interface MentorshipRequest {
+  id: string;
+  mentor: {
+    id: string;
+    name: string;
+    image?: string;
   };
-  experience: string;
-  sessionRate: number;
-  education: string;
-  responseTime: string;
-  languages: string[];
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
+  requestedDate: Date | string;
+  messages: Array<{
+    id: string;
+    sender: 'MENTOR' | 'STUDENT';
+    content: string;
+    timestamp: Date | string;
+  }>;
+  scheduledSessions?: Array<{
+    id: string;
+    date: Date | string;
+    status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+    meetingUrl?: string;
+  }>;
+  lastMessage?: {
+    content: string;
+    timestamp: Date | string;
+    isRead: boolean;
+  };
 }
 
 const getInitials = (name: string): string => {
+  if (!name) return '';
   return name.split(' ').map(n => n[0]).join('').toUpperCase();
 };
 
 interface MentorCardProps {
-  mentor: MentorWithTitle;
-  onRequest: (mentor: MentorWithTitle) => void;
-  onMessage: (mentor: MentorWithTitle) => void;
+  mentor: Mentor;
+  onRequest: (mentor: Mentor) => void;
+  onMessage: (mentor: Mentor) => void;
 }
 
 const MentorCard: React.FC<MentorCardProps> = ({ mentor, onRequest, onMessage }) => {
@@ -47,7 +62,7 @@ const MentorCard: React.FC<MentorCardProps> = ({ mentor, onRequest, onMessage })
             </Avatar>
             <div>
               <CardTitle className="text-lg">{mentor.name}</CardTitle>
-              <p className="text-sm text-muted-foreground">{mentor.title || 'Mentor'}</p>
+              <p className="text-sm text-muted-foreground">{mentor.role || 'Mentor'}</p>
             </div>
           </div>
           <div className="flex items-center space-x-1">
@@ -109,7 +124,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ request, onCancel }) => {
               </span>
             </div>
           </div>
-          {request.status === 'pending' && (
+          {request.status === 'PENDING' && (
             <Button variant="ghost" size="sm" onClick={() => onCancel(request.id)}>
               <X className="h-4 w-4 mr-1" />
               Cancel
@@ -118,9 +133,9 @@ const RequestCard: React.FC<RequestCardProps> = ({ request, onCancel }) => {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground">
-          {request.message || 'No message provided'}
-        </p>
+        <div className="text-sm text-muted-foreground">
+          {request.messages.length > 0 ? request.messages[0].content : 'No message provided'}
+        </div>
       </CardContent>
     </Card>
   );
@@ -129,13 +144,14 @@ const RequestCard: React.FC<RequestCardProps> = ({ request, onCancel }) => {
 export default function MentorsPage() {
   const router = useRouter();
   const { toast } = useToast();
-  
-  const [mentors, setMentors] = useState<MentorWithTitle[]>([]);
-  const [mentorshipRequests, setMentorshipRequests] = useState<MentorshipRequest[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('find');
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedMentor, setSelectedMentor] = useState<MentorWithTitle | null>(null);
+  const [mentors, setMentors] = useState<Mentor[]>([]);
+  const [mentorshipRequests, setMentorshipRequests] = useState<MentorshipRequest[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('browse');
+  const [myMentorships, setMyMentorships] = useState<MentorshipRequest[]>([]);
+  const [isRequesting, setIsRequesting] = useState(false);
+  const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -150,7 +166,6 @@ export default function MentorsPage() {
         toast({
           title: 'Error',
           description: 'Failed to load mentors and requests',
-          variant: 'destructive',
         });
       } finally {
         setIsLoading(false);
@@ -161,30 +176,30 @@ export default function MentorsPage() {
   }, [toast]);
 
   const filteredMentors = mentors.filter(mentor =>
-    mentor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    mentor.specialties?.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()))
+    mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    mentor.specialties.some(specialty => 
+      specialty.toLowerCase().includes(searchQuery.toLowerCase())
+    )
   );
 
-  const handleRequestMentorship = async (mentor: MentorWithTitle) => {
+  const handleRequestMentorship = async (mentor: Mentor) => {
     try {
-      await requestMentorship({
-        mentorId: mentor.id,
-        message: `Request to connect with ${mentor.name}`,
-      });
+      await requestMentorship(mentor.id, `I would like to request mentorship for ${mentor.role}`);
       
       toast({
-        title: 'Request Sent',
-        description: `Your request to ${mentor.name} has been sent.`,
+        title: 'Mentorship Requested',
+        description: `Your request has been sent to ${mentor.name}`,
       });
       
-      const requests = await fetchMyMentorships();
-      setMentorshipRequests(requests);
-      setActiveTab('requests');
+      // Refresh the list of mentorships
+      const myMentorships = await fetchMyMentorships();
+      setMyMentorships(myMentorships);
+      
     } catch (error) {
+      console.error('Error requesting mentorship:', error);
       toast({
         title: 'Error',
-        description: 'Failed to send request',
-        variant: 'destructive',
+        description: 'Failed to send mentorship request. Please try again.',
       });
     }
   };
@@ -200,8 +215,7 @@ export default function MentorsPage() {
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to cancel request',
-        variant: 'destructive',
+        description: 'Failed to cancel request'
       });
     }
   };
@@ -226,8 +240,8 @@ export default function MentorsPage() {
               <Input
                 className="pl-9"
                 placeholder="Search mentors..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>

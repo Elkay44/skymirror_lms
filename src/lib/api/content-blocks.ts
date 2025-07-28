@@ -14,13 +14,18 @@ export const updateContentBlockOrders = async (
   pageId: string,
   blocksWithOrder: { id: string; order: number }[]
 ): Promise<{ success: boolean }> => {
-  const response = await fetcher.put(
-    `/api/courses/${courseId}/modules/${moduleId}/pages/${pageId}/blocks/reorder`,
-    {
-      blocks: blocksWithOrder
-    }
-  );
-  return response;
+  try {
+    const response = await fetcher.put<{ success: boolean }>(
+      `/api/courses/${courseId}/modules/${moduleId}/pages/${pageId}/blocks/reorder`,
+      {
+        blocks: blocksWithOrder
+      }
+    );
+    return response || { success: false };
+  } catch (error) {
+    console.error('Error updating content block orders:', error);
+    return { success: false };
+  }
 };
 
 /**
@@ -32,8 +37,7 @@ export const getContentBlock = async (
   pageId: string,
   blockId: string
 ): Promise<ContentBlock> => {
-  const response = await fetcher.get(
+  return await fetcher.get<ContentBlock>(
     `/api/courses/${courseId}/modules/${moduleId}/pages/${pageId}/blocks/${blockId}`
   );
-  return response.data;
 };

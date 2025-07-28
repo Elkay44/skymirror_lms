@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { GitHub, GitBranch, GitPullRequest, Code, CheckCircle, XCircle, RefreshCcw, AlertCircle } from 'lucide-react';
+import { Github, GitBranch, GitPullRequest, Code, CheckCircle, XCircle, RefreshCcw, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface RepositoryIntegrationProps {
@@ -179,7 +179,7 @@ export default function RepositoryIntegration({
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
       <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex justify-between items-center">
         <h3 className="text-lg font-semibold flex items-center">
-          <GitHub className="h-5 w-5 mr-2 text-gray-700" />
+          <Github className="h-5 w-5 mr-2 text-gray-700" />
           Repository Integration
         </h3>
         
@@ -205,7 +205,7 @@ export default function RepositoryIntegration({
                   onClick={() => { setProvider('github'); authenticateProvider(); }}
                   className="flex items-center px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors"
                 >
-                  <GitHub className="h-5 w-5 mr-2" />
+                  <Github className="h-5 w-5 mr-2" />
                   Connect GitHub
                 </button>
                 
@@ -359,7 +359,7 @@ export default function RepositoryIntegration({
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
-                            <GitHub className="h-5 w-5 text-gray-700 mr-2" />
+                            <Github className="h-5 w-5 text-gray-700 mr-2" />
                             <span className="font-medium text-gray-900">{repo.name}</span>
                             
                             {repo.visibility === 'private' && (
@@ -421,7 +421,7 @@ export default function RepositoryIntegration({
         ) : (
           <div className="text-center">
             <div className="bg-blue-50 rounded-lg p-6 mb-6">
-              <GitHub className="h-10 w-10 text-blue-600 mx-auto mb-4" />
+              <Github className="h-10 w-10 text-blue-600 mx-auto mb-4" />
               <h4 className="text-blue-800 font-medium mb-2">Connect Your Code Repository</h4>
               <p className="text-blue-700 text-sm mb-4">
                 Link your GitHub or GitLab repository to this project for easier submissions and code reviews.

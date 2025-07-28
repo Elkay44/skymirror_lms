@@ -1,10 +1,19 @@
 import prisma from '@/lib/prisma';
-import { Prisma, Notification } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 // Define types for notification creation
-type NotificationCreate = Omit<Notification, 'id' | 'createdAt'>;
+type NotificationCreate = {
+  type: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  linkUrl?: string;
+  relatedId?: string;
+  relatedType?: string;
+  metadata?: any;
+};
 // Create a simple getUserById function since the module doesn't exist yet
-async function getUserById(userId: number) {
+async function getUserById(userId: string) {
   return await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -51,23 +60,20 @@ export interface NotificationMetadata {
  * Creates a notification for a specific user
  */
 export async function createNotification(
-  userId: number,
-  type: NotificationType,
+  userId: string,
+  type: string,
   message: string,
   metadata: NotificationMetadata = {}
 ) {
   try {
     // Ensure we're only passing valid fields to Prisma
-    // Using as any to bypass type checking for potentially missing fields in schema
     // Construct notification data based on schema fields using proper Prisma type
-    // Using proper Prisma relation syntax with connect
-    const notificationData: Prisma.NotificationCreateInput = {
+    const notificationData = {
       user: { connect: { id: userId } },
       type,
       message,
       title: message.substring(0, 100), 
       isRead: false,
-      // Map relevant metadata fields to schema fields
       linkUrl: metadata.resourceUrl,
       relatedId: metadata.courseId || metadata.lessonId || metadata.discussionId || metadata.commentId,
       relatedType: metadata.courseId ? 'COURSE' : 
@@ -94,8 +100,8 @@ export async function createNotification(
  * Creates notifications for multiple users
  */
 export async function createNotificationForMany(
-  userIds: number[],
-  type: NotificationType,
+  userIds: string[],
+  type: string,
   message: string,
   metadata: NotificationMetadata = {}
 ) {
@@ -180,7 +186,7 @@ export async function notifyCourseInstructor(
 /**
  * Marks a notification as read
  */
-export async function markNotificationAsRead(id: string, userId: number) {
+export async function markNotificationAsRead(id: string, userId: string) {
   try {
     const notification = await prisma.notification.findUnique({
       where: { id }
@@ -208,7 +214,7 @@ export async function markNotificationAsRead(id: string, userId: number) {
 /**
  * Marks all notifications as read for a user
  */
-export async function markAllNotificationsAsRead(userId: number) {
+export async function markAllNotificationsAsRead(userId: string) {
   try {
     const result = await prisma.notification.updateMany({
       where: { 
@@ -231,7 +237,7 @@ export async function markAllNotificationsAsRead(userId: number) {
  * Gets user notifications with pagination
  */
 export async function getUserNotifications(
-  userId: number,
+  userId: string,
   page: number = 1,
   limit: number = 10,
   unreadOnly: boolean = false
@@ -245,7 +251,7 @@ export async function getUserNotifications(
       return cached;
     }
     
-    const whereClause: Prisma.NotificationWhereInput = {
+    const whereClause: any = {
       userId,
       ...(unreadOnly ? { isRead: false } : {})
     };
@@ -348,7 +354,7 @@ export async function sendCourseApprovalNotification(
  * Sends a notification about instructor status
  */
 export async function sendInstructorStatusNotification(
-  instructorId: number,
+  instructorId: string,
   action: 'approve' | 'reject' | 'suspend' | 'activate',
   message?: string
 ) {

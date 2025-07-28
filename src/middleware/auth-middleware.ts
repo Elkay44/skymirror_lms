@@ -91,7 +91,7 @@ export async function requireCourseOwnerOrAdmin(req: NextRequest, courseId: stri
     return CommonErrors.notFound('Course not found');
   }
   
-  if (course.instructorId !== Number(session.user.id)) {
+  if (course.instructorId !== session.user.id) {
     return CommonErrors.forbidden('You do not have permission to modify this course');
   }
   

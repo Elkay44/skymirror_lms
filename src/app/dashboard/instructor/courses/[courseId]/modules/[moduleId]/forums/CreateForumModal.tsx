@@ -10,13 +10,14 @@ import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 
 interface CreateForumModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   courseId: string;
   moduleId: string;
+  onSuccess?: (newForum: any) => void;
 }
 
-export function CreateForumModal({ isOpen, onClose, courseId, moduleId }: CreateForumModalProps) {
+export function CreateForumModal({ open, onOpenChange, courseId, moduleId }: CreateForumModalProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [title, setTitle] = useState('');
@@ -63,7 +64,7 @@ export function CreateForumModal({ isOpen, onClose, courseId, moduleId }: Create
       router.refresh();
       
       // Close the modal
-      onClose();
+      onOpenChange(false);
       
       // Navigate to the forum
       router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/forums`);
@@ -80,7 +81,7 @@ export function CreateForumModal({ isOpen, onClose, courseId, moduleId }: Create
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle>Create Module Forum</DialogTitle>
@@ -123,7 +124,7 @@ export function CreateForumModal({ isOpen, onClose, courseId, moduleId }: Create
             <Button 
               type="button" 
               variant="outline" 
-              onClick={onClose}
+              onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
               Cancel

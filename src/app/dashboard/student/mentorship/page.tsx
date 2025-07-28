@@ -13,9 +13,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, User, MessageSquare, Clock, Check, X, Star, Loader2, AlertCircle, Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { Mentor, MentorshipRequest } from '@/types/mentorship';
-import { fetchMentors, requestMentorship, fetchMyMentorships, cancelMentorshipRequest } from '@/services/mentorship';
+import { MentorshipRequest } from '@/types/mentorship';
+import { Mentor, fetchMentors, requestMentorship, fetchMyMentorships, cancelMentorshipRequest } from '@/services/mentorship';
 import { useToast } from '@/components/ui/use-toast';
+
+type TabValue = 'find' | 'my' | 'requests';
+type ToastVariant = 'default' | 'destructive' | 'success' | 'info' | 'warning';
 
 export default function StudentMentorshipPage() {
   const { data: session } = useSession();
@@ -51,7 +54,7 @@ export default function StudentMentorshipPage() {
         setMentors(mentorsData);
         
         // Filter accepted mentorships
-        const acceptedMentorships = mentorshipsData.filter((req: MentorshipRequest) => req.status === 'accepted');
+        const acceptedMentorships = mentorshipsData.filter((req: MentorshipRequest) => req.status === 'ACCEPTED');
         const mentorIds = new Set(acceptedMentorships.map((req: MentorshipRequest) => req.mentor.id));
         const myMentorsData = mentorsData.filter((mentor: Mentor) => mentorIds.has(mentor.id));
         
@@ -329,7 +332,7 @@ export default function StudentMentorshipPage() {
                             <MessageSquare className="h-4 w-4 mr-2" />
                             View Messages
                           </Button>
-                          {request.status === 'pending' && (
+                          {request.status === 'PENDING' && (
                             <Button 
                               variant="outline" 
                               size="sm" 

@@ -1,19 +1,23 @@
 import { authOptions } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { CredentialsConfig } from 'next-auth/providers/credentials';
 
 const prisma = new PrismaClient();
 
 describe('Authentication', () => {
   beforeAll(async () => {
-    // Create test user
+    // Create test user with password
     const hashedPassword = await bcrypt.hash('testpassword', 10);
     await prisma.user.create({
       data: {
         email: 'test@example.com',
         name: 'Test User',
-        hashedPassword,
-        role: 'STUDENT'
+        password: hashedPassword, // Use 'password' instead of 'hashedPassword'
+        role: 'STUDENT',
+        points: 0,
+        level: 1,
+        needsOnboarding: false
       }
     });
   });
@@ -31,10 +35,13 @@ describe('Authentication', () => {
   it('should authenticate valid credentials', async () => {
     const credentials = {
       email: 'test@example.com',
-      password: 'testpassword'
+      password: 'testpassword',
+      role: 'STUDENT'
     };
 
-    const result = await authOptions.providers[0].authorize!(credentials);
+    const credentialsProvider = authOptions.providers[0] as CredentialsConfig<any>;
+    const authorize = credentialsProvider.authorize as Function;
+    const result = await authorize(credentials);
 
     expect(result).toBeTruthy();
     if (result) {
@@ -46,10 +53,14 @@ describe('Authentication', () => {
   it('should reject invalid credentials', async () => {
     const credentials = {
       email: 'test@example.com',
-      password: 'wrongpassword'
+      password: 'wrongpassword',
+      role: 'STUDENT'
     };
 
-    await expect(authOptions.providers[0].authorize!(credentials))
+    const credentialsProvider = authOptions.providers[0] as CredentialsConfig<any>;
+    const authorize = credentialsProvider.authorize as Function;
+    
+    await expect(authorize(credentials))
       .rejects
       .toThrow('Invalid credentials');
   });
@@ -57,10 +68,14 @@ describe('Authentication', () => {
   it('should reject non-existent user', async () => {
     const credentials = {
       email: 'nonexistent@example.com',
-      password: 'testpassword'
+      password: 'testpassword',
+      role: 'STUDENT'
     };
 
-    await expect(authOptions.providers[0].authorize!(credentials))
+    const credentialsProvider = authOptions.providers[0] as CredentialsConfig<any>;
+    const authorize = credentialsProvider.authorize as Function;
+    
+    await expect(authorize(credentials))
       .rejects
       .toThrow('Invalid credentials');
   });

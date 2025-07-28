@@ -13,8 +13,46 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
 import { revalidatePath } from 'next/cache';
-import { kv } from '@vercel/kv';
 import { rateLimit } from '@/lib/rate-limit';
+
+// In-memory cache for development
+const memoryCache = new Map<string, { value: any; expiresAt: number }>();
+
+// Simple in-memory cache implementation
+const cache = {
+  async get<T = any>(key: string): Promise<T | null> {
+    const item = memoryCache.get(key);
+    if (!item) return null;
+    
+    if (item.expiresAt < Date.now()) {
+      memoryCache.delete(key);
+      return null;
+    }
+    
+    return item.value as T;
+  },
+  
+  async set(key: string, value: any, ttl: number = 60): Promise<void> {
+    memoryCache.set(key, {
+      value,
+      expiresAt: Date.now() + ttl * 1000
+    });
+  },
+  
+  async del(key: string): Promise<void> {
+    memoryCache.delete(key);
+  },
+  
+  async keys(prefix: string): Promise<string[]> {
+    const allKeys: string[] = [];
+    for (const key of memoryCache.keys()) {
+      if (key.startsWith(prefix)) {
+        allKeys.push(key);
+      }
+    }
+    return allKeys;
+  }
+};
 
 // Define the cache types with their default TTLs (in seconds)
 type CacheType = 
@@ -124,43 +162,37 @@ export function withCache(
     }
     
     try {
-      // Check for cached response
-      const cachedData = await kv.get(cacheKey);
-      
-      if (cachedData) {
-        // If we have cached data, return it directly
-        console.log(`[CACHE_HIT] ${cacheKey}`);
-        
-        // Record cache hit metrics
-        recordCacheMetrics(type, 'hit');
-        
-        // If stale-while-revalidate is enabled, trigger a background refresh
-        if (options?.staleWhileRevalidate) {
-          setTimeout(async () => {
-            try {
-              const freshResponse = await handler(req, context);
-              const freshData = await freshResponse.json();
-              await kv.set(cacheKey, freshData, { ex: ttl });
-              console.log(`[CACHE_REVALIDATED] ${cacheKey}`);
-            } catch (error) {
-              console.error(`[CACHE_REVALIDATION_ERROR] ${cacheKey}`, error);
-            }
-          }, 0);
+      // Check cache first if not bypassing
+      if (!bypassCache) {
+        const cached = await cache.get(cacheKey);
+        if (cached) {
+          recordCacheMetrics(type, 'hit');
+          console.log(`[CACHE_HIT] ${cacheKey}`);
+          
+          // If stale-while-revalidate is enabled, trigger a background refresh
+          if (options?.staleWhileRevalidate) {
+            // Don't await this, let it run in the background
+            handler(req, context).then(async (response) => {
+              if (response.status >= 200 && response.status < 300) {
+                const responseData = await response.json();
+                await cache.set(cacheKey, responseData, ttl);
+              }
+            }).catch(console.error);
+          }
+          
+          return NextResponse.json(cached);
         }
-        
-        return NextResponse.json(cachedData);
       }
       
-      // If not in cache, call the handler
-      console.log(`[CACHE_MISS] ${cacheKey}`);
       recordCacheMetrics(type, 'miss');
       
+      // If no cache hit, proceed with the handler
       const response = await handler(req, context);
       
       // Only cache successful responses
       if (response.status >= 200 && response.status < 300) {
         const responseData = await response.json();
-        await kv.set(cacheKey, responseData, { ex: ttl });
+        await cache.set(cacheKey, responseData, ttl);
         return NextResponse.json(responseData);
       }
       
@@ -185,12 +217,14 @@ export async function invalidateCache(type: CacheType, id?: string, path?: strin
     if (id) {
       // Invalidate a specific resource
       const cacheKey = generateCacheKey(type, id);
-      await kv.del(cacheKey);
+      await cache.del(cacheKey);
       console.log(`[CACHE_INVALIDATED] ${cacheKey}`);
       
       // Also try to delete any cached lists that might contain this resource
-      const listKey = generateCacheKey(type + 's'); // Pluralize (e.g., course -> courses)
-      await kv.del(listKey);
+      const listKey = generateCacheKey((type + 's') as CacheType); // Pluralize (e.g., course -> courses)
+      // Delete all keys with the list prefix
+      const keys = await cache.keys(`${listKey}:`);
+      await Promise.all(keys.map(key => cache.del(key)));
       
       // Revalidate specific path if provided
       if (path) {
@@ -198,10 +232,10 @@ export async function invalidateCache(type: CacheType, id?: string, path?: strin
       }
     } else {
       // Invalidate all caches of this type
-      const keys = await kv.keys(`skymirror:${type}*`);
+      const keys = await cache.keys(`skymirror:${type}*`);
       
       if (keys.length > 0) {
-        await kv.del(...keys);
+        await Promise.all(keys.map(key => cache.del(key)));
         console.log(`[CACHE_INVALIDATED_ALL] ${type} (${keys.length} keys)`);
       }
       
@@ -240,38 +274,32 @@ export async function warmCache<T>(
   ids: string[],
   fetcher: (id: string) => Promise<T>
 ): Promise<void> {
-  try {
-    console.log(`[CACHE_WARMING] ${type} (${ids.length} items)`);
+  if (ids.length === 0) return;
+  
+  console.log(`[CACHE_WARMING] Warming cache for ${type} with ${ids.length} items`);
+  
+  // Process in batches to avoid overwhelming the system
+  const BATCH_SIZE = 10;
+  for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+    const batch = ids.slice(i, i + BATCH_SIZE);
     
-    // Process in batches to avoid overwhelming the system
-    const batchSize = 5;
-    for (let i = 0; i < ids.length; i += batchSize) {
-      const batch = ids.slice(i, i + batchSize);
+    await Promise.all(batch.map(async (id) => {
+      const cacheKey = generateCacheKey(type, id);
       
-      await Promise.all(batch.map(async (id) => {
-        try {
-          const cacheKey = generateCacheKey(type, id);
-          const cachedData = await kv.get(cacheKey);
-          
-          if (!cachedData) {
-            const data = await fetcher(id);
-            await kv.set(cacheKey, data, { ex: DEFAULT_TTL[type] });
-            console.log(`[CACHE_WARMED] ${cacheKey}`);
-          }
-        } catch (error) {
-          console.error(`[CACHE_WARMING_ERROR] ${type}:${id}`, error);
+      try {
+        // Check if already in cache
+        const cachedData = await cache.get(cacheKey);
+        
+        if (!cachedData) {
+          // If not in cache, fetch and cache
+          const data = await fetcher(id);
+          await cache.set(cacheKey, data, DEFAULT_TTL[type]);
+          console.log(`[CACHE_WARMED] ${cacheKey}`);
         }
-      }));
-      
-      // Small delay between batches
-      if (batch.length === batchSize && i + batchSize < ids.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (error) {
+        console.error(`[CACHE_WARM_ERROR] Failed to warm cache for ${cacheKey}`, error);
       }
-    }
-    
-    console.log(`[CACHE_WARMING_COMPLETE] ${type}`);
-  } catch (error) {
-    console.error(`[CACHE_WARMING_ERROR] ${type}`, error);
+    }));
   }
 }
 
@@ -332,50 +360,43 @@ export async function withRateLimitAndCache(
     bypassCache?: boolean
   }
 ): Promise<Response> {
-  // Apply rate limiting first
-  const limiter = rateLimit({
-    limit: options.limit ?? 60,
-    timeframe: options.timeframe ?? 60, // 60 requests per 60 seconds by default
-  });
+  // Generate a unique cache key for this request
+  const cacheKey = generateCacheKey(
+    options.type,
+    undefined,
+    { url: req.nextUrl.pathname, ...Object.fromEntries(req.nextUrl.searchParams) }
+  );
   
-  const limiterResponse = await limiter.check(req);
-  
-  // If rate limit is exceeded, return the response from the limiter
-  if (limiterResponse) {
-    return limiterResponse;
-  }
-  
-  // Skip cache for non-GET requests
-  if (req.method !== 'GET' || options.bypassCache) {
-    return handler(req);
-  }
-  
-  // For GET requests, apply caching
-  const url = new URL(req.url);
-  const resourceId = url.pathname.split('/').pop();
-  const searchParams = Object.fromEntries(url.searchParams.entries());
-  
-  const cacheKey = generateCacheKey(options.type, resourceId, searchParams);
-  
-  try {
-    const cachedData = await kv.get(cacheKey);
-    
+  // Check cache first if not bypassing
+  if (!options.bypassCache) {
+    const cachedData = await cache.get(cacheKey);
     if (cachedData) {
-      recordCacheMetrics(options.type, 'hit');
+      console.log(`[CACHE_HIT] ${cacheKey}`);
       return NextResponse.json(cachedData);
     }
-    
-    recordCacheMetrics(options.type, 'miss');
-    const response = await handler(req);
-    
-    if (response.status >= 200 && response.status < 300) {
-      const data = await response.clone().json();
-      await kv.set(cacheKey, data, { ex: DEFAULT_TTL[options.type] });
-    }
-    
-    return response;
-  } catch (error) {
-    console.error(`[CACHE_ERROR] ${cacheKey}`, error);
-    return handler(req);
   }
+  
+  // Apply rate limiting
+  const rateLimiter = rateLimit({
+    limit: options.limit || 10,
+    timeframe: options.timeframe || 60,
+    identifier: `rate-limit:${options.type}`
+  });
+  
+  const rateLimitResponse = await rateLimiter.check(req);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+  
+  // If we got here, process the request
+  const response = await handler(req);
+  
+  // Cache successful responses
+  if (response.status >= 200 && response.status < 300) {
+    const data = await response.json();
+    await cache.set(cacheKey, data, DEFAULT_TTL[options.type]);
+    return NextResponse.json(data);
+  }
+  
+  return response;
 }

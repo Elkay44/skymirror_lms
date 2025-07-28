@@ -197,12 +197,13 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
     <PageLayout
       title="Students"
       description="Manage and communicate with your students"
-      headerActions={[
+      backHref={`/dashboard/instructor/courses/${params.courseId}`}
+      actions={
         <Button key="invite" onClick={() => setIsInviteDialogOpen(true)}>
           <UserPlus className="mr-2 h-4 w-4" />
           Invite Students
         </Button>
-      ]}
+      }
     >
       <div className="space-y-6">
         {/* Search and filter bar */}

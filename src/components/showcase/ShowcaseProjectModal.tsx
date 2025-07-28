@@ -127,7 +127,7 @@ export default function ShowcaseProjectModal({
   };
   
   const selectSubmission = (submission: any) => {
-    setProjectData(prev => ({
+    setProjectData((prev: any) => ({
       ...prev,
       title: submission.project.title,
       description: submission.project.description,

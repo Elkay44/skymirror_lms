@@ -8,7 +8,7 @@ import { Plus, ArrowLeft, MessageSquare, Clock, ThumbsUp, Eye, PinIcon } from "l
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast"; // Import from the correct path
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Define types for the component
@@ -85,7 +85,7 @@ export default function ModuleForumPostsPage() {
         setError(err instanceof Error ? err.message : "Failed to load forum data");
         toast({
           title: "Error",
-          description: "Failed to load forum data. Please try again."
+          description: err instanceof Error ? err.message : "Failed to load forum data"
         });
       } finally {
         setLoading(false);
@@ -95,7 +95,7 @@ export default function ModuleForumPostsPage() {
     if (courseId && moduleId && forumId) {
       fetchForum();
     }
-  }, [courseId, moduleId, forumId, toast]);
+  }, [courseId, moduleId, forumId]);
 
   if (loading) {
     return (

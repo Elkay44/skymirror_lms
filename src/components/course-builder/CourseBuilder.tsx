@@ -373,7 +373,7 @@ const ModuleCard = ({
                       <Plus className="h-3.5 w-3.5 mr-1.5" /> Add Content
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent alignOffset={5} className="w-48">
+                  <DropdownMenuContent className="w-48">
                     <DropdownMenuItem onClick={() => onAddContent(module.id, 'video')}>
                       <Video className="h-4 w-4 mr-2 text-blue-500" /> Video
                     </DropdownMenuItem>

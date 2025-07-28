@@ -10,11 +10,12 @@ export const metadata: Metadata = {
 };
 
 async function getShowcaseProjects() {
+  // Using a static data fetch with revalidation
   try {
-    // This would be replaced with an actual API call in production
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/showcase`, {
-      cache: 'no-store',
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/showcase`,
+      { next: { revalidate: 3600 } } // Revalidate every hour
+    );
     
     if (!response.ok) {
       throw new Error('Failed to fetch showcase projects');
@@ -29,11 +30,12 @@ async function getShowcaseProjects() {
 }
 
 async function getCategories() {
+  // Using a static data fetch with revalidation
   try {
-    // This would be replaced with an actual API call in production
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/showcase/categories`, {
-      cache: 'no-store',
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/showcase/categories`,
+      { next: { revalidate: 3600 } } // Revalidate every hour
+    );
     
     if (!response.ok) {
       throw new Error('Failed to fetch categories');
