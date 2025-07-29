@@ -11,7 +11,6 @@ import {
   Cell,
   XAxis, 
   YAxis, 
-  ZAxis,
   CartesianGrid, 
   Tooltip, 
   Legend, 
@@ -23,8 +22,6 @@ import {
   PolarRadiusAxis,
   AreaChart,
   Area,
-  ScatterChart,
-  Scatter,
   Brush,
   ReferenceLine,
   ComposedChart
@@ -38,9 +35,33 @@ import {
   CardFooter 
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format, subDays, isWithinInterval } from 'date-fns';
 import { 
   Calendar as CalendarIcon,
@@ -183,6 +204,35 @@ const generateHeatmapData = () => {
 // Mock data - Replace with actual data from your API
 const courseData = generateTimeSeriesData(30);
 const heatmapData = generateHeatmapData();
+
+// Top activities data
+const topActivities = [
+  {
+    name: 'Interactive Coding Sessions',
+    score: 85,
+    participants: 125
+  },
+  {
+    name: 'Group Projects',
+    score: 78,
+    participants: 95
+  },
+  {
+    name: 'Live Q&A Sessions',
+    score: 72,
+    participants: 112
+  },
+  {
+    name: 'Code Reviews',
+    score: 68,
+    participants: 88
+  },
+  {
+    name: 'Study Groups',
+    score: 65,
+    participants: 75
+  }
+];
 
 // Engagement data for the engagement tab
 const engagementData = Array.from({ length: 30 }, (_, i) => ({
@@ -441,6 +491,25 @@ export default function InstructorAnalyticsPage() {
     from: subDays(new Date(), 30),
     to: new Date(),
   }));
+  const [selectedCourse, setSelectedCourse] = useState<string>('all');
+  const [selectedMetric, setSelectedMetric] = useState<string>('students');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const dateRangePresets = [
+    { label: 'Last 7 days', days: 7 },
+    { label: 'Last 30 days', days: 30 },
+    { label: 'Last 90 days', days: 90 },
+    { label: 'Last year', days: 365 },
+  ];
+
+  const handleDateRangePreset = (days: number) => {
+    setDateRange({
+      from: subDays(new Date(), days),
+      to: new Date(),
+    });
+    refreshData();
+  };
 
   const filteredData = useMemo(() => {
     if (!dateRange?.from || !dateRange?.to) return courseData;
@@ -476,14 +545,49 @@ export default function InstructorAnalyticsPage() {
             <TabsTrigger value="engagement">Engagement</TabsTrigger>
           </TabsList>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2">
-              <Download className="h-4 w-4" />
-              <span>Export</span>
-            </Button>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Filter className="h-4 w-4" />
-              <span>Filter</span>
-            </Button>
+            <div className="flex gap-2">
+              <div className="flex items-center gap-2 p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground">
+                <Download className="h-4 w-4" />
+                <span>Export</span>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <div className="flex items-center gap-2 p-2 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground">
+                    <Filter className="h-4 w-4" />
+                    <span>Filter</span>
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleDateRangePreset(7)}>
+                    Last 7 days
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDateRangePreset(30)}>
+                    Last 30 days
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDateRangePreset(90)}>
+                    Last 90 days
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDateRangePreset(365)}>
+                    Last year
+                  </DropdownMenuItem>
+                  <Separator />
+                  <DropdownMenuItem>
+                    <Label htmlFor="course-filter">Course:</Label>
+                    <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select course" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Courses</SelectItem>
+                        <SelectItem value="web-dev">Web Development</SelectItem>
+                        <SelectItem value="data-science">Data Science</SelectItem>
+                        <SelectItem value="mobile-dev">Mobile Development</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
 
@@ -523,7 +627,16 @@ export default function InstructorAnalyticsPage() {
             <Card className="col-span-4">
               <CardHeader>
                 <CardTitle>Performance Overview</CardTitle>
-                <CardDescription>Student engagement and completion rates over time</CardDescription>
+                <CardDescription className="flex items-center gap-2">
+                  <span>Student engagement and completion rates over time</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={refreshData}
+                  >
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  </Button>
+                </CardDescription>
               </CardHeader>
               <CardContent className="pl-2">
                 <div className="h-[300px]">
@@ -579,7 +692,7 @@ export default function InstructorAnalyticsPage() {
                         name="Completion %" 
                         stroke="#82ca9d" 
                         strokeWidth={2}
-                        dot={false}
+                        dot={{ r: 4 }}
                       />
                       <Brush dataKey="date" height={30} stroke="#8884d8" />
                     </ComposedChart>
@@ -671,8 +784,22 @@ export default function InstructorAnalyticsPage() {
         <TabsContent value="students" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Student Progress</CardTitle>
-              <CardDescription>Track individual student performance and engagement</CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Student Progress</CardTitle>
+                  <CardDescription>Track individual student performance and engagement</CardDescription>
+                </div>
+                <Select value={selectedMetric} onValueChange={setSelectedMetric}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select metric" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="students">Students</SelectItem>
+                    <SelectItem value="projects">Projects</SelectItem>
+                    <SelectItem value="engagement">Engagement</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
@@ -688,16 +815,16 @@ export default function InstructorAnalyticsPage() {
                           {student.avgScore}% Avg
                         </Badge>
                       </div>
-                      <div className="mt-1">
-                        <div className="flex items-center justify-between text-sm text-muted-foreground mb-1">
+                      <div className="mt-2 space-y-2">
+                        <div className="flex items-center justify-between text-sm text-muted-foreground">
                           <span>Progress</span>
                           <span>{student.progress}%</span>
                         </div>
                         <Progress value={student.progress} className="h-2" />
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
-                        <span>Last active: {student.lastActive}</span>
-                        <span>{student.projectsCompleted} projects</span>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
+                          <span>Last active: {student.lastActive}</span>
+                          <span>{student.projectsCompleted} projects</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -760,33 +887,109 @@ export default function InstructorAnalyticsPage() {
         <TabsContent value="engagement" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Engagement Metrics</CardTitle>
-              <CardDescription>Track student engagement across different activities</CardDescription>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Engagement Metrics</CardTitle>
+                  <CardDescription>Track student engagement across different activities</CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const newStartDate = subDays(dateRange?.from || new Date(), 7);
+                        setDateRange({
+                          from: newStartDate,
+                          to: dateRange?.to || new Date()
+                        });
+                      }}
+                    >
+                      <Clock className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={refreshData}
+                    >
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[500px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart
-                    data={engagementData}
-                    margin={{
-                      top: 20,
-                      right: 30,
-                      left: 0,
-                      bottom: 5,
-                    }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="date" />
-                    <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
-                    <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
-                    <Tooltip />
-                    <Legend />
-                    <Bar yAxisId="left" dataKey="activeUsers" name="Active Users" fill="#8884d8" />
-                    <Line yAxisId="right" type="monotone" dataKey="avgTimeSpent" name="Avg. Time Spent (min)" stroke="#82ca9d" />
-                    <Line yAxisId="right" type="monotone" dataKey="completionRate" name="Completion Rate (%)" stroke="#ffc658" />
-                    <Brush dataKey="date" height={30} stroke="#8884d8" />
-                  </ComposedChart>
-                </ResponsiveContainer>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart
+                      data={engagementData}
+                      margin={{
+                        top: 20,
+                        right: 30,
+                        left: 0,
+                        bottom: 5,
+                      }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="date" />
+                      <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
+                      <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
+                      <Tooltip />
+                      <Legend />
+                      <Bar yAxisId="left" dataKey="activeUsers" name="Active Users" fill="#8884d8" />
+                      <Line yAxisId="right" type="monotone" dataKey="avgTimeSpent" name="Avg. Time Spent (min)" stroke="#82ca9d" />
+                      <Line yAxisId="right" type="monotone" dataKey="completionRate" name="Completion Rate (%)" stroke="#ffc658" />
+                      <Brush dataKey="date" height={30} stroke="#8884d8" />
+                      <ReferenceLine
+                        yAxisId="right"
+                        y={engagementData.map(d => d.completionRate).reduce((a, b) => a + b, 0) / engagementData.length}
+                        stroke="#ffc658"
+                        strokeDasharray="3 3"
+                        label={{ value: 'Avg. Rate', position: 'left', fill: '#ffc658' }}
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Top Engaged Activities</CardTitle>
+                      <CardDescription>Most popular activities by student engagement</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Activity</TableHead>
+                            <TableHead>Engagement Score</TableHead>
+                            <TableHead>Participants</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {topActivities.map((activity, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="font-medium">{activity.name}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-full">
+                                    <Progress value={activity.score} />
+                                  </div>
+                                  <span className="text-sm">{activity.score}%</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">
+                                  {activity.participants}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </CardContent>
           </Card>
