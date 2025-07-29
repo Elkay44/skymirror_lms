@@ -89,7 +89,7 @@ model User {
   walletAddress      String?       @unique
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
-  
+
   // Relations
   accounts           Account[]
   sessions           Session[]
@@ -113,7 +113,6 @@ model User {
   conversations      ConversationParticipant[]
   sentMessages       Message[]        @relation("MessageSender")
   receivedMessages   Message[]        @relation("MessageReceiver")
-  
   @@map("users")
 }
 
@@ -400,29 +399,46 @@ model RubricItem {
 }
 
 model StudentProfile {
-  id                     String   @id @default(cuid())
-  userId                 String   @unique
-  bio                    String?
-  learningGoals          String?
-  interests              String?
-  goals                  String?
-  preferredLearningStyle String?
-  user                   User     @relation(fields: [userId], references: [id])
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  sentRequests MentorshipRequest[] @relation("SentRequests")
+
+  @@map("student_profiles")
+}
+
+model MentorshipRequest {
+  id        String   @id @default(cuid())
+  message   String
+  status    String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, CANCELLED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  mentor    MentorProfile @relation("ReceivedRequests", fields: [mentorId], references: [id])
+  mentorId  String
+  student   StudentProfile @relation("SentRequests", fields: [studentId], references: [id])
+  studentId String
+
+  @@map("mentorship_requests")
 }
 
 model MentorProfile {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-  bio           String?
-  specialties   String?
-  experience   String?
-  availability String?
-  isActive     Boolean  @default(true)
-  user          User     @relation(fields: [userId], references: [id])
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio         String?
+  specialties String?  // Store as JSON string
+  rating      Float    @default(0)
+  reviewCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  receivedRequests MentorshipRequest[] @relation("ReceivedRequests")
+
+  @@map("mentor_profiles")
 }
 
 model Achievement {

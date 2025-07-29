@@ -76,7 +76,7 @@ export async function fetchMentors(): Promise<Mentor[]> {
 
 export async function requestMentorship(mentorId: string, message: string): Promise<MentorshipRequest> {
   try {
-    const response = await fetch(`${API_BASE}/mentorships`, {
+    const response = await fetch(`${API_BASE}/mentorship-requests`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -89,10 +89,23 @@ export async function requestMentorship(mentorId: string, message: string): Prom
     });
 
     if (!response.ok) {
-      throw new Error('Failed to request mentorship');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to request mentorship');
     }
 
-    return await response.json();
+    const data = await response.json();
+    return {
+      id: data.id,
+      mentor: {
+        id: data.mentor.id,
+        name: data.mentor.name,
+        image: data.mentor.image
+      },
+      status: data.status as 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED',
+      requestedDate: new Date(data.createdAt),
+      messages: [],
+      lastMessage: undefined
+    };
   } catch (error) {
     console.error('Error requesting mentorship:', error);
     throw error;
