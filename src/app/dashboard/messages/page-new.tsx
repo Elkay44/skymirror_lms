@@ -168,28 +168,51 @@ export default function MessagesPage() {
     if (!activeConversationId || !content.trim()) return;
     
     try {
-      const formData = new FormData();
-      formData.append('content', content);
-      
-      if (attachments) {
+      // Handle text message without attachments
+      if (!attachments || attachments.length === 0) {
+        const response = await fetch(`/api/messages/${activeConversationId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ content })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to send message: ${response.status}`);
+        }
+      }
+      // Handle message with attachments
+      else {
+        const formData = new FormData();
+        formData.append('content', content);
+        
         attachments.forEach((file, index) => {
           formData.append(`attachments[${index}]`, file);
         });
+
+        const response = await fetch(`/api/messages/${activeConversationId}`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to send message: ${response.status}`);
+        }
       }
-      
-      const response = await fetch(`/api/messages/${activeConversationId}`, {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to send message: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      // Add the new message to the messages list
-      setMessages(prevMessages => [...prevMessages, data.message]);
+
+      // Update UI
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        content,
+        senderId: currentUserId,
+        senderName: session?.user?.name || '',
+        senderRole: session?.user?.role as 'STUDENT' | 'INSTRUCTOR' | 'MENTOR' || 'STUDENT',
+        timestamp: new Date(),
+        isRead: true
+      };
+
+      setMessages(prevMessages => [...prevMessages, newMessage]);
       
       // Update conversation with new last message
       setConversations(prevConversations => 
@@ -209,7 +232,7 @@ export default function MessagesPage() {
       );
     } catch (err) {
       console.error('Error sending message:', err);
-      alert('Failed to send message. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to send message');
     }
   };
   
