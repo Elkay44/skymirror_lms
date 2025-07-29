@@ -38,105 +38,120 @@ interface ApiMentor {
 
 export async function fetchMentors(): Promise<Mentor[]> {
   try {
-    const response = await fetch(`${API_BASE}/mentors`);
+    console.log('Fetching mentors from API...');
+    const response = await fetch('/api/mentors', {
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    console.log('API Response:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    });
+
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Failed to fetch mentors');
+      const errorData = await response.json().catch(() => ({}));
+      console.error('API Error Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData
+      });
+      
+      // Try to get a more specific error message from the response
+      let errorMessage = 'Failed to fetch mentors';
+      if (errorData.error) {
+        errorMessage = errorData.error;
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+      
+      throw new Error(errorMessage);
     }
-    const data: ApiMentor[] = await response.json();
+
+    const data = await response.json();
+    console.log('Received mentors data:', data);
     
     // Transform API response to match our frontend Mentor type
-    return data.map(mentor => ({
-      id: mentor.id,
-      name: mentor.name,
-      image: mentor.image,
-      role: mentor.title,
-      bio: mentor.bio,
-      specialties: mentor.specialties,
-      rating: mentor.rating,
-      reviewCount: mentor.reviews,
-      languages: ['English'], // Default value, adjust as needed
-      availability: {
-        days: ['Monday', 'Wednesday', 'Friday'], // Default value
-        timeRange: '9:00 AM - 5:00 PM' // Default value
-      },
-      experience: '5+ years', // Default value
-      sessionRate: 50, // Default value
-      education: 'MSc in Computer Science', // Default value
-      isAvailable: true, // Default value
-      sessionTypes: ['video', 'audio'], // Default value
-      responseTime: 'Within 24 hours' // Default value
-    }));
-  } catch (error) {
-    console.error('Error in fetchMentors:', error);
-    throw error;
+    const transformedData = Array.isArray(data) 
+      ? data.map(mentor => ({
+          id: mentor.id,
+          name: mentor.name,
+          image: mentor.user?.image || '',
+          role: mentor.role,
+          bio: mentor.bio || '',
+          specialties: [], // The API doesn't provide specialties
+          rating: mentor.rating,
+          reviewCount: mentor.reviewCount,
+          languages: [],
+          availability: {
+            days: [],
+            timeRange: ''
+          },
+          experience: '',
+          education: '',
+          sessionRate: 0,
+          responseTime: '',
+          isAvailable: mentor.isAvailable,
+          sessionTypes: []
+        }))
+      : [];
+    
+    console.log('Transformed mentors data:', transformedData);
+    return transformedData;
+  } catch (error: unknown) {
+    console.error('Error in fetchMentors:', {
+      error,
+      ...(error instanceof Error ? {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      } : {})
+    });
+    
+    // Extract error message if it's a network error
+    let errorMessage = 'Failed to fetch mentors';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+    
+    throw new Error(errorMessage);
   }
 }
 
-export async function requestMentorship(mentorId: string, message: string): Promise<MentorshipRequest> {
+export async function requestMentorship(mentorId: string, message: string, userId: string): Promise<MentorshipRequest> {
   try {
-    if (!mentorId) {
-      throw new Error('Mentor ID is required');
-    }
-
-    const requestBody = {
-      mentorId,
-      notes: message, // Backend expects 'notes' instead of 'message'
-    };
-
-    console.log('Sending mentorship request with data:', requestBody);
-    
-    const response = await fetch(`${API_BASE}/mentorships`, {
+    const response = await fetch('/api/mentorships', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include', // Ensure cookies are sent with the request
-      body: JSON.stringify(requestBody),
+      credentials: 'include', // Ensure session cookie is sent
+      body: JSON.stringify({
+        mentorId,
+        title: 'Mentorship Request',
+        description: 'Student mentorship request',
+        scheduledAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
+        duration: 60, // 60 minutes
+        notes: message,
+        menteeId: userId
+      }),
     });
-    
-    const responseData = await response.json().catch(() => ({}));
-    
+
     if (!response.ok) {
-      console.error('Mentorship request failed:', {
-        status: response.status,
-        statusText: response.statusText,
-        response: responseData,
-      });
-      
-      throw new Error(
-        responseData.message || 
-        responseData.error || 
-        `Failed to send mentorship request: ${response.status} ${response.statusText}`
-      );
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to request mentorship');
     }
-    
-    console.log('Mentorship request successful:', responseData);
-    
-    // Transform API response to match our frontend MentorshipRequest type
-    return {
-      id: responseData.id,
-      mentor: {
-        id: responseData.mentor?.id || mentorId,
-        name: responseData.mentor?.name || 'Mentor',
-        image: responseData.mentor?.image
-      },
-      status: responseData.status || 'pending',
-      requestedDate: new Date(responseData.requestedDate || new Date()),
-      messages: responseData.messages || [],
-      scheduledSessions: responseData.scheduledSessions || []
-    };
+
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error('Error in requestMentorship:', {
-      error,
-      mentorId,
-      message: message.length > 50 ? message.substring(0, 50) + '...' : message,
-    });
-    
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('An unexpected error occurred while sending the mentorship request');
+    console.error('Error requesting mentorship:', error);
+    throw error;
   }
 }
 

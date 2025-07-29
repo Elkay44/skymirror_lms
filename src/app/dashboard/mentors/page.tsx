@@ -11,6 +11,9 @@ import { Search, MessageSquare, Clock, Check, X, User, Star } from "lucide-react
 import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import { Mentor, fetchMentors, requestMentorship, fetchMyMentorships, cancelMentorshipRequest } from "@/services/mentorship";
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { toast } from 'sonner';
 
 interface MentorshipRequest {
   id: string;
@@ -184,7 +187,17 @@ export default function MentorsPage() {
 
   const handleRequestMentorship = async (mentor: Mentor) => {
     try {
-      await requestMentorship(mentor.id, `I would like to request mentorship for ${mentor.role}`);
+      const session = await getServerSession(authOptions);
+      if (!session?.user?.id) {
+        toast({
+          title: 'Error',
+          description: 'You must be logged in to request mentorship',
+          type: 'destructive'
+        });
+        return;
+      }
+
+      await requestMentorship(mentor.id, `I would like to request mentorship for ${mentor.role}`, session.user.id);
       
       toast({
         title: 'Mentorship Requested',

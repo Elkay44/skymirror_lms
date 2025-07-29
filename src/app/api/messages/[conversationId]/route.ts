@@ -7,19 +7,27 @@ import prisma from '@/lib/prisma';
 // GET endpoint to fetch messages for a specific conversation
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ conversationId: string }> }
+  { params }: { params: { conversationId: string } },
+  context: { params: { conversationId: string } }
 ) {
   try {
-    // Get user session
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    const { searchParams } = new URL(req.url);
+    const conversationId = params.conversationId;
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const cursor = searchParams.get('cursor');
+
+    if (!conversationId) {
       return NextResponse.json(
-        { error: 'Unauthorized' }, 
-        { status: 401 }
+        { error: 'Missing conversationId' },
+        { status: 400 }
       );
     }
 
-    const { conversationId } = await params;
+    // Get user session
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     // Get user ID
     const user = await prisma.user.findUnique({
@@ -28,45 +36,25 @@ export async function GET(
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' }, 
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check if user is a participant in this conversation
-    const conversation = await prisma.conversation.findUnique({
-      where: { 
-        id: conversationId,
-        participants: {
-          some: { id: user.id },
-        },
-      },
-      include: {
-        participants: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-          },
-        },
+    // Check if user is part of this conversation
+    const isParticipant = await prisma.conversationParticipant.findFirst({
+      where: {
+        userId: user.id,
+        conversationId,
       },
     });
 
-    if (!conversation) {
+    if (!isParticipant) {
       return NextResponse.json(
-        { error: 'Conversation not found or access denied' }, 
-        { status: 404 }
+        { error: 'User not authorized to view this conversation' },
+        { status: 403 }
       );
     }
 
-    // Get pagination parameters
-    const { searchParams } = new URL(req.url);
-    const cursor = searchParams.get('cursor');
-    const limit = parseInt(searchParams.get('limit') || '20');
-
-    // Fetch messages for this conversation
+    // Get messages
     const messages = await prisma.message.findMany({
       where: { conversationId },
       include: {
@@ -74,25 +62,13 @@ export async function GET(
           select: {
             id: true,
             name: true,
-            email: true,
             image: true,
           },
         },
-        readBy: {
-          select: {
-            id: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
       },
-      orderBy: { createdAt: 'desc' },
-      take: limit + 1, // Take one extra to determine if there are more
-      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}), // Skip the cursor itself
+      orderBy: { createdAt: 'asc' },
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     });
 
     // Determine if there are more messages to load
@@ -122,6 +98,31 @@ export async function GET(
         },
       },
     });
+
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                role: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!conversation) {
+      return NextResponse.json(
+        { error: 'Conversation not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       messages: messages.reverse(), // Return in chronological order

@@ -89,9 +89,16 @@ export default function StudentMentorshipPage() {
         throw new Error('Invalid mentor ID');
       }
       
+      // Get user ID from session
+      const userId = session?.user?.id;
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+      
       const newRequest = await requestMentorship(
         mentorId,
-        requestMessage || 'I would like to request mentorship with you.'
+        requestMessage || 'I would like to request mentorship with you.',
+        userId
       );
       
       setRequests(prev => [...prev, newRequest]);

@@ -38,7 +38,7 @@ interface CourseStudent {
   };
 }
 
-export async function GET(req: NextRequest, { params }: { params: { courseId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { courseId: string; id: string } }, context: { params: { courseId: string; id: string } }) {
   try {
     const session = await getServerSession(authOptions);
     
