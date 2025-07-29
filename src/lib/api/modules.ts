@@ -22,17 +22,26 @@ async function safeParseJSON(response: Response): Promise<any> {
 
 export async function getModules(courseId: string): Promise<Module[]> {
   if (!courseId) {
-    const error = new Error('No course ID provided');
+    const error = new Error('Course ID is required');
     error.name = 'InvalidCourseIdError';
+    console.error('[getModules] No course ID provided');
     throw error;
   }
-
+  
+  // Validate courseId is not empty
+  if (typeof courseId !== 'string' || courseId.trim() === '') {
+    const error = new Error('Course ID must be a non-empty string');
+    error.name = 'InvalidCourseIdError';
+    console.error(`[getModules] Invalid course ID: ${courseId}`);
+    throw error;
+  }
+  
   // Add timestamp to prevent browser caching
   const timestamp = new Date().getTime();
   const url = `${API_BASE_URL}/${courseId}/modules?t=${timestamp}`;
   
   console.log(`[getModules] Fetching modules from: ${url}`);
-  console.log(`[getModules] Course ID: ${courseId}`);
+  console.log(`[getModules] Course ID: ${courseId} (type: ${typeof courseId})`);
   
   try {
     const response = await fetch(url, {

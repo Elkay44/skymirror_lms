@@ -60,7 +60,10 @@ export default function QuizView({ quizId, onComplete }: QuizViewProps) {
 
   const fetchQuiz = async () => {
     try {
-      const response = await axios.get(`/api/quizzes/${quizId}`);
+      interface QuizResponse {
+        quiz: Quiz;
+      }
+      const response = await axios.get<QuizResponse>(`/api/quizzes/${quizId}`);
       setQuiz(response.data.quiz);
     } catch (error) {
       console.error('Error fetching quiz:', error);
@@ -79,9 +82,16 @@ export default function QuizView({ quizId, onComplete }: QuizViewProps) {
 
     setIsSubmitting(true);
     try {
-      const response = await axios.post(`/api/quizzes/${quizId}/submit`, {
-        answers,
-      });
+      interface SubmitResponse {
+        score: number;
+        [key: string]: any; // For any additional properties
+      }
+      
+      const response = await axios.post<SubmitResponse>(
+        `/api/quizzes/${quizId}/submit`,
+        { answers }
+      );
+      
       setScore(response.data.score);
       setShowResults(true);
       onComplete(response.data.score);

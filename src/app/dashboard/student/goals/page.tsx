@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { useToast } from "@/components/ui/use-toast";
 import { Calendar as CalendarIcon, Plus, Trash2, Edit, X } from 'lucide-react';
 import {
   Popover,
@@ -37,6 +38,7 @@ interface LearningGoal {
 }
 
 export default function LearningGoalsPage() {
+  const { toast } = useToast();
   const { data: session } = useSession();
   const router = useRouter();
   const [goals, setGoals] = useState<LearningGoal[]>([]);
@@ -47,7 +49,7 @@ export default function LearningGoalsPage() {
   const [description, setDescription] = useState('');
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
   const [targetCompletion, setTargetCompletion] = useState<number>(0);
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState<number>(0);
 
   useEffect(() => {
     if (session) {
@@ -86,17 +88,32 @@ export default function LearningGoalsPage() {
         : '/api/learning-goals';
       
       const method = editingGoal ? 'PATCH' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(goalData),
-      });
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(goalData),
+        });
 
-      if (response.ok) {
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(error.error || 'Failed to save goal');
+        }
+
         resetForm();
         fetchGoals();
         setIsDialogOpen(false);
+        toast({
+          title: editingGoal ? 'Goal Updated' : 'Goal Added',
+          description: 'Your goal has been successfully saved.',
+        });
+      } catch (error) {
+        console.error('Error saving goal:', error);
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to save goal',
+          type: 'destructive'
+        });
       }
     } catch (error) {
       console.error('Error saving goal:', error);
@@ -112,9 +129,18 @@ export default function LearningGoalsPage() {
 
         if (response.ok) {
           fetchGoals();
+          toast({
+            title: 'Goal Deleted',
+            description: 'Your goal has been successfully deleted.',
+          });
         }
       } catch (error) {
         console.error('Error deleting goal:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to delete goal',
+          type: 'destructive'
+        });
       }
     }
   };

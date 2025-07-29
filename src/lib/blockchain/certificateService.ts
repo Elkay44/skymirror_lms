@@ -120,9 +120,16 @@ export async function createCertificateMetadata({
 /**
  * Uploads certificate metadata to IPFS via Pinata
  */
+interface PinataResponse {
+  IpfsHash: string;
+  PinSize: number;
+  Timestamp: string;
+  isDuplicate?: boolean;
+}
+
 export async function uploadToIPFS(metadata: any) {
   try {
-    const response = await axios.post(
+    const response = await axios.post<PinataResponse>(
       'https://api.pinata.cloud/pinning/pinJSONToIPFS',
       metadata,
       {
@@ -132,6 +139,10 @@ export async function uploadToIPFS(metadata: any) {
         },
       }
     );
+
+    if (!response.data.IpfsHash) {
+      throw new Error('No IPFS hash returned from Pinata');
+    }
 
     return `ipfs://${response.data.IpfsHash}`;
   } catch (error) {

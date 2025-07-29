@@ -6,7 +6,8 @@ const courseBaseSchema = {
   shortDescription: z.string().min(10, 'Short description must be at least 10 characters'),
   description: z.string().optional(),
   category: z.string().min(1, 'Category is required'),
-  level: z.enum(['beginner', 'intermediate', 'advanced']),
+  level: z.enum(['beginner', 'intermediate', 'advanced'])
+    .or(z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']).transform(val => val.toLowerCase())),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
   language: z.string().default('en'),
   imageUrl: z.string().url('Invalid URL').or(z.literal('')).optional(),
@@ -37,7 +38,7 @@ export type CourseStatus = z.infer<typeof CourseStatus>;
 // Schema for creating a new course
 export const courseFormSchema = z.object({
   ...courseBaseSchema,
-  imagePreview: z.string().min(1, 'Course image is required'),
+  imagePreview: z.string().optional(),
   status: CourseStatus.optional().default('DRAFT'),
   requiresApproval: z.boolean().optional(),
 });

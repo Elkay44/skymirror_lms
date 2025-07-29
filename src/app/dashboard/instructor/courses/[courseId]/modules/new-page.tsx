@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Plus, Loader2, BookOpen } from 'lucide-react';
 import { ErrorBoundary } from '@/components/error-boundary';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { PageLayout } from '../../_components/PageLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,16 +27,36 @@ const CourseModulesContent: React.FC<CourseModulesContentProps> = () => {
   const [error, setError] = useState<Error | null>(null);
   
   // Get courseId from params with proper type checking
-  const courseId = useMemo(() => params?.courseId, [params]);
-  
-  // Log the course ID for debugging
-  useEffect(() => {
-    console.log('[CourseModulesContent] Course ID from params:', courseId);
-    if (!courseId) {
-      const err = new Error('No course ID provided');
+  const courseId = useMemo(() => {
+    const id = params?.courseId;
+    console.log('[CourseModulesContent] Course ID from params:', id, 'Type:', typeof id);
+    
+    if (!id) {
+      const err = new Error('No course ID provided in the URL');
+      err.name = 'InvalidCourseIdError';
       console.error('[CourseModulesContent]', err.message);
       setError(err);
+      return '';
     }
+    
+    // Ensure courseId is a string and not an array
+    const courseIdStr = Array.isArray(id) ? id[0] : id;
+    
+    // Validate courseId is not empty
+    if (!courseIdStr || typeof courseIdStr !== 'string' || courseIdStr.trim() === '') {
+      const err = new Error('Invalid course ID format');
+      err.name = 'InvalidCourseIdError';
+      console.error('[CourseModulesContent] Empty or invalid course ID:', id);
+      setError(err);
+      return '';
+    }
+    
+    return courseIdStr;
+  }, [params]);
+  
+  // Log when courseId changes
+  useEffect(() => {
+    console.log('[CourseModulesContent] Course ID updated:', courseId);
   }, [courseId]);
 
   // Initialize sensors for drag and drop
@@ -53,25 +73,37 @@ const CourseModulesContent: React.FC<CourseModulesContentProps> = () => {
 
   // Fetch modules
   const fetchModules = useCallback(async () => {
-    if (!courseId) {
-      const err = new Error('No course ID provided');
-      err.name = 'InvalidCourseIdError';
-      throw err;
-    }
-    
     console.log('[CourseModulesContent] Fetching modules for course:', courseId);
+    
+    // Check if courseId is valid
+    if (!courseId || typeof courseId !== 'string' || courseId.trim() === '') {
+      const err = new Error('Invalid course ID');
+      err.name = 'InvalidCourseIdError';
+      console.error('[CourseModulesContent]', err.message);
+      setError(err);
+      toast.error('Invalid course ID. Please check the URL and try again.');
+      return [];
+    }
     
     try {
       setIsLoading(true);
       setError(null);
       
+      console.log(`[CourseModulesContent] Calling getModules with courseId: ${courseId} (type: ${typeof courseId})`);
       const data = await getModules(courseId);
       console.log('[CourseModulesContent] Modules data received:', data);
       
       if (!Array.isArray(data)) {
         const err = new Error('Invalid response format: expected array of modules');
         console.error('[CourseModulesContent]', err.message, 'Received:', data);
-        throw err;
+        toast.error('Failed to load modules: Invalid response from server');
+        return [];
+      }
+      
+      if (data.length === 0) {
+        console.log('[CourseModulesContent] No modules found for this course');
+        setModules([]);
+        return [];
       }
       
       // Sort modules by order
@@ -105,10 +137,39 @@ const CourseModulesContent: React.FC<CourseModulesContentProps> = () => {
     }
   }, [courseId]);
   
-  // Initial data fetch
+  // Fetch modules on mount
   useEffect(() => {
-    fetchModules().catch(console.error);
-  }, [fetchModules]);
+    if (!courseId) {
+      console.log('[CourseModulesContent] No courseId available, skipping fetch');
+      return;
+    }
+    
+    console.log('[CourseModulesContent] Initial fetch for course:', courseId);
+    
+    const loadModules = async () => {
+      try {
+        await fetchModules();
+      } catch (error) {
+        console.error('[CourseModulesContent] Error in loadModules:', error);
+        
+        if (error instanceof Error) {
+          if (error.name === 'CourseNotFoundError') {
+            toast.error('Course not found. Please check the URL and try again.');
+            router.push('/dashboard/instructor/courses');
+          } else if (error.name === 'InvalidCourseIdError') {
+            toast.error('Invalid course ID. Please check the URL and try again.');
+            router.push('/dashboard/instructor/courses');
+          } else {
+            toast.error(`Failed to load modules: ${error.message}`);
+          }
+        } else {
+          toast.error('An unknown error occurred while loading modules');
+        }
+      }
+    };
+    
+    loadModules();
+  }, [courseId, fetchModules, router]);
 
   // Handle module creation
   const handleCreateModule = useCallback(async (data: CreateModuleRequest) => {

@@ -1,20 +1,47 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
 
-// Initialize S3 client
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION || 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-  },
-});
+// Define response types
+interface HetznerUploadResponse {
+  url: string;
+  path: string;
+}
+
+interface HetznerSignedUrlResponse {
+  signedUrl: string;
+  path: string;
+}
+
+// Hetzner server configuration
+const HETZNER_API_URL = process.env.HETZNER_API_URL || 'https://api.hetzner.example.com';
+const HETZNER_API_KEY = process.env.HETZNER_API_KEY;
+
+// Define response interfaces
+interface UploadResponse {
+  url: string;
+  path: string;
+}
+
+interface SignedUrlResponse {
+  signedUrl: string;
+  path: string;
+}
+
+interface HetznerUploadResponse {
+  url: string;
+  path: string;
+  [key: string]: unknown;
+}
+
+interface HetznerSignedUrlResponse {
+  signedUrl: string;
+  path: string;
+  [key: string]: unknown;
+}
 
 type UploadResult = {
   url: string;
-  key: string;
-  bucket: string;
+  path: string;
 };
 
 export async function uploadImage(
@@ -28,32 +55,33 @@ export async function uploadImage(
       throw new Error('Invalid base64 image data');
     }
 
-    // Convert base64 to buffer
-    const buffer = Buffer.from(base64Image, 'base64');
-    
     // Generate a unique filename
     const fileExtension = base64Data.split(';')[0].split('/')[1];
-    const key = `${path}.${fileExtension}`;
-    const bucket = process.env.AWS_S3_BUCKET_NAME || 'skymirror-academy';
+    const filename = `${uuidv4()}.${fileExtension}`;
+    const uploadPath = `${path}/${filename}`;
 
-    // Upload to S3
-    const command = new PutObjectCommand({
-      Bucket: bucket,
-      Key: key,
-      Body: buffer,
-      ContentType: `image/${fileExtension}`,
-      ACL: 'public-read',
-    });
+    // Upload to Hetzner server
+    const response = await axios.post<HetznerUploadResponse>(
+      `${HETZNER_API_URL}/upload`,
+      {
+        file: base64Image,
+        path: uploadPath,
+        contentType: `image/${fileExtension}`
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${HETZNER_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
-    await s3Client.send(command);
-
-    // Generate the public URL
-    const url = `https://${bucket}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${key}`;
+    // Get the URL from the response
+    const url = response.data.url;
 
     return {
       url,
-      key,
-      bucket,
+      path: uploadPath,
     };
   } catch (error) {
     console.error('Error uploading image:', error);
@@ -61,17 +89,34 @@ export async function uploadImage(
   }
 }
 
-export async function getSignedUploadUrl(key: string, contentType: string) {
+export async function getSignedUploadUrl(path: string, contentType: string) {
   try {
-    const command = new PutObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKET_NAME || 'skymirror-academy',
-      Key: key,
-      ContentType: contentType,
-      ACL: 'public-read',
-    });
+    // Generate a unique filename
+    const fileExtension = contentType.split('/')[1];
+    const filename = `${uuidv4()}.${fileExtension}`;
+    const uploadPath = `${path}/${filename}`;
 
-    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-    return signedUrl;
+    // Get signed URL from Hetzner server
+    const response = await axios.post<HetznerSignedUrlResponse>(
+      `${HETZNER_API_URL}/signed-url`,
+      {
+        path: uploadPath,
+        contentType: contentType,
+        expires: Math.floor(Date.now() / 1000) + 3600
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${HETZNER_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (!response.data.signedUrl) {
+      throw new Error('No signed URL returned from server');
+    }
+
+    return response.data.signedUrl;
   } catch (error) {
     console.error('Error generating signed URL:', error);
     throw new Error('Failed to generate signed URL');

@@ -37,28 +37,37 @@ export function CourseCard({
   const { data: session } = useSession()
   const router = useRouter()
   const [isEnrolling, setIsEnrolling] = useState(false)
-  const [isFavorite, setIsFavorite] = useState(course.isFavorite || false)
+  const [isFavorite, setIsFavorite] = useState(false)
 
   const {
     id,
     title,
-    shortDescription,
     description,
+    shortDescription,
     imageUrl,
     category,
     level,
     price,
-    isFree,
-    hasDiscount,
     discountedPrice,
+    duration,
+    isEnrolled,
+    isNew,
+    isBestSeller,
+    progress,
+    modules,
+    projects,
+    grades,
+    promoVideo,
     instructor,
-    rating = 0,
-    reviewCount = 0,
-    studentCount = 0,
-    lessonCount = 0,
-    duration = 0,
-    progress = 0,
-    isEnrolled = false,
+    rating,
+    reviewCount,
+    studentCount,
+    lessonCount,
+    requirements,
+    learningOutcomes,
+    targetAudience,
+    isPublished,
+    isPrivate
   } = course
 
   const handleEnroll = async () => {
@@ -87,13 +96,21 @@ export function CourseCard({
     }
   }
 
-  const handleToggleFavorite = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const newFavoriteState = !isFavorite
-    setIsFavorite(newFavoriteState)
-    if (onToggleFavorite) {
-      onToggleFavorite(id, newFavoriteState)
+  const handleToggleFavorite = async () => {
+    if (!session?.user?.id) {
+      toast.error('Please sign in to add courses to favorites')
+      return
+    }
+
+    try {
+      const newIsFavorite = !isFavorite
+      setIsFavorite(newIsFavorite)
+      if (onToggleFavorite) {
+        await onToggleFavorite(id, newIsFavorite)
+      }
+    } catch (error) {
+      toast.error('Failed to update favorite status')
+      setIsFavorite(isFavorite) // Revert the state
     }
   }
 
@@ -177,7 +194,7 @@ export function CourseCard({
                   {renderRating()}
                 </div>
                 <div className="text-sm font-medium">
-                  {isFree ? 'Free' : formatPrice(price)}
+                  {price === 0 ? 'Free' : formatPrice(price)}
                 </div>
               </div>
             </div>
@@ -268,13 +285,13 @@ export function CourseCard({
             </div>
             
             <div className="text-right">
-              {hasDiscount && (
+              {discountedPrice && price > discountedPrice && (
                 <span className="text-sm text-gray-500 line-through mr-2">
                   {formatPrice(price)}
                 </span>
               )}
               <div className="text-lg font-bold">
-                {isFree ? 'Free' : formatPrice(hasDiscount ? discountedPrice : price)}
+                {price === 0 ? 'Free' : formatPrice(discountedPrice || price)}
               </div>
             </div>
           </div>
@@ -379,13 +396,13 @@ export function CourseCard({
                 </span>
               </div>
               <div className="text-right">
-                {hasDiscount && (
+                {discountedPrice && price > discountedPrice && (
                   <span className="text-xs text-gray-500 line-through mr-1">
                     {formatPrice(price)}
                   </span>
                 )}
                 <span className="font-bold">
-                  {isFree ? 'Free' : formatPrice(hasDiscount ? discountedPrice : price)}
+                  {price === 0 ? 'Free' : formatPrice(discountedPrice || price)}
                 </span>
               </div>
             </div>

@@ -50,7 +50,7 @@ export async function POST(request: Request) {
         deadline: deadline ? new Date(deadline) : null,
         targetCompletion: targetCompletion || null,
         progress: progress || 0,
-        userId: Number(session.user.id),
+        userId: session.user.id.toString(),
       },
     });
 

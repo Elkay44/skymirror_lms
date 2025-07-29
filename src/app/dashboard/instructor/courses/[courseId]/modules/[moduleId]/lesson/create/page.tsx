@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
+
+// Import error handling utilities
+import { isAxiosError, getErrorMessage } from '@/lib/utils/error-handling';
 import { ArrowLeft, Save, FileText, Video, Clock, Info } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -95,23 +98,10 @@ export default function CreateLessonPage() {
       // Redirect back to module page
       router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}`);
       router.refresh();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating lesson:', error);
-      
-      // Extract the specific error message if available
-      let errorMessage = 'Failed to create lesson';
-      if (axios.isAxiosError(error) && error.response) {
-        // Get the error details from the response
-        const responseData = error.response.data;
-        if (responseData.error) {
-          errorMessage += `: ${responseData.error}`;
-        }
-        if (responseData.message) {
-          errorMessage += `: ${responseData.message}`;
-        }
-        
-        console.error('Server response:', responseData);
-      }
+      const errorMessage = `Failed to create lesson: ${getErrorMessage(error)}`;
+      console.error('Error details:', { error });
       
       toast.error(errorMessage);
     } finally {

@@ -37,17 +37,30 @@ export async function GET(
 
     // Check if the course exists and if the user has access
     console.log(`🔎 Looking up course: ${courseId}...`);
-    const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        instructor: {
-          select: { id: true }
+    let course;
+    try {
+      // Try to find by ID first, then by publicId
+      course = await prisma.course.findFirst({
+        where: {
+          OR: [
+            { id: courseId },
+            { publicId: courseId }
+          ]
+        },
+        include: {
+          instructor: {
+            select: { id: true }
+          }
         }
-      }
-    }).catch(err => {
+      });
+      console.log(`✅ Course lookup result:`, course ? 'Found' : 'Not found');
+    } catch (err) {
       console.error(`❌ Database error when finding course:`, err);
-      return null;
-    });
+      return NextResponse.json(
+        { error: 'Database error when finding course', details: err instanceof Error ? err.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
 
     if (!course) {
       console.log(`❌ Course not found: ${courseId}`);
@@ -163,76 +176,205 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ courseId: string }> }
 ) {
-  const { courseId } = await params;
+  console.log('🔵 POST /api/courses/[courseId]/modules - Creating new module');
+  
   try {
+    const { courseId } = await params;
+    console.log(`📋 Processing request for course: ${courseId}`);
+    
+    // Authentication
+    console.log('🔐 Checking authentication...');
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.log('❌ Unauthorized: No user session');
+      return NextResponse.json({ 
+        error: 'Unauthorized',
+        message: 'You must be logged in to create a module' 
+      }, { status: 401 });
+    }
+    console.log(`✅ User authenticated: ${userId}`);
+
+    // Validate request body
+    let requestBody;
+    try {
+      requestBody = await request.json();
+      console.log('📦 Request body:', requestBody);
+    } catch (error) {
+      console.error('❌ Error parsing request body:', error);
+      return NextResponse.json(
+        { error: 'Invalid request body', details: 'Failed to parse JSON' },
+        { status: 400 }
+      );
     }
 
-    const course = await prisma.course.findFirst({
-      where: { 
-        id: courseId,
-        instructor: {
-          id: Number(userId)
+    const { title, description } = requestBody;
+    
+    if (!title) {
+      console.log('❌ Validation error: Title is required');
+      return NextResponse.json(
+        { 
+          error: 'Validation error', 
+          message: 'Title is required',
+          details: { received: { title, description } }
+        }, 
+        { status: 400 }
+      );
+    }
+
+    console.log(`🔍 Checking course and instructor permissions for course: ${courseId}`);
+    let course;
+    try {
+      course = await prisma.course.findFirst({
+        where: { 
+          OR: [
+            { 
+              id: courseId,
+              instructor: {
+                id: Number(userId)
+              }
+            },
+            { 
+              publicId: courseId,
+              instructor: {
+                id: Number(userId)
+              }
+            }
+          ]
+        },
+        select: {
+          id: true,
+          title: true,
+          instructorId: true,
+          publicId: true
         }
-      },
-    });
+      });
+      console.log('✅ Course lookup result:', course ? 'Found' : 'Not found or not authorized');
+    } catch (error) {
+      console.error('❌ Database error when finding course:', error);
+      return NextResponse.json(
+        { 
+          error: 'Database error', 
+          message: 'Failed to verify course and permissions',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        },
+        { status: 500 }
+      );
+    }
 
     if (!course) {
-      return NextResponse.json({ error: 'Course not found or you are not the instructor' }, { status: 404 });
+      console.log(`❌ Course not found or user is not the instructor`);
+      return NextResponse.json(
+        { 
+          error: 'Not Found',
+          message: 'Course not found or you are not the instructor',
+          details: { courseId, userId }
+        }, 
+        { status: 404 }
+      );
     }
 
-    const { title, description, status, learningObjectives, estimatedDuration, prerequisites } = await request.json();
-
-    if (!title) {
-      return NextResponse.json({ error: 'Title is required' }, { status: 400 });
+    console.log('🔍 Finding the last module to determine order...');
+    let lastModule;
+    try {
+      lastModule = await prisma.module.findFirst({
+        where: { courseId },
+        orderBy: { order: 'desc' },
+        select: { order: true }
+      });
+      console.log(`✅ Last module order: ${lastModule?.order ?? 'No modules yet'}`);
+    } catch (error) {
+      console.error('❌ Error finding last module:', error);
+      return NextResponse.json(
+        { 
+          error: 'Database error', 
+          message: 'Failed to determine module order',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        },
+        { status: 500 }
+      );
     }
-
-    // Find the last module to determine the new order.
-    const lastModule = await prisma.module.findFirst({
-      where: { courseId },
-      orderBy: { order: 'desc' },
-    });
 
     const highestOrder = lastModule ? lastModule.order : -1;
-
-    // Create the new module with order field
-    const newModule = await prisma.module.create({
-      data: {
-        title,
-        description: description || '',
-        courseId,
-        order: highestOrder + 1,
-      },
-    });
-
-    // Transform the module to match client expectations
-    const responseModule = {
-      id: newModule.id,
-      title: newModule.title,
-      description: newModule.description,
-      courseId: newModule.courseId,
-      order: newModule.order, 
-      createdAt: newModule.createdAt,
-      updatedAt: newModule.updatedAt,
-      // Add client-expected fields that don't exist in the database
-      status: 'draft',
-      estimatedDuration: 0,
-      duration: 0,
-      isPublished: false,
-      learningObjectives: [],
-      prerequisites: [],
-    };
+    const newOrder = highestOrder + 1;
     
-    return NextResponse.json(responseModule, { status: 201 });
+    console.log(`🆕 Creating new module with order: ${newOrder}`);
+    
+    try {
+      const newModule = await prisma.module.create({
+        data: {
+          title: title.trim(),
+          description: (description || '').trim(),
+          courseId,
+          order: newOrder,
+        },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          courseId: true,
+          order: true,
+          createdAt: true,
+          updatedAt: true,
+        }
+      });
+
+      console.log('✅ Module created successfully:', newModule.id);
+      
+      // Transform the module to match client expectations
+      const responseModule = {
+        ...newModule,
+        // Add client-expected fields that don't exist in the database
+        status: 'draft',
+        estimatedDuration: 0,
+        duration: 0,
+        isPublished: false,
+        learningObjectives: [],
+        prerequisites: [],
+      };
+      
+      return NextResponse.json(responseModule, { 
+        status: 201,
+        headers: {
+          'Cache-Control': 'no-store, max-age=0',
+          'Pragma': 'no-cache'
+        }
+      });
+    } catch (error) {
+      console.error('❌ Error creating module:', error);
+      return NextResponse.json(
+        { 
+          error: 'Database error', 
+          message: 'Failed to create module',
+          details: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        },
+        { 
+          status: 500,
+          headers: {
+            'Cache-Control': 'no-store, max-age=0',
+            'Pragma': 'no-cache'
+          }
+        }
+      );
+    }
   } catch (error: unknown) {
-    console.error('Error in GET /api/courses/[courseId]/modules:', error);
+    console.error('Error in POST /api/courses/[courseId]/modules:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch modules' },
-      { status: 500 }
+      { 
+        error: 'Internal Server Error',
+        message: 'An unexpected error occurred while creating the module',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      },
+      { 
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-store, max-age=0',
+          'Pragma': 'no-cache'
+        }
+      }
     );
   }
 }

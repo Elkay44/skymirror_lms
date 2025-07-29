@@ -415,7 +415,20 @@ export function CourseFormProvider({
   }, []);
 
   const submitForm = useCallback(async () => {
+    // Clear previous errors
+    setErrors({});
+    
+    // Validate current step
     if (!validateStep(currentStep)) return;
+    
+    // Additional validation for short description
+    if (currentStep === 1 && formData.shortDescription.trim().length < 10) {
+      setErrors(prev => ({
+        ...prev,
+        shortDescription: 'Short description must be at least 10 characters'
+      }));
+      return;
+    }
     
     if (currentStep < 7) {
       nextStep();
@@ -425,42 +438,147 @@ export function CourseFormProvider({
     try {
       setIsSubmitting(true);
       
-      const formDataToSend = new FormData();
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('shortDescription', formData.shortDescription);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('category', formData.category);
-      formDataToSend.append('level', formData.level);
-      formDataToSend.append('language', formData.language);
-      formDataToSend.append('isPublished', String(formData.isPublished));
-      formDataToSend.append('isPrivate', String(formData.isPrivate));
-      formDataToSend.append('promoVideoUrl', formData.promoVideoUrl);
-      formDataToSend.append('price', String(formData.price));
-      formDataToSend.append('isFree', String(formData.isFree));
-      formDataToSend.append('hasDiscount', String(formData.hasDiscount));
-      formDataToSend.append('discountedPrice', String(formData.discountedPrice));
-      formDataToSend.append('requirements', JSON.stringify(formData.requirements));
-      formDataToSend.append('learningOutcomes', JSON.stringify(formData.learningOutcomes));
-      formDataToSend.append('targetAudience', JSON.stringify(formData.targetAudience));
-      
-      if (formData.imageFile) {
-        formDataToSend.append('image', formData.imageFile);
+      // Validate required fields
+      const requiredFields = {
+        title: formData.title,
+        shortDescription: formData.shortDescription,
+        category: formData.category,
+        level: formData.level,
+        requirements: formData.requirements,
+        learningOutcomes: formData.learningOutcomes,
+        targetAudience: formData.targetAudience,
+        imagePreview: formData.imagePreview
+      };
+
+      const missingFields = Object.entries(requiredFields)
+        .filter(([_, value]) => !value || (Array.isArray(value) && value.length === 0))
+        .map(([field]) => field);
+
+      if (missingFields.length > 0) {
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
       }
 
-      const response = await fetch('/api/courses/instructor', {
-        method: 'POST',
-        body: formDataToSend,
+      console.log('Form data being sent:', {
+        title: formData.title,
+        shortDescription: formData.shortDescription,
+        description: formData.description,
+        category: formData.category,
+        level: formData.level,
+        language: formData.language,
+        isPublished: formData.isPublished,
+        isPrivate: formData.isPrivate,
+        requirements: formData.requirements,
+        learningOutcomes: formData.learningOutcomes,
+        targetAudience: formData.targetAudience,
+        imagePreview: formData.imagePreview
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to save course');
+      // Validate short description length
+      const shortDescription = formData.shortDescription.trim();
+      if (shortDescription.length < 10) {
+        setErrors(prev => ({
+          ...prev,
+          shortDescription: 'Short description must be at least 10 characters'
+        }));
+        // Scroll to the error
+        const element = document.getElementById('shortDescription');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.focus();
+        }
+        throw new Error('Short description must be at least 10 characters');
       }
 
+      // Ensure level is in the correct format
+      const level = formData.level.toLowerCase();
+      if (!['beginner', 'intermediate', 'advanced'].includes(level)) {
+        throw new Error('Invalid level. Must be one of: beginner, intermediate, advanced');
+      }
+
+      // Prepare form data
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title.trim());
+      formDataToSend.append('shortDescription', formData.shortDescription.trim());
+      formDataToSend.append('description', formData.description?.trim() || '');
+      formDataToSend.append('category', formData.category.trim());
+      formDataToSend.append('level', level);
+      formDataToSend.append('language', formData.language?.trim() || 'en');
+      formDataToSend.append('isPublished', String(!!formData.isPublished));
+      formDataToSend.append('isPrivate', String(!!formData.isPrivate));
+      formDataToSend.append('requirements', JSON.stringify(formData.requirements || []));
+      formDataToSend.append('learningOutcomes', JSON.stringify(formData.learningOutcomes || []));
+      formDataToSend.append('targetAudience', JSON.stringify(formData.targetAudience || []));
+
+      // Handle image data
+      if (formData.imageFile) {
+        try {
+          const reader = new FileReader();
+          reader.readAsDataURL(formData.imageFile);
+          await new Promise<void>((resolve, reject) => {
+            reader.onloadend = () => {
+              if (reader.result) {
+                formDataToSend.append('imagePreview', reader.result as string);
+              }
+              resolve();
+            };
+            reader.onerror = () => {
+              reject(new Error('Failed to read image file'));
+            };
+          });
+        } catch (error) {
+          console.error('Error processing image:', error);
+          // Don't throw error here, just log and continue without image
+        }
+      } else if (formData.imagePreview) {
+        formDataToSend.append('imagePreview', formData.imagePreview.trim());
+      } else {
+        // If no image is provided, send an empty string as per schema
+        formDataToSend.append('imagePreview', '');
+      }
+
+      console.log('Sending request to /api/courses with form data:', {
+        title: formDataToSend.get('title'),
+        category: formDataToSend.get('category'),
+        level: formDataToSend.get('level'),
+        hasImage: !!formDataToSend.get('imagePreview')
+      });
+
+      let response;
+      try {
+        response = await fetch('/api/courses', {
+          method: 'POST',
+          body: formDataToSend
+        });
+
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Raw error response:', errorText);
+          
+          try {
+            const errorData = JSON.parse(errorText);
+            console.error('Parsed error response:', {
+              status: response.status,
+              statusText: response.statusText,
+              errorData
+            });
+            throw new Error(errorData.message || errorData.error || errorData.details?.message || `Failed to save course (status: ${response.status}, ${response.statusText})`);
+          } catch (parseError) {
+            console.error('Failed to parse error response:', parseError);
+            throw new Error(`Failed to save course (status: ${response.status}, ${response.statusText}): ${errorText.substring(0, 200)}`);
+          }
+        }
+      } catch (error) {
+        console.error('Network or fetch error:', error);
+        throw new Error(`Failed to connect to server: ${error instanceof Error ? error.message : String(error)}`);
+      }
+
+      const result = await response.json();
+      console.log('Successful response:', result);
+      
       // Clear draft on successful submission
       clearDraft();
-      
-      const result = await response.json();
       
       // Call success callback if provided
       if (onSuccess && result.id) {

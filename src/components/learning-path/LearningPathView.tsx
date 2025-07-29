@@ -36,7 +36,11 @@ export default function LearningPathView() {
 
   const fetchLearningPath = async () => {
     try {
-      const response = await axios.get('/api/learning-path');
+      interface LearningPathResponse {
+        learningPath: LearningPathData;
+      }
+      
+      const response = await axios.get<LearningPathResponse>('/api/learning-path');
       setLearningPath(response.data.learningPath);
     } catch (error) {
       console.error('Error fetching learning path:', error);
@@ -48,9 +52,15 @@ export default function LearningPathView() {
   const updatePreferences = async () => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/learning-path', {
-        preferences,
-      });
+      interface UpdatePreferencesResponse {
+        learningPath: LearningPathData;
+      }
+      
+      const response = await axios.post<UpdatePreferencesResponse>(
+        '/api/learning-path',
+        { preferences }
+      );
+      
       setLearningPath(response.data.learningPath);
     } catch (error) {
       console.error('Error updating preferences:', error);

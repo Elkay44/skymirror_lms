@@ -6,6 +6,8 @@ import { createSuccessResponse, createErrorResponse, createUnauthorizedResponse,
 import { courseFormSchema } from '@/validations/course';
 import { z } from 'zod';
 import { withErrorHandling, CommonErrors } from '@/lib/api-response';
+import { convertBase64ToUrl } from '@/utils/imageUtils';
+import { generateCourseSlug } from '@/utils/slugify';
 
 // Schema for batch operations
 const batchOperationsSchema = z.object({
@@ -65,14 +67,30 @@ export const dynamic = 'force-dynamic';
 
 // POST /api/courses - Create a new course
 export async function POST(req: NextRequest) {
+  console.log('=== STARTING COURSE CREATION ===');
+  
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
+      console.log('Unauthorized: No session or user ID found');
       return createUnauthorizedResponse('Authentication required');
     }
+    
+    console.log('User authenticated with ID:', session.user.id);
 
     const formData = await req.formData();
     const values = Object.fromEntries(formData.entries());
+    
+    // Log form data (without sensitive info)
+    console.log('Received form data:', {
+      title: values.title,
+      category: values.category,
+      level: values.level,
+      hasImage: !!values.imagePreview,
+      isPublished: values.isPublished,
+      isPrivate: values.isPrivate,
+      fields: Object.keys(values)
+    });
 
     // Parse and validate the form data
     const validatedData = courseFormSchema.parse({
@@ -82,7 +100,11 @@ export async function POST(req: NextRequest) {
       targetAudience: JSON.parse(values.targetAudience as string || '[]'),
       isPublished: values.isPublished === 'true',
       isPrivate: values.isPrivate === 'true',
+      level: values.level // Let the schema handle the case conversion
     });
+
+    // Generate unique slug
+    const slug = generateCourseSlug(validatedData.title);
 
     // Create course in the database
     const course = await prisma.course.create({
@@ -90,35 +112,88 @@ export async function POST(req: NextRequest) {
         title: validatedData.title,
         description: validatedData.description || '',
         shortDescription: validatedData.shortDescription,
-        difficulty: validatedData.level.toUpperCase(),
-        language: validatedData.language,
+        slug: slug,
+        image: validatedData.imagePreview ? await convertBase64ToUrl(validatedData.imagePreview) : null,
         isPublished: validatedData.isPublished,
-        isPrivate: validatedData.isPrivate,
-        imageUrl: validatedData.imagePreview || '',
-        price: 0, // Default price, can be updated later
+        price: 0, // Default price
+        level: validatedData.level.toUpperCase(), // Store in uppercase in the database
+        category: validatedData.category,
+        language: validatedData.language,
         instructorId: parseInt(session.user.id),
         requirements: JSON.stringify(validatedData.requirements),
         learningOutcomes: JSON.stringify(validatedData.learningOutcomes),
         targetAudience: JSON.stringify(validatedData.targetAudience),
-        status: validatedData.isPublished ? 'PUBLISHED' : 'DRAFT',
-      },
+        status: validatedData.isPublished ? 'PUBLISHED' : 'DRAFT'
+      }
     });
 
     return createSuccessResponse(course, 'Course created successfully');
-  } catch (error) {
-    console.error('[COURSES_FETCH_ERROR]', error);
-    
+  } catch (error: unknown) {
+    console.error('[COURSES_CREATE_ERROR]', error);
+
+    // Handle validation errors
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid query parameters', details: error.errors },
-        { status: 400 }
-      );
+      const validationErrors = error.errors.map(err => ({
+        field: err.path.join('.'),
+        message: err.message,
+        type: err.code
+      }));
+      const errorObj = {
+        error: 'Validation error',
+        message: 'Failed to validate course data',
+        details: validationErrors
+      };
+      return NextResponse.json(errorObj, { status: 400 });
     }
-    
-    return NextResponse.json(
-      { error: 'Failed to fetch courses' },
-      { status: 500 }
-    );
+
+    // Handle image upload errors
+    if (error instanceof Error && error.message.includes('Failed to process image')) {
+      const errorObj = {
+        error: 'Image upload failed',
+        message: 'Failed to process course image. Please try uploading a different image.',
+        details: {
+          type: 'image_processing_error',
+          originalMessage: error.message
+        }
+      };
+      return NextResponse.json(errorObj, { status: 400 });
+    }
+
+    // Handle database errors
+    if (error instanceof Error && error.name === 'PrismaClientKnownRequestError') {
+      const errorObj = {
+        error: 'Database error',
+        message: error.message,
+        details: {
+          type: 'database_error',
+          code: (error as any).code || 'UNKNOWN'
+        }
+      };
+      return NextResponse.json(errorObj, { status: 500 });
+    }
+
+    // Handle other errors
+    if (error instanceof Error) {
+      const errorObj = {
+        error: 'Failed to create course',
+        message: error.message || 'An unexpected error occurred',
+        details: {
+          name: error.name,
+          stack: error.stack
+        }
+      };
+      return NextResponse.json(errorObj, { status: 500 });
+    }
+
+    // Fallback for unknown errors
+    const errorObj = {
+      error: 'Failed to create course',
+      message: 'An unexpected error occurred',
+      details: {
+        type: 'unknown_error'
+      }
+    };
+    return NextResponse.json(errorObj, { status: 500 });
   }
 }
 
@@ -249,7 +324,6 @@ export async function GET(req: NextRequest) {
             id: true,
             title: true,
             description: true,
-            shortDescription: true,
             image: true,
             level: true,
             price: true,
@@ -312,7 +386,6 @@ export async function GET(req: NextRequest) {
           id: course.id,
           title: course.title,
           description: course.description || '',
-          shortDescription: course.shortDescription || '',
           imageUrl: course.image || '/course-placeholder.jpg',
           difficulty: course.level || 'BEGINNER',
           price: course.price || 0,
