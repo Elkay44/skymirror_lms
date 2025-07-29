@@ -141,7 +141,6 @@ const authOptions: AuthOptions = {
           }
 
           // For students, ensure they have a student profile
-          let updatedUser = user;
           if (user.role === 'STUDENT' && !user.studentProfile) {
             console.log('Student is missing a student profile - creating default');
             try {
@@ -153,31 +152,57 @@ const authOptions: AuthOptions = {
                 },
               });
               console.log('Created default student profile:', profile.id);
-              updatedUser = {
-                ...user,
-                studentProfile: profile
+              const userData = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                points: user.points,
+                level: user.level,
+                needsOnboarding: user.needsOnboarding,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+                studentProfile: profile,
+                mentorProfile: user.mentorProfile,
+                password: user.password // Include password since it's required by User type
               };
+
+              return userData as User;
             } catch (error) {
               console.error('Failed to create student profile:', error);
-              // Continue with the original user object
+              return null;
             }
           }
 
-          return {
-            id: updatedUser.id,
-            name: updatedUser.name,
-            email: updatedUser.email,
-            role: updatedUser.role,
-            points: updatedUser.points,
-            level: updatedUser.level,
-            needsOnboarding: updatedUser.needsOnboarding,
-            createdAt: updatedUser.createdAt,
-            updatedAt: updatedUser.updatedAt,
-            studentProfile: updatedUser.studentProfile,
-            mentorProfile: updatedUser.mentorProfile
-          } as unknown as User;
+          const userData = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            points: user.points,
+            level: user.level,
+            needsOnboarding: user.needsOnboarding,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            studentProfile: user.studentProfile,
+            mentorProfile: user.mentorProfile,
+            password: user.password // Include password since it's required by User type
+          };
+
+          return userData as User;
         } catch (error) {
-          logger.error('Authentication error:', error);
+          console.error('Authentication error:', {
+            message: error instanceof Error ? error.message : 'Unknown error',
+            name: error instanceof Error ? error.name : 'UnknownError',
+            stack: error instanceof Error ? error.stack : undefined
+          });
+          
+          // Provide more specific error messages for database errors
+          if (error instanceof Error && error.message.includes('permission denied')) {
+            console.error('Database permission error - check database user permissions');
+            return null;
+          }
+          
           return null;
         }
       }

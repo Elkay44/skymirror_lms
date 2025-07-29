@@ -25,122 +25,60 @@ export async function GET(req: Request) {
         { status: 401 }
       );
     }
-    
+
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status') as MentorSessionStatus | null;
-    const role = searchParams.get('role') as 'mentor' | 'mentee' | null;
-    
-    let sessions = [];
-    
-    if (role === 'mentor') {
-      // Get sessions where user is the mentor
-      sessions = (await prisma.mentorSession.findMany({
+    const role = searchParams.get('role') as 'mentor' | 'student' | null;
+
+    if (role === 'student') {
+      // Get mentor sessions where user is the student
+      const mentorSessions = await prisma.mentorSession.findMany({
         where: {
-          mentor: { userId: session.user.id },
+          menteeId: session.user.id,
           ...(status ? { status: status as any } : {})
         },
         include: {
           mentor: {
-            include: {
-              user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              mentorProfile: {
                 select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  image: true,
-                },
-              },
-            },
+                  bio: true,
+                  specialties: true,
+                  experience: true,
+                  availability: true,
+                  isActive: true
+                }
+              }
+            }
           },
           mentee: {
-            include: {
-              user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              studentProfile: {
                 select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  image: true,
-                },
-              },
-            },
-          },
+                  bio: true,
+                  learningGoals: true,
+                  interests: true,
+                  goals: true,
+                  preferredLearningStyle: true
+                }
+              }
+            }
+          }
         },
         orderBy: {
-          scheduledAt: 'desc',
-        },
-      })) as unknown as MentorSession[];
-    } else if (role === 'mentee') {
-      // Get sessions where user is the mentee
-      sessions = (await prisma.mentorSession.findMany({
-        where: {
-          mentee: { userId: session.user.id },
-          ...(status ? { status: status as any } : {})
-        },
-        include: {
-          mentor: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                },
-              },
-            },
-          },
-          mentee: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                },
-              },
-            },
-          },
-        },
-        orderBy: {
-          scheduledAt: 'desc',
-        },
-      })) as unknown as MentorSession[];
-    } else {
-      // Get all sessions where user is either mentor or mentee
-      const [asMentor, asMentee] = await Promise.all([
-        prisma.mentorSession.findMany({
-          where: {
-            mentor: { userId: session.user.id },
-            ...(status ? { status: status as any } : {})
-          },
-          include: {
-            mentor: { include: { user: true } },
-            mentee: { include: { user: true } },
-          },
-        }),
-        prisma.mentorSession.findMany({
-          where: {
-            mentee: { userId: session.user.id },
-            ...(status ? { status: status as any } : {})
-          },
-          include: {
-            mentor: { include: { user: true } },
-            mentee: { include: { user: true } },
-          },
-        }),
-      ]) as [any[], any[]];
-      
-      // Combine and deduplicate sessions
-      const allSessions = [...asMentor, ...asMentee];
-      const sessionMap = new Map(allSessions.map(session => [session.id, session]));
-      sessions = Array.from(sessionMap.values()) as any[];
-    }
-    
-    // Format the response
-    const formattedSessions = sessions.map(session => {
-      const mentor = session.mentor as MentorProfile;
-      const mentee = session.mentee as StudentProfile;
-      
-      return {
+          scheduledAt: 'desc'
+        }
+      });
+
+      const formattedSessions = mentorSessions.map((session) => ({
         id: session.id,
         title: session.title,
         description: session.description,
@@ -150,22 +88,160 @@ export async function GET(req: Request) {
         meetingUrl: session.meetingUrl,
         notes: session.notes,
         mentor: {
-          id: mentor.id,
-          name: mentor.user?.name || null,
-          email: mentor.user?.email || '',
-          bio: mentor.bio,
+          id: session.mentorId,
+          name: session.mentor?.name || null,
+          email: session.mentor?.email || '',
+          bio: session.mentor?.mentorProfile?.bio || '',
+          specialties: session.mentor?.mentorProfile?.specialties ? session.mentor?.mentorProfile?.specialties.split(',') : [],
+          experience: session.mentor?.mentorProfile?.experience || '',
+          availability: session.mentor?.mentorProfile?.availability || '',
+          isActive: session.mentor?.mentorProfile?.isActive || false
         },
         mentee: {
-          id: mentee.id,
-          name: mentee.user?.name || null,
-          email: mentee.user?.email || '',
+          id: session.menteeId,
+          name: session.mentee?.name || null,
+          email: session.mentee?.email || '',
+          bio: session.mentee?.studentProfile?.bio || '',
+          learningGoals: session.mentee?.studentProfile?.learningGoals || '',
+          interests: session.mentee?.studentProfile?.interests || '',
+          goals: session.mentee?.studentProfile?.goals || '',
+          preferredLearningStyle: session.mentee?.studentProfile?.preferredLearningStyle || ''
         },
         createdAt: session.createdAt,
         updatedAt: session.updatedAt,
-      } as FormattedMentorSession;
-    });
-    
-    return NextResponse.json(formattedSessions);
+      }));
+
+      return NextResponse.json(formattedSessions);
+    } else {
+      // Get all mentor sessions where user is either mentor or mentee
+      const [asMentor, asMentee] = await Promise.all([
+        prisma.mentorSession.findMany({
+          where: {
+            mentorId: session.user.id,
+            ...(status ? { status: status as any } : {})
+          },
+          include: {
+            mentor: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                mentorProfile: {
+                  select: {
+                    bio: true,
+                    specialties: true,
+                    experience: true,
+                    availability: true,
+                    isActive: true
+                  }
+                }
+              }
+            },
+            mentee: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                studentProfile: {
+                  select: {
+                    bio: true,
+                    learningGoals: true,
+                    interests: true,
+                    goals: true,
+                    preferredLearningStyle: true
+                  }
+                }
+              }
+            }
+          },
+          orderBy: {
+            scheduledAt: 'desc'
+          }
+        }),
+        prisma.mentorSession.findMany({
+          where: {
+            menteeId: session.user.id,
+            ...(status ? { status: status as any } : {})
+          },
+          include: {
+            mentor: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                mentorProfile: {
+                  select: {
+                    bio: true,
+                    specialties: true,
+                    experience: true,
+                    availability: true,
+                    isActive: true
+                  }
+                }
+              }
+            },
+            mentee: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                studentProfile: {
+                  select: {
+                    bio: true,
+                    learningGoals: true,
+                    interests: true,
+                    goals: true,
+                    preferredLearningStyle: true
+                  }
+                }
+              }
+            }
+          },
+          orderBy: {
+            scheduledAt: 'desc'
+          }
+        })
+      ]);
+
+      const formattedSessions = [...asMentor, ...asMentee].map((session) => ({
+        id: session.id,
+        title: session.title,
+        description: session.description,
+        status: session.status as MentorSessionStatus,
+        scheduledAt: session.scheduledAt,
+        duration: session.duration,
+        meetingUrl: session.meetingUrl,
+        notes: session.notes,
+        mentor: {
+          id: session.mentorId,
+          name: session.mentor?.name || null,
+          email: session.mentor?.email || '',
+          bio: session.mentor?.mentorProfile?.bio || '',
+          specialties: session.mentor?.mentorProfile?.specialties || [],
+          experience: session.mentor?.mentorProfile?.experience || '',
+          availability: session.mentor?.mentorProfile?.availability || '',
+          isActive: session.mentor?.mentorProfile?.isActive || false
+        },
+        mentee: {
+          id: session.menteeId,
+          name: session.mentee?.name || null,
+          email: session.mentee?.email || '',
+          bio: session.mentee?.studentProfile?.bio || '',
+          learningGoals: session.mentee?.studentProfile?.learningGoals || '',
+          interests: session.mentee?.studentProfile?.interests || '',
+          goals: session.mentee?.studentProfile?.goals || '',
+          preferredLearningStyle: session.mentee?.studentProfile?.preferredLearningStyle || ''
+        },
+        createdAt: session.createdAt,
+        updatedAt: session.updatedAt,
+      }));
+
+      return NextResponse.json(formattedSessions);
+    }
   } catch (error) {
     console.error('Error fetching mentor sessions:', error);
     return NextResponse.json(

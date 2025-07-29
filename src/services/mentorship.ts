@@ -144,8 +144,8 @@ export async function fetchMyMentorships(): Promise<MentorshipRequest[]> {
   try {
     const response = await fetch(`${API_BASE}/mentorships?role=student`);
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Failed to fetch mentorships');
+      const error = await response.json().catch(() => ({ error: 'Failed to fetch mentorships' }));
+      throw new Error(error.error || 'Failed to fetch mentorships');
     }
     const data = await response.json();
     
@@ -153,19 +153,37 @@ export async function fetchMyMentorships(): Promise<MentorshipRequest[]> {
     return data.map((item: any) => ({
       id: item.id,
       mentor: {
-        id: item.mentor?.id || '',
-        name: item.mentor?.name || 'Unknown Mentor',
-        image: item.mentor?.image
+        id: item.mentorId,
+        name: item.mentor?.name || null,
+        image: item.mentor?.image || null,
+        email: item.mentor?.email || '',
+        bio: item.mentor?.bio || '',
+        specialties: item.mentor?.specialties || [],
+        experience: item.mentor?.experience || '',
+        availability: item.mentor?.availability || '',
+        isActive: item.mentor?.isActive || false
       },
       status: item.status?.toLowerCase() || 'pending',
-      requestedDate: new Date(item.requestedDate || new Date()),
-      messages: item.messages || [],
-      scheduledSessions: item.scheduledSessions || [],
-      lastMessage: item.lastMessage ? {
-        content: item.lastMessage.content,
-        timestamp: new Date(item.lastMessage.timestamp),
-        isRead: item.lastMessage.isRead
-      } : undefined
+      requestedDate: new Date(item.createdAt),
+      messages: [],
+      scheduledSessions: [],
+      scheduledAt: item.scheduledAt ? new Date(item.scheduledAt) : null,
+      duration: item.duration,
+      meetingUrl: item.meetingUrl,
+      notes: item.notes,
+      mentee: {
+        id: item.menteeId,
+        name: item.mentee?.name || null,
+        image: item.mentee?.image || null,
+        email: item.mentee?.email || '',
+        bio: item.mentee?.bio || '',
+        learningGoals: item.mentee?.learningGoals || '',
+        interests: item.mentee?.interests || '',
+        goals: item.mentee?.goals || '',
+        preferredLearningStyle: item.mentee?.preferredLearningStyle || ''
+      },
+      createdAt: new Date(item.createdAt),
+      updatedAt: new Date(item.updatedAt)
     }));
   } catch (error) {
     console.error('Error in fetchMyMentorships:', error);

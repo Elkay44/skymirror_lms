@@ -84,19 +84,12 @@ function LoginContent() {
       // Regular login flow
       console.log('Attempting login with credentials');
       
-      // Use a simple callback URL - always use the root path
-      // This prevents any URL construction issues
-      const safeCallbackUrl = '/';
-      
-      console.log('Using default callback URL');
-      
       // Sign in without any URL handling
       const result = await signIn('credentials', {
         redirect: false,
         email: data.email,
         password: data.password,
         role: data.role,
-        // Don't pass callbackUrl at all to prevent any URL construction
         callbackUrl: undefined
       });
 
@@ -107,18 +100,24 @@ function LoginContent() {
         // Handle specific error cases
         let errorMessage = 'Login failed. Please try again.';
         
+        // NextAuth.js v4 uses error codes in the result.error property
         if (result.error === 'CredentialsSignin') {
           errorMessage = 'Invalid email or password';
-          console.debug('Debug: Check that the user exists and password matches');
-        } else if (result.error.includes('ECONNREFUSED')) {
-          errorMessage = 'Cannot connect to the authentication server';
-          console.error('Connection refused - is the backend server running?');
+        } else if (result.error === 'RoleMismatch') {
+          errorMessage = 'Your account does not match the selected role';
+        } else if (result.error === 'NoProfile') {
+          errorMessage = 'Your account is missing a required profile';
+        } else if (result.error === 'NoUser') {
+          errorMessage = 'No account found with this email';
         } else {
-          errorMessage = result.error;
+          errorMessage = result.error || 'Login failed. Please try again.';
         }
         
         toast.error(errorMessage);
-        console.error('Login failed:', { error: errorMessage });
+        console.error('Login failed:', { 
+          error: errorMessage,
+          result: result
+        });
         return;
       }
 

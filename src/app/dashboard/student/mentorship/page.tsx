@@ -34,10 +34,8 @@ export default function StudentMentorshipPage() {
   const [requestMessage, setRequestMessage] = useState('');
 
   const { showToast } = useToast() as unknown as {
-    showToast: (props: { title: string; description?: string; variant?: 'default' | 'destructive' | 'success' | 'info' | 'warning' }) => void;
+    showToast: (props: { title: string; description?: string; variant?: ToastVariant }) => void;
   };
-  type TabValue = 'find' | 'my' | 'requests';
-  type ToastVariant = 'default' | 'destructive' | 'success' | 'info' | 'warning';
 
   // Load data
   useEffect(() => {
@@ -214,8 +212,8 @@ export default function StudentMentorshipPage() {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredMentors.map((mentor) => (
                   <Card key={mentor.id} className="flex flex-col h-full">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start space-x-4">
+                    <CardHeader>
+                      <div className="flex items-center space-x-4">
                         <Avatar className="h-12 w-12">
                           <AvatarImage src={mentor.image} alt={mentor.name} />
                           <AvatarFallback>{mentor.name.charAt(0)}</AvatarFallback>
@@ -226,25 +224,50 @@ export default function StudentMentorshipPage() {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="flex-1">
-                      <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-                        {mentor.bio}
-                      </p>
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {mentor.specialties.slice(0, 3).map((specialty: string) => (
-                          <Badge key={specialty} variant="secondary">
-                            {specialty}
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Star className="h-4 w-4 mr-1 text-yellow-500 fill-yellow-500" />
-                        <span className="font-medium text-foreground">{mentor.rating}</span>
-                        <span className="mx-1">•</span>
-                        <span>{mentor.reviewCount} reviews</span>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground line-clamp-3">
+                          {mentor.bio}
+                        </p>
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {(mentor.specialties || []).slice(0, 3).map((specialty: string) => (
+                            <Badge key={specialty} variant="secondary">
+                              {specialty}
+                            </Badge>
+                          ))}
+                        </div>
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Star className="h-4 w-4 mr-1 text-yellow-500 fill-yellow-500" />
+                          <span className="font-medium text-foreground">{mentor.rating}</span>
+                          <span className="mx-1">•</span>
+                          <span>{mentor.reviewCount} reviews</span>
+                        </div>
                       </div>
                     </CardContent>
-                    <CardFooter className="border-t pt-4">
+                    <CardFooter className="border-t px-6 py-3">
+                      <div className="flex w-full items-center justify-between">
+                        <Button variant="ghost" size="sm">
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          View Messages
+                        </Button>
+                        {requests.some(req => req.mentor.id === mentor.id && req.status === 'PENDING') && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleCancelRequest(mentor.id)}
+                            disabled={isRequesting}
+                          >
+                            {isRequesting ? (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <X className="h-4 w-4 mr-2" />
+                            )}
+                            Cancel Request
+                          </Button>
+                        )}
+                      </div>
+                    </CardFooter>
+                    <CardFooter className="border-t px-6 py-3">
                       <Button 
                         className="w-full" 
                         onClick={() => setSelectedMentor(mentor)}

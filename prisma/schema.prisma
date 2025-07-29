@@ -1,18 +1,13 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 generator client {
   provider = "prisma-client-js"
 }
 
-enum EnrollmentStatus {
-  NOT_STARTED
-  IN_PROGRESS
-  COMPLETED
-  DROPPED
-}
+
 
 model Account {
   id                 String  @id @default(cuid())
@@ -20,12 +15,12 @@ model Account {
   type               String
   provider           String
   providerAccountId  String
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
+  refresh_token      String?
+  access_token       String?
   expires_at         Int?
   token_type         String?
   scope              String?
-  id_token           String? @db.Text
+  id_token           String?
   session_state      String?
   user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -59,7 +54,7 @@ model Notification {
   title     String
   message   String
   isRead    Boolean  @default(false)
-  metadata  Json?    // Store additional data as JSON
+  metadata  String?    // Store additional data as JSON string
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -86,7 +81,7 @@ model User {
   email              String?       @unique
   emailVerified      DateTime?
   image              String?
-  password           String?       @db.Text
+  password           String?
   role               String        @default("STUDENT")
   points             Int           @default(0)
   level              Int           @default(1)
@@ -335,7 +330,7 @@ model Assignment {
   id          String     @id @default(cuid())
   title       String
   description String?
-  content     String?    @db.Text
+  content     String?
   dueDate     DateTime?
   points      Int        @default(100)
   isPublished Boolean    @default(false)
@@ -352,10 +347,10 @@ model Assignment {
 
 model AssignmentSubmission {
   id           String     @id @default(cuid())
-  content      String?    @db.Text
+  content      String?
   fileUrl      String?
   grade        Float?
-  feedback     String?    @db.Text
+  feedback     String?
   status       String     @default("DRAFT") // DRAFT, SUBMITTED, GRADED, REJECTED
   submittedAt  DateTime?
   gradedAt     DateTime?
@@ -455,7 +450,7 @@ model UserAchievement {
   userId        String
   achievementId String
   earnedAt      DateTime    @default(now())
-  metadata      Json?       @default("{}")  // For storing additional data like referral count, etc.
+  metadata      String?       @default("{}")  // For storing additional data like referral count, etc.
   
   // Relations
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -638,7 +633,7 @@ model ActivityLog {
   enrollmentId String?
   quizId       String?
   type         String
-  details      String?   @db.Text
+  details      String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   

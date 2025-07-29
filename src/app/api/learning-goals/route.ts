@@ -34,27 +34,71 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { title, description, deadline, targetCompletion, progress } = await request.json();
+    try {
+      const { title, description, deadline, targetCompletion, progress } = await request.json();
 
-    if (!title) {
+      if (!title) {
+        return NextResponse.json(
+          { error: 'Title is required' },
+          { status: 400 }
+        );
+      }
+
+      // Validate deadline and targetCompletion are valid dates if provided
+      if (deadline && isNaN(new Date(deadline).getTime())) {
+        return NextResponse.json(
+          { error: 'Invalid deadline date format' },
+          { status: 400 }
+        );
+      }
+
+      if (targetCompletion && isNaN(new Date(targetCompletion).getTime())) {
+        return NextResponse.json(
+          { error: 'Invalid target completion date format' },
+          { status: 400 }
+        );
+      }
+
+      // Validate progress is a number between 0 and 100
+      if (progress !== undefined && (typeof progress !== 'number' || progress < 0 || progress > 100)) {
+        return NextResponse.json(
+          { error: 'Progress must be a number between 0 and 100' },
+          { status: 400 }
+        );
+      }
+
+      const goal = await prisma.learningGoal.create({
+        data: {
+          title,
+          description: description || null,
+          deadline: deadline ? new Date(deadline) : null,
+          targetCompletion: targetCompletion ? new Date(targetCompletion) : null,
+          progress: progress || 0,
+          userId: session.user.id,
+        },
+      });
+
+      return NextResponse.json(goal, { status: 201 });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error creating learning goal:', {
+          message: error.message,
+          stack: error.stack
+        });
+        
+        if (error.message.includes('Unique constraint failed')) {
+          return NextResponse.json(
+            { error: 'A goal with this title already exists' },
+            { status: 400 }
+          );
+        }
+      }
+      
       return NextResponse.json(
-        { error: 'Title is required' },
-        { status: 400 }
+        { error: 'Failed to create learning goal' },
+        { status: 500 }
       );
     }
-
-    const goal = await prisma.learningGoal.create({
-      data: {
-        title,
-        description: description || null,
-        deadline: deadline ? new Date(deadline) : null,
-        targetCompletion: targetCompletion || null,
-        progress: progress || 0,
-        userId: session.user.id.toString(),
-      },
-    });
-
-    return NextResponse.json(goal, { status: 201 });
   } catch (error) {
     console.error('Error creating learning goal:', error);
     return NextResponse.json(
