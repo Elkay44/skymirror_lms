@@ -161,22 +161,42 @@ export default function MentorsPage() {
     const loadData = async () => {
       try {
         setIsLoading(true);
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+          toast({
+            title: 'Error',
+            description: 'You must be logged in to view mentors',
+            type: 'destructive'
+          });
+          router.push('/login');
+          return;
+        }
+
         const mentorsData = await fetchMentors();
         setMentors(mentorsData);
         const requests = await fetchMyMentorships();
         setMentorshipRequests(requests);
       } catch (error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to load mentors and requests',
-        });
+        if (error instanceof Error && error.message.includes('Unauthorized')) {
+          toast({
+            title: 'Error',
+            description: 'You must be logged in to view mentors',
+            type: 'destructive'
+          });
+          router.push('/login');
+        } else {
+          toast({
+            title: 'Error',
+            description: 'Failed to load mentors and requests',
+          });
+        }
       } finally {
         setIsLoading(false);
       }
     };
     
     loadData();
-  }, [toast]);
+  }, [toast, router]);
 
   const filteredMentors = mentors.filter(mentor =>
     mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -197,7 +217,7 @@ export default function MentorsPage() {
         return;
       }
 
-      await requestMentorship(mentor.id, `I would like to request mentorship for ${mentor.role}`, session.user.id);
+      await requestMentorship(mentor.id, `I would like to request mentorship for ${mentor.role}`);
       
       toast({
         title: 'Mentorship Requested',

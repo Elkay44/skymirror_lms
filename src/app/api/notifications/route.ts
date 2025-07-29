@@ -33,7 +33,6 @@ export async function GET() {
       metadata: any;
       createdAt: Date;
       updatedAt: Date;
-      linkUrl?: string | null;
     };
     
     // Define the formatted notification type for the API response
@@ -44,7 +43,6 @@ export async function GET() {
       type: string;
       isRead: boolean;
       createdAt: string;
-      linkUrl: string | null;
     }
     
     let formattedNotifications: FormattedNotification[] = [];
@@ -64,7 +62,6 @@ export async function GET() {
         type: notification.type,
         isRead: notification.isRead,
         createdAt: notification.createdAt.toISOString(),
-        linkUrl: notification.linkUrl || null,
       }));
     } catch (notificationError) {
       // If there's an error with the notifications table, just return an empty array

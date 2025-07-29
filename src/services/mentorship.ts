@@ -38,117 +38,61 @@ interface ApiMentor {
 
 export async function fetchMentors(): Promise<Mentor[]> {
   try {
-    console.log('Fetching mentors from API...');
-    const response = await fetch('/api/mentors', {
-      credentials: 'include',
-      headers: {
-        'Accept': 'application/json'
-      }
-    });
-
-    console.log('API Response:', {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
+    const response = await fetch(`${API_BASE}/mentors`, {
+      credentials: 'include'
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('API Error Response:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorData
-      });
-      
-      // Try to get a more specific error message from the response
-      let errorMessage = 'Failed to fetch mentors';
-      if (errorData.error) {
-        errorMessage = errorData.error;
-      } else if (errorData.message) {
-        errorMessage = errorData.message;
-      }
-      
-      throw new Error(errorMessage);
+      throw new Error('Failed to fetch mentors');
     }
 
     const data = await response.json();
-    console.log('Received mentors data:', data);
-    
-    // Transform API response to match our frontend Mentor type
-    const transformedData = Array.isArray(data) 
-      ? data.map(mentor => ({
-          id: mentor.id,
-          name: mentor.name,
-          image: mentor.user?.image || '',
-          role: mentor.role,
-          bio: mentor.bio || '',
-          specialties: [], // The API doesn't provide specialties
-          rating: mentor.rating,
-          reviewCount: mentor.reviewCount,
-          languages: [],
-          availability: {
-            days: [],
-            timeRange: ''
-          },
-          experience: '',
-          education: '',
-          sessionRate: 0,
-          responseTime: '',
-          isAvailable: mentor.isAvailable,
-          sessionTypes: []
-        }))
-      : [];
-    
-    console.log('Transformed mentors data:', transformedData);
-    return transformedData;
-  } catch (error: unknown) {
-    console.error('Error in fetchMentors:', {
-      error,
-      ...(error instanceof Error ? {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      } : {})
-    });
-    
-    // Extract error message if it's a network error
-    let errorMessage = 'Failed to fetch mentors';
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    } else if (typeof error === 'string') {
-      errorMessage = error;
-    }
-    
-    throw new Error(errorMessage);
+    return data.map((mentor: ApiMentor) => ({
+      id: mentor.id,
+      name: mentor.name,
+      image: mentor.image || '',
+      role: mentor.title,
+      bio: mentor.bio || '',
+      specialties: mentor.specialties || [],
+      rating: mentor.rating,
+      reviewCount: mentor.reviews,
+      languages: [],
+      availability: {
+        days: [],
+        timeRange: ''
+      },
+      experience: '',
+      education: '',
+      sessionRate: 0,
+      responseTime: '',
+      isAvailable: true,
+      sessionTypes: []
+    }));
+  } catch (error) {
+    console.error('Error fetching mentors:', error);
+    throw error;
   }
 }
 
-export async function requestMentorship(mentorId: string, message: string, userId: string): Promise<MentorshipRequest> {
+export async function requestMentorship(mentorId: string, message: string): Promise<MentorshipRequest> {
   try {
-    const response = await fetch('/api/mentorships', {
+    const response = await fetch(`${API_BASE}/mentorships`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      credentials: 'include', // Ensure session cookie is sent
+      credentials: 'include',
       body: JSON.stringify({
         mentorId,
-        title: 'Mentorship Request',
-        description: 'Student mentorship request',
-        scheduledAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
-        duration: 60, // 60 minutes
-        notes: message,
-        menteeId: userId
-      }),
+        message
+      })
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to request mentorship');
+      throw new Error('Failed to request mentorship');
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error('Error requesting mentorship:', error);
     throw error;
@@ -157,51 +101,35 @@ export async function requestMentorship(mentorId: string, message: string, userI
 
 export async function fetchMyMentorships(): Promise<MentorshipRequest[]> {
   try {
-    const response = await fetch(`${API_BASE}/mentorships?role=student`);
+    const response = await fetch(`${API_BASE}/mentorships?role=student`, {
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Failed to fetch mentorships' }));
-      throw new Error(error.error || 'Failed to fetch mentorships');
+      if (response.status === 401) {
+        throw new Error('Unauthorized. Please log in to view mentorships.');
+      }
+      throw new Error('Failed to fetch mentorships');
     }
+
     const data = await response.json();
-    
-    // Transform API response to match our frontend MentorshipRequest type
-    return data.map((item: any) => ({
-      id: item.id,
+    return data.map((mentorship: any) => ({
+      id: mentorship.id,
       mentor: {
-        id: item.mentorId,
-        name: item.mentor?.name || null,
-        image: item.mentor?.image || null,
-        email: item.mentor?.email || '',
-        bio: item.mentor?.bio || '',
-        specialties: item.mentor?.specialties || [],
-        experience: item.mentor?.experience || '',
-        availability: item.mentor?.availability || '',
-        isActive: item.mentor?.isActive || false
+        id: mentorship.mentor.id,
+        name: mentorship.mentor.name,
+        image: mentorship.mentor.image || undefined
       },
-      status: item.status?.toLowerCase() || 'pending',
-      requestedDate: new Date(item.createdAt),
+      status: mentorship.status as 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED',
+      requestedDate: new Date(mentorship.createdAt),
       messages: [],
-      scheduledSessions: [],
-      scheduledAt: item.scheduledAt ? new Date(item.scheduledAt) : null,
-      duration: item.duration,
-      meetingUrl: item.meetingUrl,
-      notes: item.notes,
-      mentee: {
-        id: item.menteeId,
-        name: item.mentee?.name || null,
-        image: item.mentee?.image || null,
-        email: item.mentee?.email || '',
-        bio: item.mentee?.bio || '',
-        learningGoals: item.mentee?.learningGoals || '',
-        interests: item.mentee?.interests || '',
-        goals: item.mentee?.goals || '',
-        preferredLearningStyle: item.mentee?.preferredLearningStyle || ''
-      },
-      createdAt: new Date(item.createdAt),
-      updatedAt: new Date(item.updatedAt)
+      lastMessage: undefined
     }));
   } catch (error) {
-    console.error('Error in fetchMyMentorships:', error);
+    console.error('Error fetching mentorships:', error);
     throw error;
   }
 }
@@ -210,14 +138,14 @@ export async function cancelMentorshipRequest(requestId: string): Promise<void> 
   try {
     const response = await fetch(`${API_BASE}/mentorships/${requestId}`, {
       method: 'DELETE',
+      credentials: 'include'
     });
-    
+
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Failed to cancel request');
+      throw new Error('Failed to cancel mentorship request');
     }
   } catch (error) {
-    console.error('Error in cancelMentorshipRequest:', error);
+    console.error('Error cancelling mentorship request:', error);
     throw error;
   }
 }

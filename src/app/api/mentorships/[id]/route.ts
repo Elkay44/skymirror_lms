@@ -36,14 +36,10 @@ export async function GET(
       },
       include: {
         mentor: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: session.user.role === 'ADMIN',
-              },
-            },
+          select: {
+            id: true,
+            name: true,
+            email: session.user.role === 'ADMIN',
             skills: {
               select: {
                 id: true,

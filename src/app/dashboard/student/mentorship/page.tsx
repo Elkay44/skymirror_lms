@@ -97,8 +97,7 @@ export default function StudentMentorshipPage() {
       
       const newRequest = await requestMentorship(
         mentorId,
-        requestMessage || 'I would like to request mentorship with you.',
-        userId
+        requestMessage || 'I would like to request mentorship with you.'
       );
       
       setRequests(prev => [...prev, newRequest]);
