@@ -58,13 +58,14 @@ declare module 'next-auth' {
   // JWT token type with gameification fields
   interface JWT {
     id: string;
+    email: string;
     name: string | null;
-    email: string | null;
     role: string;
     points: number;
     level: number;
     needsOnboarding: boolean;
-    invalidRole: boolean;
+    iat: number;
+    exp: number;
   }
 }
 
@@ -220,7 +221,6 @@ const authOptions: AuthOptions = {
           return false;
         }
         
-        // Log sign-in attempt for debugging
         logger.info('Sign in attempt:', {
           userId: user.id,
           email: user.email,
@@ -228,8 +228,6 @@ const authOptions: AuthOptions = {
           needsOnboarding: user.needsOnboarding
         });
         
-        // Don't return any URL, let the client handle the redirection
-        // This prevents any URL construction issues in NextAuth
         return true;
         
       } catch (error) {
@@ -238,35 +236,93 @@ const authOptions: AuthOptions = {
       }
     },
     async jwt({ token, user }) {
-      // Initial sign in
-      if (user) {
+      try {
+        // Initial sign in
+        if (user) {
+          logger.debug('Creating new JWT token:', {
+            userId: user.id,
+            role: user.role
+          });
+          
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            points: user.points || 0,
+            level: user.level || 1,
+            needsOnboarding: user.needsOnboarding !== false,
+            iat: Math.floor(Date.now() / 1000),
+            exp: Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
+          };
+        }
+        
+        // Token refresh
+        if (token?.id && token?.role) {
+          logger.debug('Refreshing JWT token:', {
+            userId: token.id,
+            role: token.role
+          });
+          return token;
+        }
+        
+        logger.debug('Creating empty JWT token');
         return {
-          ...token,
-          id: user.id,
-          role: user.role,
-          points: user.points || 0,
-          level: user.level || 1,
-          needsOnboarding: user.needsOnboarding !== false, // Default to true if not set
-          email: user.email,
-          name: user.name
-        };
+          id: '',
+          email: '',
+          name: null,
+          role: '',
+          points: 0,
+          level: 1,
+          needsOnboarding: true,
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
+        } as JWT;
+      } catch (error) {
+        logger.error('Error in JWT callback:', error);
+        return {
+          id: '',
+          email: '',
+          name: null,
+          role: '',
+          points: 0,
+          level: 1,
+          needsOnboarding: true,
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor((Date.now() + 30 * 24 * 60 * 60 * 1000) / 1000)
+        } as JWT;
       }
-      return token;
     },
     async session({ session, token }) {
-      if (session?.user) {
-        session.user = {
-          ...session.user,
-          id: token.id as string,
-          role: token.role as string,
-          points: token.points as number,
-          level: token.level as number,
-          needsOnboarding: token.needsOnboarding as boolean,
-          email: token.email as string,
-          name: token.name as string | null
-        };
+      try {
+        if (token?.id && token?.role) {
+          logger.debug('Updating session with token data:', {
+            userId: token.id,
+            role: token.role
+          });
+          
+          session.user = {
+            id: token.id,
+            email: token.email,
+            name: token.name,
+            role: token.role,
+            points: token.points,
+            level: token.level,
+            needsOnboarding: token.needsOnboarding,
+            image: session.user?.image
+          } as Session['user'];
+        }
+        
+        logger.debug('Returning session:', {
+          userId: session.user?.id,
+          hasRole: !!session.user?.role
+        });
+        
+        return session;
+      } catch (error) {
+        logger.error('Error in session callback:', error);
+        return session;
       }
-      return session;
     }
   },
   // Pages configuration - use relative paths only

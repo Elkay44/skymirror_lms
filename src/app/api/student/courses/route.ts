@@ -78,7 +78,7 @@ export async function GET() {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const userId = parseInt(session.user.id as string, 10);
+    const userId = session.user.id as string;
     
     const enrollments = await prisma.enrollment.findMany({
       where: {

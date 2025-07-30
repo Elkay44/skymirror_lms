@@ -1,9 +1,18 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-export async function GET(req: Request, { params }: { params: { mentorId: string } }) {
+export async function GET(
+  request: NextRequest
+) {
+  const { searchParams } = new URL(request.url);
+  const mentorId = searchParams.get('mentorId');
+
+  if (!mentorId) {
+    return NextResponse.json({ error: 'Missing mentorId parameter' }, { status: 400 });
+  }
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -12,7 +21,7 @@ export async function GET(req: Request, { params }: { params: { mentorId: string
 
     const mentorProfile = await prisma.mentorProfile.findFirst({
       where: {
-        userId: params.mentorId
+        userId: mentorId
       },
       include: {
         user: true

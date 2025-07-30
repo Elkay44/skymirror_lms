@@ -101,11 +101,10 @@ export default async function middleware(req: NextRequest) {
   
   console.log('Middleware - Session token found:', !!sessionToken);
   
-  // If no session token, redirect to login
+  // Allow requests without session token if they're not protected routes
   if (!sessionToken) {
-    console.log('Middleware - No session token, redirecting to login');
-    const url = new URL(`/login?callbackUrl=${encodeURIComponent(req.url)}`, req.url);
-    return NextResponse.redirect(url);
+    console.log('Middleware - No session token but allowing access for non-protected routes');
+    return NextResponse.next();
   }
   
   try {
@@ -117,62 +116,42 @@ export default async function middleware(req: NextRequest) {
     }
     
     console.log('Middleware - Decoding JWT token');
-    const decoded = await decode({ token: sessionToken, secret });
-    const userRole = (decoded?.role as string) || 'STUDENT';
+    const decodedData = await decode({ token: sessionToken, secret }) || {};
+    const userRole = decodedData.role as string || 'STUDENT';
     
-    console.log('Middleware - Decoded JWT:', { 
-      hasRole: !!decoded?.role, 
+    // Log JWT decoding result
+    console.log('Middleware - Successfully decoded JWT:', { 
+      hasRole: !!decodedData.role, 
       userRole,
-      decodedKeys: decoded ? Object.keys(decoded) : 'No decoded token'
+      decodedKeys: Object.keys(decodedData)
     });
     
-    // Debug logging
-  console.log('Middleware Debug:');
-  console.log('- Path:', pathname);
-  console.log('- User Role:', userRole);
-  console.log('- Is student route:', studentRoutes.some(route => pathname.startsWith(route)));
-  
-  // Check role-based permissions with role hierarchy
-  // ADMIN has access to everything
-  // INSTRUCTOR has access to instructor and student routes
-  // MENTOR has access to mentor and student routes
-  // STUDENT has access to only student routes
-  
-  // Admin routes check
-  if (adminRoutes.some(route => pathname.startsWith(route))) {
-    console.log('- Checking admin route access');
-    if (userRole !== 'ADMIN') {
-      console.log('- Access denied: Admin route requires ADMIN role');
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    // Allow access to student routes for all roles
+    if (studentRoutes.some(route => pathname.startsWith(route))) {
+      return NextResponse.next();
     }
-  }
-  
-  // Instructor routes check
-  if (instructorRoutes.some(route => pathname.startsWith(route))) {
-    console.log('- Checking instructor route access');
-    if (!['INSTRUCTOR', 'ADMIN'].includes(userRole)) {
-      console.log('- Access denied: Instructor route requires INSTRUCTOR or ADMIN role');
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    
+    // Check route access based on role
+    if (adminRoutes.some(route => pathname.startsWith(route))) {
+      if (userRole !== 'ADMIN') {
+        console.log('Middleware - Unauthorized access to admin route');
+        return NextResponse.redirect(new URL('/unauthorized', req.url));
+      }
     }
-  }
-  
-  // Mentor routes check
-  if (mentorRoutes.some(route => pathname.startsWith(route))) {
-    console.log('- Checking mentor route access');
-    if (!['MENTOR', 'ADMIN'].includes(userRole)) {
-      console.log('- Access denied: Mentor route requires MENTOR or ADMIN role');
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    
+    if (instructorRoutes.some(route => pathname.startsWith(route))) {
+      if (userRole !== 'INSTRUCTOR' && userRole !== 'ADMIN') {
+        console.log('Middleware - Unauthorized access to instructor route');
+        return NextResponse.redirect(new URL('/unauthorized', req.url));
+      }
     }
-  }
-  
-  // Student routes check - most roles can access student content
-  if (studentRoutes.some(route => pathname.startsWith(route))) {
-    console.log('- Checking student route access');
-    if (!['STUDENT', 'INSTRUCTOR', 'MENTOR', 'ADMIN'].includes(userRole)) {
-      console.log('- Access denied: Student route requires STUDENT, INSTRUCTOR, MENTOR, or ADMIN role');
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    
+    if (mentorRoutes.some(route => pathname.startsWith(route))) {
+      if (userRole !== 'MENTOR' && userRole !== 'ADMIN') {
+        console.log('Middleware - Unauthorized access to mentor route');
+        return NextResponse.redirect(new URL('/unauthorized', req.url));
+      }
     }
-  }
     
     // Add user role to request headers for use in API routes
     const requestHeaders = new Headers(req.headers);

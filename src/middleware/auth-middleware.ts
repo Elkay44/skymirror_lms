@@ -28,7 +28,7 @@ export async function requireAdmin(req: NextRequest) {
   }
   
   const user = await prisma.user.findUnique({
-    where: { id: Number(session.user.id) },
+    where: { id: session.user.id },
     select: { role: true }
   });
   
@@ -50,7 +50,7 @@ export async function requireInstructorOrAdmin(req: NextRequest) {
   }
   
   const user = await prisma.user.findUnique({
-    where: { id: Number(session.user.id) },
+    where: { id: session.user.id },
     select: { role: true }
   });
   
@@ -72,7 +72,7 @@ export async function requireCourseOwnerOrAdmin(req: NextRequest, courseId: stri
   }
   
   const user = await prisma.user.findUnique({
-    where: { id: Number(session.user.id) },
+    where: { id: session.user.id },
     select: { role: true }
   });
   
@@ -109,7 +109,7 @@ export async function requireCourseAccessOrOwner(req: NextRequest, courseId: str
   }
   
   const user = await prisma.user.findUnique({
-    where: { id: Number(session.user.id) },
+    where: { id: session.user.id },
     select: { role: true }
   });
   
@@ -176,7 +176,7 @@ export function withAuth<T>(
     
     if (options?.admin || options?.instructor) {
       const user = await prisma.user.findUnique({
-        where: { id: Number(session.user.id) },
+        where: { id: session.user.id },
         select: { role: true }
       });
       

@@ -291,7 +291,7 @@ export async function POST(req: NextRequest) {
 
     if (!studentProfile) {
       // Create a default student profile if it doesn't exist
-      await prisma.studentProfile.create({
+      const newProfile = await prisma.studentProfile.create({
         data: {
           userId: session.user.id,
           bio: 'Looking to learn and grow',
@@ -300,11 +300,10 @@ export async function POST(req: NextRequest) {
         }
       });
       
-      // Fetch the newly created profile
-      return await prisma.studentProfile.findUnique({
-        where: { userId: session.user.id },
-        include: { user: true }
-      });
+      // Use the newly created profile
+      return NextResponse.json({
+        error: 'Student profile created successfully. Please try again.'
+      }, { status: 201 });
     }
     
     // Check if mentor exists

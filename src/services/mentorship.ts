@@ -77,8 +77,8 @@ export async function requestMentorship({
   menteeId
 }: RequestMentorshipParams): Promise<MentorshipRequest> {
   try {
-    // First, get the mentor profile ID from their user ID
-    const mentorProfileResponse = await fetch(`${API_BASE}/mentor-profile/${mentorId}`, {
+    // First, get the mentor profile
+    const mentorProfileResponse = await fetch(`${API_BASE}/profile/${mentorId}`, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -94,27 +94,7 @@ export async function requestMentorship({
 
     const mentorProfileData = await mentorProfileResponse.json();
     
-    // Then create or get the student profile
-    const profileResponse = await fetch(`${API_BASE}/profile`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        menteeId
-      })
-    });
-    
-    if (!profileResponse.ok) {
-      const errorData = await profileResponse.json();
-      throw new Error(errorData.error || 'Failed to create student profile');
-    }
-
-    const profileData = await profileResponse.json();
-    
-    // Now create the mentorship request
+    // Create the mentorship request
     const response = await fetch(`${API_BASE}`, {
       method: 'POST',
       credentials: 'include',
@@ -123,19 +103,32 @@ export async function requestMentorship({
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        mentorId: mentorProfileData.id, // Use the mentor's profile ID
+        mentorId: mentorProfileData.id,
         title: title || `Mentorship Session`,
         description: description || 'Mentorship session request',
         scheduledAt,
         duration: duration || 60,
         meetingUrl: meetingUrl || null,
         notes: notes || null,
-        menteeId: profileData.id
+        menteeId
       })
     });
     
     if (!response.ok) {
       const errorData = await response.json();
+      if (errorData.error === 'Student profile created successfully. Please try again.') {
+        // If student profile was just created, retry the request
+        return requestMentorship({
+          mentorId,
+          description,
+          title,
+          scheduledAt,
+          duration,
+          meetingUrl,
+          notes,
+          menteeId
+        });
+      }
       throw new Error(errorData.error || 'Failed to create mentorship request');
     }
     
