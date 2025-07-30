@@ -12,12 +12,9 @@ export interface MentorProfile {
   id: string;
   userId: string;
   bio: string | null;
-  specialties?: string[];
-  experience?: string;
-  education?: string;
-  sessionRate?: number;
-  isAvailable?: boolean;
-  timezone?: string;
+  specialties: string | null;
+  rating: number;
+  reviewCount: number;
   createdAt: Date;
   updatedAt: Date;
   user: User;
@@ -27,7 +24,6 @@ export interface StudentProfile {
   id: string;
   userId: string;
   bio: string | null;
-  learningGoals: string;
   createdAt: Date;
   updatedAt: Date;
   user: User;
@@ -52,6 +48,20 @@ export interface MentorSession {
   mentee: StudentProfile;
 }
 
+export interface Mentor {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+  role: string;
+  bio: string | null;
+  specialties: string | null;
+  rating: number;
+  reviewCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface FormattedMentorSession {
   id: string;
   title: string;
@@ -61,16 +71,26 @@ export interface FormattedMentorSession {
   duration: number;
   meetingUrl: string | null;
   notes: string | null;
-  mentor: {
-    id: string;
-    name: string | null;
-    email: string;
-    bio: string | null;
+  mentorId: string;
+  menteeId: string;
+  mentor: User & {
+    mentorProfile: {
+      id: string;
+      bio: string | null;
+      specialties: string | null;
+      rating: number;
+      reviewCount: number;
+      createdAt: Date;
+      updatedAt: Date;
+    }
   };
-  mentee: {
-    id: string;
-    name: string | null;
-    email: string;
+  mentee: User & {
+    studentProfile: {
+      id: string;
+      bio: string | null;
+      createdAt: Date;
+      updatedAt: Date;
+    }
   };
   createdAt: Date;
   updatedAt: Date;

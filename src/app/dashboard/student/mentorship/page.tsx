@@ -18,7 +18,7 @@ import { Mentor, fetchMentors, requestMentorship, fetchMyMentorships, cancelMent
 import { useToast } from '@/components/ui/use-toast';
 
 type TabValue = 'find' | 'my' | 'requests';
-type ToastVariant = 'default' | 'destructive' | 'success' | 'info' | 'warning';
+
 
 export default function StudentMentorshipPage() {
   const { data: session } = useSession();
@@ -33,38 +33,62 @@ export default function StudentMentorshipPage() {
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
   const [requestMessage, setRequestMessage] = useState('');
 
-  const { showToast } = useToast() as unknown as {
-    showToast: (props: { title: string; description?: string; variant?: ToastVariant }) => void;
-  };
+  const { toast } = useToast();
 
   // Load data
   useEffect(() => {
+    // Only load data if user is authenticated
+    if (!session?.user?.id) {
+      return;
+    }
+
     async function loadData() {
       try {
         setIsLoading(true);
         setError(null);
         
-        const [mentorsData, mentorshipsData] = await Promise.all([
-          fetchMentors(),
-          fetchMyMentorships()
-        ]);
+        // Type guard to ensure session.user is defined
+        if (!session?.user) {
+          throw new Error('User session not available');
+        }
+
+        if (session.user.role !== 'STUDENT') {
+          throw new Error('User must be a student to view mentorships');
+        }
         
+        // Fetch mentors first
+        const mentorsData = await fetchMentors();
+        if (!mentorsData || !Array.isArray(mentorsData)) {
+          throw new Error('Failed to fetch mentors');
+        }
         setMentors(mentorsData);
         
-        // Filter accepted mentorships
-        const acceptedMentorships = mentorshipsData.filter((req: MentorshipRequest) => req.status === 'ACCEPTED');
-        const mentorIds = new Set(acceptedMentorships.map((req: MentorshipRequest) => req.mentor.id));
+        // Then fetch mentor sessions
+        const mentorshipsData = await fetchMyMentorships();
+        if (!mentorshipsData || !Array.isArray(mentorshipsData)) {
+          throw new Error('Failed to fetch mentorships');
+        }
+        
+        // Filter accepted mentor sessions
+        const acceptedSessions = mentorshipsData.filter((request: any) => request.status === 'ACCEPTED');
+        const mentorIds = new Set(acceptedSessions.map((request: any) => request.mentor.id));
         const myMentorsData = mentorsData.filter((mentor: Mentor) => mentorIds.has(mentor.id));
         
+        // Update state with filtered data
         setMyMentors(myMentorsData);
         setRequests(mentorshipsData);
       } catch (err: any) {
-        const message = err.message;
+        console.error('Error in loadData:', err);
+        const message = err.message || 'An unexpected error occurred';
         setError(message);
-        showToast({
+        toast({
           title: 'Error',
           description: message,
-          variant: 'destructive',
+          type: 'destructive',
+          action: {
+            label: 'Retry',
+            onClick: () => loadData()
+          }
         });
       } finally {
         setIsLoading(false);
@@ -72,7 +96,7 @@ export default function StudentMentorshipPage() {
     }
 
     loadData();
-  }, [showToast]);
+  }, [session]);
 
   const handleRequestMentorship = async () => {
     try {
@@ -104,18 +128,18 @@ export default function StudentMentorshipPage() {
       setSelectedMentor(null);
       setRequestMessage('');
       
-      showToast({
+      toast({
         title: 'Request Sent',
         description: `Your mentorship request has been sent to ${selectedMentor.name || 'the mentor'}`,
-        variant: 'success' as ToastVariant,
+        type: 'default',
       });
     } catch (err: any) {
       console.error('Error in handleRequestMentorship:', err);
       const message = err.message || 'Failed to send mentorship request';
-      showToast({
+      toast({
         title: 'Error',
         description: message,
-        variant: 'destructive' as ToastVariant,
+        type: 'destructive',
       });
     } finally {
       setIsRequesting(false);
@@ -129,27 +153,32 @@ export default function StudentMentorshipPage() {
       await cancelMentorshipRequest(requestId);
       setRequests(prev => prev.filter(req => req.id !== requestId));
       
-      showToast({
+      toast({
         title: 'Request Cancelled',
         description: 'Your mentorship request has been cancelled',
       });
     } catch (err: any) {
       const message = err.message;
-      showToast({
+      toast({
         title: 'Error',
         description: message,
-        variant: 'destructive' as ToastVariant,
+        type: 'destructive',
       });
     }
   };
 
   // Filter mentors based on search term
-  const filteredMentors = mentors.filter(mentor => 
-    mentor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    mentor.specialties.some((s: string) => 
-      s.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
+  const filteredMentors = mentors.filter(mentor => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      mentor.name.toLowerCase().includes(searchLower) ||
+      (mentor.specialties && 
+        Array.isArray(JSON.parse(mentor.specialties)) &&
+        JSON.parse(mentor.specialties).some((s: string) => 
+          s.toLowerCase().includes(searchLower)
+        ))
+    );
+  });
 
   // Get status badge color
   const getStatusBadge = (status: string) => {
@@ -236,11 +265,13 @@ export default function StudentMentorshipPage() {
                           {mentor.bio}
                         </p>
                         <div className="flex flex-wrap gap-1 mb-3">
-                          {(mentor.specialties || []).slice(0, 3).map((specialty: string) => (
-                            <Badge key={specialty} variant="secondary">
-                              {specialty}
-                            </Badge>
-                          ))}
+                          {mentor.specialties && 
+                            Array.isArray(JSON.parse(mentor.specialties)) &&
+                            JSON.parse(mentor.specialties).slice(0, 3).map((specialty: string) => (
+                              <Badge key={specialty} variant="secondary">
+                                {specialty}
+                              </Badge>
+                            ))}
                         </div>
                         <div className="flex items-center text-sm text-muted-foreground">
                           <Star className="h-4 w-4 mr-1 text-yellow-500 fill-yellow-500" />
@@ -277,9 +308,8 @@ export default function StudentMentorshipPage() {
                       <Button 
                         className="w-full" 
                         onClick={() => setSelectedMentor(mentor)}
-                        disabled={!mentor.isAvailable}
                       >
-                        {mentor.isAvailable ? 'Request Mentorship' : 'Not Available'}
+                        'Request Mentorship'
                       </Button>
                     </CardFooter>
                   </Card>

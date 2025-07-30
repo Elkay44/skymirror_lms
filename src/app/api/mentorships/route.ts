@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
@@ -6,179 +6,77 @@ import {
   MentorSession,
   MentorSessionStatus,
   FormattedMentorSession,
+  User,
   MentorProfile,
-  StudentProfile,
-  User
+  StudentProfile
 } from '@/types/mentorship';
+import { Session } from '@prisma/client';
 
 /**
  * GET /api/mentorships
  * Get all mentor sessions for the current user (either as mentor or mentee)
  */
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
+    console.log('Mentorship API GET request received');
+    
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
+      console.error('Unauthorized access attempt - no user ID');
       return NextResponse.json(
-        { error: 'Unauthorized' }, 
+        { error: 'Unauthorized. Please log in to view mentorships.' }, 
         { status: 401 }
       );
     }
 
+    if (!session?.user?.role) {
+      console.error('Unauthorized access attempt - no user role');
+      return NextResponse.json(
+        { error: 'User role not found' }, 
+        { status: 400 }
+      );
+    }
+
+    console.log('Authenticated user:', { userId: session.user.id, role: session.user.role });
+    
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status') as MentorSessionStatus | null;
     const role = searchParams.get('role') as 'mentor' | 'student' | null;
 
     if (role === 'student') {
-      // Get mentor sessions where user is the student
-      const mentorSessions = await prisma.mentorSession.findMany({
-        where: {
-          menteeId: session.user.id,
-          ...(status ? { status: status as any } : {})
-        },
-        include: {
-          mentor: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-              mentorProfile: {
-                select: {
-                  bio: true,
-                  specialties: true,
-                  experience: true,
-                  availability: true,
-                  isActive: true
-                }
-              }
-            }
-          },
-          mentee: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-              studentProfile: {
-                select: {
-                  bio: true,
-                  learningGoals: true,
-                  interests: true,
-                  goals: true,
-                  preferredLearningStyle: true
-                }
-              }
-            }
-          }
-        },
-        orderBy: {
-          scheduledAt: 'desc'
-        }
-      });
-
-      const formattedSessions = mentorSessions.map((session) => ({
-        id: session.id,
-        title: session.title,
-        description: session.description,
-        status: session.status as MentorSessionStatus,
-        scheduledAt: session.scheduledAt,
-        duration: session.duration,
-        meetingUrl: session.meetingUrl,
-        notes: session.notes,
-        mentor: {
-          id: session.mentorId,
-          name: session.mentor?.name || null,
-          email: session.mentor?.email || '',
-          bio: session.mentor?.mentorProfile?.bio || '',
-          specialties: session.mentor?.mentorProfile?.specialties ? session.mentor?.mentorProfile?.specialties.split(',') : [],
-          experience: session.mentor?.mentorProfile?.experience || '',
-          availability: session.mentor?.mentorProfile?.availability || '',
-          isActive: session.mentor?.mentorProfile?.isActive || false
-        },
-        mentee: {
-          id: session.menteeId,
-          name: session.mentee?.name || null,
-          email: session.mentee?.email || '',
-          bio: session.mentee?.studentProfile?.bio || '',
-          learningGoals: session.mentee?.studentProfile?.learningGoals || '',
-          interests: session.mentee?.studentProfile?.interests || '',
-          goals: session.mentee?.studentProfile?.goals || '',
-          preferredLearningStyle: session.mentee?.studentProfile?.preferredLearningStyle || ''
-        },
-        createdAt: session.createdAt,
-        updatedAt: session.updatedAt,
-      }));
-
-      return NextResponse.json(formattedSessions);
-    } else {
-      // Get all mentor sessions where user is either mentor or mentee
-      const [asMentor, asMentee] = await Promise.all([
-        prisma.mentorSession.findMany({
-          where: {
-            mentorId: session.user.id,
-            ...(status ? { status: status as any } : {})
-          },
-          include: {
-            mentor: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
-                mentorProfile: {
-                  select: {
-                    bio: true,
-                    specialties: true,
-                    experience: true,
-                    availability: true,
-                    isActive: true
-                  }
-                }
-              }
-            },
-            mentee: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
-                studentProfile: {
-                  select: {
-                    bio: true,
-                    learningGoals: true,
-                    interests: true,
-                    goals: true,
-                    preferredLearningStyle: true
-                  }
-                }
-              }
-            }
-          },
-          orderBy: {
-            scheduledAt: 'desc'
-          }
-        }),
-        prisma.mentorSession.findMany({
+      try {
+        console.log('Fetching mentorship requests for student with role:', session.user.role);
+        const mentorshipRequests = await prisma.mentorSession.findMany({
           where: {
             menteeId: session.user.id,
             ...(status ? { status: status as any } : {})
           },
-          include: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            status: true,
+            scheduledAt: true,
+            duration: true,
+            meetingUrl: true,
+            notes: true,
+            createdAt: true,
+            updatedAt: true,
             mentor: {
               select: {
                 id: true,
                 name: true,
-                email: true,
                 image: true,
                 mentorProfile: {
                   select: {
+                    id: true,
                     bio: true,
                     specialties: true,
-                    experience: true,
-                    availability: true,
-                    isActive: true
+                    rating: true,
+                    reviewCount: true,
+                    createdAt: true,
+                    updatedAt: true
                   }
                 }
               }
@@ -187,67 +85,158 @@ export async function GET(req: Request) {
               select: {
                 id: true,
                 name: true,
-                email: true,
                 image: true,
                 studentProfile: {
                   select: {
+                    id: true,
                     bio: true,
-                    learningGoals: true,
-                    interests: true,
-                    goals: true,
-                    preferredLearningStyle: true
+                    createdAt: true,
+                    updatedAt: true
                   }
                 }
               }
             }
           },
           orderBy: {
-            scheduledAt: 'desc'
+            createdAt: 'desc'
           }
-        })
-      ]);
+        });
 
-      const formattedSessions = [...asMentor, ...asMentee].map((session) => ({
-        id: session.id,
-        title: session.title,
-        description: session.description,
-        status: session.status as MentorSessionStatus,
-        scheduledAt: session.scheduledAt,
-        duration: session.duration,
-        meetingUrl: session.meetingUrl,
-        notes: session.notes,
-        mentor: {
-          id: session.mentorId,
-          name: session.mentor?.name || null,
-          email: session.mentor?.email || '',
-          bio: session.mentor?.mentorProfile?.bio || '',
-          specialties: session.mentor?.mentorProfile?.specialties || [],
-          experience: session.mentor?.mentorProfile?.experience || '',
-          availability: session.mentor?.mentorProfile?.availability || '',
-          isActive: session.mentor?.mentorProfile?.isActive || false
-        },
-        mentee: {
-          id: session.menteeId,
-          name: session.mentee?.name || null,
-          email: session.mentee?.email || '',
-          bio: session.mentee?.studentProfile?.bio || '',
-          learningGoals: session.mentee?.studentProfile?.learningGoals || '',
-          interests: session.mentee?.studentProfile?.interests || '',
-          goals: session.mentee?.studentProfile?.goals || '',
-          preferredLearningStyle: session.mentee?.studentProfile?.preferredLearningStyle || ''
-        },
-        createdAt: session.createdAt,
-        updatedAt: session.updatedAt,
-      }));
+        console.log('Found mentorship requests:', mentorshipRequests.length);
+        console.log('First request:', mentorshipRequests[0]);
+        
+        return NextResponse.json({ data: mentorshipRequests, error: null });
+      } catch (error) {
+        console.error('Error fetching mentorship requests:', error);
+        return NextResponse.json({ error: 'Failed to fetch mentorship requests' }, { status: 500 });
+      }
+    } else {
+      try {
+        console.log('Fetching mentor sessions for user with role:', session.user.role);
+        const [mentorSessions, menteeSessions] = await Promise.all([
+          prisma.mentorSession.findMany({
+            where: {
+              mentorId: session.user.id,
+              ...(status ? { status: status as any } : {})
+            },
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              status: true,
+              scheduledAt: true,
+              duration: true,
+              meetingUrl: true,
+              notes: true,
+              createdAt: true,
+              updatedAt: true,
+              mentor: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  mentorProfile: {
+                    select: {
+                      id: true,
+                      bio: true,
+                      specialties: true,
+                      rating: true,
+                      reviewCount: true,
+                      createdAt: true,
+                      updatedAt: true
+                    }
+                  }
+                }
+              },
+              mentee: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  studentProfile: {
+                    select: {
+                      id: true,
+                      bio: true,
+                      createdAt: true,
+                      updatedAt: true
+                    }
+                  }
+                }
+              }
+            },
+            orderBy: {
+              createdAt: 'desc'
+            }
+          }),
+          prisma.mentorSession.findMany({
+            where: {
+              menteeId: session.user.id,
+              ...(status ? { status: status as any } : {})
+            },
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              status: true,
+              scheduledAt: true,
+              duration: true,
+              meetingUrl: true,
+              notes: true,
+              createdAt: true,
+              updatedAt: true,
+              mentor: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  mentorProfile: {
+                    select: {
+                      id: true,
+                      bio: true,
+                      specialties: true,
+                      rating: true,
+                      reviewCount: true,
+                      createdAt: true,
+                      updatedAt: true
+                    }
+                  }
+                }
+              },
+              mentee: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  studentProfile: {
+                    select: {
+                      id: true,
+                      bio: true,
+                      createdAt: true,
+                      updatedAt: true
+                    }
+                  }
+                }
+              }
+            },
+            orderBy: {
+              createdAt: 'desc'
+            }
+          })
+        ]);
 
-      return NextResponse.json(formattedSessions);
+        const allSessions = [...mentorSessions, ...menteeSessions];
+        console.log('Found mentor sessions:', allSessions.length);
+        console.log('First session:', allSessions[0]);
+        
+        return NextResponse.json({ data: allSessions, error: null });
+      } catch (error) {
+        console.error('Error fetching mentor sessions:', error);
+        return NextResponse.json({ error: 'Failed to fetch mentor sessions' }, { status: 500 });
+      }
     }
   } catch (error) {
-    console.error('Error fetching mentor sessions:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch mentor sessions' },
-      { status: 500 }
-    );
+    console.error('Error in mentorship API:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -255,7 +244,7 @@ export async function GET(req: Request) {
  * POST /api/mentorships
  * Schedule a new mentor session
  */
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -269,14 +258,22 @@ export async function POST(req: Request) {
     const { 
       mentorId, 
       title, 
-      description = null, 
+      description, 
       scheduledAt, 
       duration,
-      meetingUrl = null,
-      notes = null
-    } = await req.json();
-    
-    const menteeId = session.user.id;
+      meetingUrl,
+      menteeId,
+      notes
+    } = await req.json() as {
+      mentorId: string;
+      title: string;
+      description: string | null;
+      scheduledAt: string;
+      duration: number;
+      meetingUrl: string | null;
+      menteeId: string;
+      notes?: string | null;
+    };
     
     // Validate required fields
     if (!mentorId || !title || !scheduledAt || !duration) {
@@ -343,71 +340,78 @@ export async function POST(req: Request) {
       data: {
         title,
         description,
-        status: 'SCHEDULED' as MentorSessionStatus,
-        scheduledAt: new Date(scheduledAt),
+        status: 'SCHEDULED',
+        scheduledAt,
         duration,
-        meetingUrl: meetingUrl || null,
-        notes: notes || null,
-        mentor: { connect: { id: mentorId } },
-        mentee: { connect: { userId: menteeId } },
-      },
-      include: {
+        meetingUrl,
+        notes,
+        mentorId: mentorId,
+        menteeId: menteeId,
         mentor: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
-              },
-            },
-          },
+          connect: { id: mentorId }
         },
         mentee: {
-          include: {
-            user: {
+          connect: { id: menteeId }
+        }
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        scheduledAt: true,
+        duration: true,
+        meetingUrl: true,
+        notes: true,
+        mentorId: true,
+        menteeId: true,
+        mentor: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            email: true,
+            role: true,
+            mentorProfile: {
               select: {
                 id: true,
-                name: true,
-                email: true,
-                image: true,
-              },
-            },
-          },
+                bio: true,
+                specialties: true,
+                rating: true,
+                reviewCount: true,
+                createdAt: true,
+                updatedAt: true
+              }
+            }
+          }
         },
-      },
-    }) as unknown as MentorSession;
-
-    // Format the response
-    const mentor = newSession.mentor as MentorProfile;
-    const mentee = newSession.mentee as StudentProfile;
+        mentee: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            email: true,
+            role: true,
+            studentProfile: {
+              select: {
+                id: true,
+                bio: true,
+                learningGoals: true,
+                interests: true,
+                goals: true,
+                preferredLearningStyle: true,
+                createdAt: true,
+                updatedAt: true
+              }
+            }
+          }
+        },
+        createdAt: true,
+        updatedAt: true
+      }
+    });
     
-    const formattedSession: FormattedMentorSession = {
-      id: newSession.id,
-      title: newSession.title,
-      description: newSession.description,
-      status: newSession.status as MentorSessionStatus,
-      scheduledAt: newSession.scheduledAt,
-      duration: newSession.duration,
-      meetingUrl: newSession.meetingUrl,
-      notes: newSession.notes,
-      mentor: {
-        id: mentor.id,
-        name: mentor.user?.name || null,
-        email: mentor.user?.email || '',
-        bio: mentor.bio || null,
-      },
-      mentee: {
-        id: mentee.id,
-        name: mentee.user?.name || null,
-        email: mentee.user?.email || '',
-      },
-      createdAt: newSession.createdAt,
-      updatedAt: newSession.updatedAt,
-    };
-    
-    return NextResponse.json(formattedSession, { status: 201 });
+    return NextResponse.json(newSession, { status: 201 });
   } catch (error) {
     console.error('Error creating mentor session:', error);
     return NextResponse.json(

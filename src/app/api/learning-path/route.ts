@@ -37,9 +37,9 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Return learning goals from student profile along with enrollments
+    // Return student profile data along with enrollments
     return NextResponse.json({ 
-      learningPath: studentProfile?.learningGoals || '',
+      learningPath: studentProfile?.bio || '',
       enrollments: enrollments || []
     });
   } catch (error) {
@@ -101,13 +101,13 @@ export async function POST(request: Request) {
     const requestData = await request.json();
     const { goals, userPreferences } = requestData;
 
-    // Update or create student profile with learning goals
+    // Update or create student profile with bio
     await prisma.studentProfile.upsert({
       where: { userId: user.id },
-      update: { learningGoals: goals || '' },
+      update: { bio: goals || '' },
       create: { 
         userId: user.id, 
-        learningGoals: goals || '' 
+        bio: goals || '' 
       },
     });
 
@@ -132,7 +132,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Return success response with the updated learning goals and AI recommendations
+    // Return success response with the updated bio and AI recommendations
     return NextResponse.json({ 
       success: true,
       learningPath: goals || '',

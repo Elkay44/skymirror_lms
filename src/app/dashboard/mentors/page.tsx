@@ -77,7 +77,7 @@ const MentorCard: React.FC<MentorCardProps> = ({ mentor, onRequest, onMessage })
       <CardContent className="space-y-2">
         <div className="flex items-center text-sm text-muted-foreground">
           <Clock className="mr-2 h-4 w-4" />
-          <span>{mentor.responseTime || 'Usually responds within 24 hours'}</span>
+          <span>Usually responds within 24 hours</span>
         </div>
         <p className="text-sm text-muted-foreground line-clamp-2">
           {mentor.bio || 'Experienced mentor with a passion for helping others grow.'}
@@ -88,9 +88,9 @@ const MentorCard: React.FC<MentorCardProps> = ({ mentor, onRequest, onMessage })
           <MessageSquare className="mr-2 h-4 w-4" />
           Message
         </Button>
-        <Button size="sm" onClick={() => onRequest(mentor)} disabled={!mentor.isAvailable}>
+        <Button size="sm" onClick={() => onRequest(mentor)}>
           <User className="mr-2 h-4 w-4" />
-          {mentor.isAvailable ? 'Request Session' : 'Not Available'}
+          Request Session
         </Button>
       </CardFooter>
     </Card>
@@ -198,12 +198,16 @@ export default function MentorsPage() {
     loadData();
   }, [toast, router]);
 
-  const filteredMentors = mentors.filter(mentor =>
-    mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    mentor.specialties.some(specialty => 
-      specialty.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  );
+  const filteredMentors = mentors.filter((mentor) => {
+    if (!searchQuery) return true;
+    return (
+      mentor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      mentor.bio?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (mentor.specialties && mentor.specialties.split(',').some((specialty: string) => 
+        specialty.toLowerCase().includes(searchQuery.toLowerCase())
+      ))
+    );
+  });
 
   const handleRequestMentorship = async (mentor: Mentor) => {
     try {
@@ -217,7 +221,19 @@ export default function MentorsPage() {
         return;
       }
 
-      await requestMentorship(mentor.id, `I would like to request mentorship for ${mentor.role}`);
+      // Default to a session 1 week from now at 2 PM
+      const defaultDate = new Date();
+      defaultDate.setDate(defaultDate.getDate() + 7);
+      defaultDate.setHours(14, 0, 0, 0);
+
+      await requestMentorship({
+        mentorId: mentor.id,
+        description: `I would like to request mentorship for ${mentor.role}`,
+        title: `Mentorship Session with ${mentor.name}`,
+        scheduledAt: defaultDate.toISOString(),
+        duration: 60, // 60 minutes
+        notes: `Mentorship request for ${mentor.role} role`
+      });
       
       toast({
         title: 'Mentorship Requested',
@@ -232,7 +248,8 @@ export default function MentorsPage() {
       console.error('Error requesting mentorship:', error);
       toast({
         title: 'Error',
-        description: 'Failed to send mentorship request. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to send mentorship request. Please try again.',
+        type: 'destructive'
       });
     }
   };

@@ -74,9 +74,7 @@ export async function POST(req: NextRequest) {
         await prisma.studentProfile.create({
           data: {
             userId: user.id,
-            interests: '',
-            goals: '',
-            preferredLearningStyle: '',
+            bio: 'New student profile',
           }
         });
         console.log('Created student profile');
@@ -92,10 +90,9 @@ export async function POST(req: NextRequest) {
           data: {
             userId: user.id,
             bio: '',
-            specialties: '',
-            experience: '',
-            availability: '',
-            isActive: true,
+            specialties: '[]',
+            rating: 0,
+            reviewCount: 0,
           }
         });
         console.log('Created mentor profile');

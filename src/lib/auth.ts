@@ -39,7 +39,6 @@ declare module 'next-auth' {
     studentProfile?: {
       id: string;
       bio: string | null;
-      learningGoals: string;
     };
     mentorProfile?: {
       id: string;
@@ -147,7 +146,6 @@ const authOptions: AuthOptions = {
               const profile = await prisma.studentProfile.create({
                 data: {
                   userId: user.id,
-                  learningGoals: 'Add your learning goals here',
                   bio: 'New student',
                 },
               });

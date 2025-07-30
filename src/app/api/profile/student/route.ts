@@ -36,8 +36,7 @@ export async function GET() {
         await prisma.studentProfile.create({
           data: {
             userId: user.id,
-            bio: 'New student',
-            learningGoals: 'Complete my first certification',
+            bio: 'Complete my first certification',
           },
         });
         console.log('Successfully created student profile');
@@ -103,14 +102,10 @@ export async function PUT(request: Request) {
     // Check if the user has a student profile
     if (user.studentProfile) {
       // Update existing student profile
-      const profileUpdate: any = {};
-      if (bio !== undefined) profileUpdate.bio = bio;
-      if (studentProfile?.learningGoals !== undefined) profileUpdate.learningGoals = studentProfile.learningGoals;
-      
-      if (Object.keys(profileUpdate).length > 0) {
+      if (bio !== undefined) {
         await prisma.studentProfile.update({
           where: { userId: user.id },
-          data: profileUpdate,
+          data: { bio },
         });
       }
     } else if (user.role === 'STUDENT') {
@@ -119,7 +114,6 @@ export async function PUT(request: Request) {
         data: {
           userId: user.id,
           bio: bio || 'New student',
-          learningGoals: studentProfile?.learningGoals || 'Set your learning goals',
         },
       });
     }

@@ -173,6 +173,30 @@ async function main() {
 
   console.log('✅ Instructors created');
 
+  // Create test student user
+  const testStudent = await prisma.user.upsert({
+    where: { email: 'lukman.ibrahim@skymirror.eu' },
+    update: {},
+    create: {
+      name: 'Lukman Ibrahim',
+      email: 'lukman.ibrahim@skymirror.eu',
+      password: await hash('password123', 12),
+      role: 'STUDENT',
+    },
+  });
+
+  // Create student profile
+  await prisma.studentProfile.upsert({
+    where: { userId: testStudent.id },
+    update: {},
+    create: {
+      userId: testStudent.id,
+      bio: 'New student learning web development',
+    },
+  });
+
+  console.log('✅ Test student user created');
+
   // Create courses
   console.log('Creating courses...');
   for (const [index, courseData] of sampleCourses.entries()) {

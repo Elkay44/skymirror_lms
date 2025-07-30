@@ -81,8 +81,6 @@ export async function POST(request: Request) {
           data: {
             userId: user.id,
             bio: '',
-            learningGoals: 'Initial learning goals',
-            // Set default values for required fields
             createdAt: new Date(),
             updatedAt: new Date()
           }
@@ -92,7 +90,9 @@ export async function POST(request: Request) {
           data: {
             userId: user.id,
             bio: 'New mentor profile',
-            // Set default values for required fields
+            specialties: '[]',
+            rating: 0,
+            reviewCount: 0,
             createdAt: new Date(),
             updatedAt: new Date()
           }
