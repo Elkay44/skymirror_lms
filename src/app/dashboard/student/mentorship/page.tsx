@@ -2,241 +2,178 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Search, User, MessageSquare, Clock, Check, X, Star, Loader2, AlertCircle, Calendar as CalendarIcon } from 'lucide-react';
-import { format } from 'date-fns';
-import { MentorshipRequest } from '@/types/mentorship';
-import { Mentor, fetchMentors, requestMentorship, fetchMyMentorships, cancelMentorshipRequest } from '@/services/mentorship';
-import { useToast } from '@/components/ui/use-toast';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Loader2, MessageSquare, Search, Star, Clock, X, CalendarIcon } from "lucide-react"
+import { format, addDays } from 'date-fns'
+import { Mentor, MentorshipRequest } from '@/types/mentorship'
+import { RequestMentorshipParams } from '@/services/mentorship'
+import { requestMentorship, fetchMentors, fetchMyMentorships, cancelMentorshipRequest } from '@/services/mentorship'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { toast } from 'sonner'
 
 type TabValue = 'find' | 'my' | 'requests';
 
-
-export default function StudentMentorshipPage() {
+export default function MentorshipPage() {
   const { data: session } = useSession();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<TabValue>('find');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [mentors, setMentors] = useState<Mentor[]>([]);
-  const [myMentors, setMyMentors] = useState<Mentor[]>([]);
-  const [requests, setRequests] = useState<MentorshipRequest[]>([]);
-  const [isRequesting, setIsRequesting] = useState(false);
-  const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
-  const [requestMessage, setRequestMessage] = useState('');
+  const [mentors, setMentors] = useState<Mentor[]>([])
+  const [myMentors, setMyMentors] = useState<MentorshipRequest[]>([])
+  const [requests, setRequests] = useState<MentorshipRequest[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<TabValue>('find')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null)
+  const [requestMessage, setRequestMessage] = useState('')
+  const [sessionDate, setSessionDate] = useState<Date>(addDays(new Date(), 1))
+  const [duration, setDuration] = useState<number>(60)
+  const [isRequesting, setIsRequesting] = useState(false)
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
-  const { toast } = useToast();
-
-  // Load data
   useEffect(() => {
-    // Only load data if user is authenticated
-    if (!session?.user?.id) {
-      return;
+    loadData()
+  }, [session])
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true)
+      
+      const [mentorsData, myMentorsData, requestsData] = await Promise.all([
+        fetchMentors(),
+        fetchMyMentorships(),
+        fetchMyMentorships()
+      ])
+      
+      // Map mentors to ensure type compatibility
+      const formattedMentors = mentorsData.map((mentor: any) => ({
+        id: mentor.id,
+        name: mentor.name,
+        image: mentor.image || null,
+        email: mentor.email,
+        role: mentor.role,
+        bio: mentor.bio,
+        specialties: mentor.specialties,
+        rating: mentor.rating,
+        reviewCount: mentor.reviewCount,
+        createdAt: new Date(mentor.createdAt),
+        updatedAt: new Date(mentor.updatedAt)
+      })) as Mentor[]
+      
+      setMentors(formattedMentors)
+      setMyMentors(myMentorsData)
+      setRequests(requestsData)
+    } catch (error) {
+      toast.error('Failed to load mentorship data')
+    } finally {
+      setIsLoading(false)
     }
-
-    async function loadData() {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        // Type guard to ensure session.user is defined
-        if (!session?.user) {
-          throw new Error('User session not available');
-        }
-
-        if (session.user.role !== 'STUDENT') {
-          throw new Error('User must be a student to view mentorships');
-        }
-        
-        // Fetch mentors first
-        const mentorsData = await fetchMentors();
-        if (!mentorsData || !Array.isArray(mentorsData)) {
-          throw new Error('Failed to fetch mentors');
-        }
-        setMentors(mentorsData);
-        
-        // Then fetch mentor sessions
-        const mentorshipsData = await fetchMyMentorships();
-        if (!mentorshipsData || !Array.isArray(mentorshipsData)) {
-          throw new Error('Failed to fetch mentorships');
-        }
-        
-        // Filter accepted mentor sessions
-        const acceptedSessions = mentorshipsData.filter((request: any) => request.status === 'ACCEPTED');
-        const mentorIds = new Set(acceptedSessions.map((request: any) => request.mentor.id));
-        const myMentorsData = mentorsData.filter((mentor: Mentor) => mentorIds.has(mentor.id));
-        
-        // Update state with filtered data
-        setMyMentors(myMentorsData);
-        setRequests(mentorshipsData);
-      } catch (err: any) {
-        console.error('Error in loadData:', err);
-        const message = err.message || 'An unexpected error occurred';
-        setError(message);
-        toast({
-          title: 'Error',
-          description: message,
-          type: 'destructive',
-          action: {
-            label: 'Retry',
-            onClick: () => loadData()
-          }
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadData();
-  }, [session]);
+  };
 
   const handleRequestMentorship = async () => {
+    if (!selectedMentor || !session?.user?.id) return;
+
     try {
-      // Check if selectedMentor exists and has an id
-      if (!selectedMentor || !selectedMentor.id) {
-        throw new Error('No mentor selected or invalid mentor data');
-      }
-      
       setIsRequesting(true);
       
-      // Ensure we have a valid mentor ID before making the request
-      const mentorId = selectedMentor.id;
-      if (!mentorId) {
-        throw new Error('Invalid mentor ID');
-      }
+      const requestParams: RequestMentorshipParams = {
+        mentorId: selectedMentor.id,
+        menteeId: session.user.id,
+        title: `Mentorship Session with ${selectedMentor.name}`,
+        description: requestMessage,
+        scheduledAt: sessionDate.toISOString(),
+        duration: duration,
+        meetingUrl: undefined,
+        notes: undefined
+      };
+
+      await requestMentorship(requestParams);
       
-      // Get user ID from session
-      const userId = session?.user?.id;
-      if (!userId) {
-        throw new Error('User not authenticated');
-      }
+      // Refresh data after successful request
+      await loadData();
       
-      const newRequest = await requestMentorship({
-        mentorId,
-        description: requestMessage || 'I would like to request mentorship with you.',
-        title: 'Mentorship Request',
-        scheduledAt: new Date().toISOString(),
-        duration: 60, // Default to 60 minutes
-        menteeId: userId,
-        notes: '' // Add empty notes if required
-      });
-      
-      setRequests(prev => [...prev, newRequest]);
+      toast.success('Mentorship request sent successfully');
       setSelectedMentor(null);
       setRequestMessage('');
-      
-      toast({
-        title: 'Request Sent',
-        description: `Your mentorship request has been sent to ${selectedMentor.name || 'the mentor'}`,
-        type: 'default',
-      });
-    } catch (err: any) {
-      console.error('Error in handleRequestMentorship:', err);
-      const message = err.message || 'Failed to send mentorship request';
-      toast({
-        title: 'Error',
-        description: message,
-        type: 'destructive',
-      });
+      setSessionDate(addDays(new Date(), 1));
+      setDuration(60);
+    } catch (error) {
+      toast.error('Failed to send mentorship request');
     } finally {
       setIsRequesting(false);
     }
   };
 
   const handleCancelRequest = async (requestId: string) => {
-    if (!confirm('Are you sure you want to cancel this request?')) return;
-    
     try {
+      setIsRequesting(true);
       await cancelMentorshipRequest(requestId);
-      setRequests(prev => prev.filter(req => req.id !== requestId));
-      
-      toast({
-        title: 'Request Cancelled',
-        description: 'Your mentorship request has been cancelled',
-      });
-    } catch (err: any) {
-      const message = err.message;
-      toast({
-        title: 'Error',
-        description: message,
-        type: 'destructive',
-      });
+      await loadData();
+      toast.success('Request cancelled successfully');
+    } catch (error) {
+      toast.error('Failed to cancel request');
+    } finally {
+      setIsRequesting(false);
     }
   };
 
-  // Filter mentors based on search term
-  const filteredMentors = mentors.filter(mentor => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      mentor.name.toLowerCase().includes(searchLower) ||
-      (mentor.specialties && 
-        Array.isArray(JSON.parse(mentor.specialties)) &&
-        JSON.parse(mentor.specialties).some((s: string) => 
-          s.toLowerCase().includes(searchLower)
-        ))
-    );
-  });
-
-  // Get status badge color
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'accepted':
-        return 'bg-green-100 text-green-800';
+    switch (status.toLowerCase()) {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
+      case 'accepted':
+        return 'bg-green-100 text-green-800';
       case 'rejected':
-      case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
-  // The Toast component is now properly rendered by the ToastProvider in the root layout
+  const filteredMentors = mentors.filter(mentor => 
+    mentor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    'Mentor'.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (mentor.bio?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+    (mentor.specialties && 
+     Array.isArray(JSON.parse(mentor.specialties)) &&
+     JSON.parse(mentor.specialties).some((specialty: string) => 
+       specialty.toLowerCase().includes(searchTerm.toLowerCase())
+     ))
+  )
+
+
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Mentorship Program</h1>
-        <p className="text-muted-foreground">
-          Connect with experienced mentors to guide you through your learning journey.
-        </p>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Mentorship</h1>
       </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md flex items-start">
-          <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="font-medium">Error</p>
-            <p className="text-sm">{error}</p>
-          </div>
+      {isLoading ? (
+        <div className="flex justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
         </div>
-      )}
+      ) : (
+        <>
+          <Tabs 
+            value={activeTab} 
+            onValueChange={(value: string) => setActiveTab(value as TabValue)}
+            className="space-y-4"
+          >
+            <TabsList>
+              <TabsTrigger value="find">Find Mentors</TabsTrigger>
+              <TabsTrigger value="my">My Mentors</TabsTrigger>
+              <TabsTrigger value="requests">My Requests</TabsTrigger>
+            </TabsList>
 
-      <Tabs 
-        value={activeTab} 
-        onValueChange={(value: string) => setActiveTab(value as TabValue)}
-        className="space-y-4"
-      >
-        <TabsList>
-          <TabsTrigger value="find">Find Mentors</TabsTrigger>
-          <TabsTrigger value="my">My Mentors</TabsTrigger>
-          <TabsTrigger value="requests">My Requests</TabsTrigger>
-        </TabsList>
-
-        {isLoading ? (
-          <div className="flex justify-center p-8">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        ) : (
-          <>
             <TabsContent value="find" className="space-y-4">
               <div className="relative w-full max-w-md">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -251,70 +188,61 @@ export default function StudentMentorshipPage() {
 
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredMentors.map((mentor) => (
-                  <Card key={mentor.id} className="flex flex-col h-full">
+                  <Card key={mentor.id}>
                     <CardHeader>
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-3">
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={mentor.image} alt={mentor.name} />
-                          <AvatarFallback>{mentor.name.charAt(0)}</AvatarFallback>
+                          <AvatarImage src={mentor.image || undefined} alt={mentor.name || 'Mentor'} />
+                          <AvatarFallback>{mentor.name?.charAt(0) || 'M'}</AvatarFallback>
                         </Avatar>
-                        <div className="space-y-1">
-                          <CardTitle className="text-lg">{mentor.name}</CardTitle>
-                          <CardDescription>{mentor.role}</CardDescription>
+                        <div>
+                          <CardTitle>{mentor.name || 'Mentor'}</CardTitle>
+                          <CardDescription>Expert Mentor</CardDescription>
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        <p className="text-sm text-muted-foreground line-clamp-3">
-                          {mentor.bio}
-                        </p>
-                        <div className="flex flex-wrap gap-1 mb-3">
-                          {mentor.specialties && 
-                            Array.isArray(JSON.parse(mentor.specialties)) &&
-                            JSON.parse(mentor.specialties).slice(0, 3).map((specialty: string) => (
-                              <Badge key={specialty} variant="secondary">
-                                {specialty}
-                              </Badge>
-                            ))}
+                        <div>
+                          <h4 className="font-medium">About</h4>
+                          <p className="text-muted-foreground">{mentor.bio || 'No bio available'}</p>
                         </div>
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Star className="h-4 w-4 mr-1 text-yellow-500 fill-yellow-500" />
-                          <span className="font-medium text-foreground">{mentor.rating}</span>
-                          <span className="mx-1">•</span>
-                          <span>{mentor.reviewCount} reviews</span>
+                        {mentor.specialties && (
+                          <div>
+                            <h4 className="font-medium">Specialties</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {JSON.parse(mentor.specialties).map((specialty: string) => (
+                                <Badge key={specialty} variant="secondary">
+                                  {specialty}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        <div>
+                          <h4 className="font-medium">Rating</h4>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              {Array.from({ length: Math.floor(mentor.rating) }).map((_, i) => (
+                                <Star key={i} className="h-4 w-4 fill-yellow-400" />
+                              ))}
+                              {mentor.rating % 1 !== 0 && (
+                                <Star className="h-4 w-4 fill-yellow-400 stroke-yellow-400" />
+                              )}
+                            </div>
+                            <span className="text-muted-foreground">
+                              ({mentor.reviewCount} reviews)
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
-                    <CardFooter className="border-t px-6 py-3">
-                      <div className="flex w-full items-center justify-between">
-                        <Button variant="ghost" size="sm">
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          View Messages
-                        </Button>
-                        {requests.some(req => req.mentor.id === mentor.id && req.status === 'PENDING') && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => handleCancelRequest(mentor.id)}
-                            disabled={isRequesting}
-                          >
-                            {isRequesting ? (
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            ) : (
-                              <X className="h-4 w-4 mr-2" />
-                            )}
-                            Cancel Request
-                          </Button>
-                        )}
-                      </div>
-                    </CardFooter>
-                    <CardFooter className="border-t px-6 py-3">
-                      <Button 
-                        className="w-full" 
+                    <CardFooter>
+                      <Button
+                        variant="outline"
                         onClick={() => setSelectedMentor(mentor)}
                       >
-                        'Request Mentorship'
+                        Request Mentorship
                       </Button>
                     </CardFooter>
                   </Card>
@@ -338,12 +266,12 @@ export default function StudentMentorshipPage() {
                     <CardHeader>
                       <div className="flex items-center space-x-4">
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={mentor.image} alt={mentor.name} />
-                          <AvatarFallback>{mentor.name.charAt(0)}</AvatarFallback>
+                          <AvatarImage src={mentor.mentor.image} alt={mentor.mentor.name} />
+                          <AvatarFallback>{mentor.mentor.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <CardTitle className="text-lg">{mentor.name}</CardTitle>
-                          <CardDescription>{mentor.role}</CardDescription>
+                          <CardTitle className="text-lg">{mentor.mentor.name}</CardTitle>
+                          <CardDescription>Expert Mentor</CardDescription>
                         </div>
                       </div>
                     </CardHeader>
@@ -426,94 +354,89 @@ export default function StudentMentorshipPage() {
                 </div>
               )}
             </TabsContent>
-
-            <TabsContent value="my" className="space-y-4">
-              {myMentors.length > 0 ? (
-                <div className="space-y-4">
-                  {myMentors.map((mentor) => (
-                    <Card key={mentor.id}>
-                      <CardHeader>
-                        <div className="flex items-center space-x-4">
-                          <Avatar className="h-12 w-12">
-                            <AvatarImage src={mentor.image} alt={mentor.name} />
-                            <AvatarFallback>{mentor.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <CardTitle className="text-lg">{mentor.name}</CardTitle>
-                            <CardDescription>{mentor.role}</CardDescription>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <Button className="w-full" variant="outline">
-                            <MessageSquare className="h-4 w-4 mr-2" />
-                            Send Message
-                          </Button>
-                          <Button className="w-full">
-                            <CalendarIcon className="h-4 w-4 mr-2" />
-                            Schedule Session
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium">No mentors yet</h3>
-                  <p className="text-muted-foreground mt-1">
-                    Your accepted mentorship requests will appear here
-                  </p>
-                </div>
-              )}
-            </TabsContent>
-          </>
-        )}
-      </Tabs>
-
+          </Tabs>
+        </>
+      )}
       {/* Request Mentorship Dialog */}
       {selectedMentor && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg w-full max-w-md p-6 space-y-4">
-            <div className="space-y-2">
+          <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-6">
+            <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-medium">Request Mentorship</h3>
-              <p className="text-sm text-muted-foreground">
-                Send a message to {selectedMentor.name} to request mentorship.
-              </p>
+              <X className="h-4 w-4 cursor-pointer" onClick={() => setSelectedMentor(null)} />
             </div>
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="message">Message</Label>
+              <div>
+                <Label>Mentor</Label>
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={selectedMentor?.image || undefined} alt={selectedMentor?.name || 'Mentor'} />
+                    <AvatarFallback>{selectedMentor?.name?.charAt(0) || 'M'}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{selectedMentor?.name || 'Mentor'}</p>
+                    <p className="text-sm text-muted-foreground">Expert Mentor</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <Label>Message</Label>
                 <Textarea
-                  id="message"
-                  placeholder="Tell the mentor why you'd like to connect..."
+                  placeholder="Tell the mentor why you want to work with them..."
                   value={requestMessage}
                   onChange={(e) => setRequestMessage(e.target.value)}
-                  rows={4}
                 />
               </div>
-              <div className="flex justify-end space-x-2 pt-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setSelectedMentor(null)}
-                  disabled={isRequesting}
-                >
+              <div>
+                <Label>Session Date</Label>
+                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {sessionDate ? format(sessionDate, 'PPP') : 'Select date'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      selected={sessionDate}
+                      onSelect={setSessionDate}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div>
+                <Label>Duration (minutes)</Label>
+                <Select value={duration.toString()} onValueChange={(value) => setDuration(Number(value))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30 minutes</SelectItem>
+                    <SelectItem value="45">45 minutes</SelectItem>
+                    <SelectItem value="60">60 minutes</SelectItem>
+                    <SelectItem value="90">90 minutes</SelectItem>
+                    <SelectItem value="120">120 minutes</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setSelectedMentor(null)}>
                   Cancel
                 </Button>
                 <Button 
+                  className="ml-2"
                   onClick={handleRequestMentorship}
-                  disabled={isRequesting || !requestMessage.trim()}
+                  disabled={isRequesting}
                 >
                   {isRequesting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
-                    'Send Request'
+                    <MessageSquare className="h-4 w-4 mr-2" />
                   )}
+                  Request Mentorship
                 </Button>
               </div>
             </div>
