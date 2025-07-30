@@ -14,21 +14,22 @@ import { format } from 'date-fns'
 import { addDays } from 'date-fns'
 import { Loader2, MessageSquare, Clock, X, Star, Search, CalendarIcon } from "lucide-react"
 import { toast } from 'sonner'
-import { fetchMentors, fetchMyMentorships, requestMentorship, cancelMentorshipRequest, RequestMentorshipParams } from '@/services/mentorship'
+import { fetchMentors, requestMentorship, cancelMentorshipRequest, RequestMentorshipParams, fetchMyMentorships } from '@/services/mentorship'
+
 import { Mentor as SharedMentor, MentorshipRequest } from '@/types/mentorship'
-import { Mentor as ServiceMentor } from '@/services/mentorship'
+import { Mentor } from '@/types/mentorship'
 
 export type TabValue = 'find' | 'my' | 'requests'
 
 export default function MentorshipPage() {
   const { data: session } = useSession()
-  const [mentors, setMentors] = useState<ServiceMentor[]>([])
+  const [mentors, setMentors] = useState<Mentor[]>([])
   const [myMentors, setMyMentors] = useState<MentorshipRequest[]>([])
   const [requests, setRequests] = useState<MentorshipRequest[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<TabValue>('find')
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedMentor, setSelectedMentor] = useState<ServiceMentor | null>(null)
+  const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null)
   const [requestMessage, setRequestMessage] = useState('')
   const [sessionDate, setSessionDate] = useState<Date>(addDays(new Date(), 1))
   const [duration, setDuration] = useState<number>(60)
@@ -42,18 +43,26 @@ export default function MentorshipPage() {
     try {
       setIsLoading(true)
       
-      const [mentorsData, myMentorsData, requestsData] = await Promise.all([
+      const [mentorsData, mentorshipData] = await Promise.all([
         fetchMentors(),
-        fetchMyMentorships(),
         fetchMyMentorships()
       ])
       
       setMentors(mentorsData.map(mentor => ({
         ...mentor,
         image: mentor.image || null
-      })) as ServiceMentor[])
-      setMyMentors(myMentorsData)
-      setRequests(requestsData)
+      })))
+      
+      // Split mentorship data into myMentors and requests based on status
+      const myMentors = mentorshipData.filter((session: any) => 
+        session.status === 'ACCEPTED' || session.status === 'REJECTED'
+      )
+      const requests = mentorshipData.filter((session: any) => 
+        session.status === 'PENDING'
+      )
+      
+      setMyMentors(myMentors)
+      setRequests(requests)
     } catch (error) {
       toast.error('Failed to load mentorship data')
     } finally {
@@ -62,41 +71,50 @@ export default function MentorshipPage() {
   };
 
   const handleRequestMentorship = async () => {
-    if (!selectedMentor || !session?.user?.id) return;
+    if (!selectedMentor || !session?.user?.id) {
+      toast.error('Please select a mentor and log in to send a request.');
+      return;
+    }
 
     try {
       setIsRequesting(true);
       
+      // Prepare mentorship request parameters
       const requestParams: RequestMentorshipParams = {
-        mentorId: selectedMentor.id,
-        menteeId: session.user.id,
+        mentorId: selectedMentor.id,  // This will be resolved to profile ID on server
+        menteeId: session.user.id,    // This will be resolved to profile ID on server
         title: `Mentorship Request - ${selectedMentor.name}`,
         description: requestMessage,
-        scheduledAt: new Date(sessionDate.getTime()).toISOString(), // Ensure consistent timezone
+        scheduledAt: new Date(sessionDate.getTime()).toISOString(),
         duration: duration,
-        meetingUrl: undefined, // Optional field
-        notes: undefined // Optional field
+        meetingUrl: undefined,
+        notes: undefined
       };
 
-      const response = await requestMentorship(requestParams);
+      // Send the request
+      await requestMentorship(requestParams);
       
-      if (response.status === 'PENDING') {
-        await loadData();
-        toast.success(`Mentorship request sent to ${selectedMentor.name}. Waiting for mentor's response.`);
-        setSelectedMentor(null);
-        setRequestMessage('');
-        setSessionDate(addDays(new Date(), 1));
-        setDuration(60);
-      } else {
-        toast.error('Failed to send mentorship request. Please try again.');
-      }
+      // Update local state and show success message
+      await loadData();
+      toast.success(`Mentorship request sent to ${selectedMentor.name}. Waiting for mentor's response.`);
       setSelectedMentor(null);
       setRequestMessage('');
       setSessionDate(addDays(new Date(), 1));
       setDuration(60);
-    } catch (error) {
-      toast.error('Failed to send mentorship request');
-    } finally {
+    } catch (error: any) {
+      console.error('Error in mentorship request:', error);
+      
+      // Handle specific error cases
+      if (error.message === 'Mentor not found') {
+        toast.error('Mentor profile not found. Please try again.');
+      } else if (error.message === 'Failed to create student profile') {
+        toast.error('Failed to create your profile. Please try again.');
+      } else if (error.message === 'Failed to create mentorship request') {
+        toast.error('Failed to create mentorship request. Please try again.');
+      } else {
+        toast.error('An error occurred. Please try again.');
+      }
+      
       setIsRequesting(false);
     }
   };
@@ -129,9 +147,10 @@ export default function MentorshipPage() {
     }
   }
 
-  const filteredMentors = mentors.filter(mentor => 
+  const filteredMentors = mentors.filter((mentor: Mentor) =>
     mentor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (mentor.bio?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+    mentor.specialties?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    mentor.bio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (mentor.specialties && 
      Array.isArray(JSON.parse(mentor.specialties)) &&
      JSON.parse(mentor.specialties).some((specialty: string) => 
@@ -252,7 +271,7 @@ export default function MentorshipPage() {
 
             <TabsContent value="my" className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {myMentors.map((mentor) => (
+                {(myMentors || []).map((mentor) => (
                   <Card key={mentor.id}>
                     <CardHeader>
                       <div className="flex items-center space-x-4">

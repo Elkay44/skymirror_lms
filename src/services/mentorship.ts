@@ -77,6 +77,44 @@ export async function requestMentorship({
   menteeId
 }: RequestMentorshipParams): Promise<MentorshipRequest> {
   try {
+    // First, get the mentor profile ID from their user ID
+    const mentorProfileResponse = await fetch(`${API_BASE}/mentor-profile/${mentorId}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!mentorProfileResponse.ok) {
+      const errorData = await mentorProfileResponse.json();
+      throw new Error(errorData.error || 'Mentor not found');
+    }
+
+    const mentorProfileData = await mentorProfileResponse.json();
+    
+    // Then create or get the student profile
+    const profileResponse = await fetch(`${API_BASE}/profile`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        menteeId
+      })
+    });
+    
+    if (!profileResponse.ok) {
+      const errorData = await profileResponse.json();
+      throw new Error(errorData.error || 'Failed to create student profile');
+    }
+
+    const profileData = await profileResponse.json();
+    
+    // Now create the mentorship request
     const response = await fetch(`${API_BASE}`, {
       method: 'POST',
       credentials: 'include',
@@ -85,35 +123,24 @@ export async function requestMentorship({
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        mentorId,
+        mentorId: mentorProfileData.id, // Use the mentor's profile ID
         title: title || `Mentorship Session`,
         description: description || 'Mentorship session request',
         scheduledAt,
-        duration: duration || 60, // Default to 60 minutes if not provided
+        duration: duration || 60,
         meetingUrl: meetingUrl || null,
         notes: notes || null,
-        menteeId
+        menteeId: profileData.id
       })
     });
-
+    
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to request mentorship');
+      throw new Error(errorData.error || 'Failed to create mentorship request');
     }
-
+    
     const data = await response.json();
-    return {
-      id: data.id,
-      mentor: {
-        id: data.mentor.id,
-        name: data.mentor.name,
-        image: data.mentor.image
-      },
-      status: data.status as 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED',
-      requestedDate: new Date(data.createdAt),
-      messages: [],
-      lastMessage: undefined
-    };
+    return data;
   } catch (error) {
     console.error('Error requesting mentorship:', error);
     throw error;
@@ -129,76 +156,13 @@ export async function fetchMyMentorships(): Promise<MentorshipRequest[]> {
       }
     });
 
-    console.log('Mentorship API response status:', response.status);
-    console.log('Mentorship API response headers:', response.headers);
-    
-    // Clone the response to read it multiple times
-    const responseText = await response.text();
-    console.log('Mentorship API response text:', responseText);
-    
     if (!response.ok) {
-      let errorData;
-      try {
-        errorData = JSON.parse(responseText);
-      } catch (e) {
-        errorData = { 
-          error: 'Failed to parse error response',
-          status: response.status,
-          statusText: response.statusText
-        };
-      }
-      
-      console.error('Error fetching mentorships:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorData
-      });
-      
-      if (response.status === 401) {
-        throw new Error('Unauthorized. Please log in to view mentorships.');
-      } else if (response.status === 400) {
-        throw new Error('Invalid request: ' + (errorData.error || 'User role not found'));
-      } else {
-        throw new Error('Failed to fetch mentorships: ' + (errorData.error || 'Unknown error'));
-      }
-    }
-    
-    // Parse the successful response
-    const data = JSON.parse(responseText);
-    const sessions = data.data || [];
-
-    if (!sessions) {
-      console.error('Null response received');
-      return [];
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch mentorships');
     }
 
-    if (!Array.isArray(sessions)) {
-      console.error('Invalid response format:', sessions);
-      return [];
-    }
-
-    return sessions.map((session: any) => ({
-      id: session.id,
-      mentor: {
-        id: session.mentor?.id || '',
-        name: session.mentor?.name || '',
-        image: session.mentor?.image || undefined
-      },
-      status: session.status as 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED',
-      requestedDate: new Date(session.createdAt),
-      messages: session.messages || [],
-      lastMessage: session.lastMessage ? {
-        content: session.lastMessage.content,
-        timestamp: new Date(session.lastMessage.timestamp),
-        isRead: session.lastMessage.isRead
-      } : undefined,
-      scheduledSessions: (session.scheduledSessions || []).map((s: any) => ({
-        id: s.id,
-        date: new Date(s.date),
-        status: s.status as 'SCHEDULED' | 'COMPLETED' | 'CANCELLED',
-        meetingUrl: s.meetingUrl || undefined
-      }))
-    })).filter((session: any) => session.id); // Filter out invalid sessions
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error fetching mentorships:', error);
     throw error;
