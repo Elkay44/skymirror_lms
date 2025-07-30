@@ -283,17 +283,28 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    // Check if user has a student profile
+    // Get or create student profile
     const studentProfile = await prisma.studentProfile.findUnique({
       where: { userId: session.user.id },
       include: { user: true }
     });
-    
+
     if (!studentProfile) {
-      return NextResponse.json(
-        { error: 'Student profile not found' },
-        { status: 404 }
-      );
+      // Create a default student profile if it doesn't exist
+      await prisma.studentProfile.create({
+        data: {
+          userId: session.user.id,
+          bio: 'Looking to learn and grow',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      });
+      
+      // Fetch the newly created profile
+      return await prisma.studentProfile.findUnique({
+        where: { userId: session.user.id },
+        include: { user: true }
+      });
     }
     
     // Check if mentor exists

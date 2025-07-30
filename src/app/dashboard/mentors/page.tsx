@@ -211,6 +211,7 @@ export default function MentorsPage() {
 
   const handleRequestMentorship = async (mentor: Mentor) => {
     try {
+      // Get session and validate user
       const session = await getServerSession(authOptions);
       if (!session?.user?.id) {
         toast({
@@ -232,7 +233,8 @@ export default function MentorsPage() {
         title: `Mentorship Session with ${mentor.name}`,
         scheduledAt: defaultDate.toISOString(),
         duration: 60, // 60 minutes
-        notes: `Mentorship request for ${mentor.role} role`
+        notes: `Mentorship request for ${mentor.role} role`,
+        menteeId: session.user.id
       });
       
       toast({

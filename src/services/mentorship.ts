@@ -1,4 +1,6 @@
 import { MentorshipRequest } from '@/types/mentorship';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export interface Mentor {
   id: string;
@@ -61,6 +63,7 @@ export interface RequestMentorshipParams {
   duration: number;
   meetingUrl?: string;
   notes?: string;
+  menteeId: string;
 }
 
 export async function requestMentorship({
@@ -70,7 +73,8 @@ export async function requestMentorship({
   scheduledAt,
   duration,
   meetingUrl,
-  notes
+  notes,
+  menteeId
 }: RequestMentorshipParams): Promise<MentorshipRequest> {
   try {
     const response = await fetch(`${API_BASE}`, {
@@ -87,8 +91,8 @@ export async function requestMentorship({
         scheduledAt,
         duration: duration || 60, // Default to 60 minutes if not provided
         meetingUrl: meetingUrl || null,
-        notes: notes || null
-        // menteeId will be set by the server from the session
+        notes: notes || null,
+        menteeId
       })
     });
 

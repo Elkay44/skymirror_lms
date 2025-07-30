@@ -119,10 +119,15 @@ export default function StudentMentorshipPage() {
         throw new Error('User not authenticated');
       }
       
-      const newRequest = await requestMentorship(
+      const newRequest = await requestMentorship({
         mentorId,
-        requestMessage || 'I would like to request mentorship with you.'
-      );
+        description: requestMessage || 'I would like to request mentorship with you.',
+        title: 'Mentorship Request',
+        scheduledAt: new Date().toISOString(),
+        duration: 60, // Default to 60 minutes
+        menteeId: userId,
+        notes: '' // Add empty notes if required
+      });
       
       setRequests(prev => [...prev, newRequest]);
       setSelectedMentor(null);
