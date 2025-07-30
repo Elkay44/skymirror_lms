@@ -3,41 +3,36 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, MessageSquare, Search, Star, Clock, X, CalendarIcon } from "lucide-react"
-import { format, addDays } from 'date-fns'
-import { Mentor, MentorshipRequest } from '@/types/mentorship'
-import { RequestMentorshipParams } from '@/services/mentorship'
-import { requestMentorship, fetchMentors, fetchMyMentorships, cancelMentorshipRequest } from '@/services/mentorship'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { format } from 'date-fns'
+import { addDays } from 'date-fns'
+import { Loader2, MessageSquare, Clock, X, Star, Search, CalendarIcon } from "lucide-react"
 import { toast } from 'sonner'
+import { fetchMentors, fetchMyMentorships, requestMentorship, cancelMentorshipRequest, RequestMentorshipParams } from '@/services/mentorship'
+import { Mentor as SharedMentor, MentorshipRequest } from '@/types/mentorship'
+import { Mentor as ServiceMentor } from '@/services/mentorship'
 
-type TabValue = 'find' | 'my' | 'requests';
+export type TabValue = 'find' | 'my' | 'requests'
 
 export default function MentorshipPage() {
-  const { data: session } = useSession();
-  const [mentors, setMentors] = useState<Mentor[]>([])
+  const { data: session } = useSession()
+  const [mentors, setMentors] = useState<ServiceMentor[]>([])
   const [myMentors, setMyMentors] = useState<MentorshipRequest[]>([])
   const [requests, setRequests] = useState<MentorshipRequest[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<TabValue>('find')
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null)
+  const [selectedMentor, setSelectedMentor] = useState<ServiceMentor | null>(null)
   const [requestMessage, setRequestMessage] = useState('')
   const [sessionDate, setSessionDate] = useState<Date>(addDays(new Date(), 1))
   const [duration, setDuration] = useState<number>(60)
   const [isRequesting, setIsRequesting] = useState(false)
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -53,22 +48,10 @@ export default function MentorshipPage() {
         fetchMyMentorships()
       ])
       
-      // Map mentors to ensure type compatibility
-      const formattedMentors = mentorsData.map((mentor: any) => ({
-        id: mentor.id,
-        name: mentor.name,
-        image: mentor.image || null,
-        email: mentor.email,
-        role: mentor.role,
-        bio: mentor.bio,
-        specialties: mentor.specialties,
-        rating: mentor.rating,
-        reviewCount: mentor.reviewCount,
-        createdAt: new Date(mentor.createdAt),
-        updatedAt: new Date(mentor.updatedAt)
-      })) as Mentor[]
-      
-      setMentors(formattedMentors)
+      setMentors(mentorsData.map(mentor => ({
+        ...mentor,
+        image: mentor.image || null
+      })) as ServiceMentor[])
       setMyMentors(myMentorsData)
       setRequests(requestsData)
     } catch (error) {
@@ -87,20 +70,26 @@ export default function MentorshipPage() {
       const requestParams: RequestMentorshipParams = {
         mentorId: selectedMentor.id,
         menteeId: session.user.id,
-        title: `Mentorship Session with ${selectedMentor.name}`,
+        title: `Mentorship Request - ${selectedMentor.name}`,
         description: requestMessage,
-        scheduledAt: sessionDate.toISOString(),
+        scheduledAt: new Date(sessionDate.getTime()).toISOString(), // Ensure consistent timezone
         duration: duration,
-        meetingUrl: undefined,
-        notes: undefined
+        meetingUrl: undefined, // Optional field
+        notes: undefined // Optional field
       };
 
-      await requestMentorship(requestParams);
+      const response = await requestMentorship(requestParams);
       
-      // Refresh data after successful request
-      await loadData();
-      
-      toast.success('Mentorship request sent successfully');
+      if (response.status === 'PENDING') {
+        await loadData();
+        toast.success(`Mentorship request sent to ${selectedMentor.name}. Waiting for mentor's response.`);
+        setSelectedMentor(null);
+        setRequestMessage('');
+        setSessionDate(addDays(new Date(), 1));
+        setDuration(60);
+      } else {
+        toast.error('Failed to send mentorship request. Please try again.');
+      }
       setSelectedMentor(null);
       setRequestMessage('');
       setSessionDate(addDays(new Date(), 1));
@@ -126,21 +115,22 @@ export default function MentorshipPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'accepted':
-        return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
+    switch (status) {
+      case 'PENDING':
+        return 'warning'
+      case 'ACCEPTED':
+        return 'success'
+      case 'REJECTED':
+        return 'destructive'
+      case 'CANCELLED':
+        return 'secondary'
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'default'
     }
-  };
+  }
 
   const filteredMentors = mentors.filter(mentor => 
     mentor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    'Mentor'.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (mentor.bio?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
     (mentor.specialties && 
      Array.isArray(JSON.parse(mentor.specialties)) &&
@@ -190,14 +180,15 @@ export default function MentorshipPage() {
                 {filteredMentors.map((mentor) => (
                   <Card key={mentor.id}>
                     <CardHeader>
-                      <div className="flex items-center space-x-3">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={mentor.image || undefined} alt={mentor.name || 'Mentor'} />
-                          <AvatarFallback>{mentor.name?.charAt(0) || 'M'}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <CardTitle>{mentor.name || 'Mentor'}</CardTitle>
-                          <CardDescription>Expert Mentor</CardDescription>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <Avatar>
+                            <AvatarImage src={mentor.image || undefined} alt={mentor.name} />
+                            <AvatarFallback>{mentor.name.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h4 className="font-medium">{mentor.name}</h4>
+                          </div>
                         </div>
                       </div>
                     </CardHeader>
@@ -242,7 +233,7 @@ export default function MentorshipPage() {
                         variant="outline"
                         onClick={() => setSelectedMentor(mentor)}
                       >
-                        Request Mentorship
+                        Send Request
                       </Button>
                     </CardFooter>
                   </Card>
@@ -375,52 +366,16 @@ export default function MentorshipPage() {
                   </Avatar>
                   <div>
                     <p className="font-medium">{selectedMentor?.name || 'Mentor'}</p>
-                    <p className="text-sm text-muted-foreground">Expert Mentor</p>
                   </div>
                 </div>
               </div>
               <div>
                 <Label>Message</Label>
                 <Textarea
-                  placeholder="Tell the mentor why you want to work with them..."
+                  placeholder="Why would you like to work with this mentor?"
                   value={requestMessage}
                   onChange={(e) => setRequestMessage(e.target.value)}
                 />
-              </div>
-              <div>
-                <Label>Session Date</Label>
-                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {sessionDate ? format(sessionDate, 'PPP') : 'Select date'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      selected={sessionDate}
-                      onSelect={setSessionDate}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div>
-                <Label>Duration (minutes)</Label>
-                <Select value={duration.toString()} onValueChange={(value) => setDuration(Number(value))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select duration" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="45">45 minutes</SelectItem>
-                    <SelectItem value="60">60 minutes</SelectItem>
-                    <SelectItem value="90">90 minutes</SelectItem>
-                    <SelectItem value="120">120 minutes</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
               <div className="flex justify-end">
                 <Button variant="outline" onClick={() => setSelectedMentor(null)}>
@@ -436,7 +391,7 @@ export default function MentorshipPage() {
                   ) : (
                     <MessageSquare className="h-4 w-4 mr-2" />
                   )}
-                  Request Mentorship
+                  Send Request
                 </Button>
               </div>
             </div>
