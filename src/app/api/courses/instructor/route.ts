@@ -39,9 +39,15 @@ export async function GET() {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
+    // Ensure we have a valid user ID
+    const instructorId = session.user.id;
+    if (!instructorId) {
+      return new NextResponse('User ID not found in session', { status: 400 });
+    }
+
     const courses = await prisma.course.findMany({
       where: {
-        instructorId: parseInt(session.user.id as string, 10),
+        instructorId: instructorId,
       },
       include: {
         _count: {

@@ -69,16 +69,24 @@ export default function InstructorCoursesPage() {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch courses');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message || 
+            `Failed to fetch courses: ${response.status} ${response.statusText}`
+          );
         }
 
         const data = await response.json();
         
+        if (!Array.isArray(data.courses)) {
+          throw new Error('Invalid response format from server');
+        }
+        
         // Transform API data to match our interface
-        const transformedCourses: Course[] = (data.courses || []).map((course: any) => ({
+        const transformedCourses: Course[] = data.courses.map((course: any) => ({
           id: course.id,
-          title: course.title,
-          description: course.description || '',
+          title: course.title || 'Untitled Course',
+          description: course.description || 'No description available',
           coverImage: course.coverImage || '/images/course-placeholder.jpg',
           publishStatus: course.publishStatus || 'draft',
           enrollmentCount: course.enrollmentCount || 0,
@@ -86,15 +94,19 @@ export default function InstructorCoursesPage() {
           progress: 0, // Default progress
           category: course.category || 'Uncategorized',
           level: course.level || 'beginner',
-          lessonsCount: 0, // These would need to be fetched separately
-          totalDuration: 0, // These would need to be fetched separately
-          rating: 0, // These would need to be fetched separately
+          lessonsCount: course.lessonsCount || 0,
+          totalDuration: course.totalDuration || 0,
+          rating: course.rating || 0,
         }));
         
         setCourses(transformedCourses);
       } catch (error) {
         console.error('Error fetching courses:', error);
-        setError('Failed to load courses. Please try again later.');
+        setError(
+          error instanceof Error 
+            ? error.message 
+            : 'An unexpected error occurred while loading courses'
+        );
         setCourses([]);
       } finally {
         setIsLoading(false);
