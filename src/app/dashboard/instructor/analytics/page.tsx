@@ -41,11 +41,22 @@ import {
   Users,
   CheckCircle,
   Star,
-  FileText
+  FileText,
+  BookOpen
 } from 'lucide-react';
+import Link from 'next/link';
 import type { TooltipProps } from 'recharts';
 
 // Types for analytics data
+interface CourseStats {
+  id: string;
+  title: string;
+  completionRate: number;
+  enrollmentCount: number;
+  assignmentCount: number;
+  lastUpdated: string;
+}
+
 interface AnalyticsData {
   timeSeries: {
     date: string;
@@ -64,6 +75,7 @@ interface AnalyticsData {
     courseCompletion: number;
     averageEngagement: number;
     assignmentsSubmitted: number;
+    courses: CourseStats[];
   };
 }
 
@@ -289,42 +301,84 @@ export default function InstructorAnalyticsPage() {
       {/* Course Statistics */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Course Statistics</CardTitle>
-            <div className="flex items-center space-x-2">
-              <Label htmlFor="course-filter">Filter by Course</Label>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <CardTitle>Course Statistics</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Track performance and engagement across your courses
+              </p>
+            </div>
+            <div className="flex items-center space-x-2 w-full md:w-auto">
+              <Label htmlFor="course-filter" className="whitespace-nowrap">Filter by Course</Label>
               <Select>
-                <SelectTrigger id="course-filter">
-                  <SelectValue placeholder="Select a course" />
+                <SelectTrigger id="course-filter" className="w-full md:w-[200px]">
+                  <SelectValue placeholder="All courses" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Courses</SelectItem>
-                  <SelectItem value="course1">Course 1</SelectItem>
-                  <SelectItem value="course2">Course 2</SelectItem>
+                  {analyticsData?.metrics?.courses?.map((course: any) => (
+                    <SelectItem key={course.id} value={course.id}>
+                      {course.title}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {analyticsData?.timeSeries?.map((course, i) => (
-              <Card key={i} className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-medium">Course {i + 1}</h3>
-                    <p className="text-xs text-muted-foreground">
-                      {course.completion}% Completion
-                    </p>
+          {analyticsData?.metrics?.courses?.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {analyticsData.metrics.courses.map((course: any) => (
+                <Card key={course.id} className="p-4 hover:shadow-md transition-shadow">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium text-sm truncate">{course.title}</h3>
+                      <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Progress</span>
+                        <span className="font-medium">{course.completionRate || 0}%</span>
+                      </div>
+                      <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-blue-500 rounded-full" 
+                          style={{ width: `${course.completionRate || 0}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 pt-2 text-sm">
+                      <div className="flex items-center space-x-1">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span>{course.enrollmentCount || 0} students</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span>{course.assignmentCount || 0} assignments</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="outline">{course.students} students</Badge>
-                    <Badge variant="outline">{course.assignments} assignments</Badge>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-1">No courses found</h3>
+              <p className="text-muted-foreground text-sm max-w-md mb-4">
+                You haven't created any courses yet. Get started by creating your first course.
+              </p>
+              <Link
+                href="/instructor/courses/new"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Create Course
+              </Link>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

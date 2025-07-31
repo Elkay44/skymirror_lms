@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Clock, Award, BookOpen, BarChart2, Activity, Calendar } from 'lucide-react';
+import { Clock, Award, BookOpen, BarChart2, Activity, Calendar, TrendingUp, Target, CheckCircle, Zap } from 'lucide-react';
 
 interface CourseStats {
   courseId: string;
@@ -123,221 +123,371 @@ export default function AnalyticsPage() {
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Learning Analytics</h1>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Learning Analytics</h1>
+            <p className="text-gray-500 mt-1">Track your learning progress and performance</p>
+          </div>
+          <div className="mt-4 md:mt-0">
+            <div className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              View Insights
+            </div>
+          </div>
+        </div>
         
         {/* Overview Cards */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-10">
           {/* Time Spent Card */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-indigo-100 rounded-md p-3">
-                  <Clock className="h-6 w-6 text-indigo-600" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Time Spent</dt>
-                    <dd>
-                      <div className="text-lg font-medium text-gray-900">
-                        {formatTimeSpent(totalMinutesSpent)}
-                      </div>
-                    </dd>
-                  </dl>
-                </div>
+          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-indigo-700">Time Invested</p>
+                <h3 className="text-2xl font-bold text-indigo-900 mt-1">{formatTimeSpent(totalMinutesSpent)}</h3>
+                <p className="text-xs text-indigo-500 mt-1">Learning journey</p>
+              </div>
+              <div className="bg-white bg-opacity-50 p-3 rounded-full">
+                <Clock className="h-6 w-6 text-indigo-600" />
+              </div>
+            </div>
+            <div className="mt-4">
+              <div className="h-1 w-full bg-indigo-100 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-indigo-600 rounded-full" 
+                  style={{ width: `${Math.min(100, (totalMinutesSpent / 1000) * 100)}%` }}
+                ></div>
               </div>
             </div>
           </div>
           
           {/* Course Completion Card */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-green-100 rounded-md p-3">
-                  <BookOpen className="h-6 w-6 text-green-600" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Course Completion</dt>
-                    <dd>
-                      <div className="text-lg font-medium text-gray-900">
-                        {overallCompletionRate}%
-                      </div>
-                    </dd>
-                  </dl>
-                </div>
+          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-700">Course Progress</p>
+                <h3 className="text-2xl font-bold text-green-900 mt-1">{overallCompletionRate}%</h3>
+                <p className="text-xs text-green-500 mt-1">Overall completion</p>
+              </div>
+              <div className="relative w-12 h-12 bg-white bg-opacity-50 rounded-full flex items-center justify-center">
+                <svg className="w-12 h-12" viewBox="0 0 36 36">
+                  <path
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="#10B981"
+                    strokeWidth="3"
+                    strokeDasharray={`${overallCompletionRate}, 100`}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <BookOpen className="absolute h-5 w-5 text-green-600" />
               </div>
             </div>
           </div>
           
           {/* Quiz Performance Card */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-yellow-100 rounded-md p-3">
-                  <BarChart2 className="h-6 w-6 text-yellow-600" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Quiz Performance</dt>
-                    <dd>
-                      <div className="text-lg font-medium text-gray-900">
-                        {averageQuizScore}% avg
-                      </div>
-                    </dd>
-                  </dl>
-                </div>
+          <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-amber-700">Quiz Mastery</p>
+                <h3 className="text-2xl font-bold text-amber-900 mt-1">{averageQuizScore}%</h3>
+                <p className="text-xs text-amber-500 mt-1">Average score</p>
               </div>
+              <div className="bg-white bg-opacity-50 p-3 rounded-full">
+                <BarChart2 className="h-6 w-6 text-amber-600" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center">
+              <div className="flex-1 h-2 bg-amber-100 rounded-full overflow-hidden mr-2">
+                <div 
+                  className="h-full bg-amber-500 rounded-full" 
+                  style={{ width: `${averageQuizScore}%` }}
+                ></div>
+              </div>
+              <span className="text-xs font-medium text-amber-700">{passedQuizzes}/{totalQuizzes}</span>
             </div>
           </div>
           
           {/* Streak Card */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-red-100 rounded-md p-3">
-                  <Activity className="h-6 w-6 text-red-600" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Learning Streak</dt>
-                    <dd>
-                      <div className="text-lg font-medium text-gray-900">
-                        {streak.currentStreak} days
-                      </div>
-                    </dd>
-                  </dl>
-                </div>
+          <div className="bg-gradient-to-br from-rose-50 to-rose-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-rose-700">Learning Streak</p>
+                <h3 className="text-2xl font-bold text-rose-900 mt-1">{streak.currentStreak} days</h3>
+                <p className="text-xs text-rose-500 mt-1">
+                  {streak.currentStreak > 0 ? '🔥 Keep it up!' : 'Start your streak today!'}
+                </p>
+              </div>
+              <div className="bg-white bg-opacity-50 p-3 rounded-full">
+                <Zap className="h-6 w-6 text-rose-600" />
               </div>
             </div>
+            {streak.longestStreak > 0 && (
+              <div className="mt-3 text-xs text-rose-600">
+                🏆 Best: {streak.longestStreak} days
+              </div>
+            )}
           </div>
         </div>
         
         {/* Course Progress Section */}
-        <div className="mb-8">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Course Progress</h2>
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Your Learning Journey</h2>
+            <div className="flex items-center text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer">
+              <span>View all courses</span>
+              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
           
           {courseStats.length === 0 ? (
-            <div className="bg-white shadow overflow-hidden sm:rounded-md p-6 text-center">
-              <p className="text-gray-500">You are not enrolled in any courses yet.</p>
+            <div className="bg-white rounded-2xl shadow-sm p-8 text-center border border-gray-100">
+              <div className="mx-auto h-16 w-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
+                <BookOpen className="h-8 w-8 text-indigo-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">No courses yet</h3>
+              <p className="text-gray-500 mb-4">Enroll in courses to track your progress here</p>
+              <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Browse Courses
+              </button>
             </div>
           ) : (
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <ul className="divide-y divide-gray-200">
-                {courseStats.map((course) => (
-                  <li key={course.courseId}>
-                    <div className="px-4 py-4 sm:px-6">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-indigo-600 truncate">
-                          {course.courseTitle}
+            <div className="grid gap-6 md:grid-cols-2">
+              {courseStats.map((course) => (
+                <div key={course.courseId} className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow duration-300">
+                  <div className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">{course.courseTitle}</h3>
+                        <p className="text-sm text-gray-500">
+                          {course.completedLessons} of {course.totalLessons} lessons completed
                         </p>
-                        <div className="ml-2 flex-shrink-0 flex">
-                          <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            {course.completionPercentage}% complete
-                          </p>
-                        </div>
                       </div>
-                      <div className="mt-2 sm:flex sm:justify-between">
-                        <div className="sm:flex">
-                          <p className="flex items-center text-sm text-gray-500">
-                            <BookOpen className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                            {course.completedLessons} / {course.totalLessons} lessons
-                          </p>
-                        </div>
-                        <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                          <Calendar className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                          <p>
-                            Last activity: {formatDate(course.lastActivityAt)}
-                          </p>
-                        </div>
+                      <div className="relative w-12 h-12">
+                        <svg className="w-full h-full" viewBox="0 0 36 36">
+                          <path
+                            d="M18 2.0845
+                              a 15.9155 15.9155 0 0 1 0 31.831
+                              a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="#E5E7EB"
+                            strokeWidth="3"
+                          />
+                          <path
+                            d="M18 2.0845
+                              a 15.9155 15.9155 0 0 1 0 31.831
+                              a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="#4F46E5"
+                            strokeWidth="3"
+                            strokeDasharray={`${course.completionPercentage}, 100`}
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-700">
+                          {course.completionPercentage}%
+                        </span>
                       </div>
-                      <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
+                    </div>
+                    
+                    <div className="mt-4">
+                      <div className="flex justify-between text-sm text-gray-500 mb-1">
+                        <span>Progress</span>
+                        <span>{course.completionPercentage}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
-                          className="bg-indigo-600 h-2.5 rounded-full" 
+                          className="bg-gradient-to-r from-indigo-500 to-indigo-400 h-2 rounded-full" 
                           style={{ width: `${course.completionPercentage}%` }}
                         ></div>
                       </div>
                     </div>
-                  </li>
-                ))}
-              </ul>
+                    
+                    <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center">
+                        <Calendar className="h-3.5 w-3.5 mr-1 text-gray-400" />
+                        <span>Last active: {formatDate(course.lastActivityAt)}</span>
+                      </div>
+                      <button className="text-indigo-600 hover:text-indigo-800 font-medium">
+                        Continue Learning
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
         
         {/* Quiz Performance Section */}
-        <div className="mb-8">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Quiz Results</h2>
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Quiz Performance</h2>
+            <div className="flex items-center text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer">
+              <span>View all attempts</span>
+              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
           
           {quizPerformance.length === 0 ? (
-            <div className="bg-white shadow overflow-hidden sm:rounded-md p-6 text-center">
-              <p className="text-gray-500">You haven't taken any quizzes yet.</p>
+            <div className="bg-white rounded-2xl shadow-sm p-8 text-center border border-gray-100">
+              <div className="mx-auto h-16 w-16 bg-amber-50 rounded-full flex items-center justify-center mb-4">
+                <Award className="h-8 w-8 text-amber-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">No quiz attempts yet</h3>
+              <p className="text-gray-500">Complete quizzes to see your performance metrics here</p>
             </div>
           ) : (
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <ul className="divide-y divide-gray-200">
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+              <div className="grid grid-cols-1 divide-y divide-gray-100">
                 {quizPerformance.slice(0, 5).map((quiz) => (
-                  <li key={quiz.attemptId}>
-                    <div className="px-4 py-4 sm:px-6">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-indigo-600 truncate">
-                          {quiz.quizTitle}
-                        </p>
-                        <div className="ml-2 flex-shrink-0 flex">
-                          <p className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${quiz.isPassed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                            {quiz.isPassed ? 'Passed' : 'Failed'}
-                          </p>
+                  <div key={quiz.attemptId} className="p-5 hover:bg-gray-50 transition-colors duration-200">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center">
+                          <h3 className="text-base font-medium text-gray-900 truncate">{quiz.quizTitle}</h3>
+                          <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {quiz.courseTitle}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex items-center text-sm text-gray-500">
+                          <Calendar className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                          <span>Completed on {formatDate(quiz.completedAt)}</span>
                         </div>
                       </div>
-                      <div className="mt-2 sm:flex sm:justify-between">
-                        <div className="sm:flex">
-                          <p className="flex items-center text-sm text-gray-500">
-                            <Award className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                            Score: {quiz.score}%
-                          </p>
-                        </div>
-                        <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                          <Calendar className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
-                          <p>
-                            Completed: {formatDate(quiz.completedAt)}
-                          </p>
+                      <div className="ml-4 flex-shrink-0 flex items-center">
+                        <div className={`flex flex-col items-center ${quiz.isPassed ? 'text-green-600' : 'text-red-600'}`}>
+                          <div className="text-2xl font-bold">{quiz.score}%</div>
+                          <div className="text-xs font-medium">
+                            {quiz.isPassed ? 'Passed' : 'Failed'}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </li>
+                    <div className="mt-3">
+                      <div className="relative pt-1">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-200">
+                              Performance
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs font-semibold inline-block text-indigo-600">
+                              {quiz.score}%
+                            </span>
+                          </div>
+                        </div>
+                        <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-indigo-100 mt-2">
+                          <div 
+                            style={{ width: `${quiz.score}%` }}
+                            className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${
+                              quiz.isPassed ? 'bg-green-500' : 'bg-red-500'
+                            }`}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
         </div>
         
         {/* Study Streak Section */}
         <div>
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Learning Streak</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Learning Streak & Goals</h2>
+            <div className="flex items-center text-sm text-indigo-600 hover:text-indigo-800 cursor-pointer">
+              <span>View history</span>
+              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
           
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
-            <div className="flex flex-col items-center justify-center text-center">
-              <div className="inline-flex rounded-full bg-indigo-100 p-3 mb-4">
-                <Activity className="h-8 w-8 text-indigo-600" />
+          <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-6 shadow-sm border border-rose-100">
+            <div className="flex flex-col md:flex-row items-center">
+              <div className="flex-shrink-0 mb-6 md:mb-0 md:mr-8">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-rose-200 rounded-full opacity-50 animate-ping"></div>
+                  <div className="relative w-24 h-24 bg-gradient-to-br from-rose-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                    <Zap className="h-10 w-10 text-white" />
+                    <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1 shadow-md">
+                      <div className="bg-rose-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">
+                        {streak.currentStreak}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="mt-3 text-xl font-medium text-indigo-600">
-                {streak.currentStreak} day{streak.currentStreak !== 1 ? 's' : ''} streak
+              
+              <div className="text-center md:text-left">
+                <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                  {streak.currentStreak > 0 
+                    ? `🔥 ${streak.currentStreak}-Day Streak!` 
+                    : 'Start your learning journey!'}
+                </h3>
+                
+                <p className="text-gray-600 mb-4">
+                  {streak.currentStreak > 0 
+                    ? 'You\'re on fire! Keep learning to maintain your streak.'
+                    : 'Complete a lesson to start your streak!'}
+                </p>
+                
+                <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4">
+                  <div className="bg-white bg-opacity-70 px-4 py-2 rounded-lg shadow-sm">
+                    <div className="text-sm font-medium text-gray-500">Current Streak</div>
+                    <div className="text-xl font-bold text-rose-600">{streak.currentStreak} days</div>
+                  </div>
+                  
+                  {streak.longestStreak > 0 && (
+                    <div className="bg-white bg-opacity-70 px-4 py-2 rounded-lg shadow-sm">
+                      <div className="text-sm font-medium text-gray-500">Longest Streak</div>
+                      <div className="text-xl font-bold text-gray-700">{streak.longestStreak} days</div>
+                    </div>
+                  )}
+                  
+                  <div className="bg-white bg-opacity-70 px-4 py-2 rounded-lg shadow-sm">
+                    <div className="text-sm font-medium text-gray-500">Last Active</div>
+                    <div className="text-sm font-medium text-gray-700">
+                      {streak.lastActiveDate ? formatDate(streak.lastActiveDate) : 'Never'}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-6">
+                  <button className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition-all duration-200 transform hover:-translate-y-0.5">
+                    <BookOpen className="h-5 w-5 mr-2" />
+                    Continue Learning
+                  </button>
+                </div>
               </div>
-              
-              <p className="mt-2 text-sm text-gray-500">
-                Keep learning every day to build your streak!
-              </p>
-              
-              {streak.longestStreak > 0 && (
-                <p className="mt-4 text-sm text-gray-500">
-                  Your longest streak: <span className="font-medium">{streak.longestStreak} days</span>
-                </p>
-              )}
-              
-              {streak.lastActiveDate && (
-                <p className="mt-2 text-xs text-gray-400">
-                  Last active: {formatDate(streak.lastActiveDate)}
-                </p>
-              )}
+            </div>
+            
+            {/* Weekly Streak Visualization */}
+            <div className="mt-8 pt-6 border-t border-rose-100">
+              <h4 className="text-sm font-medium text-gray-700 mb-4 text-center">Weekly Activity</h4>
+              <div className="flex justify-between max-w-md mx-auto">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => {
+                  // Simple visualization - in a real app, this would use actual data
+                  const isActive = Math.random() > 0.3; // Random for demo
+                  return (
+                    <div key={index} className="flex flex-col items-center">
+                      <div 
+                        className={`h-2 w-2 rounded-full mb-1 ${isActive ? 'bg-rose-500' : 'bg-rose-100'}`}
+                      ></div>
+                      <span className="text-xs text-gray-500">{day}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
