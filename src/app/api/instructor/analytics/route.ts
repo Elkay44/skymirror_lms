@@ -2,20 +2,13 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { format, subDays, isWithinInterval, subMonths } from 'date-fns';
+import { format, subDays, subMonths } from 'date-fns';
 import redis from '@/lib/redis';
 
 // Cache configuration
 const CACHE_TTL = 60 * 60; // 1 hour cache
 const CACHE_KEY_PREFIX = 'analytics:instructor:';
 
-// Cache invalidation configuration
-const INVALIDATION_INTERVAL = 15 * 60; // 15 minutes
-const INVALIDATION_KEYS = [
-  'enrollment',
-  'lessonView',
-  'assignmentSubmission'
-];
 
 // Type for analytics data
 interface AnalyticsData {

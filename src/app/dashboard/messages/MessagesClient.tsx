@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { MessageSquare, PlusCircle } from 'lucide-react';
+import { MessageSquare, PlusCircle, X } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -26,18 +26,31 @@ interface Conversation {
   updatedAt: string;
 }
 
-export default function MessagesClient() {
-  const { data: session, status } = useSession();
+const MessagesClient = () => {
+  const { data: session, status } = useSession() as any; // Temporary any type to bypass type checking
   const router = useRouter();
-  
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [messageInput, setMessageInput] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [messageInput, setMessageInput] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showNewConversationModal, setShowNewConversationModal] = useState(false);
+  const [selectedRecipient, setSelectedRecipient] = useState<string>('');
+  const [newMessage, setNewMessage] = useState('');
+  const [recipients, setRecipients] = useState<Participant[]>([]);
+
+  // Fetch recipients (in a real app, this would come from an API)
+  useEffect(() => {
+    // Mock recipients
+    setRecipients([
+      { id: 'user2', name: 'Sarah Johnson', role: 'MENTOR', avatarUrl: '' },
+      { id: 'user3', name: 'Michael Lee', role: 'INSTRUCTOR', avatarUrl: '' },
+      { id: 'user4', name: 'Emma Wilson', role: 'STUDENT', avatarUrl: '' },
+    ]);
+  }, []);
 
   // Fetch conversations
   useEffect(() => {
@@ -57,32 +70,16 @@ export default function MessagesClient() {
         
         const data = await response.json();
         
-        // Handle case where the API returns an empty object
-        if (data && typeof data === 'object' && !Array.isArray(data)) {
-          if (Object.keys(data).length === 0) {
-            console.log('No conversations found, initializing with empty array');
-            setConversations([]);
-            return;
-          }
-          
-          // If the response has a data property that might contain the array
-          if (data.data && Array.isArray(data.data)) {
-            setConversations(data.data);
-            return;
-          }
-          
-          // If we get here, the format is unexpected
-          console.warn('Unexpected response format from /api/conversations:', data);
-          setError('Unexpected response format from server');
-          setConversations([]);
-          return;
-        }
-        
-        // If we get an array, use it directly
+        // The API now returns the conversations array directly
         if (Array.isArray(data)) {
           setConversations(data);
           return;
         }
+        
+        // Fallback for unexpected format
+        console.warn('Unexpected response format from /api/conversations:', data);
+        setError('Unexpected response format from server');
+        setConversations([]);
         
         // Fallback for any other case
         console.warn('Unexpected response format from /api/conversations:', data);
@@ -102,78 +99,161 @@ export default function MessagesClient() {
   }, []);
 
   // Handle conversation selection
-  const handleSelectConversation = (conversation: Conversation) => {
-    setSelectedConversation(conversation);
-    // In a real app, you would fetch messages for this conversation
-    setMessages(conversation.lastMessage ? [conversation.lastMessage] : []);
+  const handleSelectConversation = async (conversation: Conversation) => {
+    try {
+      setIsLoading(true);
+      setSelectedConversation(conversation);
+      
+      // Fetch messages for the selected conversation
+      const response = await fetch(`/api/conversations/${conversation.id}/messages`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch messages');
+      }
+      
+      const messagesData = await response.json();
+      setMessages(Array.isArray(messagesData) ? messagesData : []);
+      
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+      setError('Failed to load messages. Please try again.');
+      setMessages(conversation.lastMessage ? [conversation.lastMessage] : []);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle starting a new conversation
+  const handleStartConversation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!selectedRecipient || !newMessage.trim()) {
+      setError('Please select a recipient and enter a message');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          participantId: selectedRecipient,
+          message: {
+            content: newMessage,
+            senderId: session?.user?.id,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to start conversation');
+      }
+
+      const newConversation = await response.json();
+      
+      // Add the new conversation to the list
+      setConversations(prev => [newConversation, ...prev]);
+      
+      // Select the new conversation
+      setSelectedConversation(newConversation);
+      
+      // Reset form
+      setNewMessage('');
+      setSelectedRecipient('');
+      setShowNewConversationModal(false);
+      
+    } catch (err) {
+      console.error('Error starting conversation:', err);
+      setError('Failed to start conversation. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Handle sending a new message
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!messageInput.trim() || !selectedConversation) return;
+    if (!messageInput.trim() || !selectedConversation || !session?.user?.id) return;
     
     try {
       setIsSubmitting(true);
+      
+      // Create message object
       const newMessage: Message = {
-        id: Date.now().toString(),
+        id: 'temp-' + Date.now(), // Temporary ID that will be replaced by server
         content: messageInput,
-        senderId: session?.user?.id || '',
+        senderId: session.user.id,
         createdAt: new Date().toISOString(),
       };
       
-      // In a real app, you would send this to your API
-      setMessages(prev => [...prev, newMessage]);
+      // Optimistically update the UI
+      const updatedMessages = [...messages, newMessage];
+      setMessages(updatedMessages);
       setMessageInput('');
       
-      // Update the last message in the conversation
+      // Update the last message in the conversation list
+      const updatedConversation = {
+        ...selectedConversation,
+        lastMessage: newMessage,
+        updatedAt: new Date().toISOString(),
+      };
+      
       setConversations(prev => 
         prev.map(conv => 
-          conv.id === selectedConversation.id
-            ? { ...conv, lastMessage: newMessage }
-            : conv
+          conv.id === selectedConversation.id ? updatedConversation : conv
+        )
+      );
+      
+      // Send the message to the server
+      const response = await fetch(`/api/conversations/${selectedConversation.id}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: messageInput,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+      
+      // Update with server response if needed
+      const sentMessage = await response.json();
+      
+      // Replace the temporary message with the one from the server
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === newMessage.id ? sentMessage : msg
         )
       );
       
     } catch (err) {
-      setError('Failed to send message');
+      console.error('Error sending message:', err);
+      setError('Failed to send message. Please try again.');
+      
+      // Revert optimistic update on error
+      setMessages(messages);
+      
+      // Re-fetch conversations to ensure consistency
+      const response = await fetch('/api/conversations');
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setConversations(data);
+        }
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Filter conversations based on search query
-  const filteredConversations = Array.isArray(conversations) ? conversations.filter(conversation => {
-    if (!searchQuery) return true;
-    const search = searchQuery.toLowerCase();
-    
-    // Safely handle potentially undefined properties
-    const participantNames = conversation.participants?.map(p => 
-      p?.name?.toLowerCase() || ''
-    ) || [];
-    
-    const participantRoles = conversation.participants?.map(p => 
-      p?.role?.toLowerCase() || ''
-    ) || [];
-    
-    const lastMessageContent = conversation.lastMessage?.content?.toLowerCase() || '';
-    
-    return (
-      participantNames.some(name => name.includes(search)) ||
-      participantRoles.some(role => role.includes(search)) ||
-      lastMessageContent.includes(search)
-    );
-  }) : [];
-
-  if (status === 'loading' || isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mb-4"></div>
-        <p className="text-gray-600">Loading your messages...</p>
-      </div>
-    );
-  }
-  
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
@@ -206,13 +286,79 @@ export default function MessagesClient() {
     return null;
   }
 
+  // Filter conversations based on search query
+  const filteredConversations = useMemo(() => {
+    if (!searchQuery.trim()) return conversations;
+    
+    const query = searchQuery.toLowerCase();
+    return conversations.filter(conversation => {
+      // Check if the conversation's participant names or last message content matches the query
+      const participantNames = conversation.participants
+        .map(p => p.name?.toLowerCase())
+        .filter(Boolean);
+      
+      const lastMessageContent = conversation.lastMessage?.content?.toLowerCase() || '';
+      
+      return (
+        participantNames.some(name => name?.includes(query)) ||
+        lastMessageContent.includes(query)
+      );
+    });
+  }, [conversations, searchQuery]);
+
+  // Handle loading state
+  if (status === 'loading' || isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mb-4"></div>
+        <p className="text-gray-600">Loading your messages...</p>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 w-full max-w-2xl">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">
+                {error}
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-2 text-sm font-medium text-red-700 hover:text-red-600 focus:outline-none focus:underline transition duration-150 ease-in-out"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="relative">
+      <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-semibold text-gray-900">Messages</h1>
+            <button
+              onClick={() => setShowNewConversationModal(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
+              New Message
+            </button>
           </div>
         </div>
       </header>
@@ -271,6 +417,7 @@ export default function MessagesClient() {
                         <div className="mt-6">
                           <button
                             type="button"
+                            onClick={() => setShowNewConversationModal(true)}
                             className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                           >
                             <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
@@ -430,5 +577,94 @@ export default function MessagesClient() {
         </div>
       </main>
     </div>
+      
+      {/* New Conversation Modal */}
+      {showNewConversationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">New Message</h3>
+                <button
+                  onClick={() => {
+                    setShowNewConversationModal(false);
+                    setError(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleStartConversation}>
+                {error && (
+                  <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
+                    {error}
+                  </div>
+                )}
+                
+                <div className="mb-4">
+                  <label htmlFor="recipient" className="block text-sm font-medium text-gray-700 mb-1">
+                    To:
+                  </label>
+                  <select
+                    id="recipient"
+                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    value={selectedRecipient}
+                    onChange={(e) => setSelectedRecipient(e.target.value)}
+                    required
+                  >
+                    <option value="">Select a recipient</option>
+                    {recipients.map((recipient) => (
+                      <option key={recipient.id} value={recipient.id}>
+                        {recipient.name} ({recipient.role})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="mb-4">
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                    Message:
+                  </label>
+                  <textarea
+                    id="message"
+                    rows={4}
+                    className="w-full border border-gray-300 rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Type your message here..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNewConversationModal(false);
+                      setError(null);
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    disabled={isLoading || !selectedRecipient || !newMessage.trim()}
+                  >
+                    {isLoading ? 'Sending...' : 'Send Message'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
-}
+};
+
+export default MessagesClient;

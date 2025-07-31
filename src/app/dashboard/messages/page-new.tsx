@@ -198,31 +198,63 @@ function MessagesPage() {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch('/api/messages', {
+      console.log('Starting new conversation with:', { recipientId, message });
+      
+      // In a real app, you would fetch the recipient's details from the API
+      // For now, we'll use mock data based on the selected ID
+      const recipientMap: Record<string, { name: string; role: string }> = {
+        'mentor1': { name: 'Sarah Johnson', role: 'MENTOR' },
+        'instructor1': { name: 'Michael Lee', role: 'INSTRUCTOR' },
+        'mentor2': { name: 'Elena Rodriguez', role: 'MENTOR' },
+      };
+      
+      const recipient = recipientMap[recipientId] || { name: 'Recipient', role: 'STUDENT' };
+      
+      const response = await fetch('/api/conversations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          recipientId,
-          content: message,
+          participantId: recipientId,
+          message: {
+            content: message,
+            senderId: currentUserId,
+            senderName: session?.user?.name || 'User',
+            senderRole: (session?.user as any)?.role || 'STUDENT',
+            timestamp: new Date().toISOString(),
+            isRead: false
+          }
         }),
       });
       
       if (!response.ok) {
-        throw new Error(`Failed to start conversation: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API Error:', errorData);
+        throw new Error(errorData.error || `Failed to start conversation: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('New conversation created:', data);
       
-      // Update the conversations list with the new conversation
-      setConversations(prev => [data.conversation, ...prev]);
-      setActiveConversationId(data.conversation.id);
-      setShowNewMessageModal(false);
+      if (data.conversation) {
+        // Update the conversations list with the new conversation
+        setConversations(prev => [data.conversation, ...prev]);
+        setActiveConversationId(data.conversation.id);
+        setShowNewMessageModal(false);
+        
+        // Update URL with the new conversation ID
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.set('conversation', data.conversation.id);
+        const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+        window.history.pushState({}, '', newUrl);
+      } else {
+        throw new Error('No conversation data returned from server');
+      }
       
     } catch (err) {
       console.error('Error starting conversation:', err);
-      setError('Failed to start conversation. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to start conversation. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -546,15 +578,35 @@ function MessagesPage() {
                       New Message
                     </h3>
                     <div className="mt-4">
+                      {error && (
+                        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
+                          {error}
+                        </div>
+                      )}
                       <form
-                        onSubmit={(e) => {
+                        onSubmit={async (e) => {
                           e.preventDefault();
                           const formData = new FormData(e.currentTarget);
                           const recipientId = formData.get('recipientId') as string;
                           const message = formData.get('message') as string;
                           
-                          if (recipientId && message) {
-                            startConversation(recipientId, message);
+                          if (!recipientId) {
+                            setError('Please select a recipient');
+                            return;
+                          }
+                          
+                          if (!message.trim()) {
+                            setError('Please enter a message');
+                            return;
+                          }
+                          
+                          try {
+                            await startConversation(recipientId, message);
+                            // Reset form on success
+                            (e.target as HTMLFormElement).reset();
+                            setError(null);
+                          } catch (err) {
+                            console.error('Form submission error:', err);
                           }
                         }}
                       >
@@ -569,7 +621,6 @@ function MessagesPage() {
                             required
                           >
                             <option value="">-- Select a recipient --</option>
-                            {/* This would normally be populated from the API */}
                             <option value="mentor1">Sarah Johnson (Mentor)</option>
                             <option value="instructor1">Michael Lee (Instructor)</option>
                             <option value="mentor2">Elena Rodriguez (Mentor)</option>
@@ -594,13 +645,15 @@ function MessagesPage() {
                           <button
                             type="submit"
                             className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                            disabled={isLoading}
                           >
-                            Send Message
+                            {isLoading ? 'Sending...' : 'Send Message'}
                           </button>
                           <button
                             type="button"
                             className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                             onClick={handleCloseModal}
+                            disabled={isLoading}
                           >
                             Cancel
                           </button>
