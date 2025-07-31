@@ -1,36 +1,7 @@
 import React from 'react';
+import { useSession } from 'next-auth/react';
 import { MessageSquare, Video, UserCheck, BookOpen, Search } from 'lucide-react';
-
-export interface Conversation {
-  id: string;
-  participants: Participant[];
-  lastMessage: {
-    content: string;
-    timestamp: Date;
-    senderId: string;
-    isRead: boolean;
-  };
-  unreadCount: number;
-  isGroupChat?: boolean;
-  courseId?: string;
-  courseName?: string;
-}
-
-export interface Participant {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-  role: 'STUDENT' | 'INSTRUCTOR' | 'MENTOR';
-  isOnline?: boolean;
-}
-
-interface ConversationListProps {
-  conversations: Conversation[];
-  activeConversationId: string | null;
-  onSelectConversation: (conversationId: string) => void;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-}
+import { Conversation, ConversationListProps, Participant } from './types';
 
 export default function ConversationList({
   conversations,
@@ -39,6 +10,7 @@ export default function ConversationList({
   searchQuery,
   onSearchChange
 }: ConversationListProps) {
+  const { data: session } = useSession();
   
   // Filter conversations based on search query
   const filteredConversations = conversations.filter(conversation => {
@@ -64,19 +36,18 @@ export default function ConversationList({
   
   // Get the primary participant (not the current user)
   const getPrimaryParticipant = (conversation: Conversation) => {
-    // Return a default participant if participants array is empty or undefined
-    if (!conversation.participants || conversation.participants.length === 0) {
-      return {
-        id: 'unknown',
-        name: 'Unknown User',
-        role: 'STUDENT' as const,
-        isOnline: false
-      };
-    }
+    // Get the primary participant (the one who is not the current user)
+    const primaryParticipant = conversation.participants.find(
+      (p: Participant) => p.id !== session?.user?.id
+    ) || {
+      id: 'unknown',
+      name: 'Unknown User',
+      email: 'unknown@example.com',
+      role: 'STUDENT' as const,
+      isOnline: false
+    } as Participant;
     
-    // In a real app, we would filter out the current user
-    // For demo purposes, just return the first participant
-    return conversation.participants[0];
+    return primaryParticipant;
   };
   
   // Format timestamp to display time or date
@@ -184,10 +155,10 @@ export default function ConversationList({
                     <div className="flex items-center">
                       <div className="min-w-0 flex-1 flex items-center">
                         <div className="flex-shrink-0 relative">
-                          {primaryParticipant.avatarUrl ? (
+                          {primaryParticipant.avatar || primaryParticipant.avatarUrl ? (
                             <img 
                               className="h-10 w-10 rounded-full" 
-                              src={primaryParticipant.avatarUrl} 
+                              src={primaryParticipant.avatar || primaryParticipant.avatarUrl} 
                               alt={primaryParticipant.name} 
                             />
                           ) : (
@@ -197,7 +168,7 @@ export default function ConversationList({
                               </span>
                             </div>
                           )}
-                          {primaryParticipant.isOnline && (
+                          {(primaryParticipant.isOnline !== undefined ? primaryParticipant.isOnline : true) && (
                             <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white"></span>
                           )}
                         </div>

@@ -1,13 +1,33 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MessageSquare, PlusCircle } from 'lucide-react';
-import ConversationList, { Conversation, Participant } from '@/components/messaging/ConversationList';
-import MessageThread, { Message, Attachment } from '@/components/messaging/MessageThread';
+import dynamic from 'next/dynamic';
 
-export default function MessagesPage() {
+// Dynamically import components with no SSR
+const ConversationList = dynamic(
+  () => import('@/components/messaging/ConversationList'),
+  { ssr: false }
+);
+
+const MessageThread = dynamic(
+  () => import('@/components/messaging/MessageThread'),
+  { ssr: false }
+);
+
+// Import types from components
+import type { 
+  Conversation, 
+  Message, 
+  Participant, 
+  Attachment,
+  ConversationListProps,
+  MessageThreadProps 
+} from '@/components/messaging/types';
+
+function MessagesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -32,6 +52,33 @@ export default function MessagesPage() {
     }
   }, [status, router]);
   
+  // Mark messages as read for a conversation
+  const markMessagesAsRead = async (conversationId: string) => {
+    try {
+      const response = await fetch(`/api/messages/${conversationId}/read`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to mark messages as read: ${response.status}`);
+      }
+
+      // Update the conversation's unread count locally
+      setConversations(prev => 
+        prev.map(conv => 
+          conv.id === conversationId 
+            ? { ...conv, unreadCount: 0 }
+            : conv
+        )
+      );
+    } catch (err) {
+      console.error('Error marking messages as read:', err);
+    }
+  };
+
   // Fetch conversations from API
   useEffect(() => {
     const fetchConversations = async () => {
@@ -86,37 +133,8 @@ export default function MessagesPage() {
         const data = await response.json();
         setMessages(data.messages || []);
         
-        // Update URL with active conversation
-        router.push(`/dashboard/messages?conversation=${activeConversationId}`, { scroll: false });
-        
-        // Update conversations to mark as read
-        setConversations(prevConversations => 
-          prevConversations.map(conv => {
-            if (conv.id === activeConversationId) {
-              if (conv.lastMessage) {
-                return {
-                  ...conv,
-                  unreadCount: 0,
-                  lastMessage: {
-                    ...conv.lastMessage,
-                    isRead: true
-                  }
-                };
-              }
-              return {
-                ...conv,
-                unreadCount: 0,
-                lastMessage: {
-                  content: '',
-                  timestamp: new Date(),
-                  senderId: '',
-                  isRead: true
-                }
-              };
-            }
-            return conv;
-          })
-        );
+        // Mark messages as read when opening the conversation
+        await markMessagesAsRead(activeConversationId);
       } catch (err) {
         console.error('Error fetching messages:', err);
         setError('Failed to load messages. Please try again later.');
@@ -130,10 +148,90 @@ export default function MessagesPage() {
     }
   }, [activeConversationId, router, session]);
   
+  // Handle participant click in conversation list
+  const handleParticipantClick = (participant: Participant) => {
+    if (!currentUserId || !session?.user) return;
+    
+    // Find existing conversation with this participant
+    const existingConv = conversations.find(conv => 
+      conv.participants.some((p: Participant) => p.id === participant.id)
+    );
+    
+    if (existingConv) {
+      setActiveConversationId(existingConv.id);
+      // Mark messages as read
+      markMessagesAsRead(existingConv.id);
+    } else {
+      // Create a new conversation
+      const userRole = (session.user as any).role || 'STUDENT';
+      const newConv: Conversation = {
+        id: `conv-${Date.now()}`,
+        participants: [participant, { 
+          id: currentUserId, 
+          name: session.user.name || 'Current User',
+          email: session.user.email || '',
+          role: userRole as 'STUDENT' | 'INSTRUCTOR' | 'MENTOR',
+          isOnline: true
+        }],
+        lastMessage: {
+          content: '',
+          timestamp: new Date(),
+          senderId: currentUserId,
+          isRead: true
+        },
+        unreadCount: 0,
+        isGroupChat: false,
+        courseName: ''
+      };
+      
+      setConversations(prev => [newConv, ...prev]);
+      setActiveConversationId(newConv.id);
+    }
+    
+    // Close the new message modal if open
+    setShowNewMessageModal(false);
+  };
+  
+  // Start a new conversation with a recipient
+  const startConversation = async (recipientId: string, message: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipientId,
+          content: message,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to start conversation: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Update the conversations list with the new conversation
+      setConversations(prev => [data.conversation, ...prev]);
+      setActiveConversationId(data.conversation.id);
+      setShowNewMessageModal(false);
+      
+    } catch (err) {
+      console.error('Error starting conversation:', err);
+      setError('Failed to start conversation. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Get active conversation object
   const activeConversation = conversations.find(conversation => conversation.id === activeConversationId);
   
-  // Get primary recipient for the conversation (the other user in 1:1 conversations)
+  // Get primary recipient for the conversation
   const getPrimaryRecipient = () => {
     if (!activeConversation) {
       return { name: '', role: 'STUDENT' as const };
@@ -143,7 +241,7 @@ export default function MessagesPage() {
     if (activeConversation.isGroupChat && activeConversation.courseName) {
       return { 
         name: activeConversation.courseName,
-        role: 'STUDENT' as const // Default to STUDENT for group chats
+        role: 'STUDENT' as const
       };
     }
     
@@ -156,10 +254,11 @@ export default function MessagesPage() {
       return { name: '', role: 'STUDENT' as const };
     }
     
-    // Return the first other participant (in 1:1 conversations, this is the only other participant)
+    // Return the first other participant
+    const participant = otherParticipants[0];
     return {
-      name: otherParticipants[0].name || '',
-      role: (otherParticipants[0].role || 'STUDENT') as 'STUDENT' | 'INSTRUCTOR' | 'MENTOR'
+      name: participant.name || '',
+      role: (participant.role || 'STUDENT') as 'STUDENT' | 'INSTRUCTOR' | 'MENTOR'
     };
   };
   
@@ -202,12 +301,13 @@ export default function MessagesPage() {
       }
 
       // Update UI
+      const userRole = (session?.user as any)?.role || 'STUDENT';
       const newMessage: Message = {
         id: Date.now().toString(),
         content,
         senderId: currentUserId,
         senderName: session?.user?.name || '',
-        senderRole: session?.user?.role as 'STUDENT' | 'INSTRUCTOR' | 'MENTOR' || 'STUDENT',
+        senderRole: userRole as 'STUDENT' | 'INSTRUCTOR' | 'MENTOR',
         timestamp: new Date(),
         isRead: true
       };
@@ -243,7 +343,7 @@ export default function MessagesPage() {
     const query = searchQuery.toLowerCase();
     
     // Check if any participant name matches the query
-    const participantMatch = conversation.participants.some(participant => 
+    const participantMatch = conversation.participants.some((participant: Participant) => 
       participant.name?.toLowerCase().includes(query)
     );
     
@@ -257,43 +357,31 @@ export default function MessagesPage() {
   });
   
   // Function to create a new conversation (show modal)
-  const handleNewConversation = () => {
+  const handleNewConversation = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Opening new message modal');
+    if (typeof window !== 'undefined') {
+      document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+    }
     setShowNewMessageModal(true);
   };
   
-  // Function to start a new conversation with a specific user
-  const startConversation = async (recipientId: string, initialMessage: string) => {
-    try {
-      const response = await fetch('/api/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          recipientId,
-          initialMessage
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to create conversation: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      // Close modal
-      setShowNewMessageModal(false);
-      
-      // Refetch conversations
-      const conversationsResponse = await fetch('/api/messages');
-      const conversationsData = await conversationsResponse.json();
-      setConversations(conversationsData.conversations || []);
-      
-      // Set active conversation to the new one
-      setActiveConversationId(data.conversationId);
-    } catch (err) {
-      console.error('Error creating conversation:', err);
-      alert('Failed to create conversation. Please try again.');
+  // Close modal handler
+  const handleCloseModal = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    console.log('Closing new message modal');
+    if (typeof window !== 'undefined') {
+      document.body.style.overflow = ''; // Re-enable scrolling
+    }
+    setShowNewMessageModal(false);
+  };
+  
+  // Close modal when clicking outside
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleCloseModal(e);
     }
   };
 
@@ -313,163 +401,221 @@ export default function MessagesPage() {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-semibold text-gray-900">Messages</h1>
             <button
+              type="button"
               onClick={handleNewConversation}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              <PlusCircle className="mr-2 h-5 w-5" />
+              <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
               New Message
             </button>
           </div>
-          
+
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+            <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-400">
               <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
                 <div className="ml-3">
                   <p className="text-sm text-red-700">{error}</p>
                 </div>
               </div>
             </div>
           )}
-          
-          {isLoading && conversations.length === 0 ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-              <span className="ml-2 text-gray-600">Loading conversations...</span>
-            </div>
-          ) : (
-            <div className="flex h-[70vh] bg-white shadow overflow-hidden rounded-lg">
-              {/* Conversation list */}
-              <div className="w-1/3 border-r border-gray-200">
-                <ConversationList 
-                  conversations={filteredConversations}
-                  activeConversationId={activeConversationId}
-                  onSelectConversation={setActiveConversationId}
-                  searchQuery={searchQuery}
-                  onSearchChange={setSearchQuery}
-                />
+
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div className="flex h-[calc(100vh-200px)]">
+              {/* Conversation List */}
+              <div className="w-1/3 border-r border-gray-200 flex flex-col">
+                <div className="p-4 border-b border-gray-200">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Search conversations..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto">
+                  {isLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                    </div>
+                  ) : filteredConversations.length > 0 ? (
+                    <div className="w-full">
+                      <ConversationList
+                        conversations={filteredConversations}
+                        activeConversationId={activeConversationId}
+                        onSelectConversation={(conversationId) => {
+                          setActiveConversationId(conversationId);
+                          markMessagesAsRead(conversationId);
+                        }}
+                        searchQuery={searchQuery}
+                        onSearchChange={setSearchQuery}
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <MessageSquare className="mx-auto h-12 w-12 text-gray-400" />
+                      <h3 className="mt-2 text-sm font-medium text-gray-900">No conversations</h3>
+                      <p className="mt-1 text-sm text-gray-500">Get started by sending a new message.</p>
+                      <div className="mt-6">
+                        <button
+                          type="button"
+                          onClick={handleNewConversation}
+                          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                          <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
+                          New Message
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              
-              {/* Message thread */}
-              <div className="w-2/3">
-                {activeConversation ? (
-                  <MessageThread 
+
+              {/* Message Thread */}
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {activeConversationId ? (
+                  <MessageThread
                     messages={messages}
                     currentUserId={currentUserId}
                     onSendMessage={handleSendMessage}
                     recipientName={getPrimaryRecipient().name}
                     recipientRole={getPrimaryRecipient().role}
-                    isGroupChat={activeConversation.isGroupChat || false}
-                    courseName={activeConversation.courseName}
                     isLoading={isLoading}
+                    isGroupChat={activeConversation?.isGroupChat}
+                    courseName={activeConversation?.courseName}
                   />
                 ) : (
-                  <div className="h-full flex items-center justify-center bg-gray-50">
+                  <div className="flex-1 flex items-center justify-center bg-gray-50">
                     <div className="text-center">
                       <MessageSquare className="mx-auto h-12 w-12 text-gray-400" />
-                      <h3 className="mt-2 text-lg font-medium text-gray-900">Select a conversation</h3>
-                      <p className="mt-1 text-sm text-gray-500">
-                        Choose a conversation from the list or start a new one.
-                      </p>
+                      <h3 className="mt-2 text-sm font-medium text-gray-900">No conversation selected</h3>
+                      <p className="mt-1 text-sm text-gray-500">Select a conversation or start a new one.</p>
+                      <div className="mt-6">
+                        <button
+                          type="button"
+                          onClick={handleNewConversation}
+                          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                          <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
+                          New Message
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
             </div>
-          )}
+          </div>
         </div>
-        
-        {/* New Message Modal */}
-        {showNewMessageModal && (
-          <div className="fixed z-10 inset-0 overflow-y-auto">
-            <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-              <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-                <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
-              </div>
-              
-              <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-              
-              <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <div className="sm:flex sm:items-start">
-                    <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                      <h3 className="text-lg leading-6 font-medium text-gray-900">
-                        New Message
-                      </h3>
-                      <div className="mt-4">
-                        <p className="text-sm text-gray-500 mb-4">
-                          Start a new conversation with a mentor or instructor.
-                        </p>
+      </div>
+
+      {/* New Message Modal */}
+      {showNewMessageModal && (
+        <div className="fixed inset-0 overflow-y-auto z-50">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div 
+              className="fixed inset-0 transition-opacity" 
+              aria-hidden="true"
+              onClick={handleBackdropClick}
+            >
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+              &#8203;
+            </span>
+
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                      New Message
+                    </h3>
+                    <div className="mt-4">
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const formData = new FormData(e.currentTarget);
+                          const recipientId = formData.get('recipientId') as string;
+                          const message = formData.get('message') as string;
+                          
+                          if (recipientId && message) {
+                            startConversation(recipientId, message);
+                          }
+                        }}
+                      >
+                        <div className="mb-4">
+                          <label htmlFor="recipientId" className="block text-sm font-medium text-gray-700">
+                            Select Recipient
+                          </label>
+                          <select
+                            id="recipientId"
+                            name="recipientId"
+                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                            required
+                          >
+                            <option value="">-- Select a recipient --</option>
+                            {/* This would normally be populated from the API */}
+                            <option value="mentor1">Sarah Johnson (Mentor)</option>
+                            <option value="instructor1">Michael Lee (Instructor)</option>
+                            <option value="mentor2">Elena Rodriguez (Mentor)</option>
+                          </select>
+                        </div>
                         
-                        {/* Simple form to create a new conversation */}
-                        <form
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            const formData = new FormData(e.currentTarget);
-                            const recipientId = formData.get('recipientId') as string;
-                            const message = formData.get('message') as string;
-                            
-                            if (recipientId && message) {
-                              startConversation(recipientId, message);
-                            }
-                          }}
-                        >
-                          <div className="mb-4">
-                            <label htmlFor="recipientId" className="block text-sm font-medium text-gray-700">
-                              Select Recipient
-                            </label>
-                            <select
-                              id="recipientId"
-                              name="recipientId"
-                              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                              required
-                            >
-                              <option value="">-- Select a recipient --</option>
-                              {/* This would normally be populated from the API */}
-                              <option value="mentor1">Sarah Johnson (Mentor)</option>
-                              <option value="instructor1">Michael Lee (Instructor)</option>
-                              <option value="mentor2">Elena Rodriguez (Mentor)</option>
-                            </select>
-                          </div>
-                          
-                          <div className="mb-4">
-                            <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-                              Message
-                            </label>
-                            <textarea
-                              id="message"
-                              name="message"
-                              rows={4}
-                              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                              placeholder="Type your message here..."
-                              required
-                            ></textarea>
-                          </div>
-                          
-                          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                            <button
-                              type="submit"
-                              className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                            >
-                              Send Message
-                            </button>
-                            <button
-                              type="button"
-                              className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                              onClick={() => setShowNewMessageModal(false)}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </form>
-                      </div>
+                        <div className="mb-4">
+                          <label htmlFor="message" className="block text-sm font-medium text-gray-700">
+                            Message
+                          </label>
+                          <textarea
+                            id="message"
+                            name="message"
+                            rows={4}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            placeholder="Type your message here..."
+                            required
+                          ></textarea>
+                        </div>
+                        
+                        <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                          <button
+                            type="submit"
+                            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                          >
+                            Send Message
+                          </button>
+                          <button
+                            type="button"
+                            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                            onClick={handleCloseModal}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
+
+export default MessagesPage;

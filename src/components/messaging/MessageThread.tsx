@@ -1,37 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Paperclip, Send, Video, Image, FileText, MoreHorizontal } from 'lucide-react';
-
-export interface Message {
-  id: string;
-  content: string;
-  senderId: string;
-  senderName: string;
-  senderRole: 'STUDENT' | 'INSTRUCTOR' | 'MENTOR';
-  senderAvatar?: string;
-  timestamp: Date;
-  isRead: boolean;
-  attachments?: Attachment[];
-}
-
-export interface Attachment {
-  id: string;
-  name: string;
-  type: 'image' | 'document' | 'video';
-  url: string;
-  size: string;
-  thumbnailUrl?: string;
-}
-
-interface MessageThreadProps {
-  messages: Message[];
-  currentUserId: string;
-  onSendMessage: (content: string, attachments?: File[]) => void;
-  recipientName: string;
-  recipientRole: 'STUDENT' | 'INSTRUCTOR' | 'MENTOR';
-  isGroupChat?: boolean;
-  courseName?: string;
-  isLoading: boolean;
-}
+import { Message, MessageThreadProps, Attachment } from './types';
 
 export default function MessageThread({
   messages,
