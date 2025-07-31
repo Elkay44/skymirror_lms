@@ -109,14 +109,83 @@ export default function InstructorAnalyticsPage() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch('/api/instructor/analytics');
-        if (!response.ok) {
-          throw new Error('Failed to fetch analytics data');
+        
+        // First, get the session
+        const sessionResponse = await fetch('/api/auth/session', {
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!sessionResponse.ok) {
+          throw new Error('Failed to fetch session');
         }
+        
+        const sessionData = await sessionResponse.json();
+        
+        if (!sessionData?.user) {
+          throw new Error('No active session found. Please log in again.');
+        }
+        
+        console.log('Session data:', {
+          userId: sessionData.user.id,
+          userRole: sessionData.user.role,
+          expires: sessionData.expires
+        });
+        
+        // Then fetch the analytics data with credentials
+        const response = await fetch('/api/instructor/analytics', {
+          credentials: 'include', // Important for sending cookies
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+          },
+        });
+        
+        if (!response.ok) {
+          let errorMessage = `HTTP error! status: ${response.status}`;
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorData.message || errorMessage;
+            if (errorData.details) {
+              errorMessage += ` (${errorData.details})`;
+            }
+          } catch (e) {
+            // Ignore JSON parse errors
+          }
+          
+          // If unauthorized, redirect to login
+          if (response.status === 401) {
+            window.location.href = '/login?callbackUrl=' + encodeURIComponent(window.location.pathname);
+            return;
+          }
+          
+          throw new Error(errorMessage);
+        }
+        
         const data = await response.json();
+        
+        // Validate the response data structure
+        if (!data.metrics || !Array.isArray(data.timeSeries)) {
+          console.error('Invalid analytics data format:', data);
+          throw new Error('Received invalid data format from server');
+        }
+        
+        console.log('Analytics data received:', {
+          coursesCount: data.metrics?.courses?.length || 0,
+          timeSeriesLength: data.timeSeries?.length || 0
+        });
+        
         setAnalyticsData(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch analytics data');
+        console.error('Error in fetchAnalyticsData:', err);
+        setError(
+          err instanceof Error 
+            ? err.message 
+            : 'An unknown error occurred while fetching analytics data'
+        );
       } finally {
         setLoading(false);
       }
@@ -147,7 +216,32 @@ export default function InstructorAnalyticsPage() {
 
   if (error) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-6">
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Error loading analytics data
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>{error}</p>
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="text-red-500">Error: {error}</div>
       </div>
     );
@@ -367,16 +461,10 @@ export default function InstructorAnalyticsPage() {
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-1">No courses found</h3>
-              <p className="text-muted-foreground text-sm max-w-md mb-4">
-                You haven't created any courses yet. Get started by creating your first course.
+              <h3 className="text-lg font-medium mb-1">No published courses found</h3>
+              <p className="text-muted-foreground text-sm max-w-md">
+                You don't have any published courses yet. Publish your courses to see analytics and track student progress.
               </p>
-              <Link
-                href="/instructor/courses/new"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Create Course
-              </Link>
             </div>
           )}
         </CardContent>

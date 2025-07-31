@@ -49,6 +49,7 @@ export default function InstructorCoursesPage() {
   const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(true);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -57,95 +58,43 @@ export default function InstructorCoursesPage() {
   useEffect(() => {
     const fetchCourses = async () => {
       setIsLoading(true);
+      setError(null);
+      
       try {
-        // Try to fetch from API first
-        let transformedCourses: Course[] = [];
-        try {
-          const response = await fetch('/api/courses/instructor');
-          if (response.ok) {
-            const data = await response.json();
-            
-            // Transform API data to match our interface
-            transformedCourses = (data.courses || []).map((course: any) => ({
-              id: course.id,
-              title: course.title,
-              description: course.description || '',
-              coverImage: course.imageUrl,
-              publishStatus: course.isPublished ? 'published' : 'draft',
-              enrollmentCount: course.enrollmentCount || 0,
-              lastUpdated: course.updatedAt || new Date().toISOString(),
-              progress: course.completionRate || 0,
-              category: course.category || 'Uncategorized',
-              level: course.level || 'beginner',
-              lessonsCount: course.lessonsCount || 0,
-              totalDuration: course.totalDuration || 0,
-              rating: course.rating || 0,
-            }));
-          }
-        } catch (apiError) {
-          console.error('API error:', apiError);
-          // Fall back to mock data if API fails
+        const response = await fetch('/api/courses/instructor', {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch courses');
         }
+
+        const data = await response.json();
         
-        // If we got no courses from API, use mock data
-        if (transformedCourses.length === 0) {
-          console.log('Using mock course data');
-          // Create a balanced mix of courses with different statuses
-          transformedCourses = [
-            // Published courses
-            ...Array.from({ length: 5 }, (_, i) => ({
-              id: `pub-${i+1}`,
-              title: `Published Course ${i+1}`,
-              description: `This is a published course ${i+1}`,
-              coverImage: null,
-              publishStatus: 'published' as const,
-              enrollmentCount: Math.floor(Math.random() * 100),
-              lastUpdated: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-              progress: 100,
-              category: ['Development', 'Design', 'Business', 'Marketing', 'IT'][Math.floor(Math.random() * 5)],
-              level: ['beginner', 'intermediate', 'advanced'][Math.floor(Math.random() * 3)],
-              lessonsCount: Math.floor(Math.random() * 20) + 5,
-              totalDuration: Math.floor(Math.random() * 500) + 100,
-              rating: (Math.random() * 2) + 3, // Rating between 3-5
-            })),
-            // Draft courses
-            ...Array.from({ length: 3 }, (_, i) => ({
-              id: `draft-${i+1}`,
-              title: `Draft Course ${i+1}`,
-              description: `This is a draft course ${i+1}`,
-              coverImage: null,
-              publishStatus: 'draft' as const,
-              enrollmentCount: 0,
-              lastUpdated: new Date(Date.now() - Math.random() * 14 * 24 * 60 * 60 * 1000).toISOString(),
-              progress: Math.floor(Math.random() * 60) + 20, // Between 20-80%
-              category: ['Development', 'Design', 'Business'][Math.floor(Math.random() * 3)],
-              level: ['beginner', 'intermediate'][Math.floor(Math.random() * 2)],
-              lessonsCount: Math.floor(Math.random() * 15) + 3,
-              totalDuration: Math.floor(Math.random() * 300) + 50,
-              rating: 0,
-            })),
-            // Archived courses
-            ...Array.from({ length: 2 }, (_, i) => ({
-              id: `arch-${i+1}`,
-              title: `Archived Course ${i+1}`,
-              description: `This is an archived course ${i+1}`,
-              coverImage: null,
-              publishStatus: 'archived' as const,
-              enrollmentCount: Math.floor(Math.random() * 50),
-              lastUpdated: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
-              progress: 100,
-              category: ['Legacy', 'Outdated'][Math.floor(Math.random() * 2)],
-              level: ['beginner', 'intermediate', 'advanced'][Math.floor(Math.random() * 3)],
-              lessonsCount: Math.floor(Math.random() * 12) + 5,
-              totalDuration: Math.floor(Math.random() * 400) + 100,
-              rating: (Math.random() * 2) + 2, // Rating between 2-4
-            })),
-          ];
-        }
+        // Transform API data to match our interface
+        const transformedCourses: Course[] = (data.courses || []).map((course: any) => ({
+          id: course.id,
+          title: course.title,
+          description: course.description || '',
+          coverImage: course.coverImage || '/images/course-placeholder.jpg',
+          publishStatus: course.publishStatus || 'draft',
+          enrollmentCount: course.enrollmentCount || 0,
+          lastUpdated: course.lastUpdated || new Date().toISOString(),
+          progress: 0, // Default progress
+          category: course.category || 'Uncategorized',
+          level: course.level || 'beginner',
+          lessonsCount: 0, // These would need to be fetched separately
+          totalDuration: 0, // These would need to be fetched separately
+          rating: 0, // These would need to be fetched separately
+        }));
         
         setCourses(transformedCourses);
       } catch (error) {
-        console.error('Error setting up courses:', error);
+        console.error('Error fetching courses:', error);
+        setError('Failed to load courses. Please try again later.');
         setCourses([]);
       } finally {
         setIsLoading(false);
@@ -312,16 +261,32 @@ export default function InstructorCoursesPage() {
               <Card>
                 <CardContent className="flex flex-col items-center justify-center p-10">
                   <BookOpen className="h-10 w-10 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No courses found</h3>
+                  <h3 className="text-lg font-medium mb-2">
+                    {searchTerm 
+                      ? 'No matching courses found' 
+                      : activeTab === 'published' 
+                        ? 'No published courses found' 
+                        : activeTab === 'drafts' 
+                          ? 'No draft courses found' 
+                          : activeTab === 'archived' 
+                            ? 'No archived courses found' 
+                            : 'No courses found'}
+                  </h3>
                   <p className="text-muted-foreground text-center mb-4">
-                    {searchTerm ? 'Try adjusting your search term' : 'Start by creating your first course'}
+                    {searchTerm 
+                      ? 'Try adjusting your search term' 
+                      : activeTab === 'published'
+                        ? 'Publish one of your draft courses to make it available to students'
+                        : 'Start by creating your first course'}
                   </p>
-                  <Button asChild variant="outline">
-                    <Link href="/dashboard/instructor/courses/create">
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Create a course
-                    </Link>
-                  </Button>
+                  {!searchTerm && (
+                    <Button asChild variant="outline">
+                      <Link href="/dashboard/instructor/courses/create">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Create a course
+                      </Link>
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ) : (

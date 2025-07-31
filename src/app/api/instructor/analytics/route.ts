@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { format } from 'date-fns';
+import { format, subDays, isWithinInterval, subMonths } from 'date-fns';
 import redis from '@/lib/redis';
 
 // Cache configuration
@@ -39,19 +39,56 @@ interface AnalyticsData {
     averageEngagement: number;
     assignmentsSubmitted: number;
     averageAssignmentScore: number;
+    courses: any[];
   };
 }
 
 // GET /api/instructor/analytics - Get instructor analytics data
-export async function GET() {
+export async function GET(request: Request) {
   let cachedData: string | null = null;
+  console.log('Analytics API called');
+  
   try {
     // Get the user session to check if they're authenticated
     const session = await getServerSession(authOptions);
-    if (!session) {
+    
+    // Log request headers for debugging
+    const headers = Object.fromEntries(request.headers.entries());
+    console.log('Request headers:', JSON.stringify(headers, null, 2));
+    
+    console.log('Session data:', {
+      hasSession: !!session,
+      userId: session?.user?.id,
+      userRole: session?.user?.role,
+      sessionKeys: session ? Object.keys(session) : []
+    });
+    
+    if (!session?.user) {
+      console.error('No valid session found');
       return NextResponse.json(
-        { error: 'No session found' },
-        { status: 401 }
+        { 
+          error: 'Authentication required',
+          details: 'No valid session found',
+          timestamp: new Date().toISOString()
+        },
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Check if user has instructor or admin role
+    if (session.user.role !== 'INSTRUCTOR' && session.user.role !== 'ADMIN') {
+      console.error('Unauthorized access attempt:', {
+        userId: session.user.id,
+        userRole: session.user.role
+      });
+      return NextResponse.json(
+        { 
+          error: 'Access denied',
+          details: 'You do not have permission to access this resource',
+          requiredRole: 'INSTRUCTOR or ADMIN',
+          yourRole: session.user.role
+        },
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -108,8 +145,8 @@ export async function GET() {
 
     // Get date range for analytics (last 30 days)
     const today = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(today.getDate() - 30);
+    const thirtyDaysAgo = subDays(today, 30);
+    const threeMonthsAgo = subMonths(today, 3);
 
     // Get course enrollment statistics
     const enrollments = await prisma.enrollment.findMany({
@@ -187,36 +224,187 @@ export async function GET() {
       }
     });
 
-    // Get assignment submissions
-    const assignments = await prisma.assignmentSubmission.findMany({
-      where: {
-        assignmentId: {
-          in: await prisma.assignment.findMany({
-            where: {
-              moduleId: {
-                in: await prisma.module.findMany({
-                  where: {
-                    courseId: {
-                      in: await prisma.course.findMany({
-                        where: {
-                          instructorId: userId
-                        },
-                        select: {
-                          id: true
-                        }
-                      }).then(courses => courses.map(c => c.id))
+    console.log('Fetching instructor courses for user:', userId);
+    
+    // Get all instructor's courses with detailed stats
+    const instructorCourses = await prisma.course.findMany({
+      where: { 
+        instructorId: session.user.id,
+        isPublished: true
+      },
+      include: {
+        _count: {
+          select: {
+            enrollments: { 
+              where: { 
+                enrolledAt: { gte: threeMonthsAgo },
+                status: 'ACTIVE'
+              } 
+            },
+            modules: true
+          }
+        },
+        modules: {
+          include: {
+            _count: { 
+              select: { 
+                lessons: true,
+                assignments: true
+              } 
+            },
+            assignments: {
+              include: {
+                _count: {
+                  select: {
+                    submissions: {
+                      where: {
+                        status: 'SUBMITTED',
+                        submittedAt: { gte: thirtyDaysAgo }
+                      }
                     }
+                  }
+                },
+                submissions: {
+                  where: { 
+                    submittedAt: { gte: thirtyDaysAgo },
+                    status: 'SUBMITTED'
                   },
                   select: {
-                    id: true
+                    id: true,
+                    grade: true,  // Changed from score to grade
+                    status: true,
+                    submittedAt: true
                   }
-                }).then(modules => modules.map(m => m.id))
+                }
               }
             },
-            select: {
-              id: true
+            lessons: {
+              include: {
+                _count: {
+                  select: {
+                    activityLogs: true,
+                    views: true
+                  }
+                }
+              }
             }
-          }).then(assignments => assignments.map(a => a.id))
+          }
+        }
+      }
+    });
+    
+    console.log(`Found ${instructorCourses.length} published courses`);
+
+    // Define types for the course data structure
+    type ModuleType = {
+      _count: {
+        lessons: number;
+        assignments: number;
+      };
+      assignments: Array<{
+        _count: {
+          submissions: number;
+        };
+        submissions: Array<{
+          id: string;
+          grade: number | null;
+          status: string;
+          submittedAt: Date | null;
+        }>;
+      }>;
+      lessons: Array<{
+        _count: {
+          activityLogs: number;
+          views: number;
+        };
+      }>;
+    };
+
+    type CourseType = {
+      id: string;
+      title: string;
+      _count: {
+        enrollments: number;
+        modules: number;
+      };
+      modules: ModuleType[];
+      updatedAt: Date;
+    };
+
+    // Transform course data for the frontend
+    const coursesWithStats = instructorCourses.map((course: CourseType) => {
+      console.log(`Processing course: ${course.title} (${course.id})`);
+      
+      // Process the course data
+      const totalLessons = course.modules.reduce(
+        (sum: number, module) => sum + (module._count?.lessons || 0),
+        0
+      );
+      
+      const viewedLessons = course.modules.reduce(
+        (sum: number, module) => {
+          if (!module.lessons) return sum;
+          return sum + module.lessons.reduce(
+            (lessonSum: number, lesson) => lessonSum + ((lesson._count?.views || 0) > 0 ? 1 : 0),
+            0
+          );
+        },
+        0
+      );
+
+      const totalAssignments = course.modules.reduce(
+        (sum: number, module) => sum + (module._count?.assignments || 0),
+        0
+      );
+
+      const submittedAssignments = course.modules.reduce(
+        (assignmentSum: number, module) => {
+          if (!module.assignments) return assignmentSum;
+          return assignmentSum + module.assignments.reduce(
+            (sum: number, assignment) => sum + (assignment._count?.submissions || 0),
+            0
+          );
+        },
+        0
+      );
+
+      const assignmentScores = course.modules.flatMap(module => 
+        (module.assignments || []).flatMap(assignment => 
+          (assignment.submissions || [])
+            .filter((sub: { grade: number | null }) => sub.grade !== null)
+            .map((sub: { grade: number | null }) => sub.grade as number)
+        )
+      );
+      
+      const averageScore = assignmentScores.length > 0 
+        ? assignmentScores.reduce((a: number, b: number) => a + b, 0) / assignmentScores.length 
+        : 0;
+
+      return {
+        id: course.id,
+        title: course.title,
+        completionRate: totalLessons > 0 
+          ? Math.round((viewedLessons / totalLessons) * 100) 
+          : 0,
+        enrollmentCount: course._count?.enrollments || 0,
+        assignmentCount: totalAssignments,
+        submittedAssignments,
+        lastUpdated: course.updatedAt.toISOString(),
+        averageScore: Math.round(averageScore),
+        modulesCount: course._count?.modules || 0,
+        totalLessons
+      };
+    });
+
+    // Get assignment submissions for the time series data
+    const assignments = await prisma.assignmentSubmission.findMany({
+      where: {
+        assignment: {
+          module: {
+            courseId: {
+              in: instructorCourses.map((course: { id: string }) => course.id)
+            }
+          }
         },
         submittedAt: {
           gte: thirtyDaysAgo,
@@ -247,119 +435,128 @@ export async function GET() {
       };
     }[]);
 
-    // Generate time series data
-    const timeSeriesData = Array.from({ length: 30 }, (_, i) => {
-      const date = new Date();
-      date.setDate(today.getDate() - i);
-      
-      // Calculate metrics for this date using precise date comparison
-      const dateStr = format(date, 'yyyy-MM-dd');
-      const students = enrollments.filter(e => {
-        const enrolledAt = e.enrolledAt ? new Date(e.enrolledAt) : null;
-        return enrolledAt ? enrolledAt.toISOString().startsWith(dateStr) : false;
-      }).length;
-      const completion = activities.filter(a => {
-        const lastViewed = new Date(a.lastViewed);
-        return lastViewed.toISOString().startsWith(dateStr);
-      }).length;
-      const engagement = activities.filter(a => {
-        const lastViewed = new Date(a.lastViewed);
-        return lastViewed.toISOString().startsWith(dateStr);
-      }).length;
-      const assignmentsCount = assignments.filter(a => {
-        const submittedAt = new Date(a.submittedAt);
-        return submittedAt.toISOString().startsWith(dateStr);
-      }).length;
+    // Calculate metrics
+    const totalStudents = new Set(enrollments.map(e => e.userId)).size;
+    const totalAssignments = assignments.length;
+    const totalEngagement = activities.length;
+    
+    // Calculate overall completion rate
+    const totalPossibleEngagement = instructorCourses.reduce((sum: number, course) => {
+      const courseStudents = new Set(
+        enrollments
+          .filter((e: { courseId: string }) => e.courseId === course.id)
+          .map((e: { userId: string }) => e.userId)
+      ).size;
+      const courseLessons = course.modules.reduce(
+        (moduleSum: number, module: { _count: { lessons: number } }) => 
+          moduleSum + module._count.lessons, 0
+      );
+      return sum + (courseStudents * courseLessons);
+    }, 0);
+    
+    const completionRate = totalPossibleEngagement > 0
+      ? Math.min(Math.round((totalEngagement / totalPossibleEngagement) * 100), 100)
+      : 0;
 
+    // Generate time series data (last 30 days)
+    const timeSeries = Array.from({ length: 30 }, (_, i) => {
+      const date = subDays(today, 29 - i);
+      const dateStr = format(date, 'yyyy-MM-dd');
+      
+      const dailyEnrollments = enrollments.filter(
+        e => format(new Date(e.enrolledAt), 'yyyy-MM-dd') === dateStr
+      ).length;
+      
+      const dailyActivities = activities.filter(
+        a => format(new Date(a.lastViewed), 'yyyy-MM-dd') === dateStr
+      ).length;
+      
+      const dailyAssignments = assignments.filter(
+        a => format(new Date(a.submittedAt), 'yyyy-MM-dd') === dateStr
+      ).length;
+      
       return {
         date: dateStr,
-        students,
-        completion,
-        engagement,
-        assignments: assignmentsCount,
-        courses: enrollments.filter(e => {
-          const enrolledAt = e.enrolledAt ? new Date(e.enrolledAt) : null;
-          return enrolledAt ? enrolledAt.toISOString().startsWith(dateStr) : false;
-        }).length
+        students: dailyEnrollments,
+        completion: Math.min(Math.round((dailyActivities / 10) * 100), 100),
+        engagement: dailyActivities,
+        assignments: dailyAssignments,
+        courses: 0 // Not used in current implementation
       };
     });
 
-    // Generate heatmap data
-    const daysOfWeek: Array<'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun'> = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const dayMap: Record<'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun', number> = {
-      'Mon': 1,
-      'Tue': 2,
-      'Wed': 3,
-      'Thu': 4,
-      'Fri': 5,
-      'Sat': 6,
-      'Sun': 0
-    };
-
-    const heatmapData: Array<{ day: string; hour: number; value: number }> = Array.from({ length: 24 }, (_, hour) => 
-      daysOfWeek.map((day) => {
-        const activitiesCount = activities.filter((a) => {
+    // Generate heatmap data (based on activity hours)
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const heatmap = days.flatMap((day, dayIndex) => 
+      Array.from({ length: 24 }, (_, hour) => ({
+        day,
+        hour,
+        value: activities.filter(a => {
           const activityDate = new Date(a.lastViewed);
-          const dayOfWeek = activityDate.getDay();
-          const activityHour = activityDate.getHours();
-          return dayOfWeek === dayMap[day] && activityHour === hour;
-        }).length;
+          return activityDate.getDay() === dayIndex && 
+                 activityDate.getHours() === hour;
+        }).length
+      }))
+    );
 
-        return {
-          day: day,
-          hour: hour,
-          value: activitiesCount
-        };
-      })
-    ).flat();
+    // Calculate average assignment score across all courses
+    const allScores = coursesWithStats.flatMap(course => 
+      course.averageScore ? [course.averageScore] : []
+    );
+    const averageAssignmentScore = allScores.length > 0
+      ? Math.round(allScores.reduce((a, b) => a + b, 0) / allScores.length)
+      : 0;
 
-    // Calculate metrics
-    const completionRate = Math.round((activities.length / enrollments.length) * 100) || 0;
-    const averageEngagement = Math.round((activities.length / (enrollments.length || 1)) * 100);
-    const totalCourses = enrollments.filter(e => e.course).length;
-
-    const totalAssignments = assignments.length;
-    const totalAssignmentScores = assignments.reduce((sum, a) => sum + (a.score || 0), 0);
-    const averageAssignmentScore = totalAssignments > 0 ? totalAssignmentScores / totalAssignments : 0;
-
-    // Format the response data
-    const responseData: AnalyticsData = {
-      timeSeries: timeSeriesData,
-      heatmap: heatmapData,
+    // Prepare response data
+    const analyticsData: AnalyticsData = {
+      timeSeries,
+      heatmap,
       metrics: {
-        totalStudents: enrollments.length,
-        totalCourses,
+        totalStudents,
+        totalCourses: coursesWithStats.length,
         courseCompletion: completionRate,
-        averageEngagement,
-        assignmentsSubmitted: assignments.length,
-        averageAssignmentScore
+        averageEngagement: Math.min(Math.round((totalEngagement / (totalStudents || 1)) * 10), 100),
+        assignmentsSubmitted: totalAssignments,
+        averageAssignmentScore,
+        courses: coursesWithStats
       }
     };
 
-    // Cache the data if Redis is configured
+    // Cache the response if Redis is configured
     if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
       try {
-        await redis.set(cacheKey, JSON.stringify(responseData), { ex: CACHE_TTL });
+        await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(analyticsData));
+        console.log('Analytics data cached successfully');
       } catch (error) {
-        console.error('Failed to cache data:', error);
+        console.error('Failed to cache analytics data:', error);
       }
-    } else {
-      console.warn('Redis not configured, skipping cache');
     }
 
-    return NextResponse.json(responseData);
+    console.log('Returning analytics data');
+    return NextResponse.json(analyticsData);
   } catch (error) {
-    console.error('Error fetching instructor analytics data:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch analytics data';
+    console.error('Error in instructor analytics API:', {
+      error: error instanceof Error ? {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      } : error,
+      timestamp: new Date().toISOString(),
+      path: '/api/instructor/analytics'
+    });
     
-    // Try to get cached data even if there was an error
-    if (cachedData) {
-      return NextResponse.json(JSON.parse(cachedData));
-    }
-
     return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
+      { 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' 
+          ? error instanceof Error ? error.message : String(error)
+          : 'An unexpected error occurred',
+        timestamp: new Date().toISOString()
+      },
+      { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
   }
 }
