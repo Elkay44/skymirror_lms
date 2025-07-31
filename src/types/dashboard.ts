@@ -11,8 +11,15 @@ export interface Course {
   title: string;
   imageUrl?: string;
   averageRating: number;
-  enrollmentCount: number;
-  completionRate: number;
+  enrollments: {
+    id: string;
+    progress: number;
+  }[];
+  modules: {
+    id: string;
+    title: string;
+    lessons: number;
+  }[];
   status: CourseStatus;
   revenue?: number;
   updatedAt?: string;

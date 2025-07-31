@@ -91,7 +91,6 @@ interface Project {
 
 interface DashboardData {
   instructorName: string;
-  isLoading?: boolean;
   recentCourses: Course[];
   recentActivity: Activity[];
   upcomingSessions: Session[];
@@ -99,26 +98,19 @@ interface DashboardData {
   overallStats: {
     totalStudents: number;
     totalCourses: number;
-    publishedCourses: number;
-    draftCourses: number;
-    archivedCourses: number;
     totalRevenue: number;
-    averageRating: number;
+    newEnrollments: number;
     completionRate: number;
-    monthlyRevenue?: number;
-    monthlyEnrollments?: number;
-    monthlyReviews?: number;
-    monthlySessions?: number;
+    averageRating: number;
   };
-  projectSubmissions: Project[];
-  earningsData: Array<{
+  earningsData?: Array<{
     month: string;
     amount: number;
   }>;
-  projectAnalytics: Array<{
-    name: string;
-    value: number;
-  }>;
+  projectAnalytics?: {
+    labels: string[];
+    data: number[];
+  };
 }
 
 // Animation variants
@@ -209,101 +201,20 @@ const getSessionStatusColor = (status: string) => {
 
 const fallbackData: DashboardData = {
   instructorName: "John Doe",
-  recentCourses: [
-    {
-      id: "1",
-      title: "Introduction to React",
-      imageUrl: "/images/react-course.jpg",
-      averageRating: 4.8,
-      enrollmentCount: 45,
-      completionRate: 82,
-      status: "PUBLISHED",
-      isPublished: true,
-      revenue: 4500,
-      updatedAt: "2023-06-14T10:00:00Z",
-    },
-    {
-      id: "2",
-      title: "Advanced TypeScript",
-      imageUrl: "/images/typescript-course.jpg",
-      averageRating: 4.9,
-      enrollmentCount: 32,
-      completionRate: 88,
-      status: "PUBLISHED",
-      isPublished: true,
-      revenue: 3800,
-      updatedAt: "2023-06-13T15:30:00Z",
-    },
-  ],
-  recentActivity: [
-    {
-      id: "1",
-      studentName: "Jane Smith",
-      studentImage: "/images/avatar1.jpg",
-      activityType: "ENROLLMENT",
-      courseTitle: "Introduction to React",
-      courseId: "1",
-      timestamp: "2023-06-14T12:30:00Z",
-    },
-    {
-      id: "2",
-      studentName: "Mike Johnson",
-      studentImage: "/images/avatar2.jpg",
-      activityType: "COMPLETION",
-      courseTitle: "Advanced TypeScript",
-      courseId: "2",
-      timestamp: "2023-06-14T09:15:00Z",
-    },
-  ],
-  upcomingSessions: [
-    {
-      id: "1",
-      title: "React Hooks Deep Dive",
-      course: "Introduction to React",
-      courseId: "1",
-      courseTitle: "Introduction to React",
-      date: "2023-06-15",
-      time: "14:00",
-      duration: "1 hour",
-      participants: 12,
-      startTime: "2023-06-15T14:00:00Z",
-      endTime: "2023-06-15T15:00:00Z",
-      meetingLink: "https://meet.example.com/abc123",
-      status: "UPCOMING",
-      attendees: 12,
-      maxAttendees: 30,
-      sessionType: "LIVE",
-    },
-    {
-      id: "2",
-      title: "TypeScript Generics Workshop",
-      course: "Advanced TypeScript",
-      courseId: "2",
-      courseTitle: "Advanced TypeScript",
-      date: "2023-06-16",
-      time: "16:00",
-      duration: "1.5 hours",
-      participants: 8,
-      startTime: "2023-06-16T16:00:00Z",
-      endTime: "2023-06-16T17:30:00Z",
-      meetingLink: "https://meet.example.com/def456",
-      status: "UPCOMING",
-      attendees: 8,
-      maxAttendees: 15,
-      sessionType: "WORKSHOP",
-    },
-  ],
+  recentCourses: [],
+  recentActivity: [],
+  upcomingSessions: [],
   projectPerformance: [
     {
       id: "1",
-      title: "Todo App",
+      title: "Database Design",
       courseId: "1",
-      courseTitle: "Introduction to React",
+      courseTitle: "Full Stack Development",
       submissions: 15,
       pendingReview: 2,
       averageScore: 85,
       dueDate: "2023-06-20T23:59:59Z",
-      status: "SUBMITTED",
+      status: "SUBMITTED"
     },
     {
       id: "2",
@@ -314,33 +225,28 @@ const fallbackData: DashboardData = {
       pendingReview: 1,
       averageScore: 92,
       dueDate: "2023-06-25T23:59:59Z",
-      status: "SUBMITTED",
-    },
+      status: "SUBMITTED"
+    }
   ],
-  projectSubmissions: [],
   earningsData: [
     { month: 'Jan', amount: 4000 },
     { month: 'Feb', amount: 3000 },
     { month: 'Mar', amount: 5000 },
     { month: 'Apr', amount: 2780 },
     { month: 'May', amount: 1890 },
-    { month: 'Jun', amount: 2390 },
+    { month: 'Jun', amount: 2390 }
   ],
-  projectAnalytics: [
-    { name: 'In Progress', value: 12 },
-    { name: 'Submitted', value: 19 },
-    { name: 'Reviewed', value: 3 },
-    { name: 'Approved', value: 5 }
-  ],
+  projectAnalytics: {
+    labels: ['In Progress', 'Submitted', 'Reviewed', 'Approved'],
+    data: [12, 19, 3, 5]
+  },
   overallStats: {
     totalStudents: 120,
     totalCourses: 10,
-    publishedCourses: 5,
-    draftCourses: 3,
-    archivedCourses: 2,
     totalRevenue: 12500,
-    averageRating: 4.7,
+    newEnrollments: 30,
     completionRate: 82,
+    averageRating: 4.7
   },
 };
 
@@ -356,209 +262,64 @@ export default function InstructorDashboard(): JSX.Element {
   // Default dashboard data - will be overridden by API call
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     instructorName: session?.user?.name || 'Instructor',
-    overallStats: {
-      totalStudents: 0,
-      totalCourses: 0,
-      publishedCourses: 0,
-      draftCourses: 0,
-      archivedCourses: 0,
-      totalRevenue: 0,
-      averageRating: 0,
-      completionRate: 0,
-    },
     recentCourses: [],
     recentActivity: [],
     upcomingSessions: [],
     projectPerformance: [],
-    projectSubmissions: [],
+    overallStats: {
+      totalStudents: 0,
+      totalCourses: 0,
+      totalRevenue: 0,
+      newEnrollments: 0,
+      completionRate: 0,
+      averageRating: 0,
+    },
     earningsData: [
       // Add sample data to prevent chart errors
       { month: 'Jan', amount: 0 },
       { month: 'Feb', amount: 0 },
       { month: 'Mar', amount: 0 },
     ],
-    projectAnalytics: [
-      // Add sample data to prevent chart errors
-      { name: 'In Progress', value: 0 },
-      { name: 'Submitted', value: 0 },
-      { name: 'Reviewed', value: 0 },
-      { name: 'Approved', value: 0 },
-    ],
+    projectAnalytics: {
+      labels: ['In Progress', 'Submitted', 'Reviewed', 'Approved'],
+      data: [0, 0, 0, 0]
+    }
   });
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch dashboard data from API
+    if (!session?.user?.id) return;
+
+    setIsLoading(true);
+    setError(null);
+
     const fetchDashboardData = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-
-        // Mock data for development since API endpoint might not be implemented yet
-        // Remove this and uncomment the fetch call when the API is ready
-        setTimeout(() => {
-          setDashboardData(prevData => ({
-            ...prevData,
-            instructorName: "John Doe",
-            recentCourses: [
-              {
-                id: "1",
-                title: "Introduction to React",
-                imageUrl: "/images/react-course.jpg",
-                averageRating: 4.8,
-                enrollmentCount: 45,
-                completionRate: 82,
-                status: "PUBLISHED",
-                isPublished: true,
-                revenue: 4500,
-                updatedAt: "2023-06-14T10:00:00Z",
-              },
-              {
-                id: "2",
-                title: "Advanced TypeScript",
-                imageUrl: "/images/typescript-course.jpg",
-                averageRating: 4.9,
-                enrollmentCount: 32,
-                completionRate: 88,
-                status: "PUBLISHED",
-                isPublished: true,
-                revenue: 3800,
-                updatedAt: "2023-06-13T15:30:00Z",
-              },
-            ],
-            recentActivity: [
-              {
-                id: "1",
-                studentName: "Jane Smith",
-                studentImage: "/images/avatar1.jpg",
-                activityType: "ENROLLMENT",
-                courseTitle: "Introduction to React",
-                courseId: "1",
-                timestamp: "2023-06-14T12:30:00Z",
-              },
-              {
-                id: "2",
-                studentName: "Mike Johnson",
-                studentImage: "/images/avatar2.jpg",
-                activityType: "COMPLETION",
-                courseTitle: "Advanced TypeScript",
-                courseId: "2",
-                timestamp: "2023-06-14T09:15:00Z",
-              },
-            ],
-            upcomingSessions: [
-              {
-                id: "1",
-                title: "React Hooks Deep Dive",
-                course: "Introduction to React",
-                courseId: "1",
-                courseTitle: "Introduction to React",
-                date: "2023-06-15",
-                time: "14:00",
-                duration: "1 hour",
-                participants: 12,
-                startTime: "2023-06-15T14:00:00Z",
-                endTime: "2023-06-15T15:00:00Z",
-                meetingLink: "https://meet.example.com/abc123",
-                status: "UPCOMING",
-                attendees: 12,
-                maxAttendees: 30,
-                sessionType: "LIVE",
-              },
-              {
-                id: "2",
-                title: "TypeScript Generics Workshop",
-                course: "Advanced TypeScript",
-                courseId: "2",
-                courseTitle: "Advanced TypeScript",
-                date: "2023-06-16",
-                time: "16:00",
-                duration: "1.5 hours",
-                participants: 8,
-                startTime: "2023-06-16T16:00:00Z",
-                endTime: "2023-06-16T17:30:00Z",
-                meetingLink: "https://meet.example.com/def456",
-                status: "UPCOMING",
-                attendees: 8,
-                maxAttendees: 15,
-                sessionType: "WORKSHOP",
-              },
-            ],
-            projectPerformance: [
-              {
-                id: "1",
-                title: "Todo App",
-                courseId: "1",
-                courseTitle: "Introduction to React",
-                submissions: 15,
-                pendingReview: 2,
-                averageScore: 85,
-                dueDate: "2023-06-20T23:59:59Z",
-                status: "SUBMITTED",
-              },
-              {
-                id: "2",
-                title: "API Integration",
-                courseId: "2",
-                courseTitle: "Advanced TypeScript",
-                submissions: 10,
-                pendingReview: 1,
-                averageScore: 92,
-                dueDate: "2023-06-25T23:59:59Z",
-                status: "SUBMITTED",
-              },
-            ],
-            projectSubmissions: [],
-            earningsData: [
-              { month: 'Jan', amount: 4000 },
-              { month: 'Feb', amount: 3000 },
-              { month: 'Mar', amount: 5000 },
-              { month: 'Apr', amount: 2780 },
-              { month: 'May', amount: 1890 },
-              { month: 'Jun', amount: 2390 },
-            ],
-            projectAnalytics: [
-              { name: 'In Progress', value: 12 },
-              { name: 'Submitted', value: 19 },
-              { name: 'Reviewed', value: 3 },
-              { name: 'Approved', value: 5 },
-            ],
-            overallStats: {
-              totalStudents: 120,
-              totalCourses: 10,
-              publishedCourses: 5,
-              draftCourses: 3,
-              archivedCourses: 2,
-              totalRevenue: 12500,
-              averageRating: 4.7,
-              completionRate: 82,
-            },
-          }));
-          setIsLoading(false);
-        }, 1000);
-
-        // Uncomment when API is ready
-        /*
         const response = await fetch('/api/instructor/dashboard');
+        const data = await response.json();
         
         if (!response.ok) {
-          throw new Error(`Error fetching dashboard data: ${response.statusText}`);
+          throw new Error(data.error || 'Failed to fetch dashboard data');
         }
         
-        const data = await response.json();
+        // Validate response data
+        if (!data.instructorName || !Array.isArray(data.recentCourses)) {
+          throw new Error('Invalid dashboard data format');
+        }
+        
         setDashboardData(data);
-        */
-      } catch (err: any) {
-        console.error('Failed to load dashboard data:', err);
-        setError(err?.message || 'Failed to load dashboard data. Please try refreshing the page.');
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load dashboard data');
+      } finally {
         setIsLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, []);
+  }, [session?.user?.id]);
 
   // Handle loading state
   if (isLoading) {
@@ -590,16 +351,13 @@ export default function InstructorDashboard(): JSX.Element {
     upcomingSessions = [],
     projectPerformance = [],
     overallStats = {
-      totalStudents: 120,
-      totalCourses: 10,
-      publishedCourses: 5,
-      draftCourses: 3,
-      archivedCourses: 2,
-      totalRevenue: 12500,
-      averageRating: 4.7,
-      completionRate: 82,
+      totalStudents: 0,
+      totalCourses: 0,
+      totalRevenue: 0,
+      newEnrollments: 0,
+      completionRate: 0,
+      averageRating: 0,
     },
-    projectSubmissions = [],
     earningsData = [],
     projectAnalytics = { labels: [], data: [] },
   } = dashboardData;
@@ -722,13 +480,13 @@ export default function InstructorDashboard(): JSX.Element {
                   <h3 className="text-2xl font-bold text-gray-900">{dashboardData.overallStats.totalCourses || 0}</h3>
                   <div className="mt-1 flex flex-wrap gap-3 text-xs">
                     <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                      {dashboardData.overallStats.publishedCourses || 0} Published
+                      {dashboardData.recentCourses.filter(course => course.status === 'PUBLISHED').length} Published
                     </span>
                     <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full">
-                      {dashboardData.overallStats.draftCourses || 0} Drafts
+                      {dashboardData.recentCourses.filter(course => course.status === 'DRAFT').length} Drafts
                     </span>
                     <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full">
-                      {dashboardData.overallStats.archivedCourses || 0} Archived
+                      {dashboardData.recentCourses.filter(course => course.status === 'ARCHIVED').length} Archived
                     </span>
                   </div>
                 </div>
@@ -840,12 +598,13 @@ export default function InstructorDashboard(): JSX.Element {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Chart */}
               <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center">
-                {dashboardData.earningsData ? (
-                  <ResponsiveContainer width="100%" height={200}>
+                {dashboardData.earningsData?.length ? (
+                  <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={dashboardData.earningsData}>
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} />
-                      <YAxis hide />
-                      <Tooltip 
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis tickFormatter={(value) => `$${value}`} />
+                      <Tooltip
                         formatter={(value) => [`$${value}`, 'Revenue']}
                         contentStyle={{
                           background: 'white',
@@ -854,7 +613,7 @@ export default function InstructorDashboard(): JSX.Element {
                           boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
                         }}
                       />
-                      <Bar dataKey="revenue" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="amount" fill="#6366f1" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
@@ -874,7 +633,7 @@ export default function InstructorDashboard(): JSX.Element {
                     </div>
                     <p className="text-sm text-blue-700 font-medium ml-2">Revenue</p>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">${dashboardData.overallStats?.monthlyRevenue?.toLocaleString() || '0'}</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-2">${dashboardData.overallStats.totalRevenue?.toLocaleString() || '0'}</h3>
                   <p className="text-sm text-blue-700 mt-1">+16.8% vs. last month</p>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg">
@@ -882,9 +641,9 @@ export default function InstructorDashboard(): JSX.Element {
                     <div className="p-2 bg-green-100 rounded-md">
                       <Users className="h-5 w-5 text-green-600" />
                     </div>
-                    <p className="text-sm text-green-700 font-medium ml-2">Enrollments</p>
+                    <p className="text-sm text-green-700 font-medium ml-2">New Enrollments</p>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{dashboardData.overallStats?.monthlyEnrollments || 0}</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{dashboardData.overallStats.newEnrollments || 0}</h3>
                   <p className="text-sm text-green-700 mt-1">+8.3% vs. last month</p>
                 </div>
                 <div className="bg-purple-50 p-4 rounded-lg">
@@ -892,9 +651,9 @@ export default function InstructorDashboard(): JSX.Element {
                     <div className="p-2 bg-purple-100 rounded-md">
                       <Star className="h-5 w-5 text-purple-600" />
                     </div>
-                    <p className="text-sm text-purple-700 font-medium ml-2">Reviews</p>
+                    <p className="text-sm text-purple-700 font-medium ml-2">Average Rating</p>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{dashboardData.overallStats?.monthlyReviews || 0}</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{dashboardData.overallStats.averageRating || 0}</h3>
                   <p className="text-sm text-purple-700 mt-1">+12.4% vs. last month</p>
                 </div>
                 <div className="bg-amber-50 p-4 rounded-lg">
@@ -902,9 +661,9 @@ export default function InstructorDashboard(): JSX.Element {
                     <div className="p-2 bg-amber-100 rounded-md">
                       <Video className="h-5 w-5 text-amber-600" />
                     </div>
-                    <p className="text-sm text-amber-700 font-medium ml-2">Sessions</p>
+                    <p className="text-sm text-amber-700 font-medium ml-2">Completion Rate</p>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{dashboardData.overallStats?.monthlySessions || 0}</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{dashboardData.overallStats.completionRate || 0}%</h3>
                   <p className="text-sm text-amber-700 mt-1">+4.6% vs. last month</p>
                 </div>
               </div>
@@ -1010,12 +769,15 @@ export default function InstructorDashboard(): JSX.Element {
               <PieChartIcon className="h-5 w-5 text-gray-400" />
             </div>
             
-            {dashboardData.projectAnalytics && dashboardData.projectAnalytics.length > 0 ? (
+            {dashboardData.projectAnalytics?.labels?.length ? (
               <div className="mt-4">
                 <ResponsiveContainer width="100%" height={200}>
                   <ReChartPieChart>
                     <Pie
-                      data={dashboardData.projectAnalytics}
+                      data={dashboardData.projectAnalytics?.data?.map((value, index) => ({
+                        name: dashboardData.projectAnalytics?.labels?.[index] || 'Unknown',
+                        value
+                      })) || []}
                       cx="50%"
                       cy="50%"
                       outerRadius={80}
@@ -1023,9 +785,9 @@ export default function InstructorDashboard(): JSX.Element {
                       dataKey="value"
                       label
                     >
-                      {dashboardData.projectAnalytics.map((entry, index) => (
+                      {dashboardData.projectAnalytics?.data?.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
+                      )) || []}
                     </Pie>
                     <Tooltip />
                   </ReChartPieChart>
@@ -1040,19 +802,19 @@ export default function InstructorDashboard(): JSX.Element {
             
             {/* Legend */}
             <div className="space-y-2">
-              {dashboardData.projectAnalytics && dashboardData.projectAnalytics.length > 0 ? (
-                dashboardData.projectAnalytics.map((item, index) => (
+              {dashboardData.projectAnalytics?.labels?.length ? (
+                dashboardData.projectAnalytics?.labels?.map((label, index) => (
                   <div key={`legend-${index}`} className="flex items-center justify-between">
                     <div className="flex items-center">
                       <div 
                         className="h-3 w-3 rounded-sm mr-2" 
                         style={{ backgroundColor: COLORS[index % COLORS.length] }}
                       ></div>
-                      <span className="text-sm text-gray-600">{item.name}</span>
+                      <span className="text-sm text-gray-600">{label}</span>
                     </div>
-                    <span className="text-sm font-medium">{item.value}</span>
+                    <span className="text-sm font-medium">{dashboardData.projectAnalytics?.data?.[index] || 0}</span>
                   </div>
-                ))
+                )) || []
               ) : (
                 <p className="text-sm text-gray-500 text-center">No data to display</p>
               )}
