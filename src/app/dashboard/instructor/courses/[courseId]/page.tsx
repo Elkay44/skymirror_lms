@@ -22,57 +22,6 @@ import CourseHeader from '@/components/enhanced-course-dashboard/CourseHeader';
 import StatsCard from '@/components/enhanced-course-dashboard/StatsCard';
 
 // Types
-type Difficulty = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
-
-// Mock data - replace with real data from your API
-const mockCourseData = {
-  id: '1',
-  title: 'Advanced Web Development',
-  shortDescription: 'Master modern web development with the latest technologies and frameworks',
-  imageUrl: '/images/course-cover.jpg',
-  isPublished: true,
-  enrollmentCount: 1248,
-  averageRating: 4.8,
-  modulesCount: 8,
-  projectsCount: 5,
-  lessonsCount: 64,
-  difficulty: 'INTERMEDIATE' as Difficulty,
-  updatedAt: '2025-05-15T10:30:00Z',
-  completionRate: 78,
-  totalHours: 24,
-  assignments: 12,
-  projects: 4,
-  satisfactionRate: 96,
-  lastUpdated: '2 days ago',
-  instructor: {
-    name: 'Alex Johnson',
-    avatar: '/images/instructor-avatar.jpg',
-    title: 'Senior Web Developer',
-  },
-  stats: {
-    totalStudents: 1248,
-    activeStudents: 842,
-    projectCompletion: 65,
-    avgProjectScore: '87%',
-    mentorSessions: 24,
-    peerReviews: 156,
-    codeCommits: 842,
-    projectMilestones: 4,
-  },
-  recentActivity: [
-    { id: 1, type: 'assignment', title: 'Final Project Submission', date: '2 hours ago', user: 'Sarah M.' },
-    { id: 2, type: 'comment', title: 'Question about React Hooks', date: '5 hours ago', user: 'Michael T.' },
-    { id: 3, type: 'enrollment', title: 'New student enrolled', date: '1 day ago', user: 'Emma R.' },
-  ],
-  modules: [
-    { id: 1, title: 'Getting Started with Modern JavaScript', lessons: 8, duration: '2h 30m', completed: true },
-    { id: 2, title: 'React Fundamentals', lessons: 10, duration: '4h 15m', completed: true },
-    { id: 3, title: 'State Management with Redux', lessons: 6, duration: '3h 45m', completed: true },
-    { id: 4, title: 'Advanced React Patterns', lessons: 8, duration: '3h 20m', completed: false },
-    { id: 5, title: 'Building Scalable APIs', lessons: 7, duration: '3h 0m', completed: false },
-  ],
-};
-
 type TabType = 'overview' | 'modules' | 'students' | 'analytics' | 'settings';
 
 export default function EnhancedCourseDashboard() {
@@ -80,24 +29,35 @@ export default function EnhancedCourseDashboard() {
 
   const [_activeTab, _setActiveTab] = useState<TabType>('overview');
   const [isPublishing, setIsPublishing] = useState(false);
-  const [course, setCourse] = useState(mockCourseData);
+  const [course, setCourse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // In a real app, fetch course data here
     const fetchCourseData = async () => {
       try {
-        // const response = await fetch(`/api/courses/${params.courseId}`);
-        // const data = await response.json();
-        // setCourse(data);
-        setIsLoading(false);
+        setIsLoading(true);
+        const response = await fetch(`/api/courses/${params.courseId}`, {
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch course data');
+        }
+        
+        const data = await response.json();
+        setCourse(data);
       } catch (error) {
-        console.error('Error fetching course data:', error);
+        console.error('Error fetching course:', error);
+        setError('Failed to load course data');
+      } finally {
         setIsLoading(false);
       }
     };
 
-    fetchCourseData();
+    if (params.courseId) {
+      fetchCourseData();
+    }
   }, [params.courseId]);
 
   const handlePublishToggle = async () => {
@@ -105,7 +65,7 @@ export default function EnhancedCourseDashboard() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      setCourse(prev => ({
+      setCourse((prev: any) => ({
         ...prev,
         isPublished: !prev.isPublished
       }));
@@ -125,6 +85,22 @@ export default function EnhancedCourseDashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  if (error || !course) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="text-red-500 text-lg mb-4">{error || 'Course not found'}</div>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -199,7 +175,7 @@ export default function EnhancedCourseDashboard() {
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
               </div>
               <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                {course.recentActivity.map((activity) => (
+                {course.recentActivity?.map((activity: any) => (
                   <div key={activity.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
@@ -248,7 +224,7 @@ export default function EnhancedCourseDashboard() {
                 </div>
 
                 <div className="space-y-4">
-                  {course.modules.map((module) => (
+                  {course.modules?.map((module: any) => (
                     <div key={module.id} className="border border-gray-100 dark:border-gray-700 rounded-xl p-4">
                       <div className="flex items-center justify-between">
                         <div>

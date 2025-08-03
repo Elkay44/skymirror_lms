@@ -1,155 +1,148 @@
+"use client";
+
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { LineChart, Users, DollarSign, BookOpen, Star, Plus } from 'lucide-react';
+import { LineChart, Users, DollarSign, BookOpen, Star, Plus, Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CourseCard } from '../courses/CourseCard';
 import { Course } from '@/types/course.types';
 
-// Helper function to create a mock instructor
-const createMockInstructor = (): Course['instructor'] => ({
-  id: '1',
-  name: 'John Doe',
-  avatarUrl: '/images/avatar-placeholder.png',
-  title: 'Senior Instructor',
-  bio: '10+ years of experience in web development'
-});
+interface DashboardStats {
+  totalStudents: number;
+  totalRevenue: number;
+  totalCourses: number;
+  averageRating: number;
+}
 
-// Helper function to create a mock course
-const createMockCourse = (overrides: Partial<Course> = {}): Course => ({
-  // Required fields with defaults
-  id: overrides.id || '1',
-  slug: overrides.slug || 'advanced-react-development',
-  title: overrides.title || 'Advanced React Development',
-  shortDescription: overrides.shortDescription || 'Master React with hooks, context, and advanced patterns',
-  description: overrides.description || 'A comprehensive course on advanced React concepts including hooks, context, and performance optimization.',
-  category: overrides.category || 'Web Development',
-  level: overrides.level || 'ADVANCED',
-  language: overrides.language || 'en',
-  price: overrides.price || 99.99,
-  isFree: overrides.isFree ?? false,
-  hasDiscount: overrides.hasDiscount ?? false,
-  discountedPrice: overrides.discountedPrice || 79.99,
-  imageUrl: overrides.imageUrl || '/images/course-placeholder.jpg',
-  promoVideo: overrides.promoVideo || 'https://example.com/promo-video',
-  requirements: overrides.requirements || ['Basic React knowledge', 'JavaScript ES6+'],
-  learningOutcomes: overrides.learningOutcomes || ['Master React hooks', 'Build performant apps', 'Use advanced patterns'],
-  targetAudience: overrides.targetAudience || ['React developers', 'Frontend engineers'],
-  isPublished: overrides.isPublished ?? true,
-  isPrivate: overrides.isPrivate ?? false,
-  
-  // Additional fields from Course interface
-  isEnrolled: overrides.isEnrolled ?? false,
-  isFavorite: overrides.isFavorite ?? false,
-  isNew: overrides.isNew ?? true,
-  isBestSeller: overrides.isBestSeller ?? true,
-  rating: overrides.rating || 4.8,
-  reviewCount: overrides.reviewCount || 124,
-  studentCount: overrides.studentCount || 1245,
-  lessonCount: overrides.lessonCount || 12,
-  duration: overrides.duration || 600, // 10 hours in minutes
-  progress: overrides.progress || 0,
-  createdAt: overrides.createdAt ? new Date(overrides.createdAt).toISOString() : new Date().toISOString(),
-  updatedAt: overrides.updatedAt ? new Date(overrides.updatedAt).toISOString() : new Date().toISOString(),
-  instructor: overrides.instructor || createMockInstructor(),
-  
-  // Add empty modules array as it's required by the Course type
-  modules: overrides.modules || [],
-  
-  // Ensure we don't include any undefined values that might cause type issues
-  ...Object.fromEntries(
-    Object.entries(overrides)
-      .filter(([key]) => ![
-        'id', 'slug', 'title', 'shortDescription', 'description', 'category', 
-        'level', 'language', 'price', 'isFree', 'hasDiscount', 'discountedPrice',
-        'imageUrl', 'promoVideo', 'requirements', 'learningOutcomes', 'targetAudience',
-        'isPublished', 'isPrivate', 'isEnrolled', 'isFavorite', 'isNew', 'isBestSeller',
-        'rating', 'reviewCount', 'studentCount', 'lessonCount', 'duration', 'progress',
-        'createdAt', 'updatedAt', 'instructor', 'modules'
-      ].includes(key))
-  )
-});
+export default function InstructorDashboard() {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
+    totalStudents: 0,
+    totalRevenue: 0,
+    totalCourses: 0,
+    averageRating: 0
+  });
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-const mockCourses: Course[] = [
-  createMockCourse({
-    id: '1',
-    title: 'Advanced React Development',
-    shortDescription: 'Master React with hooks, context, and advanced patterns',
-    studentCount: 1245,
-    progress: 65,
-    lessonCount: 12,
-    level: 'ADVANCED',
-    isPublished: true,
-    isFree: false,
-    hasDiscount: false,
-    price: 99.99,
-    discountedPrice: 79.99,
-    language: 'en',
-    category: 'Web Development',
-    requirements: ['Basic React knowledge', 'JavaScript ES6+'],
-    learningOutcomes: ['Master React hooks', 'Build performant apps'],
-    targetAudience: ['React developers', 'Frontend engineers'],
-    isPrivate: false,
-    isEnrolled: false,
-    isFavorite: false,
-    isNew: true,
-    isBestSeller: true,
-    rating: 4.8,
-    reviewCount: 124,
-    duration: 600, // 10 hours in minutes
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    instructor: {
-      id: '1',
-      name: 'John Doe',
-      avatarUrl: '/images/avatar-placeholder.png',
-      title: 'Senior Instructor',
-      bio: '10+ years of experience in web development'
-    }
-  }),
-  // Add more mock courses as needed
-];
+  useEffect(() => {
+    const fetchInstructorData = async () => {
+      if (!session?.user?.id) return;
+      
+      try {
+        setLoading(true);
+        
+        // Fetch instructor courses
+        const coursesResponse = await fetch('/api/instructor/courses', {
+          credentials: 'include',
+        });
+        
+        if (coursesResponse.ok) {
+          const coursesData = await coursesResponse.json();
+          setCourses(coursesData.courses || []);
+          
+          // Calculate stats from courses data
+          const totalCourses = coursesData.courses?.length || 0;
+          const totalStudents = coursesData.courses?.reduce((sum: number, course: any) => 
+            sum + (course.totalStudents || 0), 0) || 0;
+          const totalRevenue = coursesData.courses?.reduce((sum: number, course: any) => 
+            sum + ((course.price || 0) * (course.totalStudents || 0)), 0) || 0;
+          const averageRating = totalCourses > 0 ? 
+            coursesData.courses?.reduce((sum: number, course: any) => 
+              sum + (course.averageRating || 0), 0) / totalCourses : 0;
+          
+          setDashboardStats({
+            totalStudents,
+            totalRevenue,
+            totalCourses,
+            averageRating: Math.round(averageRating * 10) / 10
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching instructor data:', err);
+        setError('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-export function InstructorDashboard() {
-  return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! Here's what's happening with your courses.</p>
+    fetchInstructorData();
+  }, [session]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
         </div>
-        <Button>Create New Course</Button>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+          <p>{error}</p>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => window.location.reload()}
+          >
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Instructor Dashboard</h1>
+        <Button onClick={() => router.push('/dashboard/instructor/courses/create')}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Course
+        </Button>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Students</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3,248</div>
-            <p className="text-xs text-muted-foreground">+180 from last month</p>
+            <div className="text-2xl font-bold">{dashboardStats.totalStudents.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Across all courses</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$24,780</div>
-            <p className="text-xs text-muted-foreground">+12% from last month</p>
+            <div className="text-2xl font-bold">${dashboardStats.totalRevenue.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Total earnings</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Courses</CardTitle>
+            <CardTitle className="text-sm font-medium">Courses</CardTitle>
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground">+2 from last month</p>
+            <div className="text-2xl font-bold">{dashboardStats.totalCourses}</div>
+            <p className="text-xs text-muted-foreground">Published courses</p>
           </CardContent>
         </Card>
         <Card>
@@ -158,8 +151,8 @@ export function InstructorDashboard() {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">4.8</div>
-            <p className="text-xs text-muted-foreground">+0.2 from last month</p>
+            <div className="text-2xl font-bold">{dashboardStats.averageRating || 'N/A'}</div>
+            <p className="text-xs text-muted-foreground">Course ratings</p>
           </CardContent>
         </Card>
       </div>
@@ -191,15 +184,21 @@ export function InstructorDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center">
+                  {courses.slice(0, 3).map((course) => (
+                    <div key={course.id} className="flex items-center">
                       <div className="space-y-1">
-                        <p className="text-sm font-medium leading-none">Course {i}</p>
-                        <p className="text-sm text-muted-foreground">${(1000 - i * 100).toLocaleString()} revenue</p>
+                        <p className="text-sm font-medium leading-none">{course.title}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {course.studentCount || 0} students
+                        </p>
                       </div>
-                      <div className="ml-auto font-medium">+{100 - i * 10}%</div>
+                      <div className="ml-auto font-medium">
+                        {course.rating ? `${course.rating}★` : 'No rating'}
+                      </div>
                     </div>
-                  ))}
+                  )) || (
+                    <p className="text-sm text-muted-foreground">No courses yet</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -211,15 +210,7 @@ export function InstructorDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">New student enrolled in Course {i}</p>
-                      <p className="text-sm text-muted-foreground">{i} hour{i !== 1 ? 's' : ''} ago</p>
-                    </div>
-                    <Button variant="outline" size="sm" className="ml-auto">View</Button>
-                  </div>
-                ))}
+                <p className="text-sm text-muted-foreground">Activity tracking coming soon...</p>
               </div>
             </CardContent>
           </Card>
@@ -227,10 +218,13 @@ export function InstructorDashboard() {
 
         <TabsContent value="courses">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {mockCourses.map((course) => (
+            {courses.map((course) => (
               <CourseCard key={course.id} course={course} />
             ))}
-            <div className="border-2 border-dashed rounded-lg flex items-center justify-center min-h-[300px] hover:border-primary transition-colors cursor-pointer">
+            <div 
+              className="border-2 border-dashed rounded-lg flex items-center justify-center min-h-[300px] hover:border-primary transition-colors cursor-pointer"
+              onClick={() => router.push('/dashboard/instructor/courses/create')}
+            >
               <div className="text-center p-6">
                 <Plus className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                 <h3 className="font-medium">Create New Course</h3>
@@ -239,9 +233,29 @@ export function InstructorDashboard() {
             </div>
           </div>
         </TabsContent>
+        
+        <TabsContent value="students">
+          <Card>
+            <CardHeader>
+              <CardTitle>Student Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Student management features coming soon...</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="analytics">
+          <Card>
+            <CardHeader>
+              <CardTitle>Analytics Dashboard</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Advanced analytics coming soon...</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
 }
-
-

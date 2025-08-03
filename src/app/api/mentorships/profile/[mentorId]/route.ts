@@ -4,10 +4,10 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 export async function GET(
-  request: Request
+  _request: Request,
+  { params }: { params: Promise<{ mentorId: string }> }
 ) {
-  const { searchParams } = new URL(request.url);
-  const mentorId = searchParams.get('mentorId');
+  const { mentorId } = await params;
 
   if (!mentorId) {
     return NextResponse.json({ error: 'Missing mentorId parameter' }, { status: 400 });

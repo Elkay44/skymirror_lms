@@ -280,16 +280,17 @@ const CourseDetailPage = () => {
     setEnrolling(true);
     
     try {
-      const response = await fetch(`/api/courses/${courseId}/enroll`, {
+      const response = await fetch('/api/enrollment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId: session.user.id }),
+        body: JSON.stringify({ courseId }),
       });
       
       if (!response.ok) {
-        throw new Error('Failed to enroll in course');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to enroll in course');
       }
       
       setEnrolled(true);
@@ -297,7 +298,7 @@ const CourseDetailPage = () => {
       fetchCourse();
     } catch (err) {
       console.error('Error enrolling in course:', err);
-      setError('Failed to enroll in course. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to enroll in course. Please try again.');
     } finally {
       setEnrolling(false);
     }

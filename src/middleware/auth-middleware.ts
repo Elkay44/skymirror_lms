@@ -135,7 +135,7 @@ export async function requireCourseAccessOrOwner(courseId: string) {
   }
   
   // Course owner has access
-  if (course.instructorId === userId) {
+  if (course.instructorId === userId.toString()) {
     return null;
   }
   
