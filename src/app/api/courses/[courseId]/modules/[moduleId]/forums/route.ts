@@ -1,85 +1,77 @@
-/* eslint-disable */
-
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
-// GET /api/courses/[courseId]/modules/[moduleId]/forums - Get all forums for a module
-export async function GET() {
+// GET /api/courses/[courseId]/modules/[moduleId]/forums - Get all forum topics for a module
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ courseId: string; moduleId: string }> }
+) {
   try {
-    // Return mock forums data
-    return NextResponse.json({
-      success: true,
-      data: [
-        {
-          id: 'forum_1',
-          name: 'General Discussion',
-          description: 'Discuss course-related topics',
-          isLocked: false,
-          isPinned: true,
-          postCount: 15,
-          topicCount: 8,
-          lastPost: {
-            id: 'post_1',
-            title: 'Welcome to the Forum',
-            createdAt: new Date(Date.now() - 3600000).toISOString(),
-            author: {
-              id: 'user_1',
-              name: 'Instructor',
-              role: 'INSTRUCTOR'
-            }
-          },
-          permissions: {
-            canPost: true,
-            canReply: true,
-            canPin: false,
-            canLock: false,
-            canDelete: false,
-            canEdit: false
-          }
-        },
-        {
-          id: 'forum_2',
-          name: 'Q&A',
-          description: 'Ask questions and get answers',
-          isLocked: false,
-          isPinned: false,
-          postCount: 23,
-          topicCount: 15,
-          lastPost: {
-            id: 'post_2',
-            title: 'Question about the assignment',
-            createdAt: new Date(Date.now() - 7200000).toISOString(),
-            author: {
-              id: 'user_2',
-              name: 'Student',
-              role: 'STUDENT'
-            }
-          },
-          permissions: {
-            canPost: true,
-            canReply: true,
-            canPin: false,
-            canLock: false,
-            canDelete: false,
-            canEdit: false
+    const { courseId, moduleId } = await params;
+    
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'You must be logged in to view forum topics' },
+        { status: 401 }
+      );
+    }
+    
+    // Verify the module exists and belongs to the course
+    const module = await prisma.module.findFirst({
+      where: {
+        id: moduleId,
+        courseId: courseId
+      },
+      include: {
+        course: {
+          select: {
+            id: true,
+            instructorId: true,
+            isPublished: true
           }
         }
-      ],
-      module: {
-        id: 'module_1',
-        title: 'Introduction',
-        isPublished: true
-      },
-      course: {
-        id: 'course_1',
-        title: 'Sample Course',
-        isPublished: true
-      },
-      pagination: {
-        total: 2,
-        page: 1,
-        limit: 10,
-        totalPages: 1
       }
+    });
+    
+    if (!module) {
+      return NextResponse.json(
+        { error: 'Module not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Check if user has access (instructor or enrolled student)
+    const isInstructor = module.course.instructorId === userId;
+    
+    if (!isInstructor) {
+      // Check if user is enrolled in the course
+      const enrollment = await prisma.enrollment.findFirst({
+        where: {
+          userId: userId,
+          courseId: courseId,
+          status: { in: ['ACTIVE', 'COMPLETED'] }
+        }
+      });
+      
+      if (!enrollment) {
+        return NextResponse.json(
+          { error: 'You must be enrolled in this course to view forum topics' },
+          { status: 403 }
+        );
+      }
+    }
+    
+    // TODO: Forum topics feature not yet implemented
+    // Return empty array for now
+    return NextResponse.json({
+      data: [],
+      total: 0
     });
   } catch (error) {
     console.error('Error fetching forums:', error);

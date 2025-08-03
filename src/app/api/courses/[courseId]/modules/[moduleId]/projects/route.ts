@@ -140,7 +140,7 @@ export async function POST(
     const course = await prisma.course.findFirst({
       where: {
         id: courseId,
-        instructorId: parseInt(userId.toString(), 10)
+        instructorId: userId
       }
     });
 
@@ -202,27 +202,16 @@ export async function POST(
       );
     }
 
-    // Use validationData instead of validationResult.data
+    // Use validationData and only extract fields that exist in the schema
     const { 
       title, 
       description, 
       instructions, 
       dueDate, 
       isPublished = false, 
-      maxScore,
-      skillsRequired,
-      resources,
-      // Additional fields
-      difficulty = 'MEDIUM',
-      estimatedHours,
-      technologies,
-      requirements,
-      allowTeamSubmissions = false,
-      maxTeamSize = 3,
-      githubTemplateUrl
+      maxScore
     } = validationData;
 
-    // Create project using standard Prisma client instead of raw SQL extension
     // Log what we're about to create
     console.log('[PROJECT_CREATE] About to create project with data:', {
       title,
@@ -234,50 +223,23 @@ export async function POST(
       courseId
     });
     
-    const project = await prisma.$transaction(async (tx: any) => {
-      // Use standard Prisma create
-      return tx.project.create({
-        data: {
-          title,
-          description: description || null,
-          instructions: instructions || null,
-          dueDate: dueDate ? new Date(dueDate) : null,
-          isPublished,
-          // Use proper relation syntax since we're using standard Prisma
-          module: { connect: { id: moduleId } },
-          course: { connect: { id: courseId } },
-          // Standard fields from schema
-          pointsValue: maxScore || 10,
-          isRequiredForCertification: true,
-          difficulty: difficulty || 'MEDIUM',
-          estimatedHours: estimatedHours || 0,
-          technologies: technologies || '',
-          requirements: requirements || '',
-          allowTeamSubmissions,
-          maxTeamSize: maxTeamSize || 3,
-          githubTemplateUrl: githubTemplateUrl || null,
-          skills: skillsRequired || []
-        }
-      });
+    // Create project using only fields that exist in the Prisma schema
+    const project = await prisma.project.create({
+      data: {
+        title,
+        description: description || null,
+        instructions: instructions || null,
+        dueDate: dueDate ? new Date(dueDate) : null,
+        isPublished,
+        moduleId,
+        courseId,
+        pointsValue: maxScore || 10,
+        isRequiredForCertification: true
+      }
     });
 
-    // Create resources if any using standard Prisma client
-    if (resources && resources.length > 0) {
-      console.log(`[PROJECT_CREATE] Creating ${resources.length} project resources`);
-      
-      for (let i = 0; i < resources.length; i++) {
-        const resource = resources[i];
-        await prisma.projectResource.create({
-          data: {
-            title: resource.title,
-            url: resource.url,
-            type: resource.type,
-            order: i,
-            project: { connect: { id: project.id } } // Use proper relation syntax
-          }
-        });
-      }
-    }
+    // Note: Resources, skills, and other advanced fields are not implemented yet
+    // TODO: Add ProjectResource model and other fields to schema if needed
 
     // Log activity
     await logProjectActivity(userId.toString(), 'create_project', project.id, { title });
@@ -286,18 +248,9 @@ export async function POST(
     revalidatePath(`/courses/${courseId}`);
     revalidatePath(`/courses/${courseId}/modules/${moduleId}`);
 
-    // Fetch the project with its resources to return
-    const createdProject = await prisma.project.findUnique({
-      where: { id: project.id },
-      include: {
-        resources: {
-          orderBy: { order: 'asc' }
-        }
-      }
-    });
-
+    // Return the created project (no resources to include yet)
     return NextResponse.json({
-      data: createdProject
+      data: project
     });
   } catch (error: any) {
     console.error('[PROJECT_CREATE]', error);

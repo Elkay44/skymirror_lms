@@ -150,11 +150,11 @@ export default function ModuleDetailsPage() {
       setPages(pages);
       
       // Set all content types
-      setProjects(projectsData as Project[]);
-      setLessons(lessonsData as Lesson[]);
+      setProjects(Array.isArray(projectsData) ? projectsData as Project[] : []);
+      setLessons(Array.isArray(lessonsData) ? lessonsData as Lesson[] : []);
       setAssignments(Array.isArray(assignmentsData) ? assignmentsData as Assignment[] : []);
-      // Quiz API returns a wrapper object with data and total properties
-      setQuizzes(quizzesData && 'data' in quizzesData ? quizzesData.data as Quiz[] : []);
+      // Quiz API now returns array directly from getModuleQuizzes function
+      setQuizzes(Array.isArray(quizzesData) ? quizzesData as Quiz[] : []);
       setForumTopics(Array.isArray(forumTopicsData) ? forumTopicsData as ForumTopic[] : []);
       
       // Set first page as active if available
@@ -548,7 +548,7 @@ export default function ModuleDetailsPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-medium">Projects</h2>
-                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/projects/new`)}>
+                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/project/create`)}>
                       <Plus className="mr-1 h-4 w-4" /> Add Project
                     </Button>
                   </div>
@@ -562,7 +562,7 @@ export default function ModuleDetailsPage() {
                       <FileText className="h-12 w-12 text-muted-foreground mb-3" />
                       <h3 className="text-lg font-medium mb-2">No projects yet</h3>
                       <p className="text-muted-foreground text-sm mb-4">Create projects to give hands-on practice to students</p>
-                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/projects/new`)}>
+                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/project/create`)}>
                         <Plus className="mr-1 h-4 w-4" /> Create Project
                       </Button>
                     </CardContent>
@@ -616,7 +616,7 @@ export default function ModuleDetailsPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-medium">Lessons</h2>
-                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lessons/new`)}>
+                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lesson/create`)}>
                       <Plus className="mr-1 h-4 w-4" /> Add Lesson
                     </Button>
                   </div>
@@ -624,13 +624,13 @@ export default function ModuleDetailsPage() {
               </Card>
               
               <div className="grid grid-cols-1 gap-4">
-                {lessons.length === 0 ? (
+                {!Array.isArray(lessons) || lessons.length === 0 ? (
                   <Card>
                     <CardContent className="p-6 flex flex-col items-center justify-center text-center">
                       <BookOpen className="h-12 w-12 text-muted-foreground mb-3" />
                       <h3 className="text-lg font-medium mb-2">No lessons yet</h3>
                       <p className="text-muted-foreground text-sm mb-4">Create lessons to teach students course material</p>
-                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lessons/new`)}>
+                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lesson/create`)}>
                         <Plus className="mr-1 h-4 w-4" /> Create Lesson
                       </Button>
                     </CardContent>
@@ -681,7 +681,7 @@ export default function ModuleDetailsPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-medium">Assignments</h2>
-                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/assignments/new`)}>
+                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/assignment/create`)}>
                       <Plus className="mr-1 h-4 w-4" /> Add Assignment
                     </Button>
                   </div>
@@ -695,7 +695,7 @@ export default function ModuleDetailsPage() {
                       <ClipboardList className="h-12 w-12 text-muted-foreground mb-3" />
                       <h3 className="text-lg font-medium mb-2">No assignments yet</h3>
                       <p className="text-muted-foreground text-sm mb-4">Create assignments to assess student learning</p>
-                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/assignments/new`)}>
+                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/assignment/create`)}>
                         <Plus className="mr-1 h-4 w-4" /> Create Assignment
                       </Button>
                     </CardContent>
@@ -749,7 +749,7 @@ export default function ModuleDetailsPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-lg font-medium">Quizzes</h2>
-                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/quizzes/new`)}>
+                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/quiz/create`)}>
                       <Plus className="mr-1 h-4 w-4" /> Add Quiz
                     </Button>
                   </div>
@@ -763,7 +763,7 @@ export default function ModuleDetailsPage() {
                       <HelpCircle className="h-12 w-12 text-muted-foreground mb-3" />
                       <h3 className="text-lg font-medium mb-2">No quizzes yet</h3>
                       <p className="text-muted-foreground text-sm mb-4">Create quizzes to test student knowledge</p>
-                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/quizzes/new`)}>
+                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/quiz/create`)}>
                         <Plus className="mr-1 h-4 w-4" /> Create Quiz
                       </Button>
                     </CardContent>

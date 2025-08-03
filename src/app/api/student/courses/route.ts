@@ -3,35 +3,39 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-// Define types for the database models
-interface Progress {
+// Define types that match the Prisma schema
+interface LessonProgress {
   id: string;
+  progress: number;
   completed: boolean;
-  userId: number;
-  lessonId: string;
   createdAt: Date;
   updatedAt: Date;
+  lessonId: string;
+  userId: string;
+  completedAt: Date | null;
+  lastAccessedAt: Date;
+  timeSpent: number;
 }
 
-interface Lesson {
+interface PrismaLesson {
   id: string;
   title: string;
-  description?: string;
-  duration: number;
-  completed: boolean;
+  description: string | null;
+  duration: number | null;
   order: number;
-  videoUrl?: string;
-  content?: string;
-  progress?: Progress[];
+  videoUrl: string | null;
+  isPublished: boolean;
+  isPreview: boolean;
+  progress: LessonProgress[];
 }
 
-interface Module {
+interface PrismaModule {
   id: string;
   title: string;
-  description?: string;
+  description: string | null;
   order: number;
-  lessons: Lesson[];
-  isPublished?: boolean;
+  isPublished: boolean;
+  lessons: PrismaLesson[];
 }
 
 interface Instructor {
@@ -114,17 +118,17 @@ export async function GET() {
         });
 
         // Calculate total duration
-        const totalDuration = modules.reduce((sum: number, module: Module) => {
-          return sum + ((module.lessons || []).reduce((lessonSum: number, lesson: Lesson) => 
+        const totalDuration = modules.reduce((sum: number, module: PrismaModule) => {
+          return sum + ((module.lessons || []).reduce((lessonSum: number, lesson: PrismaLesson) => 
             lessonSum + (lesson.duration || 0), 0));
         }, 0);
 
         // Map the data to our Course type
         const courseWithModules = {
           ...course,
-          modules: modules.map((module: Module) => ({
+          modules: modules.map((module: PrismaModule) => ({
             ...module,
-            lessons: (module.lessons || []).map((lesson: Lesson) => ({
+            lessons: (module.lessons || []).map((lesson: PrismaLesson) => ({
               ...lesson,
               progress: lesson.progress || [],
             })),
@@ -162,23 +166,23 @@ export async function GET() {
           // Use difficulty if available, otherwise default to 'beginner'
           level: 'difficulty' in course ? getCourseLevel((course as any).difficulty) : 'beginner',
           category: 'category' in course ? (course as any).category : 'General',
-          modules: courseWithModules.modules.map((module: Module) => ({
+          modules: courseWithModules.modules.map((module: PrismaModule) => ({
             id: module.id,
             title: module.title,
             description: module.description || undefined,
             order: module.order || 0,
-            isPublished: 'isPublished' in module ? module.isPublished : true,
-            lessons: (module.lessons || []).map((lesson: any) => ({
+            isPublished: module.isPublished,
+            lessons: (module.lessons || []).map((lesson: PrismaLesson) => ({
               id: lesson.id,
               title: lesson.title,
-              description: lesson.description,
+              description: lesson.description || undefined,
               duration: lesson.duration || 0,
               completed: (lesson.progress && lesson.progress.length > 0) 
                 ? lesson.progress[0].completed 
-                : (lesson.completed || false),
+                : false,
               order: lesson.order || 0,
-              videoUrl: lesson.videoUrl,
-              content: lesson.content
+              videoUrl: lesson.videoUrl || undefined,
+              content: undefined // This field doesn't exist in the Prisma schema
             }))
           })),
           createdAt: course.createdAt instanceof Date 

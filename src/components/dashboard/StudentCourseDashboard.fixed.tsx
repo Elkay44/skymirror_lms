@@ -455,53 +455,8 @@ export default function StudentCourseDashboard({}: StudentCourseDashboardProps) 
                   </CardHeader>
                   <CardContent className="p-0">
                     <div className="divide-y divide-slate-100">
-                      {[
-                        {
-                          id: "1",
-                          title: "Introduction to Web Development",
-                          duration: "3 hours",
-                          lessons: 5,
-                          progress: 100,
-                          completed: true,
-                          description: "Learn the basics of HTML, CSS, and JavaScript"
-                        },
-                        {
-                          id: "2",
-                          title: "Responsive Design Principles",
-                          duration: "4 hours",
-                          lessons: 7,
-                          progress: 85,
-                          completed: false,
-                          description: "Create websites that look great on any device"
-                        },
-                        {
-                          id: "3",
-                          title: "JavaScript Fundamentals",
-                          duration: "6 hours",
-                          lessons: 10,
-                          progress: 60,
-                          completed: false,
-                          description: "Master core JavaScript concepts and techniques"
-                        },
-                        {
-                          id: "4",
-                          title: "React Framework Basics",
-                          duration: "8 hours",
-                          lessons: 12,
-                          progress: 30,
-                          completed: false,
-                          description: "Build interactive UIs with the React framework"
-                        },
-                        {
-                          id: "5",
-                          title: "State Management with Redux",
-                          duration: "5 hours",
-                          lessons: 8,
-                          progress: 0,
-                          completed: false,
-                          description: "Advanced state management for complex applications"
-                        },
-                      ].map((module, i) => (
+                      {/* TODO: Replace with real module data from API */
+                      [].map((module: any, i: number) => (
                         <div key={i} className="p-4 hover:bg-slate-50">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-3">

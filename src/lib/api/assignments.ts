@@ -51,7 +51,8 @@ export async function getModuleAssignments(courseId: string, moduleId: string): 
     throw new Error(error.error || 'Failed to fetch module assignments');
   }
 
-  return await response.json();
+  const result = await response.json();
+  return result.data || [];
 }
 
 // Create a new assignment
@@ -69,7 +70,8 @@ export async function createAssignment(courseId: string, moduleId: string, data:
     throw new Error(error.error || 'Failed to create assignment');
   }
 
-  return await response.json();
+  const result = await response.json();
+  return result.data;
 }
 
 // Update an assignment

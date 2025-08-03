@@ -28,14 +28,12 @@ export default function CreateQuizPage() {
   const [quizData, setQuizData] = useState({
     title: '',
     description: '',
-    instructions: '',
     timeLimit: 30, // in minutes
     passingScore: 60, // percentage
-    maxAttempts: 3,
+    attemptsAllowed: 3,
     isPublished: false,
     showCorrectAnswers: true,
-    randomizeQuestions: false,
-    questions: [] // Will be added later through a separate interface
+    // Note: instructions and randomizeQuestions not supported in current schema
   });
 
   // Handle form input changes
@@ -153,6 +151,7 @@ export default function CreateQuizPage() {
                 />
               </div>
 
+              {/* Instructions field commented out - not in current Prisma schema
               <div className="space-y-2">
                 <Label htmlFor="instructions">Instructions for Students</Label>
                 <Textarea
@@ -165,6 +164,7 @@ export default function CreateQuizPage() {
                   className="max-w-2xl"
                 />
               </div>
+              */}
             </CardContent>
           </Card>
         </TabsContent>
@@ -208,13 +208,13 @@ export default function CreateQuizPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="maxAttempts">Maximum Attempts</Label>
+                  <Label htmlFor="attemptsAllowed">Maximum Attempts</Label>
                   <Input
-                    id="maxAttempts"
-                    name="maxAttempts"
+                    id="attemptsAllowed"
+                    name="attemptsAllowed"
                     type="number"
                     min={1}
-                    value={quizData.maxAttempts}
+                    value={quizData.attemptsAllowed}
                     onChange={handleNumberChange}
                     className="max-w-[200px]"
                   />
@@ -222,6 +222,7 @@ export default function CreateQuizPage() {
                 </div>
 
                 <div className="space-y-4 sm:pt-4">
+                  {/* Randomize Questions field commented out - not in current Prisma schema
                   <div className="flex items-center justify-between">
                     <Label htmlFor="randomizeQuestions" className="cursor-pointer">Randomize Questions</Label>
                     <Switch
@@ -230,6 +231,7 @@ export default function CreateQuizPage() {
                       onCheckedChange={() => handleToggleChange('randomizeQuestions')}
                     />
                   </div>
+                  */}
 
                   <div className="flex items-center justify-between">
                     <Label htmlFor="showCorrectAnswers" className="cursor-pointer">Show Correct Answers After Submission</Label>

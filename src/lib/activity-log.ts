@@ -75,7 +75,7 @@ export interface ActivityLogDetails {
  * Log an activity performed by a user
  */
 export async function logActivity(
-  userId: number,
+  userId: string,
   action: ActivityAction,
   entity: ActivityEntity,
   entityId: string | number,
@@ -117,7 +117,7 @@ export async function logActivityFromSession(
   }
   
   return await logActivity(
-    Number(session.user.id), // Properly convert string ID to number
+    session.user.id, // Use string ID directly
     action,
     entity,
     entityId,
@@ -129,7 +129,7 @@ export async function logActivityFromSession(
  * Log course related activity
  */
 export async function logCourseActivity(
-  userId: number,
+  userId: string,
   courseId: string,
   action: ActivityAction,
   details: ActivityLogDetails = {}
@@ -147,7 +147,7 @@ export async function logCourseActivity(
  * Log module related activity
  */
 export async function logModuleActivity(
-  userId: number,
+  userId: string,
   moduleId: string,
   action: ActivityAction,
   details: ActivityLogDetails = {}
@@ -165,8 +165,8 @@ export async function logModuleActivity(
  * Log instructor related activity
  */
 export async function logInstructorActivity(
-  adminId: number,
-  instructorId: number,
+  adminId: string,
+  instructorId: string,
   action: ActivityAction,
   details: ActivityLogDetails = {}
 ) {

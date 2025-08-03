@@ -1,56 +1,121 @@
-/* eslint-disable */
-
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
 // GET /api/courses/[courseId]/modules/[moduleId]/lessons - Get all lessons for a module
-export async function GET() {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ courseId: string; moduleId: string }> }
+) {
   try {
-    // Return mock lessons data
+    const { courseId, moduleId } = await params;
+    
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'You must be logged in to view lessons' },
+        { status: 401 }
+      );
+    }
+    
+    // Verify the module exists and belongs to the course
+    const module = await prisma.module.findFirst({
+      where: {
+        id: moduleId,
+        courseId: courseId
+      },
+      include: {
+        course: {
+          select: {
+            id: true,
+            instructorId: true,
+            isPublished: true
+          }
+        }
+      }
+    });
+    
+    if (!module) {
+      return NextResponse.json(
+        { success: false, error: 'Module not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Check if user has access (instructor or enrolled student)
+    const isInstructor = module.course.instructorId === userId;
+    let hasAccess = isInstructor;
+    
+    if (!isInstructor) {
+      const enrollment = await prisma.enrollment.findFirst({
+        where: {
+          userId: userId,
+          courseId: courseId
+        }
+      });
+      hasAccess = !!enrollment && module.course.isPublished;
+    }
+    
+    if (!hasAccess) {
+      return NextResponse.json(
+        { success: false, error: 'Access denied' },
+        { status: 403 }
+      );
+    }
+    
+    // Get lessons for this module
+    const lessons = await prisma.lesson.findMany({
+      where: {
+        moduleId: moduleId
+      },
+      orderBy: {
+        order: 'asc'
+      },
+      include: {
+        progress: {
+          where: {
+            userId: userId
+          },
+          select: {
+            completed: true,
+            completedAt: true
+          }
+        }
+      }
+    });
+    
+    // Format lessons data
+    const formattedLessons = lessons.map((lesson, index) => {
+      const progress = lesson.progress[0];
+      return {
+        id: lesson.id,
+        title: lesson.title,
+        description: lesson.description,
+        duration: lesson.duration || 0,
+        order: lesson.order,
+        isPublished: true, // TODO: Add isPublished field to Lesson model
+        isPreview: false, // TODO: Add isPreview field to Lesson model
+        completionStatus: progress?.completed ? 'COMPLETED' : 'NOT_STARTED',
+        videoUrl: lesson.videoUrl,
+        nextLesson: index < lessons.length - 1 ? lessons[index + 1].id : null,
+        previousLesson: index > 0 ? lessons[index - 1].id : null
+      };
+    });
+    
     return NextResponse.json({
       success: true,
-      data: [
-        {
-          id: 'lesson_1',
-          title: 'Introduction to the Course',
-          description: 'Welcome to the course! This is an introductory lesson.',
-          duration: 15, // minutes
-          order: 1,
-          isPublished: true,
-          isPreview: true,
-          completionStatus: 'COMPLETED',
-          nextLesson: 'lesson_2'
-        },
-        {
-          id: 'lesson_2',
-          title: 'Getting Started',
-          description: 'Learn how to get started with the course materials.',
-          duration: 20,
-          order: 2,
-          isPublished: true,
-          isPreview: false,
-          completionStatus: 'IN_PROGRESS',
-          previousLesson: 'lesson_1',
-          nextLesson: 'lesson_3'
-        },
-        {
-          id: 'lesson_3',
-          title: 'Advanced Topics',
-          description: 'Dive deeper into advanced concepts.',
-          duration: 30,
-          order: 3,
-          isPublished: false,
-          isPreview: false,
-          completionStatus: 'NOT_STARTED',
-          previousLesson: 'lesson_2'
-        }
-      ],
+      data: formattedLessons,
       module: {
-        id: 'module_1',
-        title: 'Introduction',
-        isPublished: true,
-        courseId: 'course_1'
+        id: module.id,
+        title: module.title,
+        isPublished: true, // TODO: Add isPublished field to Module model
+        courseId: module.courseId
       },
-      canEdit: true
+      canEdit: isInstructor
     });
   } catch (error) {
     console.error('Error fetching lessons:', error);
@@ -66,22 +131,76 @@ export async function GET() {
 }
 
 // POST /api/courses/[courseId]/modules/[moduleId]/lessons - Create a new lesson
-export async function POST() {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ courseId: string; moduleId: string }> }
+) {
   try {
-    // Return success response with created lesson data
+    const { courseId, moduleId } = await params;
+    const body = await request.json();
+    
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'You must be logged in to create lessons' },
+        { status: 401 }
+      );
+    }
+    
+    // Verify the module exists and user is the instructor
+    const module = await prisma.module.findFirst({
+      where: {
+        id: moduleId,
+        courseId: courseId,
+        course: {
+          instructorId: userId
+        }
+      }
+    });
+    
+    if (!module) {
+      return NextResponse.json(
+        { success: false, error: 'Module not found or access denied' },
+        { status: 404 }
+      );
+    }
+    
+    // Get the highest order number for lessons in this module
+    const lastLesson = await prisma.lesson.findFirst({
+      where: { moduleId },
+      orderBy: { order: 'desc' },
+      select: { order: true }
+    });
+    
+    const newOrder = (lastLesson?.order || 0) + 1;
+    
+    // Create the lesson
+    const lesson = await prisma.lesson.create({
+      data: {
+        title: body.title || 'New Lesson',
+        description: body.description || '',
+        moduleId: moduleId,
+        order: newOrder,
+        duration: body.duration || 0,
+        videoUrl: body.videoUrl || null
+      }
+    });
+    
     return NextResponse.json({
       success: true,
       message: 'Lesson created successfully',
       data: {
-        id: 'lesson_' + Date.now(),
-        title: 'New Lesson',
-        description: 'New lesson description',
-        duration: 0,
-        order: 1,
-        isPublished: false,
-        isPreview: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        id: lesson.id,
+        title: lesson.title,
+        description: lesson.description,
+        duration: lesson.duration,
+        order: lesson.order,
+        videoUrl: lesson.videoUrl,
+        createdAt: lesson.createdAt.toISOString(),
+        updatedAt: lesson.updatedAt.toISOString()
       }
     }, { status: 201 });
   } catch (error) {

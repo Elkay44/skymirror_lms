@@ -349,12 +349,7 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
       progress: 68,
       startDate: new Date("2023-01-15"),
       endDate: new Date("2023-05-30"),
-      modules: [
-        { id: "module-1", title: "Introduction to React", description: "Learn React basics", progress: 100, lessons: [] },
-        { id: "module-2", title: "State Management", description: "Redux and Context API", progress: 75, lessons: [] },
-        { id: "module-3", title: "API Integration", description: "Fetch and Axios", progress: 30, lessons: [] },
-        { id: "module-4", title: "Testing & Deployment", description: "Jest and CI/CD", progress: 0, lessons: [] }
-      ],
+      modules: [], // TODO: Fetch real modules from API
       projects: projects
     }
   ];

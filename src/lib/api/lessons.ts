@@ -51,7 +51,8 @@ export async function getModuleLessons(courseId: string, moduleId: string): Prom
     throw new Error(error.error || 'Failed to fetch module lessons');
   }
 
-  return await response.json();
+  const result = await response.json();
+  return result.data || [];
 }
 
 // Create a new lesson

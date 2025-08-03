@@ -10,14 +10,15 @@ const createQuizSchema = z.object({
   description: z.string().optional(),
   timeLimit: z.number().int().min(0).optional(),
   passingScore: z.number().min(0).max(100).optional(),
-  isPublished: z.boolean().optional(),
-  allowReview: z.boolean().optional().default(true),
   attemptsAllowed: z.number().int().min(0).optional(),
+  isPublished: z.boolean().optional(),
+  showCorrectAnswers: z.boolean().optional(),
+  // Note: instructions and randomizeQuestions not in Prisma schema yet
 });
 
 // GET /api/courses/[courseId]/modules/[moduleId]/quizzes - Get all quizzes for a module
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ courseId: string; moduleId: string }> }
 ): Promise<Response> {
   try {
@@ -41,10 +42,8 @@ export async function GET(
     const isInstructor = course?.instructorId === userId.toString();
 
     // Build query selector based on user role
-    const query = await request.json();
-    const { isPublished = true } = query;
-
-    const selector = isInstructor ? {} : { isPublished };
+    // For GET requests, we don't parse JSON body, just use defaults
+    const selector = isInstructor ? {} : { isPublished: true };
 
     // Get quizzes with questions and options
     const quizzes = await prisma.quiz.findMany({
@@ -104,9 +103,9 @@ export async function GET(
         description: quiz.description,
         timeLimit: quiz.timeLimit,
         passingScore: quiz.passingScore,
-        isPublished: quiz.isPublished,
-        allowReview: quiz.allowReview,
         attemptsAllowed: quiz.attemptsAllowed,
+        isPublished: quiz.isPublished,
+        showCorrectAnswers: quiz.showCorrectAnswers,
         questionCount: quiz._count.questions,
         attemptCount: quiz._count.attempts
       })),
@@ -142,7 +141,7 @@ export async function POST(
     const course = await prisma.course.findFirst({
       where: {
         id: courseId,
-        instructorId: parseInt(userId.toString(), 10)
+        instructorId: userId
       }
     });
 
@@ -184,25 +183,25 @@ export async function POST(
       description, 
       timeLimit,
       passingScore,
+      attemptsAllowed,
       isPublished,
-      allowReview,
-      attemptsAllowed
+      showCorrectAnswers
     } = validationResult.data;
 
     try {
-      // Create the quiz with only required fields first
+      // Create the quiz with fields that exist in Prisma schema
       const quiz = await prisma.quiz.create({
         data: {
           title,
           description,
           timeLimit,
           passingScore,
-          isPublished,
-          allowReview,
           attemptsAllowed,
+          isPublished,
+          showCorrectAnswers,
           // Connect relationships
           moduleId,
-          courseId,
+          // Note: courseId not needed - quiz belongs to module, module belongs to course
         }
       });
       

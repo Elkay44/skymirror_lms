@@ -87,8 +87,9 @@ export async function GET(
     const totalProjects = course.projects?.length || 0;
     const totalLessons = 0; // Simplified for now
     
-    // Calculate real completion rate based on course progress
-    const completionRate = totalStudents > 0 ? Math.round(Math.random() * 100) : 0; // Will be calculated properly when we have lesson progress
+    // Calculate completion rate based on actual course progress
+    // TODO: Calculate based on actual lesson/module completion when progress tracking is implemented
+    const completionRate = 0; // Will be calculated from real progress data
     
     // Get real recent activity - for now showing enrollment-based activity
     const recentActivity = course.enrollments.slice(0, 3).map((enrollment: any, index: number) => ({
@@ -139,13 +140,13 @@ export async function GET(
       },
       stats: {
         totalStudents,
-        activeStudents: totalStudents, // For now, assume all are active
+        activeStudents: totalStudents, // TODO: Calculate based on recent activity when activity tracking is implemented
         projectCompletion: completionRate,
-        avgProjectScore: totalStudents > 0 ? `${Math.round(75 + Math.random() * 20)}%` : '0%', // Calculated based on student performance
-        mentorSessions: Math.floor(totalStudents * 0.3), // Estimate: 30% of students have mentor sessions
-        peerReviews: Math.floor(totalStudents * 1.2), // Estimate: 1.2 reviews per student on average
-        codeCommits: Math.floor(totalStudents * 15), // Estimate: 15 commits per student on average
-        projectMilestones: totalModules, // Number of milestones equals number of modules
+        avgProjectScore: '0%', // TODO: Calculate from actual project grades
+        mentorSessions: 0, // TODO: Calculate from actual mentorship session data
+        peerReviews: 0, // TODO: Calculate from actual peer review data
+        codeCommits: 0, // TODO: Calculate from actual code commit data
+        projectMilestones: totalModules,
       },
       projectsCount: totalProjects,
       completionRate,
@@ -155,9 +156,9 @@ export async function GET(
         title: module.title,
         description: module.description,
         order: module.order,
-        lessons: 0, // Simplified for now
-        duration: '2h 30m', // Mock data
-        completed: false, // Mock data
+        lessons: 0, // TODO: Calculate from actual lessons when lesson system is implemented
+        duration: null, // TODO: Calculate from actual lesson durations
+        completed: false, // TODO: Calculate based on instructor's module completion tracking
       })),
       projects: course.projects.map((project: any) => {
         const totalSubmissions = project.submissions.length;

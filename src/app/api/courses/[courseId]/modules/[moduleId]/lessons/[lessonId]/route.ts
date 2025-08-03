@@ -1,37 +1,127 @@
-/* eslint-disable */
-
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
 // GET /api/courses/[courseId]/modules/[moduleId]/lessons/[lessonId] - Get a specific lesson
-export async function GET() {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ courseId: string; moduleId: string; lessonId: string }> }
+) {
   try {
-    // Return mock lesson data
+    const { courseId, moduleId, lessonId } = await params;
+    
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'You must be logged in to view lessons' },
+        { status: 401 }
+      );
+    }
+    
+    // Get the lesson with module and course info
+    const lesson = await prisma.lesson.findFirst({
+      where: {
+        id: lessonId,
+        moduleId: moduleId,
+        module: {
+          courseId: courseId
+        }
+      },
+      include: {
+        module: {
+          include: {
+            course: {
+              select: {
+                id: true,
+                instructorId: true,
+                isPublished: true
+              }
+            }
+          }
+        },
+        progress: {
+          where: {
+            userId: userId
+          },
+          select: {
+            completed: true,
+            completedAt: true
+          }
+        }
+      }
+    });
+    
+    if (!lesson) {
+      return NextResponse.json(
+        { success: false, error: 'Lesson not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Check if user has access (instructor or enrolled student)
+    const isInstructor = lesson.module.course.instructorId === userId;
+    let hasAccess = isInstructor;
+    
+    if (!isInstructor) {
+      const enrollment = await prisma.enrollment.findFirst({
+        where: {
+          userId: userId,
+          courseId: courseId
+        }
+      });
+      hasAccess = !!enrollment && lesson.module.course.isPublished;
+    }
+    
+    if (!hasAccess) {
+      return NextResponse.json(
+        { success: false, error: 'Access denied' },
+        { status: 403 }
+      );
+    }
+    
+    // Get next and previous lessons
+    const allLessons = await prisma.lesson.findMany({
+      where: { moduleId },
+      orderBy: { order: 'asc' },
+      select: { id: true, order: true }
+    });
+    
+    const currentIndex = allLessons.findIndex(l => l.id === lessonId);
+    const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1].id : null;
+    const previousLesson = currentIndex > 0 ? allLessons[currentIndex - 1].id : null;
+    
+    const progress = lesson.progress[0];
+    
     return NextResponse.json({
       success: true,
       data: {
-        id: 'lesson_1',
-        title: 'Introduction to the Course',
-        description: 'Welcome to the course! This is an introductory lesson.',
-        content: 'This is the main content of the lesson...',
-        videoUrl: null,
-        duration: 15, // minutes
-        order: 1,
-        isPublished: true,
-        isPreview: false,
-        resources: [],
-        quizId: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        id: lesson.id,
+        title: lesson.title,
+        description: lesson.description,
+        content: '', // TODO: Add content field to Lesson model
+        videoUrl: lesson.videoUrl,
+        duration: lesson.duration || 0,
+        order: lesson.order,
+        isPublished: true, // TODO: Add isPublished field to Lesson model
+        isPreview: false, // TODO: Add isPreview field to Lesson model
+        resources: [], // TODO: Add resources relation to Lesson model
+        quizId: null, // TODO: Add quizId field to Lesson model
+        createdAt: lesson.createdAt.toISOString(),
+        updatedAt: lesson.updatedAt.toISOString(),
         module: {
-          id: 'module_1',
-          title: 'Introduction',
-          isPublished: true,
-          courseId: 'course_1'
+          id: lesson.module.id,
+          title: lesson.module.title,
+          isPublished: true, // TODO: Add isPublished field to Module model
+          courseId: lesson.module.courseId
         },
-        completionStatus: 'NOT_STARTED',
-        nextLesson: 'lesson_2',
-        previousLesson: null,
-        canEdit: true
+        completionStatus: progress?.completed ? 'COMPLETED' : 'NOT_STARTED',
+        nextLesson,
+        previousLesson,
+        canEdit: isInstructor
       }
     });
   } catch (error) {
@@ -48,17 +138,69 @@ export async function GET() {
 }
 
 // PATCH /api/courses/[courseId]/modules/[moduleId]/lessons/[lessonId] - Update a lesson
-export async function PATCH() {
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ courseId: string; moduleId: string; lessonId: string }> }
+) {
   try {
-    // Return success response with updated lesson data
+    const { courseId, moduleId, lessonId } = await params;
+    const body = await request.json();
+    
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'You must be logged in to update lessons' },
+        { status: 401 }
+      );
+    }
+    
+    // Verify the lesson exists and user is the instructor
+    const lesson = await prisma.lesson.findFirst({
+      where: {
+        id: lessonId,
+        moduleId: moduleId,
+        module: {
+          courseId: courseId,
+          course: {
+            instructorId: userId
+          }
+        }
+      }
+    });
+    
+    if (!lesson) {
+      return NextResponse.json(
+        { success: false, error: 'Lesson not found or access denied' },
+        { status: 404 }
+      );
+    }
+    
+    // Update the lesson
+    const updatedLesson = await prisma.lesson.update({
+      where: { id: lessonId },
+      data: {
+        ...(body.title && { title: body.title }),
+        ...(body.description !== undefined && { description: body.description }),
+        ...(body.duration !== undefined && { duration: body.duration }),
+        ...(body.videoUrl !== undefined && { videoUrl: body.videoUrl }),
+        ...(body.order !== undefined && { order: body.order })
+      }
+    });
+    
     return NextResponse.json({
       success: true,
       message: 'Lesson updated successfully',
       data: {
-        id: 'lesson_1',
-        title: 'Updated Lesson Title',
-        description: 'Updated lesson description',
-        updatedAt: new Date().toISOString()
+        id: updatedLesson.id,
+        title: updatedLesson.title,
+        description: updatedLesson.description,
+        duration: updatedLesson.duration,
+        videoUrl: updatedLesson.videoUrl,
+        order: updatedLesson.order,
+        updatedAt: updatedLesson.updatedAt.toISOString()
       }
     });
   } catch (error) {
@@ -75,9 +217,50 @@ export async function PATCH() {
 }
 
 // DELETE /api/courses/[courseId]/modules/[moduleId]/lessons/[lessonId] - Delete a lesson
-export async function DELETE() {
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ courseId: string; moduleId: string; lessonId: string }> }
+) {
   try {
-    // Return success response for lesson deletion
+    const { courseId, moduleId, lessonId } = await params;
+    
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'You must be logged in to delete lessons' },
+        { status: 401 }
+      );
+    }
+    
+    // Verify the lesson exists and user is the instructor
+    const lesson = await prisma.lesson.findFirst({
+      where: {
+        id: lessonId,
+        moduleId: moduleId,
+        module: {
+          courseId: courseId,
+          course: {
+            instructorId: userId
+          }
+        }
+      }
+    });
+    
+    if (!lesson) {
+      return NextResponse.json(
+        { success: false, error: 'Lesson not found or access denied' },
+        { status: 404 }
+      );
+    }
+    
+    // Delete the lesson (this will cascade delete progress records)
+    await prisma.lesson.delete({
+      where: { id: lessonId }
+    });
+    
     return NextResponse.json({
       success: true,
       message: 'Lesson deleted successfully'

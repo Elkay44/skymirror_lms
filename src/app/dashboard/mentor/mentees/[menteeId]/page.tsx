@@ -35,11 +35,7 @@ const mockMenteeData = {
       instructor: 'Sarah Chen',
       grade: 'A-',
       status: 'In Progress',
-      modules: [
-        { id: 'm1', title: 'React Hooks', completed: true },
-        { id: 'm2', title: 'Context API', completed: true },
-        { id: 'm3', title: 'Redux Toolkit', completed: false },
-      ]
+      modules: [] // TODO: Fetch real modules from API
     },
     {
       id: 'course2',
@@ -49,11 +45,7 @@ const mockMenteeData = {
       instructor: 'Mike Johnson',
       grade: 'A',
       status: 'Completed',
-      modules: [
-        { id: 'm4', title: 'Basic Types', completed: true },
-        { id: 'm5', title: 'Interfaces', completed: true },
-        { id: 'm6', title: 'Generics', completed: true },
-      ]
+      modules: [] // TODO: Fetch real modules from API
     }
   ],
   upcomingAssignments: [

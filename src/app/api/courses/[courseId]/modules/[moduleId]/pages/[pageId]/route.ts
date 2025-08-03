@@ -1,52 +1,33 @@
-/* eslint-disable */
-
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 
 // GET /api/courses/[courseId]/modules/[moduleId]/pages/[pageId] - Get a specific page
-export async function GET() {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ courseId: string; moduleId: string; pageId: string }> }
+) {
   try {
-    // Return mock page data
+    const { courseId, moduleId, pageId } = await params;
+    
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'You must be logged in to view pages' },
+        { status: 401 }
+      );
+    }
+    
+    // TODO: Implement page functionality when Page model is added to schema
     return NextResponse.json({
-      success: true,
-      data: {
-        id: 'page_1',
-        title: 'Sample Page',
-        description: 'This is a sample page with content blocks',
-        content: 'Main content of the page',
-        slug: 'sample-page',
-        isPublished: true,
-        order: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        module: {
-          id: 'module_1',
-          title: 'Introduction',
-          isPublished: true,
-          courseId: 'course_1'
-        },
-        blocks: [
-          {
-            id: 'block_1',
-            type: 'text',
-            content: 'Welcome to this page!',
-            order: 1,
-            metadata: {}
-          },
-          {
-            id: 'block_2',
-            type: 'image',
-            content: 'https://example.com/image.jpg',
-            order: 2,
-            metadata: {
-              alt: 'Example image',
-              width: 800,
-              height: 450
-            }
-          }
-        ]
-      },
-      canEdit: true
-    });
+      success: false,
+      error: 'Page functionality not yet implemented',
+      message: 'Page model needs to be added to Prisma schema',
+      details: { courseId, moduleId, pageId }
+    }, { status: 501 });
   } catch (error) {
     console.error('Error fetching page:', error);
     return NextResponse.json(
@@ -61,20 +42,31 @@ export async function GET() {
 }
 
 // PATCH /api/courses/[courseId]/modules/[moduleId]/pages/[pageId] - Update a page
-export async function PATCH() {
+export async function PATCH(
+  _request: Request,
+  { params }: { params: Promise<{ courseId: string; moduleId: string; pageId: string }> }
+) {
   try {
-    // Return success response with updated page data
+    const { courseId, moduleId, pageId } = await params;
+    
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'You must be logged in to update pages' },
+        { status: 401 }
+      );
+    }
+    
+    // TODO: Implement page functionality when Page model is added to schema
     return NextResponse.json({
-      success: true,
-      message: 'Page updated successfully',
-      data: {
-        id: 'page_1',
-        title: 'Updated Page Title',
-        description: 'Updated page description',
-        isPublished: true,
-        updatedAt: new Date().toISOString()
-      }
-    });
+      success: false,
+      error: 'Page functionality not yet implemented',
+      message: 'Page model needs to be added to Prisma schema',
+      details: { courseId, moduleId, pageId }
+    }, { status: 501 });
   } catch (error) {
     console.error('Error updating page:', error);
     return NextResponse.json(
@@ -89,13 +81,31 @@ export async function PATCH() {
 }
 
 // DELETE /api/courses/[courseId]/modules/[moduleId]/pages/[pageId] - Delete a page
-export async function DELETE() {
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ courseId: string; moduleId: string; pageId: string }> }
+) {
   try {
-    // Return success response for page deletion
+    const { courseId, moduleId, pageId } = await params;
+    
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'You must be logged in to delete pages' },
+        { status: 401 }
+      );
+    }
+    
+    // TODO: Implement page functionality when Page model is added to schema
     return NextResponse.json({
-      success: true,
-      message: 'Page deleted successfully'
-    });
+      success: false,
+      error: 'Page functionality not yet implemented',
+      message: 'Page model needs to be added to Prisma schema',
+      details: { courseId, moduleId, pageId }
+    }, { status: 501 });
   } catch (error) {
     console.error('Error deleting page:', error);
     return NextResponse.json(

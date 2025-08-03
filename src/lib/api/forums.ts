@@ -2,7 +2,7 @@ import { ForumTopic, ForumPost, CreateForumTopicRequest, CreateForumPostRequest 
 
 // Get all topics for a module forum
 export async function getModuleTopics(courseId: string, moduleId: string): Promise<ForumTopic[]> {
-  const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/forum/topics`, {
+  const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/forums`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -15,7 +15,8 @@ export async function getModuleTopics(courseId: string, moduleId: string): Promi
     throw new Error(error.error || 'Failed to fetch forum topics');
   }
 
-  return await response.json();
+  const result = await response.json();
+  return result.data || [];
 }
 
 // Get a single forum topic with posts

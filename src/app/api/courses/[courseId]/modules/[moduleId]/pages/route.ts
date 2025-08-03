@@ -1,57 +1,88 @@
-/* eslint-disable */
-
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
 // GET /api/courses/[courseId]/modules/[moduleId]/pages - Get all pages for a module
-export async function GET() {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ courseId: string; moduleId: string }> }
+) {
   try {
-    // Return mock pages data
+    const { courseId, moduleId } = await params;
+    
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'You must be logged in to view pages' },
+        { status: 401 }
+      );
+    }
+    
+    // Verify the module exists and belongs to the course
+    const module = await prisma.module.findFirst({
+      where: {
+        id: moduleId,
+        courseId: courseId
+      },
+      include: {
+        course: {
+          select: {
+            id: true,
+            instructorId: true,
+            isPublished: true
+          }
+        }
+      }
+    });
+    
+    if (!module) {
+      return NextResponse.json(
+        { success: false, error: 'Module not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Check if user has access (instructor or enrolled student)
+    const isInstructor = module.course.instructorId === userId;
+    let hasAccess = isInstructor;
+    
+    if (!isInstructor) {
+      const enrollment = await prisma.enrollment.findFirst({
+        where: {
+          userId: userId,
+          courseId: courseId
+        }
+      });
+      hasAccess = !!enrollment && module.course.isPublished;
+    }
+    
+    if (!hasAccess) {
+      return NextResponse.json(
+        { success: false, error: 'Access denied' },
+        { status: 403 }
+      );
+    }
+    
+    // For now, return empty pages array since Page model doesn't exist in schema
+    // TODO: Add Page model to Prisma schema and implement real page functionality
+    const pages: any[] = [];
+    
     return NextResponse.json({
       success: true,
-      data: [
-        {
-          id: 'page_1',
-          title: 'Introduction',
-          description: 'Welcome to the course',
-          slug: 'introduction',
-          isPublished: true,
-          order: 1,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          blockCount: 3
-        },
-        {
-          id: 'page_2',
-          title: 'Getting Started',
-          description: 'How to get started with the course',
-          slug: 'getting-started',
-          isPublished: true,
-          order: 2,
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          updatedAt: new Date(Date.now() - 3600000).toISOString(),
-          blockCount: 2
-        },
-        {
-          id: 'page_3',
-          title: 'Advanced Topics',
-          description: 'Advanced course materials',
-          slug: 'advanced-topics',
-          isPublished: false,
-          order: 3,
-          createdAt: new Date(Date.now() - 172800000).toISOString(),
-          updatedAt: new Date(Date.now() - 7200000).toISOString(),
-          blockCount: 5
-        }
-      ],
+      data: pages,
       module: {
-        id: 'module_1',
-        title: 'Introduction',
-        isPublished: true,
-        courseId: 'course_1'
+        id: module.id,
+        title: module.title,
+        isPublished: true, // TODO: Add isPublished field to Module model
+        courseId: module.courseId
       },
-      canCreate: true,
-      canEdit: true,
-      canDelete: true
+      canCreate: isInstructor,
+      canEdit: isInstructor,
+      canDelete: isInstructor
     });
   } catch (error) {
     console.error('Error fetching pages:', error);
@@ -67,24 +98,48 @@ export async function GET() {
 }
 
 // POST /api/courses/[courseId]/modules/[moduleId]/pages - Create a new page
-export async function POST() {
+export async function POST(
+  _request: Request,
+  { params }: { params: Promise<{ courseId: string; moduleId: string }> }
+) {
   try {
-    // Return success response with created page data
-    return NextResponse.json({
-      success: true,
-      message: 'Page created successfully',
-      data: {
-        id: 'page_' + Date.now(),
-        title: 'New Page',
-        description: 'New page description',
-        slug: 'new-page',
-        isPublished: false,
-        order: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        blockCount: 0
+    const { courseId, moduleId } = await params;
+    
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'You must be logged in to create pages' },
+        { status: 401 }
+      );
+    }
+    
+    // Verify the module exists and user is the instructor
+    const module = await prisma.module.findFirst({
+      where: {
+        id: moduleId,
+        courseId: courseId,
+        course: {
+          instructorId: userId
+        }
       }
-    }, { status: 201 });
+    });
+    
+    if (!module) {
+      return NextResponse.json(
+        { success: false, error: 'Module not found or access denied' },
+        { status: 404 }
+      );
+    }
+    
+    // TODO: Implement page creation when Page model is added to schema
+    return NextResponse.json({
+      success: false,
+      error: 'Page functionality not yet implemented',
+      message: 'Page model needs to be added to Prisma schema'
+    }, { status: 501 });
   } catch (error) {
     console.error('Error creating page:', error);
     return NextResponse.json(

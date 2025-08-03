@@ -51,7 +51,9 @@ export async function getModuleQuizzes(courseId: string, moduleId: string): Prom
     throw new Error(error.error || 'Failed to fetch module quizzes');
   }
 
-  return await response.json();
+  const result = await response.json();
+  // API returns { data: Quiz[], total: number } format
+  return result.data || [];
 }
 
 // Create a new quiz
