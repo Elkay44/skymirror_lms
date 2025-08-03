@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         where: {
           id: { in: courseIds },
           instructor: {
-            id: Number(userId)
+            id: userId
           }
         }
       });

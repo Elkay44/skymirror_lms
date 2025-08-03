@@ -107,7 +107,7 @@ export async function GET() {
         id: course.id,
         title: course.title,
         description: course.description || '',
-        imageUrl: course.imageUrl,
+        imageUrl: course.image,
         isPublished: course.isPublished,
         enrollmentCount,
         completionRate,

@@ -106,18 +106,17 @@ export async function GET(
               order: true,
               videoUrl: true,
               duration: true,
-              content: true,
               createdAt: true,
               updatedAt: true,
               progress: {
                 where: {
-                  userId: isInstructor ? undefined : userId ? Number(userId) : undefined
+                  userId: isInstructor ? undefined : userId ? userId : undefined
                 },
                 select: {
                   completed: true,
                   completedAt: true,
                 },
-              },
+              }
             },
           },
         },
@@ -225,20 +224,10 @@ export async function POST(
     try {
       course = await prisma.course.findFirst({
         where: { 
-          OR: [
-            { 
-              id: courseId,
-              instructor: {
-                id: Number(userId)
-              }
-            },
-            { 
-              id: courseId,
-              instructor: {
-                id: Number(userId)
-              }
-            }
-          ]
+          id: courseId,
+          instructor: {
+            id: userId
+          }
         },
         select: {
           id: true,

@@ -131,8 +131,7 @@ export async function GET(request: Request) {
                 duration: true,
                 completed: true,
                 order: true,
-                videoUrl: true,
-                content: true
+                videoUrl: true
               },
               orderBy: { order: 'asc' }
             },

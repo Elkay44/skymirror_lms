@@ -106,6 +106,7 @@ model User {
   enrollments        Enrollment[]
   instructorCourses  Course[]            @relation("InstructorCourses")
   lessonViews        LessonView[]
+  lessonProgress     LessonProgress[]
   certifications     Certification[]
   quizAttempts       QuizAttempt[]
   activityLogs       ActivityLog[]
@@ -216,6 +217,7 @@ model Lesson {
   // Relations
   module           Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   views            LessonView[]
+  progress         LessonProgress[]
   activityLogs     ActivityLog[]
   
   @@map("lessons")
@@ -234,6 +236,26 @@ model LessonView {
   
   @@unique([lessonId, userId])
   @@map("lesson_views")
+}
+
+model LessonProgress {
+  id               String    @id @default(cuid())
+  lessonId         String
+  userId           String
+  completed        Boolean   @default(false)
+  completedAt      DateTime?
+  lastAccessedAt   DateTime  @default(now())
+  timeSpent        Int       @default(0) // in seconds
+  progress         Int       @default(0) // 0-100 percentage
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  
+  // Relations
+  lesson           Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([lessonId, userId])
+  @@map("lesson_progress")
 }
 
 model Project {

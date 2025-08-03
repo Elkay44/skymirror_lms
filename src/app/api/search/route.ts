@@ -336,7 +336,6 @@ export async function GET(request: Request) {
           select: {
             id: true,
             title: true,
-            content: true,
             createdAt: true,
             updatedAt: true,
             course: {

@@ -22,7 +22,7 @@ export async function PATCH(
       where: { 
         id: courseId,
         instructor: {
-          id: Number(userId)
+          id: userId
         }
       },
     });

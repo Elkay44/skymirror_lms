@@ -14,7 +14,7 @@ type RouteHandler = (
   context: { params: Promise<RouteParams> }
 ) => Promise<NextResponse>;
 
-export const GET: RouteHandler = async (request, { params }) => {
+export const GET: RouteHandler = async (_, { params }) => {
   const { lessonId } = await params;
   try {
     const session = await getServerSession(authOptions);
@@ -26,10 +26,7 @@ export const GET: RouteHandler = async (request, { params }) => {
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const includeContent = searchParams.get('includeContent') === 'true';
-    
-    // Get the lesson with optional content
+    // Get the lesson
     const lesson = await prisma.lesson.findUnique({
       where: { 
         id: lessonId,
@@ -44,7 +41,7 @@ export const GET: RouteHandler = async (request, { params }) => {
         order: true,
         isPublished: true,
         isPreview: true,
-        ...(includeContent ? { content: true } : {}),
+        // content field removed - not available in Lesson model
         createdAt: true,
         updatedAt: true,
         module: {
