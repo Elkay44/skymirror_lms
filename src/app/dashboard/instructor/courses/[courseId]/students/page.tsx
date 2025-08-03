@@ -39,22 +39,7 @@ interface StudentData {
   grade?: string;
 }
 
-// Mock data for students
-const mockStudents: StudentData[] = [
-  {
-    id: 1,
-    name: 'Alex Johnson',
-    email: 'alex.johnson@example.com',
-    status: 'active',
-    lastActive: '2023-04-15T14:30:00Z',
-    progress: 75,
-    completedLessons: 15,
-    totalLessons: 20,
-    joinDate: '2023-01-10',
-    grade: 'A'
-  },
-  // ... more mock data
-];
+// Real students data will be fetched from API
 
 interface StudentsPageProps {
   searchParams: Promise<{ status?: string }>;
@@ -95,17 +80,34 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
     const fetchStudents = async () => {
       try {
         setLoading(true);
-        // In a real app, you would fetch this data from your API
-        // const response = await fetch(`/api/courses/${params.courseId}/students`);
-        // const data = await response.json();
+        const response = await fetch(`/api/instructor/courses/${params.courseId}/students`);
         
-        // Using mock data for now
-        setTimeout(() => {
-          setStudents(mockStudents);
-          setLoading(false);
-        }, 500);
+        if (!response.ok) {
+          throw new Error('Failed to fetch students');
+        }
+        
+        const data = await response.json();
+        
+        // Transform the data to match our interface
+        const transformedStudents: StudentData[] = data.map((enrollment: any) => ({
+          id: enrollment.user.id,
+          name: enrollment.user.name || 'Unknown Student',
+          email: enrollment.user.email,
+          avatarUrl: enrollment.user.image,
+          status: 'active', // All enrolled students are considered active
+          lastActive: enrollment.user.lastLoginAt || enrollment.enrolledAt,
+          progress: enrollment.progress || 0,
+          completedLessons: enrollment.completedLessons || 0,
+          totalLessons: enrollment.totalLessons || 0,
+          joinDate: enrollment.enrolledAt,
+          grade: enrollment.grade || 'N/A'
+        }));
+        
+        setStudents(transformedStudents);
       } catch (error) {
         console.error('Error fetching students:', error);
+        setStudents([]); // Set empty array on error
+      } finally {
         setLoading(false);
       }
     };

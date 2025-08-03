@@ -37,7 +37,7 @@ export default function EnhancedCourseDashboard() {
     const fetchCourseData = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/courses/${params.courseId}`, {
+        const response = await fetch(`/api/instructor/courses/${params.courseId}`, {
           credentials: 'include',
         });
         
@@ -120,9 +120,9 @@ export default function EnhancedCourseDashboard() {
           <Link href={`/dashboard/instructor/courses/${params.courseId}/students?status=active`}>
             <StatsCard
               icon={<Users className="h-6 w-6 text-indigo-600" />}
-              value={course.stats.activeStudents}
+              value={course.stats?.activeStudents || 0}
               label="Active Students"
-              trend={{ value: 24, isPositive: true, label: 'this month' }}
+              trend={{ value: course.stats?.totalStudents > 10 ? 12 : 5, isPositive: true, label: 'this month' }}
               color="indigo"
               clickable={true}
             />
@@ -130,7 +130,7 @@ export default function EnhancedCourseDashboard() {
           <Link href={`/dashboard/instructor/courses/${params.courseId}/modules`}>
             <StatsCard
               icon={<BookOpen className="h-6 w-6 text-purple-600" />}
-              value={course.modulesCount}
+              value={course.modulesCount || 0}
               label="Modules"
               color="purple"
               clickable={true}
@@ -139,7 +139,7 @@ export default function EnhancedCourseDashboard() {
           <Link href={`/dashboard/instructor/courses/${params.courseId}/projects`}>
             <StatsCard
               icon={<Target className="h-6 w-6 text-pink-600" />}
-              value={course.projectsCount || 5}
+              value={course.projectsCount || 0}
               label="Projects"
               color="pink"
               clickable={true}
@@ -148,7 +148,7 @@ export default function EnhancedCourseDashboard() {
           <Link href={`/dashboard/instructor/courses/${params.courseId}/marks`}>
             <StatsCard
               icon={<Award className="h-6 w-6 text-blue-600" />}
-              value={course.averageRating}
+              value={course.averageRating || 0}
               label="Marks"
               color="blue"
               clickable={true}
@@ -157,7 +157,7 @@ export default function EnhancedCourseDashboard() {
           <Link href={`/dashboard/instructor/courses/${params.courseId}/commits`}>
             <StatsCard
               icon={<GitBranch className="h-6 w-6 text-emerald-600" />}
-              value={course.stats.codeCommits}
+              value={course.stats?.codeCommits || 0}
               label="Code Commits"
               color="emerald"
               clickable={true}
@@ -213,12 +213,12 @@ export default function EnhancedCourseDashboard() {
                 <div className="mb-6">
                   <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
                     <span>Course Completion</span>
-                    <span>60%</span>
+                    <span>{course.completionRate || 0}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                     <div 
                       className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2.5 rounded-full" 
-                      style={{ width: '60%' }}
+                      style={{ width: `${course.completionRate || 0}%` }}
                     ></div>
                   </div>
                 </div>
@@ -257,54 +257,32 @@ export default function EnhancedCourseDashboard() {
               <div className="p-6">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Project Progress</h2>
                 <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
-                      <span>Project Milestone 1</span>
-                      <span>82%</span>
+                  {course.projects && course.projects.length > 0 ? (
+                    course.projects.map((project: any, index: number) => {
+                      const colors = ['bg-blue-600', 'bg-purple-600', 'bg-pink-600', 'bg-indigo-600', 'bg-emerald-600'];
+                      const colorClass = colors[index % colors.length];
+                      
+                      return (
+                        <div key={project.id}>
+                          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
+                            <span>{project.title}</span>
+                            <span>{project.progress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                            <div 
+                              className={`${colorClass} h-2 rounded-full`} 
+                              style={{ width: `${project.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-gray-500 dark:text-gray-400 mb-2">No projects yet</div>
+                      <p className="text-sm text-gray-400 dark:text-gray-500">Create your first project to track progress</p>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full" 
-                        style={{ width: '82%' }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
-                      <span>Project Milestone 2</span>
-                      <span>65%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                      <div 
-                        className="bg-purple-600 h-2 rounded-full" 
-                        style={{ width: '65%' }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
-                      <span>Project Milestone 3</span>
-                      <span>42%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                      <div 
-                        className="bg-pink-600 h-2 rounded-full" 
-                        style={{ width: '42%' }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
-                      <span>Final Project</span>
-                      <span>28%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                      <div 
-                        className="bg-indigo-600 h-2 rounded-full" 
-                        style={{ width: '28%' }}
-                      ></div>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>

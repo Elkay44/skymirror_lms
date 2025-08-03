@@ -1,65 +1,102 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { PageLayout } from '../_components/PageLayout';
-import { GitCommit, GitBranch, GitPullRequest, Code, User, Search, Filter, Download } from 'lucide-react';
+import { GitCommit, GitBranch, GitPullRequest, Code, User, Search, Filter, Download, Loader2 } from 'lucide-react';
+
+interface CommitData {
+  id: string;
+  message: string;
+  author: string;
+  branch: string;
+  timestamp: string;
+  changes: number;
+  additions: number;
+  deletions: number;
+  pullRequest?: number;
+}
 
 export default function CommitsPage() {
-  // Mock data - replace with real data
-  const commits = [
-    {
-      id: 'a1b2c3d',
-      message: 'Implement user authentication',
-      author: 'Alex Johnson',
-      branch: 'feature/auth',
-      timestamp: '2 hours ago',
-      changes: 12,
-      additions: 347,
-      deletions: 128,
-      pullRequest: 42
-    },
-    {
-      id: 'e4f5g6h',
-      message: 'Fix responsive layout issues',
-      author: 'Taylor Wilson',
-      branch: 'bugfix/layout',
-      timestamp: '5 hours ago',
-      changes: 8,
-      additions: 142,
-      deletions: 67,
-      pullRequest: 41
-    },
-    {
-      id: 'i7j8k9l',
-      message: 'Add project submission form',
-      author: 'Jordan Smith',
-      branch: 'feature/submissions',
-      timestamp: '1 day ago',
-      changes: 15,
-      additions: 523,
-      deletions: 89,
-      pullRequest: 40
-    },
-    {
-      id: 'm1n2o3p',
-      message: 'Update dependencies',
-      author: 'Casey Kim',
-      branch: 'chore/deps',
-      timestamp: '2 days ago',
-      changes: 5,
-      additions: 0,
-      deletions: 0,
-      pullRequest: 39
-    },
-    {
-      id: 'q4r5s6t',
-      message: 'Refactor API service layer',
-      author: 'Riley Chen',
-      branch: 'refactor/api',
-      timestamp: '3 days ago',
-      changes: 21,
-      additions: 412,
-      deletions: 387,
-      pullRequest: 38
-    }
-  ];
+  const params = useParams();
+  const courseId = params.courseId as string;
+  
+  const [commits, setCommits] = useState<CommitData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCommits = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/instructor/courses/${courseId}/commits`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch commits');
+        }
+        
+        const data = await response.json();
+        setCommits(data.commits || []);
+      } catch (err) {
+        console.error('Error fetching commits:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load commits');
+        setCommits([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCommits();
+  }, [courseId]);
+
+  if (isLoading) {
+    return (
+      <PageLayout
+        title="Loading Commits..."
+        description="Please wait while we load code commits"
+        backHref="/dashboard/instructor/courses"
+      >
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageLayout
+        title="Error Loading Commits"
+        description={error}
+        backHref="/dashboard/instructor/courses"
+      >
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+          <p className="text-red-700 dark:text-red-300">{error}</p>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // Show empty state if no commits
+  if (commits.length === 0) {
+    return (
+      <PageLayout
+        title="Code Commits"
+        description="Track student code commits and contributions"
+        backHref="/dashboard/instructor/courses"
+      >
+        <div className="text-center py-12">
+          <GitCommit className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+            No commits yet
+          </h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Student code commits will appear here once they start working on projects.
+          </p>
+        </div>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout

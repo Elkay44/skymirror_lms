@@ -1,15 +1,82 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { PageLayout } from '../_components/PageLayout';
-import { Download, Filter, Search } from 'lucide-react';
+import { Download, Filter, Search, Loader2 } from 'lucide-react';
+
+interface StudentGrade {
+  id: string;
+  name: string;
+  email: string;
+  project1?: number;
+  project2?: number;
+  quiz1?: number;
+  total: number;
+  grade: string;
+}
 
 export default function MarksPage() {
-  // Mock data - replace with real data
-  const students = [
-    { id: 1, name: 'Alex Johnson', email: 'alex@example.com', project1: 85, project2: 92, quiz1: 88, total: 88.3, grade: 'A' },
-    { id: 2, name: 'Jordan Smith', email: 'jordan@example.com', project1: 78, project2: 85, quiz1: 82, total: 81.7, grade: 'B+' },
-    { id: 3, name: 'Taylor Wilson', email: 'taylor@example.com', project1: 92, project2: 95, quiz1: 90, total: 92.3, grade: 'A' },
-    { id: 4, name: 'Casey Kim', email: 'casey@example.com', project1: 65, project2: 70, quiz1: 68, total: 67.7, grade: 'D+' },
-    { id: 5, name: 'Riley Chen', email: 'riley@example.com', project1: 88, project2: 85, quiz1: 90, total: 87.7, grade: 'B+' },
-  ];
+  const params = useParams();
+  const courseId = params.courseId as string;
+  
+  const [students, setStudents] = useState<StudentGrade[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [classAverage, setClassAverage] = useState(0);
+
+  useEffect(() => {
+    const fetchMarks = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/instructor/courses/${courseId}/marks`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch marks');
+        }
+        
+        const data = await response.json();
+        setStudents(data.students || []);
+        setClassAverage(data.classAverage || 0);
+      } catch (err) {
+        console.error('Error fetching marks:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load marks');
+        setStudents([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMarks();
+  }, [courseId]);
+
+  if (isLoading) {
+    return (
+      <PageLayout
+        title="Loading Marks..."
+        description="Please wait while we load student grades"
+        backHref="/dashboard/instructor/courses"
+      >
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageLayout
+        title="Error Loading Marks"
+        description={error}
+        backHref="/dashboard/instructor/courses"
+      >
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+          <p className="text-red-700 dark:text-red-300">{error}</p>
+        </div>
+      </PageLayout>
+    );
+  }
 
   const gradeScale = [
     { grade: 'A', range: '90-100', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' },
@@ -55,11 +122,11 @@ export default function MarksPage() {
           
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-gray-900 dark:text-white">Class Average: 84.2%</h4>
-              <span className="text-sm text-gray-500 dark:text-gray-400">5 students</span>
+              <h4 className="font-medium text-gray-900 dark:text-white">Class Average: {classAverage.toFixed(1)}%</h4>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{students.length} students</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-              <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: '84.2%' }}></div>
+              <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: `${classAverage}%` }}></div>
             </div>
           </div>
         </div>
