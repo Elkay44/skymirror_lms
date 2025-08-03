@@ -67,12 +67,49 @@ export async function GET(
       }
     }
     
-    // TODO: Forum topics feature not yet implemented
-    // Return empty array for now
-    return NextResponse.json({
-      data: [],
-      total: 0
-    });
+    try {
+      console.log(`Fetching forums for module: ${moduleId}`);
+      
+      // Get all forums for this module
+      const forums = await prisma.forum.findMany({
+        where: {
+          moduleId: moduleId
+        },
+        include: {
+          posts: {
+            select: {
+              id: true
+            }
+          }
+        }
+      });
+
+      console.log(`Found ${forums.length} forums for module ${moduleId}`);
+
+      // Transform the data to match our Forum interface
+      const formattedForums = forums.map(forum => ({
+        id: forum.id,
+        title: forum.title,
+        description: forum.description,
+        isActive: forum.isActive,
+        createdAt: forum.createdAt.toISOString(),
+        updatedAt: forum.updatedAt.toISOString(),
+        _count: {
+          posts: forum.posts.length
+        }
+      }));
+
+      return NextResponse.json(formattedForums, { status: 200 });
+    } catch (error) {
+      console.error('Error fetching forums:', error);
+      return NextResponse.json(
+        { 
+          error: 'Failed to fetch forums',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error('Error fetching forums:', error);
     return NextResponse.json(

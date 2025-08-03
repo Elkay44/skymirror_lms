@@ -106,21 +106,45 @@ export default function CreateAssignmentPage() {
       // Transform the data to match API schema
       const apiData = {
         title: assignmentData.title,
-        description: assignmentData.description || '', // Include description field
-        instructions: assignmentData.instructions,
+        description: assignmentData.description || '',
+        content: assignmentData.instructions || '',
         dueDate: assignmentData.dueDate,
-        maxScore: assignmentData.maxScore, // Use maxScore as the field is expected in the backend
-        submissionType: assignmentData.submissionType, // Include the submission type
-        isPublished: assignmentData.isPublished,
-        allowLateSubmissions: assignmentData.allowLateSubmissions,
-        // Exclude fields not in the backend schema
-        // allowGroupSubmissions and maxGroupSize aren't in backend schema
+        points: assignmentData.maxScore || 100,
+        type: assignmentData.submissionType || 'TEXT',
+        isPublished: assignmentData.isPublished || false,
+        rubricId: null // Optional field
       };
       
-      await axios.post(
-        `/api/courses/${courseId}/modules/${moduleId}/assignments`,
-        apiData
-      );
+      try {
+        const response = await axios.post(
+          `/api/courses/${courseId}/modules/${moduleId}/assignments`,
+          apiData
+        );
+        
+        if (response.status === 201) {
+          toast.success('Assignment created successfully');
+          router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}`);
+          router.refresh();
+        } else {
+          throw new Error('Unexpected response status');
+        }
+      } catch (error: unknown) {
+        console.error('Error creating assignment:', error);
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else if (typeof error === 'object' && error !== null && 'response' in error) {
+          const axiosError = error as { response: { data: { error?: string } } };
+          if (axiosError.response?.data?.error) {
+            toast.error(axiosError.response.data.error);
+          } else {
+            toast.error('Failed to create assignment');
+          }
+        } else {
+          toast.error('Failed to create assignment');
+        }
+      } finally {
+        setIsLoading(false);
+      }
       
       toast.success('Assignment created successfully');
       

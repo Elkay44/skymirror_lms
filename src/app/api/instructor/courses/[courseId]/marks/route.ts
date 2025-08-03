@@ -51,64 +51,128 @@ export async function GET(
       },
     });
 
-    // Get project submissions for grade calculations
+    // Get all projects for the course to calculate grades
+    const projects = await prisma.project.findMany({
+      where: { courseId },
+      select: { id: true, title: true, pointsValue: true },
+      orderBy: { createdAt: 'asc' } // Ensure consistent ordering
+    });
+
+    // Get all project submissions for enrolled students
     const projectSubmissions = await prisma.projectSubmission.findMany({
       where: {
-        project: {
-          courseId: courseId,
-        },
+        project: { courseId },
+        studentId: { in: enrollments.map(e => e.userId) },
+        status: { in: ['APPROVED', 'GRADED'] } // Only count approved/graded submissions
       },
       include: {
-        user: {
-          select: {
-            id: true,
-          },
-        },
         project: {
-          select: {
-            id: true,
-            title: true,
-            pointsValue: true,
-          },
-        },
+          select: { id: true, title: true, pointsValue: true }
+        }
+      }
+    });
+
+    // Get quiz attempts for enrolled students
+    const quizAttempts = await prisma.quizAttempt.findMany({
+      where: {
+        quiz: { module: { courseId } },
+        userId: { in: enrollments.map(e => e.userId) },
+        status: 'COMPLETED'
       },
+      select: {
+        userId: true,
+        score: true,
+        quiz: {
+          select: { id: true, title: true, maxScore: true }
+        }
+      }
     });
 
     // Calculate grades for each student
     const studentsWithGrades = enrollments.map((enrollment) => {
-      const studentSubmissions = projectSubmissions.filter(
-        (sub) => sub.user.id === enrollment.user.id
-      );
+      const studentId = enrollment.user.id;
+      
+      // Get all project submissions for this student
+      const submissions = projectSubmissions.filter(s => s.studentId === studentId);
+      
+      // Calculate project grades (average of all project grades)
+      const projectGrades = submissions
+        .filter(s => s.grade !== null && s.grade !== undefined)
+        .map(s => (s.grade || 0));
+      
+      const projectAverage = projectGrades.length > 0 
+        ? projectGrades.reduce((sum, grade) => sum + grade, 0) / projectGrades.length 
+        : 0;
 
-      // Calculate project grades (simplified - using grade field if available)
-      const project1Grade = studentSubmissions.find(s => s.project.title.toLowerCase().includes('project 1'))?.grade || null;
-      const project2Grade = studentSubmissions.find(s => s.project.title.toLowerCase().includes('project 2'))?.grade || null;
-      const quiz1Grade = null; // TODO: Implement quiz grades when quiz system is ready
+      // Get quiz attempts for this student
+      const studentQuizAttempts = quizAttempts.filter(q => q.userId === studentId);
+      
+      // Calculate quiz average
+      const quizScores = studentQuizAttempts
+        .map(q => (q.score / (q.quiz.maxScore || 100)) * 100);
+      
+      const quizAverage = quizScores.length > 0
+        ? quizScores.reduce((sum, score) => sum + score, 0) / quizScores.length
+        : 0;
 
-      // Calculate total grade (average of available grades)
-      const grades = [project1Grade, project2Grade, quiz1Grade].filter(g => g !== null) as number[];
-      const total = grades.length > 0 ? grades.reduce((sum, grade) => sum + grade, 0) / grades.length : 0;
+      // Calculate overall average (weighted 60% projects, 40% quizzes)
+      const hasProjects = projectGrades.length > 0;
+      const hasQuizzes = quizScores.length > 0;
+      
+      let total = 0;
+      if (hasProjects && hasQuizzes) {
+        total = (projectAverage * 0.6) + (quizAverage * 0.4);
+      } else if (hasProjects) {
+        total = projectAverage;
+      } else if (hasQuizzes) {
+        total = quizAverage;
+      }
 
       // Determine letter grade
       let letterGrade = 'N/A';
-      if (total >= 90) letterGrade = 'A';
-      else if (total >= 85) letterGrade = 'B+';
-      else if (total >= 80) letterGrade = 'B';
-      else if (total >= 75) letterGrade = 'C+';
-      else if (total >= 70) letterGrade = 'C';
-      else if (total >= 65) letterGrade = 'D+';
-      else if (total >= 60) letterGrade = 'D';
-      else if (total > 0) letterGrade = 'F';
+      if (total > 0) {
+        if (total >= 90) letterGrade = 'A';
+        else if (total >= 85) letterGrade = 'B+';
+        else if (total >= 80) letterGrade = 'B';
+        else if (total >= 75) letterGrade = 'C+';
+        else if (total >= 70) letterGrade = 'C';
+        else if (total >= 65) letterGrade = 'D+';
+        else if (total >= 60) letterGrade = 'D';
+        else letterGrade = 'F';
+      }
+
+      // Format project grades by project
+      const projectGradesList = projects.map(project => {
+        const submission = submissions.find(s => s.project.id === project.id);
+        return {
+          projectId: project.id,
+          title: project.title,
+          grade: submission?.grade ?? null,
+          status: submission?.status ?? 'NOT_SUBMITTED'
+        };
+      });
+
+      // Format quiz grades by quiz
+      const quizGrades = studentQuizAttempts.map(attempt => ({
+        quizId: attempt.quiz.id,
+        title: attempt.quiz.title,
+        score: attempt.score,
+        maxScore: attempt.quiz.maxScore || 100,
+        percentage: Math.round((attempt.score / (attempt.quiz.maxScore || 100)) * 1000) / 10
+      }));
 
       return {
         id: enrollment.user.id,
+        userId: enrollment.userId,
         name: enrollment.user.name || 'Unknown Student',
         email: enrollment.user.email,
-        project1: project1Grade,
-        project2: project2Grade,
-        quiz1: quiz1Grade,
+        projects: projectGradesList,
+        quizzes: quizGrades,
+        projectAverage: hasProjects ? Math.round(projectAverage * 10) / 10 : null,
+        quizAverage: hasQuizzes ? Math.round(quizAverage * 10) / 10 : null,
         total: Math.round(total * 10) / 10, // Round to 1 decimal place
         grade: letterGrade,
+        lastActive: enrollment.updatedAt.toISOString()
       };
     });
 

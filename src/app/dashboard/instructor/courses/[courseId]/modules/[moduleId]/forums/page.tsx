@@ -62,14 +62,32 @@ export default function ModuleForumsPage({ params: paramsPromise }: ModuleForums
         const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/forums`);
         
         if (!response.ok) {
-          throw new Error('Failed to load forums');
+          const errorData = await response.json().catch(() => ({ error: 'Failed to load forums' }));
+          console.error('API error:', errorData.error || 'Failed to load forums');
+          throw new Error(errorData.error || 'Failed to load forums');
+        }
+
+        const data = await response.json();
+        
+        // Handle the API response structure
+        if (Array.isArray(data)) {
+          // If we get an empty array, set empty state
+          setForums(data);
+        } else if (data.data) {
+          // If we get a wrapped response, use the data
+          setForums(data.data);
+        } else {
+          // If we get something unexpected, set empty state
+          setForums([]);
         }
         
-        const data = await response.json();
-        setForums(data);
-      } catch (err) {
-        console.error('Error loading forums:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load forums');
+        // Reset error state if we successfully loaded data
+        setError(null);
+      } catch (error) {
+        console.error('Error loading forums:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load forums';
+        setError(errorMessage);
+        setForums([]);
       } finally {
         setLoading(false);
       }
