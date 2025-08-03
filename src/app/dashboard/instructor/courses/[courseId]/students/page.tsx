@@ -83,19 +83,30 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
         const response = await fetch(`/api/instructor/courses/${params.courseId}/students`);
         
         if (!response.ok) {
-          throw new Error('Failed to fetch students');
+          const errorText = await response.text();
+          console.error('API Error:', response.status, errorText);
+          throw new Error(`Failed to fetch students: ${response.status}`);
         }
         
         const data = await response.json();
+        console.log('Students API Response:', data);
+        
+        // Handle different response structures
+        const studentsArray = Array.isArray(data) ? data : (data.students || []);
+        
+        if (!Array.isArray(studentsArray)) {
+          console.error('Invalid data structure:', data);
+          throw new Error('Invalid response format');
+        }
         
         // Transform the data to match our interface
-        const transformedStudents: StudentData[] = data.map((enrollment: any) => ({
+        const transformedStudents: StudentData[] = studentsArray.map((enrollment: any) => ({
           id: enrollment.user.id,
           name: enrollment.user.name || 'Unknown Student',
           email: enrollment.user.email,
           avatarUrl: enrollment.user.image,
-          status: 'active', // All enrolled students are considered active
-          lastActive: enrollment.user.lastLoginAt || enrollment.enrolledAt,
+          status: enrollment.status || 'active',
+          lastActive: enrollment.user.createdAt || enrollment.enrolledAt,
           progress: enrollment.progress || 0,
           completedLessons: enrollment.completedLessons || 0,
           totalLessons: enrollment.totalLessons || 0,

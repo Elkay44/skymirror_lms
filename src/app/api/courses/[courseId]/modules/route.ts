@@ -39,13 +39,10 @@ export async function GET(
     console.log(`🔎 Looking up course: ${courseId}...`);
     let course;
     try {
-      // Try to find by ID first, then by publicId
+      // Find course by ID
       course = await prisma.course.findFirst({
         where: {
-          OR: [
-            { id: courseId },
-            { publicId: courseId }
-          ]
+          id: courseId
         },
         include: {
           instructor: {
@@ -236,7 +233,7 @@ export async function POST(
               }
             },
             { 
-              publicId: courseId,
+              id: courseId,
               instructor: {
                 id: Number(userId)
               }
@@ -246,8 +243,7 @@ export async function POST(
         select: {
           id: true,
           title: true,
-          instructorId: true,
-          publicId: true
+          instructorId: true
         }
       });
       console.log('✅ Course lookup result:', course ? 'Found' : 'Not found or not authorized');

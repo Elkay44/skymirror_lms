@@ -47,7 +47,7 @@ export async function GET(
             name: true,
             email: true,
             image: true,
-            lastLoginAt: true,
+            createdAt: true,
           },
         },
       },
