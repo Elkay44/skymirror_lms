@@ -2,22 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
   Users,
-  BookOpen,
-  Calendar,
   Clock,
-  AlertCircle,
-  CheckCircle,
-  BarChart3,
   ChevronRight,
   Search,
   Filter,
-  Target,
   MapPin,
   Calendar as CalendarIcon
 } from 'lucide-react';
@@ -111,7 +105,7 @@ const mockMentees: Mentee[] = [
 
 export default function MenteesPage() {
   const { data: session } = useSession();
-  const router = useRouter();
+
   const [mentees, setMentees] = useState<Mentee[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

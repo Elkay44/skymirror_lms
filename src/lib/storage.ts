@@ -16,28 +16,7 @@ interface HetznerSignedUrlResponse {
 const HETZNER_API_URL = process.env.HETZNER_API_URL || 'https://api.hetzner.example.com';
 const HETZNER_API_KEY = process.env.HETZNER_API_KEY;
 
-// Define response interfaces
-interface UploadResponse {
-  url: string;
-  path: string;
-}
 
-interface SignedUrlResponse {
-  signedUrl: string;
-  path: string;
-}
-
-interface HetznerUploadResponse {
-  url: string;
-  path: string;
-  [key: string]: unknown;
-}
-
-interface HetznerSignedUrlResponse {
-  signedUrl: string;
-  path: string;
-  [key: string]: unknown;
-}
 
 type UploadResult = {
   url: string;

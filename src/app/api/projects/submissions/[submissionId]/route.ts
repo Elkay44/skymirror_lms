@@ -1,12 +1,12 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 // GET /api/projects/submissions/[submissionId] - Get a specific submission
 export async function GET(
-  req: NextRequest, 
+  _req: Request, 
   { params }: { params: Promise<{ submissionId: string }> }
 ) {
   try {

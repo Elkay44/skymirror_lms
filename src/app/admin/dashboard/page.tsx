@@ -1,7 +1,6 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import dynamic from 'next/dynamic';
 
 // Dynamically import client-side components
@@ -16,7 +15,6 @@ import {
   BarChart2,
   Clock,
   ArrowUpRight,
-  ArrowDownRight,
   type LucideIcon
 } from 'lucide-react';
 
@@ -28,17 +26,10 @@ type StatCardProps = {
 };
 
 type ActivityItemProps = {
-  id: number;
   user: string;
   action: string;
   time: string;
   icon: LucideIcon;
-};
-
-type QuickActionProps = {
-  title: string;
-  icon: LucideIcon;
-  href: string;
 };
 
 export default function AdminDashboardPage() {
@@ -72,57 +63,30 @@ export default function AdminDashboardPage() {
 
   const recentActivities: ActivityItemProps[] = [
     {
-      id: 1,
       user: 'John Doe',
       action: 'created a new course',
       time: '2 minutes ago',
       icon: ArrowUpRight,
     },
     {
-      id: 2,
       user: 'Jane Smith',
       action: 'completed a lesson',
       time: '10 minutes ago',
       icon: ArrowUpRight,
     },
     {
-      id: 3,
       user: 'Bob Johnson',
       action: 'left a review',
       time: '1 hour ago',
       icon: ArrowUpRight,
     },
     {
-      id: 4,
       user: 'Alice Williams',
       action: 'started a new course',
       time: '2 hours ago',
       icon: ArrowUpRight,
     },
   ];
-
-  const quickActions: QuickActionProps[] = [
-    {
-      title: 'Create New Course',
-      icon: BookOpen,
-      href: '/admin/courses/new',
-    },
-    {
-      title: 'Manage Users',
-      icon: Users,
-      href: '/admin/users',
-    },
-    {
-      title: 'View Reports',
-      icon: BarChart2,
-      href: '/admin/analytics',
-    },
-    {
-      title: 'Site Settings',
-      icon: Clock,
-      href: '/admin/settings',
-    },
-  ] as const;
 
   const StatCard = ({ title, value, icon: Icon, change }: StatCardProps) => {
     return (
@@ -141,7 +105,7 @@ export default function AdminDashboardPage() {
     );
   };
 
-  const ActivityItem = ({ id, user, action, time, icon: Icon }: ActivityItemProps) => (
+  const ActivityItem = ({ user, action, time, icon: Icon }: ActivityItemProps) => (
     <div className="flex items-center">
       <div className="flex-shrink-0">
         <Icon className="h-4 w-4 text-muted-foreground" />
@@ -153,17 +117,6 @@ export default function AdminDashboardPage() {
         <p className="text-xs text-muted-foreground">{time}</p>
       </div>
     </div>
-  );
-
-  const QuickAction = ({ title, icon: Icon, href }: QuickActionProps) => (
-    <Button 
-      variant="outline" 
-      className="flex flex-col items-center justify-center h-24 w-full"
-      onClick={() => window.location.href = href}
-    >
-      <Icon className="h-6 w-6 mb-2" />
-      <span className="text-sm">{title}</span>
-    </Button>
   );
 
   return (
@@ -191,7 +144,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Recent Activities */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-1">
             <Card>
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
@@ -199,35 +152,14 @@ export default function AdminDashboardPage() {
               <CardContent>
                 <div className="space-y-4">
                   {recentActivities.map((activity) => (
-                    <div key={activity.id}>
+                    <div key={activity.user}>
                       <ActivityItem 
-                        id={activity.id}
                         user={activity.user}
                         action={activity.action}
                         time={activity.time}
                         icon={activity.icon}
                       />
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  {quickActions.map((action, i) => (
-                    <Button
-                      key={i}
-                      variant="outline"
-                      className="h-24 flex flex-col items-center justify-center"
-                      onClick={() => window.location.href = action.href}
-                    >
-                      <action.icon className="h-6 w-6 mb-2" />
-                      <span className="text-sm">{action.title}</span>
-                    </Button>
                   ))}
                 </div>
               </CardContent>

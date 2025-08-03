@@ -162,7 +162,6 @@ export async function POST(req: Request) {
     
     const isPublished = formData.get('isPublished') === 'true' && !isDraft;
     const isPrivate = formData.get('isPrivate') === 'true';
-    const imageFile = formData.get('image') as File | null;
     
     // Set status based on isDraft and isPublished
     const status = isPublished ? 'PUBLISHED' : 'DRAFT';
@@ -182,12 +181,7 @@ export async function POST(req: Request) {
     });
 
     // Handle image upload (placeholder for actual implementation)
-    let imageUrl = '/images/course-placeholder.jpg';
     // TODO: Implement actual image upload to your storage service
-    // if (imageFile) {
-    //   imageUrl = await uploadImageToStorage(imageFile);
-    // }
-
 
     // Prepare course data
     const courseData = {

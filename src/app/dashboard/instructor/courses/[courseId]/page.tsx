@@ -1,70 +1,20 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'sonner';
+
+
 import {
   BookOpen,
   Users,
   FileText,
   Edit,
-  BarChart2,
   Eye,
-  Clock,
-  Lock,
-  MessageSquare,
-  Check,
-  AlertTriangle,
-  PlusIcon,
-  ArrowLeft,
-  RefreshCw,
-  User as UserIcon,
-  ChevronDown,
-  ChevronUp,
-  Loader2,
-  BookOpenCheck,
-  BarChart3,
-  Users2,
-  FileQuestion,
-  GraduationCap,
   Target,
-  ExternalLink,
-  BookMarked,
-  Info,
-  AlertCircle,
-  Search,
-  Star,
-  Award,
-  Trophy,
-  BarChart4,
-  TrendingUp,
-  Activity,
-  CalendarDays,
-  Clock3,
-  FileBarChart2,
-  Lightbulb,
-  Sparkles,
-  Rocket,
-  Zap,
-  BadgeCheck,
-  ShieldCheck,
-  BarChartHorizontal,
-  LineChart,
-  PieChart,
-  Gauge,
   GitBranch,
   ChevronRight,
-  Target as TargetIcon,
-  TrendingUp as TrendingUpIcon,
-  Users as UsersIcon,
-  Book as BookIcon,
-  CheckCircle2,
-  Clock4,
-  GraduationCap as GraduationCapIcon,
-  Award as AwardIcon,
-  Trophy as TrophyIcon
+  Award
 } from 'lucide-react';
 
 // Components
@@ -127,8 +77,8 @@ type TabType = 'overview' | 'modules' | 'students' | 'analytics' | 'settings';
 
 export default function EnhancedCourseDashboard() {
   const params = useParams();
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+
+  const [_activeTab, _setActiveTab] = useState<TabType>('overview');
   const [isPublishing, setIsPublishing] = useState(false);
   const [course, setCourse] = useState(mockCourseData);
   const [isLoading, setIsLoading] = useState(true);

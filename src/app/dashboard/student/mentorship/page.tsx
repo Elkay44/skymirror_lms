@@ -16,7 +16,7 @@ import { Loader2, MessageSquare, Clock, X, Star, Search, CalendarIcon } from "lu
 import { toast } from 'sonner'
 import { fetchMentors, requestMentorship, cancelMentorshipRequest, RequestMentorshipParams, fetchMyMentorships } from '@/services/mentorship'
 
-import { Mentor as SharedMentor, MentorshipRequest } from '@/types/mentorship'
+import { MentorshipRequest } from '@/types/mentorship'
 import { Mentor } from '@/types/mentorship'
 
 export type TabValue = 'find' | 'my' | 'requests'

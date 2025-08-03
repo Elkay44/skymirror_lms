@@ -59,7 +59,7 @@ export default function MentorProfilePage() {
   const [mentor, setMentor] = useState<MentorProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [requestingMentorship, setRequestingMentorship] = useState(false);
+
   const [mentorshipNote, setMentorshipNote] = useState('');
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -161,7 +161,6 @@ export default function MentorProfilePage() {
       setError(err.message || 'Failed to request mentorship');
     } finally {
       setSubmitting(false);
-      setRequestingMentorship(false);
     }
   };
   

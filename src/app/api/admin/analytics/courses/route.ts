@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -14,7 +14,7 @@ const analyticsQuerySchema = z.object({
 export const dynamic = 'force-dynamic';
 
 // GET /api/admin/analytics/courses - Get analytics data for courses
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
     // Check if user is authenticated and is an admin
     const session = await getServerSession(authOptions);

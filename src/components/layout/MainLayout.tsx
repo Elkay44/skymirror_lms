@@ -3,7 +3,7 @@ import Navbar from './Navbar';
 import { useEffect } from 'react';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   useEffect(() => {
     if (status === 'unauthenticated') {

@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
@@ -26,7 +26,7 @@ interface AnalyticsData {
 }
 
 // GET /api/admin/analytics - Get basic analytics data for admin dashboard
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);

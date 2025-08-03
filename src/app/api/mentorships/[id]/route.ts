@@ -9,7 +9,7 @@ import prisma from '@/lib/prisma';
  * Get details of a specific mentorship
  */
 export async function GET(
-  req: Request, 
+  _req: Request, 
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

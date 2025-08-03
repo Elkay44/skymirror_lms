@@ -1,0 +1,30 @@
+
+> skymirror-lms@0.1.0 build
+> next build
+
+ ⚠ Warning: Found multiple lockfiles. Selecting /Users/lukman.ibrahim/package-lock.json.
+   Consider removing the lockfiles at:
+   * /Users/lukman.ibrahim/Desktop/skymirror_lms-clone/package-lock.json
+
+   ▲ Next.js 15.4.5
+   - Environments: .env.local, .env
+   - Experiments (use with caution):
+     · serverActions
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 9.0s
+   Skipping linting
+   Checking validity of types ...
+Failed to compile.
+
+./src/app/dashboard/analytics/page.tsx:7:67
+Type error: 'Target' is declared but its value is never read.
+
+[0m [90m  5 |[39m [36mimport[39m { useRouter } [36mfrom[39m [32m'next/navigation'[39m[33m;[39m
+ [90m  6 |[39m [36mimport[39m [33mDashboardLayout[39m [36mfrom[39m [32m'@/components/layout/DashboardLayout'[39m[33m;[39m
+[31m[1m>[22m[39m[90m  7 |[39m [36mimport[39m { [33mClock[39m[33m,[39m [33mAward[39m[33m,[39m [33mBookOpen[39m[33m,[39m [33mBarChart2[39m[33m,[39m [33mCalendar[39m[33m,[39m [33mTrendingUp[39m[33m,[39m [33mTarget[39m[33m,[39m [33mCheckCircle[39m[33m,[39m [33mZap[39m } [36mfrom[39m [32m'lucide-react'[39m[33m;[39m
+ [90m    |[39m                                                                   [31m[1m^[22m[39m
+ [90m  8 |[39m
+ [90m  9 |[39m [36minterface[39m [33mCourseStats[39m {
+ [90m 10 |[39m   courseId[33m:[39m string[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null

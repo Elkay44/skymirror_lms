@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from 'react';
+
 import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-import { Cog, Bell, Shield, User, Key, CreditCard, Layout, Fingerprint, Home, Users, Calendar } from 'lucide-react';
+import { Bell, Shield, User, Key, CreditCard, Layout, Fingerprint, Home, Users, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
 interface SettingsLayoutProps {

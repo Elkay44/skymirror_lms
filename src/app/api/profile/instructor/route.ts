@@ -56,11 +56,6 @@ export async function GET() {
       distinct: ['userId'],
     });
     
-    // Calculate average course rating
-    const courses = await prisma.course.findMany({
-      where: { instructorId: user.id },
-      select: { id: true },
-    });
     
     // Default response with counts
     const responseData = {

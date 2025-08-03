@@ -46,7 +46,7 @@ export default function LearningJourneyCard({
           
           {/* Milestones */}
           <div className="space-y-8">
-            {milestones.map((milestone, index) => {
+            {milestones.map(milestone => {
               let statusColor = '';
               let iconContent = <></>;
               

@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -17,7 +17,7 @@ const courseQuerySchema = z.object({
 });
 
 // GET /api/admin/courses - Get courses with basic filtering and pagination
-export async function GET(req: NextRequest) {
+export async function GET(request: Request) {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Parse and validate query parameters
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const queryParams = Object.fromEntries(searchParams.entries());
     const validation = courseQuerySchema.safeParse(queryParams);
 
@@ -57,8 +57,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const { page, limit, search, status, sortBy, sortOrder } = validation.data;
-    const skip = (page - 1) * limit;
+    const { page, limit } = validation.data;
+
 
     // In a real implementation, this would fetch courses from the database
     // For now, we'll return an empty array since we don't have a Course model
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/admin/courses - Create a new course
-export async function POST(req: NextRequest) {
+export async function POST() {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);

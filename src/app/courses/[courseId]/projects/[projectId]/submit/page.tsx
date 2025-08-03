@@ -51,7 +51,7 @@ export default function ProjectSubmitPage() {
         return;
       }
       const formData = new FormData();
-      Array.from(files).forEach((file, idx) => {
+      Array.from(files).forEach((file, _idx) => {
         formData.append("files", file);
       });
       formData.append("description", description);

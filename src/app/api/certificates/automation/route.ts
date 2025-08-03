@@ -3,7 +3,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
 
 // Simplified certificate data interface
 interface CertificateData {
@@ -33,7 +32,7 @@ export async function POST(req: Request) {
     }
 
     // Parse request body
-    const { userId, courseTitle, completedAt } = await req.json() as CertificateData;
+    const { userId, courseTitle } = await req.json() as CertificateData;
 
     if (!userId || !courseTitle) {
       return NextResponse.json(

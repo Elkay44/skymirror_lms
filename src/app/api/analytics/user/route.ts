@@ -1,12 +1,12 @@
 /* eslint-disable */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 // GET /api/analytics/user - Get user analytics
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/analytics/user - Get filtered user analytics
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Parse request body for filters
-    const { startDate, endDate, category } = await req.json();
+    const { startDate, endDate, category } = await request.json();
 
     // Get user with achievements
     const user = await prisma.user.findUnique({

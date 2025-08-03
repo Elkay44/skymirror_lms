@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
@@ -52,22 +52,6 @@ interface CourseDetails {
   enrollmentStatus: string | undefined;
 }
 
-interface TransformedLesson extends Omit<Lesson, 'duration'> {
-  duration: number | null;
-  formattedDuration: string;
-}
-
-interface CourseDetails {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  instructor: Instructor;
-  modules: Module[];
-  isEnrolled: boolean;
-  enrollmentStatus: string | undefined;
-}
-
 interface CourseWithInstructor {
   id: string;
   title: string;
@@ -94,46 +78,8 @@ interface CourseWithInstructor {
   }>;
 }
 
-interface CourseWithDetails extends CourseWithInstructor {
-  modules: Array<{
-    id: string;
-    title: string;
-    description: string | null;
-    order: number;
-    lessons: Array<{
-      id: string;
-      title: string;
-      description: string | null;
-      content: string | null;
-      videoUrl: string | null;
-      duration: number | null;
-      order: number;
-      moduleId: string;
-      completed: boolean;
-      completedAt: Date | null;
-    }>;
-  }>;
-  enrollments?: Array<{
-    id: string;
-    status: string;
-    enrolledAt: Date;
-    completedAt: Date | null;
-  }>;
-  approvalHistory?: Array<{
-    id: string;
-    action: string;
-    comments?: string | null;
-    createdAt: Date;
-    reviewer?: {
-      id: number;
-      name: string | null;
-      image?: string | null;
-    } | null;
-  }>;
-}
-
 export async function GET(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ courseId: string }> }
 ): Promise<Response> {
   const { courseId } = await params;
@@ -247,7 +193,7 @@ export async function GET(
 
 // PATCH /api/courses/[courseId] - Update a specific course
 export async function PATCH(
-  request: NextRequest, 
+  request: Request, 
   { params }: { params: Promise<{ courseId: string }> }
 ): Promise<Response> {
   const { courseId } = await params;
@@ -465,7 +411,7 @@ export async function PATCH(
 
 // DELETE /api/courses/[courseId] - Delete a specific course
 export async function DELETE(
-  request: NextRequest, 
+  _request: Request, 
   { params }: { params: Promise<{ courseId: string }> }
 ): Promise<Response> {
   const { courseId } = await params;

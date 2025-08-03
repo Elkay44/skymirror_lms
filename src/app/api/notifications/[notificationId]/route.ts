@@ -1,12 +1,12 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // DELETE endpoint to remove a notification
 export async function DELETE(
-  req: NextRequest,
+  _req: Request,
   { params }: { params: Promise<{ notificationId: string }> }
 ) {
   try {

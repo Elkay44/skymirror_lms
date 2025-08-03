@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 
 export interface ModuleWithLessons {
   id: string;

@@ -9,7 +9,6 @@ import {
   XCircle,
   AlertCircle,
   MessageSquare,
-  BarChart3,
   Award,
   ChevronRight,
   ChevronDown,

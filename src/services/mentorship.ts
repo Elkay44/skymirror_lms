@@ -1,6 +1,4 @@
 import { MentorshipRequest } from '@/types/mentorship';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 
 export interface Mentor {
   id: string;

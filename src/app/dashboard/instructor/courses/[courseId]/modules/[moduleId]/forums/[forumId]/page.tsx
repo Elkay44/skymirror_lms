@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast"; // Import from the correct path
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Define types for the component
 interface ForumPost {
@@ -31,14 +31,6 @@ interface ForumPost {
   _count: {
     comments: number;
     likes: number;
-  };
-}
-
-interface ForumPostsPageProps {
-  params: {
-    courseId: string;
-    moduleId: string;
-    forumId: string;
   };
 }
 

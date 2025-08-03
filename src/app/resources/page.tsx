@@ -45,7 +45,7 @@ const resourceTypes = [
 ];
 
 export default function ResourcesPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [resources, setResources] = useState<Resource[]>([]);

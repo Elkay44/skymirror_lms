@@ -1,4 +1,4 @@
-import { Module, CreateModuleRequest, UpdateModuleRequest, ModuleListResponse } from '@/types/module';
+import { Module, CreateModuleRequest, UpdateModuleRequest } from '@/types/module';
 
 const API_BASE_URL = '/api/courses';
 

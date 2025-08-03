@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { GripVertical, MoreHorizontal, BookOpen, Clock, Lock, CheckCircle2, Edit, Trash2, Plus, Users, Target, FileText, Video, Link, Play, File, Upload, ChevronDown, ChevronRight, Book, BookText } from 'lucide-react';
+import { GripVertical, MoreHorizontal, BookOpen, Clock, Lock, CheckCircle2, Edit, Trash2, Plus, Users, Target, FileText, Play, File, ChevronDown, ChevronRight, Book, BookText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ModuleBase as Module, ModuleStatus, Lesson, ModulePage, LearningObjective } from '@/types/module';
@@ -93,11 +93,6 @@ export function ModuleCard({
     } finally {
       setIsLoading(false);
     }
-  };
-  
-  // Navigate to content item
-  const handleContentClick = (type: 'lesson' | 'page', id: string) => {
-    router.push(`/dashboard/instructor/courses/${courseId}/modules/${module.id}/${type}/${id}`);
   };
   
   // Toggle expanded state

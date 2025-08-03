@@ -17,11 +17,7 @@ interface AchievementRow {
   description: string;
 }
 
-interface UserAchievementRow {
-  userId: string;
-  achievementId: string;
-  points: number;
-}
+
 
 /**
  * Test database queries and type handling

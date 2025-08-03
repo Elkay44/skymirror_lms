@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { CourseFormProvider } from '@/context/CourseFormContext';
 import { CourseForm } from '@/components/course/CourseForm';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { Skeleton } from '@/components/ui/skeleton';
+
 
 export default function CreateCoursePage() {
   const router = useRouter();
@@ -31,19 +31,4 @@ export default function CreateCoursePage() {
   );
 }
 
-// Skeleton loading component for better UX
-function CourseFormSkeleton() {
-  return (
-    <div className="space-y-8">
-      <Skeleton className="h-12 w-64" />
-      <div className="space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-24 w-full" />
-      </div>
-      <div className="flex justify-end space-x-4">
-        <Skeleton className="h-10 w-24" />
-        <Skeleton className="h-10 w-24" />
-      </div>
-    </div>
-  );
-}
+

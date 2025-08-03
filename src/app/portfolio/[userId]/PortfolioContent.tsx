@@ -1,17 +1,6 @@
 /* eslint-disable */
 
-import { ExternalLink, Award, Tag, Clock, BookOpen, Mail, Linkedin, Globe } from 'lucide-react';
-import { Github } from 'lucide-react';
-import Image from 'next/image';
 
-interface PortfolioProject {
-  id: string;
-  title: string;
-  description: string;
-  courseTitle: string;
-  completedAt: string;
-  skills: string[];
-}
 
 interface UserProfile {
   id: string;

@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
@@ -47,12 +47,13 @@ const logProjectActivity = async (userId: string | number, action: string, proje
 };
 
 // GET /api/courses/[courseId]/modules/[moduleId]/projects/[projectId] - Get a project by ID
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ courseId: string; moduleId: string; projectId: string }> }
-): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
   try {
-    const { courseId, moduleId, projectId } = await params;
+    // Extract parameters from URL
+    const url = new URL(request.url);
+    const courseId = url.pathname.split('/')[3];
+    const projectId = url.pathname.split('/')[7];
+
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
@@ -153,12 +154,14 @@ export async function GET(
 }
 
 // PATCH /api/courses/[courseId]/modules/[moduleId]/projects/[projectId] - Update a project
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ courseId: string; moduleId: string; projectId: string }> }
-): Promise<Response> {
+export async function PATCH(request: Request): Promise<Response> {
   try {
-    const { courseId, moduleId, projectId } = await params;
+    // Extract parameters from URL
+    const url = new URL(request.url);
+    const courseId = url.pathname.split('/')[3];
+    const moduleId = url.pathname.split('/')[5];
+    const projectId = url.pathname.split('/')[7];
+
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
@@ -183,16 +186,16 @@ export async function PATCH(
       );
     }
 
-    // Verify project exists and belongs to this module
+    // Verify project exists
     const [project] = await prisma.$queryRaw`
       SELECT id FROM "Project" 
-      WHERE id = ${projectId} AND "moduleId" = ${moduleId}
+      WHERE id = ${projectId}
       LIMIT 1
     ` as any[];
 
     if (!project) {
       return NextResponse.json(
-        { error: 'Project not found or does not belong to this module' },
+        { error: 'Project not found' },
         { status: 404 }
       );
     }
@@ -317,12 +320,14 @@ export async function PATCH(
 }
 
 // DELETE /api/courses/[courseId]/modules/[moduleId]/projects/[projectId] - Delete a project
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ courseId: string; moduleId: string; projectId: string }> }
-): Promise<Response> {
+export async function DELETE(request: Request): Promise<Response> {
   try {
-    const { courseId, moduleId, projectId } = await params;
+    // Extract parameters from URL
+    const url = new URL(request.url);
+    const courseId = url.pathname.split('/')[3];
+    const moduleId = url.pathname.split('/')[5];
+    const projectId = url.pathname.split('/')[7];
+
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 

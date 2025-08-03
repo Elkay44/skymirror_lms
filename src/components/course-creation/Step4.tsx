@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Plus, X } from 'lucide-react';
 import { CourseFormData } from '@/types/course';
 
@@ -9,7 +8,6 @@ interface Step4Props {
   onArrayFieldChange: (field: keyof CourseFormData, index: number, value: string) => void;
   onAddArrayFieldItem: (field: keyof CourseFormData) => void;
   onRemoveArrayFieldItem: (field: keyof CourseFormData, index: number) => void;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
 }
 
 export function Step4({
@@ -17,7 +15,6 @@ export function Step4({
   onArrayFieldChange,
   onAddArrayFieldItem,
   onRemoveArrayFieldItem,
-  onChange,
 }: Step4Props) {
   return (
     <div className="space-y-8">

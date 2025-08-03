@@ -1,5 +1,5 @@
 import { PageLayout } from '../_components/PageLayout';
-import { GitCommit, GitBranch, GitPullRequest, Code, User, Clock, Search, Filter, Download } from 'lucide-react';
+import { GitCommit, GitBranch, GitPullRequest, Code, User, Search, Filter, Download } from 'lucide-react';
 
 export default function CommitsPage() {
   // Mock data - replace with real data

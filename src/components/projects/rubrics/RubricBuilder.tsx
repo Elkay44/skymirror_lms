@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Save, PlusCircle, MinusCircle, Copy, Trash2, ChevronDown, ChevronUp, Check, X, AlertTriangle } from 'lucide-react';
+import { Save, PlusCircle, MinusCircle, Copy, Trash2, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 
 export interface RubricCriterion {
   id: string;
@@ -305,9 +305,9 @@ export default function RubricBuilder({
         errors.push(`Criterion #${index + 1} must have at least one level`);
       }
       
-      criterion.levels.forEach((level, levelIndex) => {
+      criterion.levels.forEach((level) => {
         if (!level.name.trim()) {
-          errors.push(`Level #${levelIndex + 1} name in criterion #${index + 1} is required`);
+          errors.push(`Level name in criterion #${index + 1} is required`);
         }
       });
     });
@@ -593,60 +593,52 @@ export default function RubricBuilder({
                               <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 mb-2 px-2">
                                 <div className="col-span-3">Level</div>
                                 <div className="col-span-2">Points</div>
-                                <div className="col-span-6">Description</div>
-                                <div className="col-span-1"></div>
                               </div>
-                              
-                              <div className="space-y-2">
-                                {criterion.levels.map((level, levelIndex) => (
-                                  <div key={level.id} className="grid grid-cols-12 gap-2 items-center bg-white rounded-md p-2 shadow-sm">
-                                    <div className="col-span-3">
-                                      <input
-                                        type="text"
-                                        value={level.name}
-                                        onChange={(e) => updateLevel(criterion.id, level.id, 'name', e.target.value)}
-                                        placeholder="Level name"
-                                        disabled={readOnly}
-                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
-                                      />
-                                    </div>
-                                    
-                                    <div className="col-span-2">
-                                      <input
-                                        type="number"
-                                        value={level.points}
-                                        onChange={(e) => updateLevel(criterion.id, level.id, 'points', e.target.value)}
-                                        min="0"
-                                        max={rubric.maxPoints}
-                                        disabled={readOnly}
-                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
-                                      />
-                                    </div>
-                                    
-                                    <div className="col-span-6">
-                                      <input
-                                        type="text"
-                                        value={level.description}
-                                        onChange={(e) => updateLevel(criterion.id, level.id, 'description', e.target.value)}
-                                        placeholder="Describe the expectations for this level..."
-                                        disabled={readOnly}
-                                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
-                                      />
-                                    </div>
-                                    
-                                    <div className="col-span-1 flex justify-end">
-                                      {!readOnly && criterion.levels.length > 1 && (
-                                        <button
-                                          onClick={() => removeLevel(criterion.id, level.id)}
-                                          className="p-1 text-red-500 hover:bg-red-50 rounded-md"
-                                        >
-                                          <MinusCircle className="h-4 w-4" />
-                                        </button>
-                                      )}
-                                    </div>
+                              {criterion.levels.map((level: RubricLevel) => (
+                                <div key={level.id} className="grid grid-cols-12 gap-2">
+                                  <div className="col-span-3">
+                                    <input
+                                      type="text"
+                                      value={level.name}
+                                      onChange={(e) => updateLevel(criterion.id, level.id, 'name', e.target.value)}
+                                      placeholder="Level name"
+                                      disabled={readOnly}
+                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                                    />
                                   </div>
-                                ))}
-                              </div>
+                                  <div className="col-span-2">
+                                    <input
+                                      type="number"
+                                      value={level.points}
+                                      onChange={(e) => updateLevel(criterion.id, level.id, 'points', e.target.value)}
+                                      min="0"
+                                      max={rubric.maxPoints}
+                                      disabled={readOnly}
+                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                                    />
+                                  </div>
+                                  <div className="col-span-6">
+                                    <input
+                                      type="text"
+                                      value={level.description}
+                                      onChange={(e) => updateLevel(criterion.id, level.id, 'description', e.target.value)}
+                                      placeholder="Describe the expectations for this level..."
+                                      disabled={readOnly}
+                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                                    />
+                                  </div>
+                                  <div className="col-span-1 flex justify-end">
+                                    {!readOnly && criterion.levels.length > 1 && (
+                                      <button
+                                        onClick={() => removeLevel(criterion.id, level.id)}
+                                        className="p-1 text-red-500 hover:bg-red-50 rounded-md"
+                                      >
+                                        <MinusCircle className="h-4 w-4" />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
                         </div>

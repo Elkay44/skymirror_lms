@@ -122,9 +122,11 @@ model Course {
   id               String    @id @default(cuid())
   title            String
   description      String?
+  shortDescription String?
   slug             String    @unique
   image            String?
   isPublished      Boolean   @default(false)
+  isPrivate        Boolean   @default(false)
   price            Float?    @default(0)
   discountPrice    Float?    @default(0)
   level            String?   // BEGINNER, INTERMEDIATE, ADVANCED
@@ -138,6 +140,11 @@ model Course {
   averageRating    Float?    @default(0)
   totalReviews     Int?      @default(0)
   instructorId     String
+  status           String    @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED, PENDING_APPROVAL, etc.
+  featured         Boolean   @default(false)
+  requirements     String?   // JSON array of requirements
+  learningOutcomes String?   // JSON array of learning outcomes
+  targetAudience   String?   // JSON array of target audience
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   

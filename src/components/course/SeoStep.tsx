@@ -20,7 +20,6 @@ export function SeoStep() {
   // Calculate SEO score
   const calculateSeoScore = () => {
     let score = 0;
-    const maxScore = 100;
     
     // Title length (ideal: 50-60 chars)
     if (formData.seoTitle) {

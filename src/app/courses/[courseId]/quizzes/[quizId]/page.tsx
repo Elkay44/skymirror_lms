@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -47,14 +47,6 @@ interface UserAnswer {
   answer: any;
 }
 
-interface QuizPageProps {
-  params: {
-    courseId: string;
-    quizId: string;
-  };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
-
 export default function QuizPage({ 
   params: paramsPromise 
 }: { 
@@ -72,8 +64,7 @@ export default function QuizPage({
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [submitting, setSubmitting] = useState(false);
   
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { data: _session, status } = useSession();
 
   // Load params when component mounts
   useEffect(() => {

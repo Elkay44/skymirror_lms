@@ -1,6 +1,6 @@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Image as ImageIcon, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { CourseFormData } from '@/types/course';
 
 interface Step2Props {

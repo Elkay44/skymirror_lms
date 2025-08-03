@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
-import { Fingerprint, Save, Download, Shield } from 'lucide-react';
+import { Save, Download, Shield } from 'lucide-react';
 
 export default function StudentPrivacySettings() {
   const { data: session } = useSession();
@@ -100,7 +100,7 @@ export default function StudentPrivacySettings() {
         throw new Error('Failed to request data export');
       }
       
-      const data = await response.json();
+      await response.json();
       toast.success('Your data export request has been received. You will be notified when it\'s ready.');
     } catch (error) {
       console.error('Error requesting data export:', error);

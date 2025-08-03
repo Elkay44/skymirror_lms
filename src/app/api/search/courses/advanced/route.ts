@@ -1,16 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
 import { courseSearchSchema } from '@/validations/course';
-import { revalidatePath } from 'next/cache';
 
 // Ensure the API route is always dynamically rendered
 export const dynamic = 'force-dynamic';
 
 // GET /api/search/courses/advanced - Advanced course search with server-side filtering and pagination
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id ? Number(session.user.id) : undefined;
@@ -253,10 +252,6 @@ export async function GET(req: NextRequest) {
         (sum: number, module: { _count: { lessons: number } }) => sum + module._count.lessons, 0
       );
       
-      // Calculate total duration
-      const totalDuration = course.modules.reduce(
-        (sum: number, module: { duration?: number }) => sum + (module.duration || 0), 0
-      );
       
       return {
         id: course.id,

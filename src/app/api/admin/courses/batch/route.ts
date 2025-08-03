@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -14,7 +14,7 @@ const BatchOperations = {
   UNARCHIVE: 'unarchive',
 } as const;
 
-type BatchOperation = typeof BatchOperations[keyof typeof BatchOperations];
+
 
 // Validation schema for batch operations
 const batchOperationSchema = z.object({
@@ -29,10 +29,10 @@ const batchOperationSchema = z.object({
   data: z.record(z.any()).optional(),
 });
 
-type BatchOperationPayload = z.infer<typeof batchOperationSchema>;
+
 
 // POST /api/admin/courses/batch - Perform batch operations on courses
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);

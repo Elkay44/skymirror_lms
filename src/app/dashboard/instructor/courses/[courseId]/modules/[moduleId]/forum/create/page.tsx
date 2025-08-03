@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-import { ArrowLeft, MessageCircle, Tag, Info, Users, Settings } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Tag, Settings } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,13 +13,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
+
 
 export default function CreateForumPage() {
   const router = useRouter();
@@ -107,7 +101,7 @@ export default function CreateForumPage() {
         isActive: true // Add required field for the backend
       };
       
-      const response = await axios.post(
+      await axios.post(
         `/api/courses/${courseId}/modules/${moduleId}/forums`,
         apiData
       );

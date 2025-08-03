@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { z } from 'zod';
-import { withErrorHandling, CommonErrors } from '@/lib/api-response';
+import { withErrorHandling } from '@/lib/api-response';
 
 // Define schema for search request parameters
 const searchQuerySchema = z.object({
@@ -29,7 +29,7 @@ export const dynamic = 'force-dynamic';
 /**
  * GET /api/search/courses - Advanced search API for courses with pagination and filtering
  */
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   return withErrorHandling(async () => {
     // Get current user session
     const session = await getServerSession(authOptions);
@@ -282,7 +282,7 @@ export async function GET(req: NextRequest) {
 /**
  * POST /api/search/courses - Process more complex search queries with body data
  */
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   return withErrorHandling(async () => {
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id ? Number(session.user.id) : undefined;

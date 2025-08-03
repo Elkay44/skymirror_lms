@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -15,7 +15,7 @@ const reorderBlocksSchema = z.object({
 });
 
 export async function PUT(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ courseId: string; moduleId: string; pageId: string }> }
 ): Promise<Response> {
   try {
@@ -49,7 +49,7 @@ export async function PUT(
         try {
           // Use a simpler approach to update each block
           // This avoids potential issues with table names or model references
-          const updated = await prisma.$executeRawUnsafe(
+          await prisma.$executeRawUnsafe(
             `UPDATE "ContentBlock" SET "order" = ${order} WHERE id = '${id}' AND "modulePageId" = '${pageId}'`
           );
           

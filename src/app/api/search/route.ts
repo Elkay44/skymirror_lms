@@ -1,10 +1,9 @@
-import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getFromCache, setCache } from '@/lib/cache';
 import { z } from 'zod';
-import { paginatedResponse, errorResponse, CommonErrors } from '@/lib/api-response';
+import { paginatedResponse, CommonErrors } from '@/lib/api-response';
 import { withErrorHandling } from '@/lib/api-response';
 
 // Search query schema
@@ -36,7 +35,7 @@ const searchQuerySchema = z.object({
   includePrivate: z.enum(['yes', 'no']).default('no'),
 });
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   return withErrorHandling(async () => {
     const session = await getServerSession(authOptions);
     const url = new URL(request.url);
@@ -425,15 +424,6 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    // Structure response object
-    const response = {
-      data: results,
-      meta: {
-        query: q,
-        type,
-        filters
-      }
-    };
     
     // Cache the results for public searches
     if (includePrivate === 'no') {

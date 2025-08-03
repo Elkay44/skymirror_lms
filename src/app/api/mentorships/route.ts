@@ -1,22 +1,16 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import {
-  MentorSession,
-  MentorSessionStatus,
-  FormattedMentorSession,
-  User,
-  MentorProfile,
-  StudentProfile
+  MentorSessionStatus
 } from '@/types/mentorship';
-import { Session } from '@prisma/client';
 
 /**
  * GET /api/mentorships
  * Get all mentor sessions for the current user (either as mentor or mentee)
  */
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
     console.log('Mentorship API GET request received');
     
@@ -244,7 +238,7 @@ export async function GET(req: NextRequest) {
  * POST /api/mentorships
  * Schedule a new mentor session
  */
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -291,7 +285,7 @@ export async function POST(req: NextRequest) {
 
     if (!studentProfile) {
       // Create a default student profile if it doesn't exist
-      const newProfile = await prisma.studentProfile.create({
+      await prisma.studentProfile.create({
         data: {
           userId: session.user.id,
           bio: 'Looking to learn and grow',

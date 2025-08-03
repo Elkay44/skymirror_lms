@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { CourseFilters, CourseFiltersType } from '@/components/courses/CourseFilters';
 import { CourseCard } from '@/components/courses/CourseCard';
 import { Course } from '@/types/course.types';
-import { useSession, getSession } from 'next-auth/react';
+
 import { toast } from 'sonner';
 
 export default function CoursesPage() {

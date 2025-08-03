@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Award, Search, Filter, Plus, ChevronDown, ChevronUp, Star, Eye, Clock, Tag, Trash2, User } from 'lucide-react';
+import { Award, Search, Filter, Plus, ChevronDown, ChevronUp, Star, Eye, User } from 'lucide-react';
 import AdminLayout from '@/components/layouts/AdminLayout';
 import ShowcaseProjectCard from '@/components/showcase/ShowcaseProjectCard';
 import ShowcaseProjectModal from '@/components/showcase/ShowcaseProjectModal';
@@ -153,7 +153,7 @@ export default function ShowcaseAdminPage() {
     }
   };
   
-  const handleModalSave = async (project: any) => {
+  const handleModalSave = async () => {
     try {
       setModalOpen(false);
       await fetchShowcaseData(); // Refresh data after save

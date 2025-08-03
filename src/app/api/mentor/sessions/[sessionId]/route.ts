@@ -1,12 +1,12 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET: Fetch a specific session by ID
 export async function GET(
-  req: NextRequest,
+  _req: Request,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
@@ -82,7 +82,7 @@ export async function GET(
 
 // PATCH: Update a specific session (change status, update details, etc.)
 export async function PATCH(
-  req: NextRequest,
+  req: Request,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
@@ -186,7 +186,7 @@ export async function PATCH(
 
 // DELETE: Cancel/delete a session
 export async function DELETE(
-  req: NextRequest,
+  _req: Request,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {

@@ -4,15 +4,14 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import StudentCourseDashboard from '@/components/dashboard/StudentCourseDashboard';
-import { Course, Module, Lesson as ApiLesson } from '@/types/course';
-import type { DashboardCourse, DashboardModule, DashboardLesson } from '@/components/dashboard/StudentCourseDashboard';
+import type { Course, CourseModule, CourseLesson } from '@/components/dashboard/StudentCourseDashboard';
 import { Button } from '@/components/ui/button';
 import { Loader2, BookOpen } from 'lucide-react';
 
 export default function StudentCoursesPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
-  const [courses, setCourses] = useState<DashboardCourse[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,15 +33,15 @@ export default function StudentCoursesPage() {
         // Transform API course data to match dashboard's expected format
         const transformedCourses = (data.courses || []).map((course: any) => {
           // Create a properly typed DashboardCourse object
-          const transformedCourse: DashboardCourse = {
+          const transformedCourse: Course = {
             ...course,
             startDate: course.startDate ? new Date(course.startDate) : undefined,
             endDate: course.endDate ? new Date(course.endDate) : undefined,
-            modules: (course.modules || []).map((mod: any): DashboardModule => ({
+            modules: (course.modules || []).map((mod: any): CourseModule => ({
               ...mod,
               progress: mod.progress || 0,
               order: mod.order || 0,
-              lessons: (mod.lessons || []).map((lesson: any): DashboardLesson => ({
+              lessons: (mod.lessons || []).map((lesson: any): CourseLesson => ({
                 ...lesson,
                 completed: false,
                 duration: lesson.duration?.toString() || '0',

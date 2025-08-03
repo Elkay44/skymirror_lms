@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useToast } from "@/components/ui/use-toast";
-import { Calendar as CalendarIcon, Plus, Trash2, Edit, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, Trash2, Edit } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -40,7 +40,7 @@ interface LearningGoal {
 export default function LearningGoalsPage() {
   const { toast } = useToast();
   const { data: session } = useSession();
-  const router = useRouter();
+
   const [goals, setGoals] = useState<LearningGoal[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);

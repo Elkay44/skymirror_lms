@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
@@ -10,7 +10,7 @@ function generateApiKey(role: string): string {
 }
 
 // GET: Fetch API keys for the current user
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Authenticate the user
     const session = await getServerSession(authOptions);
@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST: Create a new API key
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
     // Authenticate the user
     const session = await getServerSession(authOptions);
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Parse request body
-    const data = await req.json();
+    const data = await request.json();
     const { name, permissions } = data;
     
     if (!name || !permissions || !Array.isArray(permissions) || permissions.length === 0) {
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
 }
 
 // PUT: Update an API key (e.g., revoke)
-export async function PUT(req: NextRequest) {
+export async function PUT(request: Request) {
   try {
     // Authenticate the user
     const session = await getServerSession(authOptions);
@@ -149,7 +149,7 @@ export async function PUT(req: NextRequest) {
     }
     
     // Parse request body
-    const data = await req.json();
+    const data = await request.json();
     const { id, action } = data;
     
     if (!id || !action) {

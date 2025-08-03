@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -17,7 +17,7 @@ const instructorQuerySchema = z.object({
 });
 
 // GET /api/admin/instructors - Get all instructors with basic filtering and pagination
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -126,7 +126,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/admin/instructors - Register a new instructor
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
 }
 
 // PATCH /api/admin/instructors - Update instructor status or permissions
-export async function PATCH(req: NextRequest) {
+export async function PATCH(req: Request) {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);

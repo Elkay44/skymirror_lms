@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+
 import Link from 'next/link';
 import { MessageSquare, Users, Clock } from 'lucide-react';
 
@@ -29,8 +29,6 @@ export default function ForumCard({
   className = '',
   onClick,
 }: ForumCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
-  
   const formattedDate = lastPostAt 
     ? new Date(lastPostAt).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -42,8 +40,6 @@ export default function ForumCard({
   return (
     <div
       className={`rounded-xl border border-gray-200 bg-white hover:shadow-md overflow-hidden transition-all duration-200 ${className} cursor-pointer`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       onClick={onClick}
     >
       <div className="p-6">

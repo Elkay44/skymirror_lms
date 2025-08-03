@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+
 import { format } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -39,7 +39,7 @@ type MentorshipRequest = {
 };
 
 export default function StudentMentorshipPage() {
-  const { data: session } = useSession();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('find');
   const [isLoading, setIsLoading] = useState(true);
@@ -47,7 +47,7 @@ export default function StudentMentorshipPage() {
   
   // Mock data
   const [mentors, setMentors] = useState<Mentor[]>([]);
-  const [myMentors, setMyMentors] = useState<Mentor[]>([]);
+  const [myMentors] = useState<Mentor[]>([]);
   const [requests, setRequests] = useState<MentorshipRequest[]>([]);
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
   const [requestMessage, setRequestMessage] = useState('');

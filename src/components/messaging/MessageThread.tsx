@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Paperclip, Send, Video, Image, FileText, MoreHorizontal } from 'lucide-react';
-import { Message, MessageThreadProps, Attachment } from './types';
+import { Paperclip, Send, Video as VideoIcon, FileText, MoreHorizontal, Image } from 'lucide-react';
+import { MessageThreadProps, Message } from './types';
 
 export default function MessageThread({
   messages,
@@ -46,7 +46,8 @@ export default function MessageThread({
   const formatMessageTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
   };
-  
+
+
   // Group messages by date
   const groupMessagesByDate = () => {
     const groups: { [date: string]: Message[] } = {};
@@ -102,7 +103,7 @@ export default function MessageThread({
       case 'document':
         return <FileText className="h-4 w-4" />;
       case 'video':
-        return <Video className="h-4 w-4" />;
+        return <VideoIcon className="h-4 w-4" />;
     }
   };
   
@@ -111,7 +112,7 @@ export default function MessageThread({
     if (file.type.startsWith('image/')) {
       return <Image className="h-5 w-5 text-blue-500" />;
     } else if (file.type.startsWith('video/')) {
-      return <Video className="h-5 w-5 text-red-500" />;
+      return <VideoIcon className="h-5 w-5 text-red-500" />;
     } else {
       return <FileText className="h-5 w-5 text-gray-500" />;
     }
@@ -142,7 +143,7 @@ export default function MessageThread({
         </div>
         <div>
           <button className="p-2 text-gray-400 hover:text-gray-500">
-            <Video className="h-5 w-5" />
+            <VideoIcon className="h-5 w-5" />
           </button>
           <button className="p-2 text-gray-400 hover:text-gray-500">
             <MoreHorizontal className="h-5 w-5" />

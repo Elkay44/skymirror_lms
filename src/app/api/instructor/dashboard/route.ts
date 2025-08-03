@@ -155,7 +155,7 @@ export async function GET() {
     const totalStudents = enrollments.length;
 
     // Get course completion statistics
-    const courses = await prisma.course.findMany({
+    await prisma.course.findMany({
       where: {
         instructorId,
       },
@@ -192,18 +192,6 @@ export async function GET() {
     });
 
     // Get recent courses with enrollment data
-    interface Enrollment {
-      id: string;
-      progress: number;
-      userId: string;
-      courseId: string;
-    }
-
-    interface Module {
-      id: string;
-      title: string;
-    }
-
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const recentCourses = await prisma.course.findMany({
       where: {
@@ -272,7 +260,7 @@ export async function GET() {
       },
       overallStats: {
         totalStudents: totalStudents,
-        totalCourses: courses.length,
+        totalCourses: totalCourses,
         totalRevenue: 0,
         newEnrollments: recentEnrollments.length,
         completionRate: recentCourses.reduce((sum: number, course: any) => {

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
-  MessageCircle, Plus, Send, Reply, Heart, Smile, 
+  MessageCircle, Plus, Send, Reply, Heart, 
   MoreHorizontal, Pin, CheckCircle, AlertCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -126,7 +126,7 @@ export function ModuleDiscussions({ courseId, moduleId }: ModuleDiscussionsProps
     }, 1000);
   }, [courseId, moduleId]);
 
-  const loadDiscussionComments = (discussionId: string) => {
+  const loadDiscussionComments = (_discussionId: string) => {
     setIsLoading(true);
     // In a real app, fetch comments from API
     setTimeout(() => {

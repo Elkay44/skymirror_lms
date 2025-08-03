@@ -6,14 +6,14 @@ import { toast } from 'react-hot-toast';
 import axios from 'axios';
 
 // Import error handling utilities
-import { isAxiosError, getErrorMessage } from '@/lib/utils/error-handling';
+import { getErrorMessage } from '@/lib/utils/error-handling';
 import { ArrowLeft, Save, FileText, Video, Clock, Info } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -79,20 +79,20 @@ export default function CreateLessonPage() {
       // Combine content based on the active tab
       let finalContent = lessonData.content;
       
-      // If video tab is active, include video information in the content
       if (activeTab === 'video' && lessonData.videoUrl) {
         // Add video embed marker to the markdown content
         finalContent += `\n\n<!-- video:${lessonData.videoUrl} -->\n`;
       }
       
-      const response = await axios.post(
+      await axios.post(
         `/api/courses/${courseId}/modules/${moduleId}/lessons`,
         {
           ...lessonData,
-          content: finalContent
+          content: finalContent,
+          duration: parseInt(String(lessonData.duration)) || 0,
+          isPublished: false
         }
       );
-      
       toast.success('Lesson created successfully');
       
       // Redirect back to module page

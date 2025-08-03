@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+
 import { Toaster } from '@/components/ui/use-toast';
 import DashboardNavigation from '@/components/dashboard/DashboardNavigation';
 
@@ -14,7 +14,6 @@ export default function MentorsLayout({
 }) {
   const { data: session } = useSession();
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
-  const pathname = usePathname();
   
   // Fetch unread notification count
   useEffect(() => {

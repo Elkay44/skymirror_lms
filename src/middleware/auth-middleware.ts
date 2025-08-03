@@ -7,7 +7,7 @@ import { CommonErrors } from '@/lib/api-response';
 /**
  * Middleware to check if the user is authenticated
  */
-export async function requireAuth(req: NextRequest) {
+export async function requireAuth() {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.id) {
@@ -20,7 +20,7 @@ export async function requireAuth(req: NextRequest) {
 /**
  * Middleware to check if the user is an admin
  */
-export async function requireAdmin(req: NextRequest) {
+export async function requireAdmin() {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.id) {
@@ -42,7 +42,7 @@ export async function requireAdmin(req: NextRequest) {
 /**
  * Middleware to check if the user is an instructor or admin
  */
-export async function requireInstructorOrAdmin(req: NextRequest) {
+export async function requireInstructorOrAdmin() {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.id) {
@@ -64,7 +64,7 @@ export async function requireInstructorOrAdmin(req: NextRequest) {
 /**
  * Middleware to check if the user owns a course or is an admin
  */
-export async function requireCourseOwnerOrAdmin(req: NextRequest, courseId: string) {
+export async function requireCourseOwnerOrAdmin(courseId: string) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.id) {
@@ -101,7 +101,7 @@ export async function requireCourseOwnerOrAdmin(req: NextRequest, courseId: stri
 /**
  * Middleware to check if the user has enrolled in a course or is the owner/admin
  */
-export async function requireCourseAccessOrOwner(req: NextRequest, courseId: string) {
+export async function requireCourseAccessOrOwner(courseId: string) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.id) {

@@ -3,15 +3,6 @@ import { useSession } from 'next-auth/react';
 
 type UserRole = 'STUDENT' | 'INSTRUCTOR' | 'MENTOR';
 
-// Define the session user type with role property
-type SessionUser = {
-  id?: string;
-  name?: string | null;
-  email?: string | null;
-  image?: string | null;
-  role?: UserRole;
-};
-
 type ActionConfig = {
   href: string;
   text: string;

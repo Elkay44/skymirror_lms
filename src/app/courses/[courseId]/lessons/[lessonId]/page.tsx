@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import Image from 'next/image';
+
 import toast from 'react-hot-toast';
 import LessonContent from '@/components/courses/LessonContent';
 
@@ -35,7 +35,7 @@ interface Course {
 
 export default function LessonPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: _session, status } = useSession();
   const { courseId, lessonId } = useParams() as { courseId: string; lessonId: string };
   
   const [course, setCourse] = useState<Course | null>(null);

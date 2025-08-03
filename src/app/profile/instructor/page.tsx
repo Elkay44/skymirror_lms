@@ -5,22 +5,17 @@ import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 import { 
   UserCircle, 
-  BookOpen, 
-  Award, 
-  Users, 
   Edit,
-  Mail,
   Briefcase,
   GraduationCap,
   Star,
   Layers,
   MapPin,
   Calendar,
-  Sparkles,
-  Library,
   BookCheck,
+  School,
   Medal,
-  School
+  Sparkles
 } from 'lucide-react';
 
 import ProfileLayout from '@/components/profile/ProfileLayout';

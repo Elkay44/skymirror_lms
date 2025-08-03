@@ -37,7 +37,7 @@ interface RadioGroupItemProps extends React.InputHTMLAttributes<HTMLInputElement
 }
 
 const RadioGroupItem = React.forwardRef<HTMLDivElement, RadioGroupItemProps>(
-  ({ className, value, children, ...props }, ref) => {
+  ({ className, value, children }, ref) => {
     const { value: groupValue, onValueChange } = React.useContext(RadioGroupContext)
     const checked = groupValue === value
     

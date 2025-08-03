@@ -3,7 +3,6 @@
 import { ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Home, Book, Award, FileText, Users, Settings, LogOut, Menu, X, Video, BarChart } from 'lucide-react';
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';

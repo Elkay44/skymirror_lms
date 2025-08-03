@@ -1,16 +1,14 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, GripVertical, Trash2, Video, FileText, FileQuestion, Code, CheckCircle, X, ChevronUp, ChevronDown, Eye, Save } from 'lucide-react';
+import { Plus, Trash2, Video, FileText, FileQuestion, Code, X, ChevronUp, ChevronDown, Eye, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
@@ -38,9 +36,7 @@ export function CourseBuilder() {
   const [modules, setModules] = useState<Module[]>([]);
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null);
   const [activeContentId, setActiveContentId] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const [title, setTitle] = useState('Untitled Course');
-  const [description, setDescription] = useState('');
 
   // Add a new module
   const addModule = () => {
@@ -201,8 +197,8 @@ export function CourseBuilder() {
         </ScrollArea>
         
         <div className="p-4 border-t">
-          <Button className="w-full" size="lg" disabled={isSaving}>
-            {isSaving ? 'Saving...' : 'Save Course'}
+          <Button className="w-full" size="lg">
+            Save Course
           </Button>
         </div>
       </div>
@@ -274,14 +270,6 @@ const ModuleCard = ({
       setTitle(module.title);
       setIsEditing(false);
     }
-  };
-
-  const contentIcons = {
-    video: <Video className="h-3.5 w-3.5 text-blue-500" />,
-    text: <FileText className="h-3.5 w-3.5 text-green-500" />,
-    quiz: <FileQuestion className="h-3.5 w-3.5 text-purple-500" />,
-    assignment: <Code className="h-3.5 w-3.5 text-yellow-500" />,
-    resource: <FileText className="h-3.5 w-3.5 text-gray-500" />,
   };
 
   return (

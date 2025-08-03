@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useCourseForm } from '@/context/CourseFormContext';
-import { CourseSection, CourseLesson } from '@/types/course';
+import { CourseSection } from '@/types/course';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,10 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, ChevronDown, ChevronUp, Trash2, GripVertical, FileText, Video, Clock, Edit, File, Download, BookOpen, MessageSquare } from 'lucide-react';
+import { PlusCircle, Trash2, FileText, Video, Clock, Download, BookOpen, MessageSquare } from 'lucide-react';
 // Import UI components from barrel export
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui';
-import { cn } from '@/lib/utils';
 
 export function CurriculumStep() {
   const { formData, handleChange } = useCourseForm();

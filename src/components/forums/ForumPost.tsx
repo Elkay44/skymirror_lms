@@ -15,7 +15,6 @@ interface ForumPostProps {
   authorName: string;
   authorImage?: string | null;
   createdAt: string;
-  updatedAt?: string;
   isPinned?: boolean;
   isLocked?: boolean;
   viewCount: number;
@@ -38,7 +37,6 @@ export default function ForumPost({
   authorName,
   authorImage,
   createdAt,
-  updatedAt,
   isPinned = false,
   isLocked = false,
   viewCount,

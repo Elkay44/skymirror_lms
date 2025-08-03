@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+
 import Link from 'next/link';
 import { Clock, Award, FileText, CheckCircle } from 'lucide-react';
 
@@ -37,8 +37,6 @@ export default function QuizCard({
   isCompleted = false,
   className = '',
 }: QuizCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
-  
   // Determine card style based on completion status
   const cardStyle = isPassed
     ? 'border-green-200 bg-green-50'
@@ -52,8 +50,6 @@ export default function QuizCard({
   return (
     <div
       className={`rounded-xl border ${cardStyle} overflow-hidden transition-all duration-200 ${className}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <div className="p-5">
         <div className="flex justify-between items-start">

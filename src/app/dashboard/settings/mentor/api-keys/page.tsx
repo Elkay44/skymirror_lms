@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
-import { Key, PlusCircle, Copy, Eye, EyeOff, Clock, AlertTriangle } from 'lucide-react';
+import { PlusCircle, Copy, Eye, EyeOff, Clock, AlertTriangle } from 'lucide-react';
 
 interface ApiKey {
   id: string;
@@ -23,7 +23,7 @@ export default function MentorApiKeysSettings() {
   const [showKeyId, setShowKeyId] = useState<string | null>(null);
   const [newKeyName, setNewKeyName] = useState('');
   const [newKeyPermissions, setNewKeyPermissions] = useState<string[]>(['read:mentees']);
-  const [isCreatingKey, setIsCreatingKey] = useState(false);
+
   const [newKeyValue, setNewKeyValue] = useState<string | null>(null);
 
   const permissionOptions = [
@@ -103,7 +103,6 @@ export default function MentorApiKeysSettings() {
         throw new Error('Failed to revoke API key');
       }
       
-      const data = await response.json();
       setApiKeys(prev => prev.map(key => 
         key.id === keyId ? { ...key, status: 'revoked' as const } : key
       ));

@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { 
   Bell, 
   MessageSquare, 
-  Calendar, 
   BookOpen, 
   Award, 
   UserCheck,
@@ -38,7 +37,7 @@ interface Notification {
 }
 
 export default function NotificationsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);

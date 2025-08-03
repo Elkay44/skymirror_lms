@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 // GET /api/projects/submissions/instructor - Get all submissions for an instructor
-export async function GET(req: NextRequest) {
+export async function GET(_req: Request) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -20,41 +20,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden - Access denied' }, { status: 403 });
     }
     
-    // Define the submission type
-    type SubmissionWithDetails = {
-      id: string;
-      projectId: string;
-      studentId: string;
-      submissionNotes: string | null;
-      attachments: string[];
-      status: string;
-      grade: number | null;
-      reviewNotes: string | null;
-      submittedAt: Date | null;
-      reviewedAt: Date | null;
-      reviewerId: string | null;
-      createdAt: Date;
-      updatedAt: Date;
-      project: {
-        id: string;
-        title: string;
-        course: {
-          id: string;
-          title: string;
-        };
-      };
-      student: {
-        id: string;
-        name: string | null;
-        email: string | null;
-        image: string | null;
-      };
-      reviewer?: {
-        id: string;
-        name: string | null;
-        email: string | null;
-      } | null;
-    };
     
     // For mentors, get active mentees from mentor sessions
     if (role === 'MENTOR') {

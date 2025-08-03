@@ -4,14 +4,14 @@ import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-import { ArrowLeft, Save, Clock, Info, ListChecks, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Info, ListChecks, HelpCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -79,7 +79,7 @@ export default function CreateQuizPage() {
     setIsLoading(true);
     
     try {
-      const response = await axios.post(
+      await axios.post(
         `/api/courses/${courseId}/modules/${moduleId}/quizzes`,
         quizData
       );

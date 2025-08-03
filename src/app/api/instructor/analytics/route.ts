@@ -118,7 +118,7 @@ export async function GET(request: Request) {
 
     try {
       // Try to get data from cache if Redis is configured
-      if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+      if (redis && process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
         try {
           cachedData = await redis.get(cacheKey);
           if (cachedData) {
@@ -516,7 +516,7 @@ export async function GET(request: Request) {
     };
 
     // Cache the response if Redis is configured
-    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    if (redis && process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
       try {
         await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(analyticsData));
         console.log('Analytics data cached successfully');

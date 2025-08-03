@@ -3,8 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ArrowLeft, XCircle, BookOpen, Clock, Users, Play } from 'lucide-react';
-import Link from 'next/link';
+import { ArrowLeft, XCircle, BookOpen, Clock, Users } from 'lucide-react';
+
 import StudentCourseDashboard from '@/components/dashboard/StudentCourseDashboard';
 import { addDays } from 'date-fns';
 
@@ -165,19 +165,6 @@ const CourseDetailPage = () => {
       return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     };
     
-    // Helper to format duration in hours and minutes (e.g., "2h 30m")
-    const formatDurationReadable = (totalMinutes: number): string => {
-      const safeMinutes = Number.isFinite(totalMinutes) ? Math.max(0, totalMinutes) : 0;
-      const hours = Math.floor(safeMinutes / 60);
-      const mins = Math.floor(safeMinutes % 60);
-      
-      if (hours > 0 && mins > 0) {
-        return `${hours}h ${mins}m`;
-      } else if (hours > 0) {
-        return `${hours}h`;
-      }
-      return `${mins}m`;
-    };
     
     // Transform the course data to match the DashboardCourse type
     const transformedCourse: DashboardCourse = {

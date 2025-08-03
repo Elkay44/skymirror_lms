@@ -1,5 +1,5 @@
 import { PageLayout } from '../_components/PageLayout';
-import { Download, Filter, Search, FileText, BarChart3, DownloadCloud } from 'lucide-react';
+import { Download, Filter, Search } from 'lucide-react';
 
 export default function MarksPage() {
   // Mock data - replace with real data

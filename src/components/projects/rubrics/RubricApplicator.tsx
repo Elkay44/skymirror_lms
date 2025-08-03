@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+
 import { CheckCircle, Save, AlertTriangle, Clipboard, HelpCircle } from 'lucide-react';
-import { Rubric, RubricCriterion, RubricLevel } from './RubricBuilder';
+import { Rubric } from './RubricBuilder';
 
 export interface RubricAssessment {
   id?: string;

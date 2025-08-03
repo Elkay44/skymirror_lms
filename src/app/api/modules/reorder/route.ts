@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
 // Simple endpoint that doesn't rely on dynamic segments
-export async function PATCH(request: NextRequest) {
+export async function PATCH(request: Request) {
   console.log('📥 Module reorder API called');
   const requestStartTime = Date.now();
   try {

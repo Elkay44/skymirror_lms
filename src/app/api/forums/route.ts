@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -34,7 +34,7 @@ const logForumActivity = async (userId: string | number, action: string, forumId
 };
 
 // GET handler - Get all forums or filter by courseId
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST handler - Create a new forum
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     // Authentication
     const session = await getServerSession(authOptions);

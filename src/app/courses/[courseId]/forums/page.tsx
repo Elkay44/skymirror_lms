@@ -30,9 +30,9 @@ export default function ForumsPage({
   const [isLoading, setIsLoading] = useState(true);
   const [forums, setForums] = useState<Forum[]>([]);
   const [courseName, setCourseName] = useState('');
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [newForumTitle, setNewForumTitle] = useState('');
-  const [newForumDescription, setNewForumDescription] = useState('');
+  const [_isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [_newForumTitle, _setNewForumTitle] = useState('');
+  const [_newForumDescription, _setNewForumDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   // Load params and data

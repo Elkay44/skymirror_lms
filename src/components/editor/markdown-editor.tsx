@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Bold, Italic, List, ListOrdered, Heading, Quote, Code, Link as LinkIcon, Image } from 'lucide-react';
@@ -18,16 +18,14 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   placeholder = "Start typing your content here...",
   minHeight = 300
 }) => {
-  const [selection, setSelection] = useState<{ start: number; end: number } | null>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   // Helper to update text with formatting
   const formatText = (formatType: string) => {
     if (!textareaRef.current) return;
 
-    const textarea = textareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
+    const start = textareaRef.current.selectionStart;
+    const end = textareaRef.current.selectionEnd;
     const selectedText = value.substring(start, end);
     let newText = "";
     let newCursorPos = 0;
@@ -88,13 +86,11 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 
     onChange(newText);
     
-    // Set focus and cursor position after state update
-    setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
-        textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-      }
-    }, 0);
+    // Set focus and cursor position
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+    }
   };
 
   return (
@@ -187,7 +183,9 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       <Textarea
         ref={textareaRef}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          onChange(e.target.value);
+        }}
         placeholder={placeholder}
         className="border-0 rounded-none rounded-b-md focus-visible:ring-0 min-h-[300px]"
         style={{ minHeight: `${minHeight}px` }}

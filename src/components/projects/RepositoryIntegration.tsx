@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+
 import { Github, GitBranch, GitPullRequest, Code, CheckCircle, XCircle, RefreshCcw, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -28,7 +28,7 @@ export default function RepositoryIntegration({
   currentRepoUrl, 
   onRepoConnected 
 }: RepositoryIntegrationProps) {
-  const { data: session } = useSession();
+
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [selectedRepo, setSelectedRepo] = useState<string>(currentRepoUrl || '');
   const [loading, setLoading] = useState(false);

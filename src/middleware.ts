@@ -116,7 +116,7 @@ export default async function middleware(req: NextRequest) {
     }
     
     console.log('Middleware - Decoding JWT token');
-    const decodedData = await decode({ token: sessionToken, secret }) || {};
+    const decodedData = await decode({ token: sessionToken, secret }) as any || {};
     const userRole = decodedData.role as string || 'STUDENT';
     
     // Log JWT decoding result

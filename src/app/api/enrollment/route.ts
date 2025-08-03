@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/enrollment - Get current user's enrollments
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -98,14 +98,6 @@ export async function POST(request: Request) {
       }
     });
 
-    // Get the updated course with enrollment data
-    const updatedCourse = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        enrollments: true
-      }
-    });
-    
     // Award points to the user for enrolling in a new course
     await prisma.user.update({
       where: { id: String(userId) },

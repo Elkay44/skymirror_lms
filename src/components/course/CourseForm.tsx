@@ -15,25 +15,14 @@ interface CourseFormProps {
 
 
 export function CourseForm({ onSubmit, isEditMode = false }: CourseFormProps) {
-  const { currentStep, isSubmitting, submitForm, goToStep } = useCourseForm();
+  const { currentStep, isSubmitting, goToStep } = useCourseForm();
   
   // If an onSubmit prop is provided, use it when the form is submitted
   const { formData: contextFormData } = useCourseForm();
   
   useEffect(() => {
-    if (onSubmit && currentStep === 7) { // Only run when on the final step
-      const handleFormSubmit = async () => {
-        try {
-          // Use the actual form data from context instead of empty object
-          console.log('Submitting form on publish step:', contextFormData);
-          await onSubmit(contextFormData);
-        } catch (error) {
-          console.error('Error submitting form:', error);
-        }
-      };
-      
+    if (onSubmit && currentStep === 7) {
       // Don't auto-submit on load - we'll rely on the FormNavigation component's submit button
-      // handleFormSubmit();
     }
   }, [currentStep, onSubmit, contextFormData]);
 

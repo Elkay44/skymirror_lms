@@ -7,16 +7,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { 
   BookOpen, 
-  BarChart2, 
-  MessageSquare, 
   HelpCircle, 
-  Award, 
-  Settings, 
   Home, 
-  User, 
-  Users, 
-  Calendar, 
-  FileText,
+  User,
   Bell,
   LogOut,
   Menu,

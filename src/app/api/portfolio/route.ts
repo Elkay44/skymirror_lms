@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/portfolio - Get the current user's portfolio
-export async function GET(req: NextRequest) {
+export async function GET(_req: Request) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/portfolio - Update portfolio settings
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     

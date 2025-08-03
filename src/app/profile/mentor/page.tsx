@@ -7,13 +7,9 @@ import {
   UserCircle, 
   Calendar, 
   Award, 
-  Users, 
   Edit,
-  Mail,
   Briefcase,
   Clock,
-  MessageSquare,
-  Heart,
   CreditCard,
   CheckSquare,
   Star,
@@ -22,8 +18,7 @@ import {
   Sparkles,
   Compass,
   GraduationCap,
-  Handshake,
-  BadgeCheck
+  Handshake
 } from 'lucide-react';
 
 import ProfileLayout from '@/components/profile/ProfileLayout';

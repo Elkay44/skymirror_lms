@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckSquare, Clock, Calendar, AlertCircle, CheckCircle, Filter, Search } from 'lucide-react';
+import { CheckSquare, Clock, Calendar, AlertCircle, Filter, Search } from 'lucide-react';
 
 interface Assignment {
   id: string;
@@ -64,11 +64,6 @@ const AssignmentsSection: React.FC<AssignmentsSectionProps> = ({ assignments }) 
       return 'Overdue';
     }
     return `Due in ${days} day${days !== 1 ? 's' : ''}`;
-  };
-
-  // Safely handle arrays that might be undefined
-  const safeArray = <T extends any>(arr: T[] | undefined | null): T[] => {
-    return arr || [];
   };
   
   // Filter and sort assignments

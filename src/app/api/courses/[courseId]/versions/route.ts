@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -23,7 +23,7 @@ export const dynamic = 'force-dynamic';
 
 // GET /api/courses/[courseId]/versions - Get versions for a course
 export async function GET(
-  req: NextRequest,
+  req: Request,
   { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
@@ -127,7 +127,7 @@ export async function GET(
 
 // POST /api/courses/[courseId]/versions - Create a new version
 export async function POST(
-  req: NextRequest,
+  req: Request,
   { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {

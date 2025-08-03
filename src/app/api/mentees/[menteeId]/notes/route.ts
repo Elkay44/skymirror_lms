@@ -1,12 +1,12 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // PUT /api/mentees/[menteeId]/notes - Update mentee notes
 export async function PUT(
-  request: NextRequest, 
+  request: Request, 
   { params }: { params: Promise<{ menteeId: string }> }
 ) {
   try {
@@ -93,7 +93,7 @@ export async function PUT(
 
 // GET /api/mentees/[menteeId]/notes - Get mentee notes
 export async function GET(
-  request: NextRequest, 
+  _request: Request, 
   { params }: { params: Promise<{ menteeId: string }> }
 ) {
   try {

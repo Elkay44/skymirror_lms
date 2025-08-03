@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { Metadata } from 'next';
 import { Award, Search, Filter, ChevronDown, ArrowRight } from 'lucide-react';
 import ShowcaseProjectCard from '@/components/showcase/ShowcaseProjectCard';

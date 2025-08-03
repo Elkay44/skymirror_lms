@@ -114,7 +114,7 @@ export async function GET(request: Request) {
       recentActivity,
       upcomingSessions,
       overallStats: {
-        totalStudyHours: studySessions,
+        totalStudyHours: totalStudyHours,
         totalCertificates: certificates,
         currentStreak,
         activeStudents

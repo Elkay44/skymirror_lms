@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Plus, FileText, Target, CheckCircle, Clock, Users, GitBranch, GitPullRequest, Loader2 } from 'lucide-react';
+import { Plus, Target, CheckCircle, Clock, Users, Loader2 } from 'lucide-react';
 import { PageLayout } from '../_components/PageLayout';
 import { getProjects } from '@/lib/api/projects';
 import { Project } from '@/types/module';

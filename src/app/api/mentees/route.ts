@@ -1,11 +1,11 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET: Fetch all students (mentees)
-export async function GET(req: NextRequest) {
+export async function GET(_req: Request) {
   try {
     // Authenticate the user
     const session = await getServerSession(authOptions);
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST: Add a note for a mentee
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     // Authenticate the user
     const session = await getServerSession(authOptions);

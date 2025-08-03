@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 // GET /api/projects - Get projects the user has access to
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -265,7 +265,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/projects - Create a new project (instructors only)
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     

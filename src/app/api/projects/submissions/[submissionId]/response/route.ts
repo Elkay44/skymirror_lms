@@ -1,12 +1,12 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 // POST /api/projects/submissions/[submissionId]/response - Submit a response to instructor feedback
 export async function POST(
-  req: NextRequest, 
+  req: Request, 
   { params }: { params: Promise<{ submissionId: string }> }
 ) {
   try {
@@ -109,7 +109,7 @@ export async function POST(
 
 // GET /api/projects/submissions/[submissionId]/response - Get the response for a submission
 export async function GET(
-  req: NextRequest, 
+  _req: Request, 
   { params }: { params: Promise<{ submissionId: string }> }
 ) {
   try {

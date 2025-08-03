@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -28,10 +28,9 @@ const rubricItemSchema = z.object({
 });
 
 // GET handler - Get a specific assignment
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const includeRubric = searchParams.get('includeRubric') !== 'false';
-  const assignmentId = request.nextUrl.pathname.split('/').pop() || ''; // Get the last part of the URL which is the assignmentId
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const assignmentId = url.pathname.split('/').pop() || ''; // Get the last part of the URL which is the assignmentId
   // Validate that we got a valid assignmentId
   if (!assignmentId || !assignmentId.match(/^[a-z0-9]{1,}$/i)) {
     return NextResponse.json({ error: 'Invalid assignment ID' }, { status: 400 });
@@ -41,9 +40,6 @@ export async function GET(request: NextRequest) {
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    const { searchParams } = new URL(request.url);
-    const includeRubric = searchParams.get('includeRubric') !== 'false';
     
     const assignment = await prisma.assignment.findUnique({
       where: { id: assignmentId },
@@ -64,8 +60,9 @@ export async function GET(request: NextRequest) {
 }
 
 // PATCH handler - Update an assignment
-export async function PATCH(request: NextRequest) {
-  const assignmentId = request.nextUrl.pathname.split('/').pop() || ''; // Get the last part of the URL which is the assignmentId
+export async function PATCH(request: Request) {
+  const url = new URL(request.url);
+  const assignmentId = url.pathname.split('/').pop() || ''; // Get the last part of the URL which is the assignmentId
   // Validate that we got a valid assignmentId
   if (!assignmentId || !assignmentId.match(/^[a-z0-9]{1,}$/i)) {
     return NextResponse.json({ error: 'Invalid assignment ID' }, { status: 400 });
@@ -73,12 +70,9 @@ export async function PATCH(request: NextRequest) {
   try {
     // Authentication
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    // Get user ID from session
-    const userId = session.user.id;
     
     // Check if assignment exists
     const existingAssignment = await prisma.assignment.findUnique({
@@ -178,8 +172,9 @@ export async function PATCH(request: NextRequest) {
 }
 
 // DELETE handler - Delete an assignment
-export async function DELETE(request: NextRequest) {
-  const assignmentId = request.nextUrl.pathname.split('/').pop() || ''; // Get the last part of the URL which is the assignmentId
+export async function DELETE(request: Request) {
+  const url = new URL(request.url);
+  const assignmentId = url.pathname.split('/').pop() || ''; // Get the last part of the URL which is the assignmentId
   // Validate that we got a valid assignmentId
   if (!assignmentId || !assignmentId.match(/^[a-z0-9]{1,}$/i)) {
     return NextResponse.json({ error: 'Invalid assignment ID' }, { status: 400 });
@@ -187,12 +182,9 @@ export async function DELETE(request: NextRequest) {
   try {
     // Authentication
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    // Get user ID from session
-    const userId = session.user.id;
     
     // Check if assignment exists
     const existingAssignment = await prisma.assignment.findUnique({

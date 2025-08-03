@@ -3,26 +3,20 @@
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { 
-  Award, 
   MessageSquare, 
   Bell, 
   BarChart2, 
   BookOpen, 
   Trophy, 
-  Award as Certificate, 
   Clock, 
-  Users, 
-  MessageCircle, 
-  FileText, 
-  Calendar, 
   BookMarked, 
-  PenTool, 
   GraduationCap,
-  FileQuestion,
-  Target,
-  Database,
+  Award as CertIcon,
+  UserPlus,
   Home,
-  UserPlus
+  Calendar,
+  Database,
+  Target
 } from 'lucide-react';
 
 interface DashboardNavigationProps {
@@ -122,7 +116,7 @@ export default function DashboardNavigation({ unreadNotificationsCount = 0 }: Da
         href="/dashboard/certificates"
         className={linkClass}
       >
-        <Certificate className={`mr-3 h-5 w-5 ${iconColorClass('STUDENT')}`} />
+        <CertIcon className={`mr-3 h-5 w-5 ${iconColorClass('STUDENT')}`} />
         Certificates
       </Link>
       
@@ -194,7 +188,7 @@ export default function DashboardNavigation({ unreadNotificationsCount = 0 }: Da
         href="/dashboard/instructor/certificates"
         className={linkClass}
       >
-        <Certificate className={`mr-3 h-5 w-5 ${iconColorClass('INSTRUCTOR')}`} />
+        <CertIcon className={`mr-3 h-5 w-5 ${iconColorClass('INSTRUCTOR')}`} />
         Certificates
       </Link>
 

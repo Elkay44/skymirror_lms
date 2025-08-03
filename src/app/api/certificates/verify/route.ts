@@ -1,10 +1,9 @@
 /* eslint-disable */
 
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { NextResponse } from 'next/server';
 
 // POST /api/certificates/verify - Verify a certificate
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const { certificateId, tokenId } = await req.json();
     
@@ -84,7 +83,7 @@ export async function POST(req: NextRequest) {
 }
 
 // GET /api/certificates/verify?id=xxx - Public endpoint to verify a certificate
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const id = url.searchParams.get('id');

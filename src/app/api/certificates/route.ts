@@ -1,12 +1,11 @@
 /* eslint-disable */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
 
 // GET /api/certificates - Get all certificates for the authenticated user
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
@@ -39,7 +38,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/certificates - Create a new certificate (admin only)
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);

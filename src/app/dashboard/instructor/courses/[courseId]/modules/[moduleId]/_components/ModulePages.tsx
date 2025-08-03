@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Pencil, Trash2, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Pencil, Trash2, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   Dialog, 
@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'react-hot-toast';
-import { ModulePage, ContentBlock } from '@/types/module';
+import { ModulePage } from '@/types/module';
 import { 
   getModulePages, 
   createModulePage, 
@@ -419,7 +419,7 @@ function PageItem({ page, onEdit, onDelete, isReordering = false, isSavingOrder 
 const SortablePageItem = ({ page, ...props }: PageItemProps) => {
   const {
     attributes,
-    listeners,
+    listeners: _listeners,
     setNodeRef,
     transform,
     transition,

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -38,15 +38,19 @@ interface CourseStudent {
   };
 }
 
-export async function GET(req: NextRequest, { params }: { params: { courseId: string; id: string } }, context: { params: { courseId: string; id: string } }) {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    // Get the course ID from params
-    const courseId = params.courseId;
+    // Extract course ID from URL
+    const url = new URL(request.url);
+    const courseId = url.pathname.split('/').pop() || '';
+    if (!courseId) {
+      return NextResponse.json({ error: 'Course ID not found in URL' }, { status: 400 });
+    }
 
     // Build the where clause based on user role
-    const whereClause: any = { id: params.courseId };
+    const whereClause: any = { id: courseId };
     
     // For non-authenticated users or regular students, only show published courses
     if (!session?.user?.role || session.user.role === 'STUDENT') {

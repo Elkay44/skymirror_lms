@@ -6,7 +6,7 @@ import prisma from '@/lib/prisma';
 
 // GET /api/learning-goals/[id] - Get a specific learning goal
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -90,7 +90,7 @@ export async function PATCH(
 
 // DELETE /api/learning-goals/[id] - Delete a learning goal
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

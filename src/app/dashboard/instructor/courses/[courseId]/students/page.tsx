@@ -1,7 +1,7 @@
 'use client';
 
 import { PageLayout } from '../_components/PageLayout';
-import { Search, Filter, UserPlus, ExternalLink, MessageSquare, BarChart, BookOpen, Calendar, Mail, User } from 'lucide-react';
+import { Search, Filter, UserPlus, MessageSquare, BarChart, User } from 'lucide-react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { 

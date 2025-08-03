@@ -193,9 +193,7 @@ export async function PUT(
     // Parse the form data
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
-    const shortDescription = formData.get('shortDescription') as string;
     const price = formData.get('price') as string;
-    const discountPrice = formData.get('discountPrice') as string;
     const level = formData.get('level') as string;
     const language = formData.get('language') as string;
     const categoryId = formData.get('categoryId') as string;

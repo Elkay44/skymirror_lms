@@ -1,20 +1,14 @@
 "use client";
 
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
-  ArrowRight, ArrowLeft, ArrowUpRight, Activity, AlertCircle,
-  Award, BarChart, BarChart2, Bell, Book, Bookmark, BookOpen, Calendar, 
-  CheckCircle, CheckSquare, ChevronDown, ChevronRight, Clock, ClipboardCheck,
-  Code, Download, Edit2, ExternalLink, FileCheck, FileCode, FileEdit, FileText,
-  GitBranch, GitCommit, Github, GraduationCap, HelpCircle, Layers, LineChart,
-  Lock, MessageCircle, MessageSquare, PieChart, Play, Share, Star,
-  Target, Timer, User, Users, UserPlus, Video, Zap
+  ArrowRight, ArrowLeft, ArrowUpRight,
+  BarChart2, CheckCircle, Clock, ExternalLink,
+  BookOpen, Bookmark, GitCommit, GitBranch, Award, Play, Target,
+  Calendar, FileEdit, FileText, Download, CheckSquare, Zap,
+  GraduationCap, Layers
 } from 'lucide-react';
-import React, { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
-import { format, formatDistance, formatDistanceToNow, addDays } from 'date-fns';
-
+import { useState, useEffect } from 'react';
 // Import UI components
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,16 +16,13 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
+
+
 
 // Types
 interface Lesson {
@@ -152,21 +143,6 @@ const getLevelIcon = (level: string) => {
   }
 };
 
-const getCategoryColor = (category: string) => {
-  const categories: Record<string, string> = {
-    'web development': 'bg-blue-100 text-blue-800',
-    'mobile development': 'bg-purple-100 text-purple-800',
-    'data science': 'bg-green-100 text-green-800',
-    'machine learning': 'bg-orange-100 text-orange-800',
-    'devops': 'bg-red-100 text-red-800',
-    'design': 'bg-pink-100 text-pink-800',
-    'business': 'bg-yellow-100 text-yellow-800',
-    'programming': 'bg-indigo-100 text-indigo-800',
-  };
-  
-  return categories[category.toLowerCase()] || 'bg-gray-100 text-gray-800';
-};
-
 // Get status color for projects and commits
 const getStatusColor = (status: string) => {
   switch(status) {
@@ -190,25 +166,8 @@ const gridBgStyle = `
 `;
 
 export default function StudentCourseDashboard({ courses = [] }: StudentCourseDashboardProps) {
-  const { data: session } = useSession();
   const router = useRouter();
   
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
-  const [activeTabs, setActiveTabs] = useState<Record<string, string>>({});
-  const [activeLesson, setActiveLesson] = useState<{courseId: string; moduleId: string; lessonId: string} | null>(null);
-  const [studentProgress, setStudentProgress] = useState<Record<string, StudentProgress>>({});
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // Format duration in minutes to a readable string
-  const formatDuration = (minutes: number | null): string => {
-    if (!minutes) return 'N/A';
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-  };
-
   // Calculate course progress
   const calculateCourseProgress = (course: Course): StudentProgress => {
     const totalLessons = course.modules.reduce(
@@ -283,7 +242,7 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
         title: 'Initial project setup',
         description: 'Set up project structure and dependencies',
         date: new Date(new Date().getTime() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
-        author: session?.user?.name || 'Student',
+        author: 'Student',
         changes: 24,
         status: 'approved'
       },
@@ -292,7 +251,7 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
         title: 'Add authentication features',
         description: 'Implemented login, registration and password reset',
         date: new Date(new Date().getTime() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-        author: session?.user?.name || 'Student',
+        author: 'Student',
         changes: 47,
         status: 'needs-review'
       },
@@ -301,7 +260,7 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
         title: 'Fix responsive layout issues',
         description: 'Fixed mobile layout bugs in navigation and product cards',
         date: new Date(new Date().getTime() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-        author: session?.user?.name || 'Student',
+        author: 'Student',
         changes: 12,
         status: 'pending'
       }
@@ -352,17 +311,8 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
     };
   };
   
-  // UI toggle functions
-  const toggleCourseExpand = (courseId: string) => {
-    setExpandedCourse(prev => prev === courseId ? null : courseId);
-  };
-
-  const handleTabChange = (courseId: string, tab: string) => {
-    setActiveTabs(prev => ({
-      ...prev,
-      [courseId]: tab
-    }));
-  };
+  // UI state
+  const [studentProgress, setStudentProgress] = useState<Record<string, StudentProgress>>({});
 
   const handleNavigateToLesson = (courseId: string, moduleId: string, lessonId: string) => {
     router.push(`/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`);
@@ -376,53 +326,6 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
     router.push(`/courses/${courseId}/commits/${commitId}`);
   };
 
-  if (loading) {
-    return (
-      <div className="w-full max-w-7xl mx-auto p-4 space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-10 w-1/3" />
-          <Skeleton className="h-10 w-24" />
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-8 w-3/4" />
-                <Skeleton className="h-4 w-1/2 mt-2" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[60vh]">
-        <div className="text-center p-6 max-w-md">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <Button
-            onClick={() => window.location.reload()}
-            size="lg"
-            className="px-6"
-          >
-            Try Again
-          </Button>
-        </div>
-      </div>
-    );
-  }
   
   if (courses.length === 0) {
     return (
@@ -480,7 +383,7 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
                   </span>
                 </Badge>
                 <Badge className="bg-slate-100 text-slate-700 rounded-md px-2.5 py-1 font-medium">
-                  Updated {format(new Date(courses[0].updatedAt), 'dd/MM/yyyy')}
+                  Updated {new Date(courses[0].updatedAt).toLocaleDateString()}
                 </Badge>
               </div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
@@ -587,7 +490,7 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
                         <span className="text-slate-600 text-sm">Time Spent</span>
                       </div>
                       <div className="mt-2">
-                        <span className="text-2xl font-bold">{formatDuration(progress?.timeSpent || 0)}</span>
+                        <span className="text-2xl font-bold">{progress?.timeSpent ? `${Math.floor(progress.timeSpent / 60)}h ${progress.timeSpent % 60}m` : 'N/A'}</span>
                       </div>
                     </div>
                     
@@ -668,7 +571,7 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
                                 {project.dueDate && (
                                   <div className="flex items-center">
                                     <Calendar className="h-3.5 w-3.5 mr-1.5" />
-                                    Due: {format(new Date(project.dueDate), 'MMM dd, yyyy')}
+                                    Due: {new Date(project.dueDate).toLocaleDateString()}
                                   </div>
                                 )}
                               </div>
@@ -775,7 +678,7 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
                             <div className="mt-2 flex items-center justify-between text-xs">
                               <div className="flex items-center text-slate-500">
                                 <Calendar className="h-3 w-3 mr-1" />
-                                {format(new Date(commit.date), 'MMM dd, yyyy')}
+                                {new Date(commit.date).toLocaleDateString()}
                                 <span className="mx-2">•</span>
                                 <span>{commit.author}</span>
                                 <span className="mx-2">•</span>

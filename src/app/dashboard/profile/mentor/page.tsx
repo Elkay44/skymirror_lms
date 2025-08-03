@@ -8,8 +8,6 @@ import { toast } from 'react-hot-toast';
 import { 
   UserCircle, 
   Calendar, 
-  Award, 
-  Users, 
   Save,
   Edit,
   Mail,
@@ -18,8 +16,8 @@ import {
   MessageSquare,
   Heart,
   CreditCard,
-  CheckSquare,
-  Star
+  Star,
+  CheckSquare
 } from 'lucide-react';
 
 interface MentorProfile {

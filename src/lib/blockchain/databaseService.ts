@@ -3,7 +3,7 @@
  * Handles interactions between Prisma database models and the blockchain
  */
 
-import { PrismaClient, Certification, Project, ProjectSubmission, User, Course } from '@prisma/client';
+import { PrismaClient, ProjectSubmission } from '@prisma/client';
 import * as certificateService from './certificateService';
 
 const prisma = new PrismaClient();

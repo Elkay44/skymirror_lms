@@ -1,8 +1,6 @@
 'use client';
 
 import { Component, ErrorInfo, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'react-hot-toast';
 
 interface ErrorBoundaryProps {
   children: ReactNode;

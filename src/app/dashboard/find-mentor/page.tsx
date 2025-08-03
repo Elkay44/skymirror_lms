@@ -91,7 +91,7 @@ function getAllSpecialties(mentors: MentorProfile[]): string[] {
 }
 
 export default function FindMentorPage() {
-  const { data: session, status } = useSession();
+  const { data: _session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [mentors, setMentors] = useState<MentorProfile[]>([]);
@@ -194,7 +194,7 @@ export default function FindMentorPage() {
   const filteredMentors = mentors.filter(applyFilters);
   
   // Handle mentorship request
-  const handleRequestMentorship = (mentorId: string) => {
+  const handleRequestMentorship = (_mentorId: string) => {
     // In a production app, we would send an API request to create a mentorship request
     // For now, show a toast notification
     alert('Mentorship request sent! The mentor will review your request shortly.');

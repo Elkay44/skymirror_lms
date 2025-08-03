@@ -1,18 +1,17 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET endpoint to fetch messages for a specific conversation
 export async function GET(
-  req: NextRequest,
-  { params }: { params: { conversationId: string } },
-  context: { params: { conversationId: string } }
+  req: Request,
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
     const { searchParams } = new URL(req.url);
-    const conversationId = params.conversationId;
+    const { conversationId } = await params;
     const limit = parseInt(searchParams.get('limit') || '20');
     const cursor = searchParams.get('cursor');
 
@@ -140,7 +139,7 @@ export async function GET(
 
 // POST endpoint to send a message to a conversation
 export async function POST(
-  req: NextRequest,
+  req: Request,
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {

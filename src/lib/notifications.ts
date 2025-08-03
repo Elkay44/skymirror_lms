@@ -1,17 +1,6 @@
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
 
-// Define types for notification creation
-type NotificationCreate = {
-  type: string;
-  title: string;
-  message: string;
-  isRead: boolean;
-  linkUrl?: string;
-  relatedId?: string;
-  relatedType?: string;
-  metadata?: any;
-};
+
 // Create a simple getUserById function since the module doesn't exist yet
 async function getUserById(userId: string) {
   return await prisma.user.findUnique({

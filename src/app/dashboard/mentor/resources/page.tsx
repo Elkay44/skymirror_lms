@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
-import Link from 'next/link';
+
 import {
   Database,
   FileText,
@@ -30,7 +29,7 @@ interface Resource {
 }
 
 export default function ResourceLibraryPage() {
-  const { data: session } = useSession();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('ALL');
   

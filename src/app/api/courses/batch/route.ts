@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -34,7 +34,7 @@ const batchOperationSchema = z.object({
 export const dynamic = 'force-dynamic';
 
 // POST /api/courses/batch - Perform batch operations on multiple courses
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     // Get the authenticated user
     const session = await getServerSession(authOptions);

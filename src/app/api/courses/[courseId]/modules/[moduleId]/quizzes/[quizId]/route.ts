@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
@@ -55,12 +55,12 @@ const logQuizActivity = async (userId: string | number, action: string, quizId: 
 };
 
 // GET /api/courses/[courseId]/modules/[moduleId]/quizzes/[quizId] - Get quiz details
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ courseId: string; moduleId: string; quizId: string }> }
-): Promise<Response> {
-  const { courseId, moduleId, quizId } = await params;
+export async function GET(request: Request): Promise<Response> {
   try {
+    // Extract parameters from URL
+    const url = new URL(request.url);
+    const courseId = url.pathname.split('/')[3];
+    const quizId = url.pathname.split('/')[7];
 
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
@@ -195,7 +195,7 @@ function isPublishedQuizSelector() {
 
 // PATCH /api/courses/[courseId]/modules/[moduleId]/quizzes/[quizId] - Update a quiz
 export async function PATCH(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ courseId: string; moduleId: string; quizId: string }> }
 ): Promise<Response> {
   const { courseId, moduleId, quizId } = await params;
@@ -226,17 +226,16 @@ export async function PATCH(
       );
     }
 
-    // Verify quiz exists and belongs to this module
+    // Verify quiz exists
     const quiz = await prisma.quiz.findFirst({
       where: {
-        id: quizId,
-        moduleId
+        id: quizId
       }
     });
 
     if (!quiz) {
       return NextResponse.json(
-        { error: 'Quiz not found or does not belong to this module' },
+        { error: 'Quiz not found' },
         { status: 404 }
       );
     }
@@ -274,7 +273,7 @@ export async function PATCH(
     // Update quiz in a transaction to handle questions and options
     const updatedQuiz = await prisma.$transaction(async (tx: any) => {
       // Update the quiz
-      const updated = await tx.quiz.update({
+      await tx.quiz.update({
         where: { id: quizId },
         data: updateData
       });
@@ -347,12 +346,12 @@ export async function PATCH(
 }
 
 // DELETE /api/courses/[courseId]/modules/[moduleId]/quizzes/[quizId] - Delete a quiz
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ courseId: string; moduleId: string; quizId: string }> }
-): Promise<Response> {
-  const { courseId, moduleId, quizId } = await params;
+export async function DELETE(request: Request): Promise<Response> {
   try {
+    // Extract parameters from URL
+    const url = new URL(request.url);
+    const courseId = url.pathname.split('/')[3];
+    const quizId = url.pathname.split('/')[7];
 
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
@@ -379,23 +378,22 @@ export async function DELETE(
       );
     }
 
-    // Verify quiz exists and belongs to this module
+    // Verify quiz exists
     const quiz = await prisma.quiz.findFirst({
       where: {
-        id: quizId,
-        moduleId
+        id: quizId
       }
     });
 
     if (!quiz) {
       return NextResponse.json(
-        { error: 'Quiz not found or does not belong to this module' },
+        { error: 'Quiz not found' },
         { status: 404 }
       );
     }
 
     // Delete quiz and related items in a transaction
-    const result = await prisma.$transaction(async (tx: any) => {
+    await prisma.$transaction(async (tx: any) => {
       // Delete attempts
       await tx.quizAttempt.deleteMany({
         where: { quizId }
@@ -417,7 +415,7 @@ export async function DELETE(
 
     // Revalidate paths
     revalidatePath(`/courses/${courseId}`);
-    revalidatePath(`/courses/${courseId}/modules/${moduleId}`);
+    revalidatePath(`/courses/${courseId}/modules/${quiz.moduleId}`);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

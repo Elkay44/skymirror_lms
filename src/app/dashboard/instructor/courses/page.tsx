@@ -2,31 +2,25 @@
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import {
   BookOpen,
   Users,
-  FileText,
   PlusCircle,
   Search,
-  Filter,
   ArrowUpDown,
   Eye,
   Clock,
-  CheckCircle2,
-  AlertCircle,
-  MoreVertical,
-  Calendar,
-  Star
+  MoreVertical
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface Course {
@@ -46,10 +40,10 @@ interface Course {
 }
 
 export default function InstructorCoursesPage() {
-  const { data: session } = useSession();
+
   const [isLoading, setIsLoading] = useState(true);
   const [courses, setCourses] = useState<Course[]>([]);
-  const [error, setError] = useState<string | null>(null);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -58,7 +52,7 @@ export default function InstructorCoursesPage() {
   useEffect(() => {
     const fetchCourses = async () => {
       setIsLoading(true);
-      setError(null);
+
       
       try {
         const response = await fetch('/api/courses/instructor', {
@@ -102,11 +96,7 @@ export default function InstructorCoursesPage() {
         setCourses(transformedCourses);
       } catch (error) {
         console.error('Error fetching courses:', error);
-        setError(
-          error instanceof Error 
-            ? error.message 
-            : 'An unexpected error occurred while loading courses'
-        );
+
         setCourses([]);
       } finally {
         setIsLoading(false);
@@ -171,12 +161,7 @@ export default function InstructorCoursesPage() {
     });
   }, [courses, publishedCount, draftsCount, archivedCount]);
   
-  const formatDuration = (minutes: number) => {
-    if (!minutes) return '0m';
-    const hrs = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
-  };
+
   
   // Loading skeleton
   if (isLoading) {

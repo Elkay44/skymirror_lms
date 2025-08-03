@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/rubrics - Get all rubrics (filtered by project or instructor)
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -125,7 +125,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/rubrics - Create a new rubric
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     

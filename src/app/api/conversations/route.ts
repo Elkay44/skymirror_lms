@@ -3,11 +3,10 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
 
 // GET /api/conversations
 // Get all conversations for the current user
-export async function GET(req: Request) {
+export async function GET() {
   try {
     console.log('GET /api/conversations - Starting request');
     const session = await getServerSession(authOptions);

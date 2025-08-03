@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 // GET /api/showcase/categories - Get showcase categories with project counts
-export async function GET(req: NextRequest) {
+export async function GET(_req: Request) {
   try {
     // Get all unique tags from showcase projects
     const allProjects = await prisma.showcaseProject.findMany({

@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { format } from "date-fns";
-import Image from "next/image";
-import { ArrowLeft, MessageSquare, Eye, Trash, Pin, Clock, ThumbsUp, Lock } from "lucide-react";
+
+import { ArrowLeft, MessageSquare, Pin, Clock, ThumbsUp, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

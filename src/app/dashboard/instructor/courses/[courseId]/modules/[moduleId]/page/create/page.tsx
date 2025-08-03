@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-import { ArrowLeft, Save, FileText, Video, Clock, Image, Code, PlusCircle, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, Save, FileText, Video, Clock, PlusCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -86,7 +86,7 @@ export default function CreatePagePage() {
       }
       
       // For simplicity, we're using the lessons API endpoint but specifying this as a 'page' content type
-      const response = await axios.post(
+      await axios.post(
         `/api/courses/${courseId}/modules/${moduleId}/lessons`,
         {
           ...pageData,

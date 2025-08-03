@@ -1,36 +1,11 @@
 "use client";
 
-import { ReactNode, useState } from 'react';
+import { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
-  ChevronDown, 
-  BookOpen, 
-  User, 
-  MessageSquare, 
-  FileText, 
-  Medal, 
-  HelpCircle,
-  Settings,
-  Bell,
-  Shield,
-  Mail,
-  CreditCard,
-  Award,
-  Calendar,
-  BookMarked,
-  GraduationCap,
-  Star,
-  Clock,
-  Heart,
-  Target,
-  Edit,
-  MapPin,
-  Book,
-  Users
-} from 'lucide-react';
+import { BookOpen, User, Users, HelpCircle, Settings, Mail, Award, Calendar, BookMarked, GraduationCap, Star, Clock, Target, Edit } from 'lucide-react';
 
 interface ProfileLayoutProps {
   children: ReactNode;

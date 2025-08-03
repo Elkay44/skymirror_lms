@@ -1,8 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { BarChart, LineChart, PieChart, Users, DollarSign, BookOpen, Star, Plus } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
+import { LineChart, Users, DollarSign, BookOpen, Star, Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CourseCard } from '../courses/CourseCard';
 import { Course } from '@/types/course.types';

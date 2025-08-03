@@ -15,26 +15,6 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 // Define types for the API and our form
 type ApiLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
 
-// Define API response type
-interface ApiCourse {
-  id: string;
-  title: string;
-  shortDescription: string;
-  description: string;
-  imageUrl: string;
-  isPublished: boolean;
-  isPrivate: boolean;
-  difficulty: ApiLevel; // API uses uppercase: 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'
-  requirements: string[];
-  learningOutcomes: string[];
-  targetAudience: string[];
-  category?: string;
-  language?: string;
-  promoVideoUrl?: string;
-  price?: number;
-  discountedPrice?: number;
-};
-
 // Form data specific for the edit page - include all fields we need
 interface EditPageData {
   id: string;
@@ -127,7 +107,6 @@ export default function EditCoursePage() {
 
   const [courseData, setCourseData] = useState<EditPageData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Helper function to handle API errors
@@ -215,7 +194,6 @@ export default function EditCoursePage() {
     }
 
     try {
-      setIsSubmitting(true);
       setError(null);
       
       // TEMPORARY: Always use mock implementation during development
@@ -266,9 +244,8 @@ export default function EditCoursePage() {
     } catch (error: unknown) {
       handleApiError(error, 'Failed to update course');
     } finally {
-      setIsSubmitting(false);
     }
-  }, [courseId, router, handleApiError, setIsSubmitting, setError]);
+  }, [courseId, router, handleApiError, setError]);
 
   if (isLoading) {
     return (
@@ -389,7 +366,6 @@ export default function EditCoursePage() {
           // The CourseFormWrapper will handle the conversion
           return handleSubmit(data);
         }}
-        isSubmitting={isSubmitting}
       >
         <CourseForm />
       </CourseFormWrapper>

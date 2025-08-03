@@ -8,10 +8,8 @@ import prisma from '@/lib/prisma';
  * GET /api/mentors/[id]
  * Get details of a specific mentor
  */
-import { NextRequest } from 'next/server';
-
 export async function GET(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

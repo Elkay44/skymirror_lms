@@ -1,4 +1,3 @@
-import { NextResponse } from 'next/server';
 import { uploadImage } from '@/lib/storage';
 
 export async function convertBase64ToUrl(base64String: string): Promise<string | null> {
@@ -7,9 +6,7 @@ export async function convertBase64ToUrl(base64String: string): Promise<string |
       return null;
     }
 
-    // Extract the MIME type from the base64 string
-    const base64Data = base64String.split(';base64,').pop() || '';
-    const mimeType = base64String.split(';')[0].split(':')[1];
+
 
     // Upload to Hetzner server
     const result = await uploadImage(base64String, 'courses');

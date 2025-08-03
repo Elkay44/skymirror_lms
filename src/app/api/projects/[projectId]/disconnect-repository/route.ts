@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
@@ -7,7 +7,7 @@ import { Octokit } from '@octokit/rest';
 
 // POST /api/projects/[projectId]/disconnect-repository - Disconnect a repository from a project
 export async function POST(
-  req: NextRequest, 
+  _req: Request, 
   { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {

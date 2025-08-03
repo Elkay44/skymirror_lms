@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -10,14 +10,6 @@ const createPageSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   content: z.string().optional(),
   moduleId: z.string().uuid('Invalid module ID'),
-  description: z.string().optional(),
-  isPublished: z.boolean().optional(),
-});
-
-// Page update validation schema
-const updatePageSchema = z.object({
-  title: z.string().min(1, 'Title is required').optional(),
-  content: z.string().optional(),
   description: z.string().optional(),
   isPublished: z.boolean().optional(),
 });
@@ -41,7 +33,7 @@ const logPageActivity = async (userId: string | number, action: string, pageId: 
 };
 
 // GET handler - Get all pages or filter by moduleId
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
@@ -69,7 +61,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST handler - Create a new page
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     // Authentication
     const session = await getServerSession(authOptions);

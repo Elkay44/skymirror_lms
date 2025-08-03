@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
@@ -63,7 +63,7 @@ async function getRubricWithItems(
 
 // GET /api/rubrics/[rubricId] - Get a specific rubric
 export async function GET(
-  request: NextRequest
+  request: Request
 ) {
   const url = new URL(request.url);
   const pathSegments = url.pathname.split('/');
@@ -103,7 +103,7 @@ export async function GET(
 
 // PATCH /api/rubrics/[rubricId] - Update a rubric
 export async function PATCH(
-  request: NextRequest
+  request: Request
 ) {
   const url = new URL(request.url);
   const pathSegments = url.pathname.split('/');
@@ -194,7 +194,7 @@ export async function PATCH(
 
 // DELETE /api/rubrics/[rubricId] - Delete a rubric
 export async function DELETE(
-  request: NextRequest
+  request: Request
 ) {
   const url = new URL(request.url);
   const pathSegments = url.pathname.split('/');

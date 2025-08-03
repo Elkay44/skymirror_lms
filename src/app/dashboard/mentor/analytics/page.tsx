@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+
 import {
   BarChart2,
   Users,
   TrendingUp,
   BookOpen,
   Award,
-  Clock,
   BarChart,
   PieChart,
   Calendar,
@@ -60,7 +59,7 @@ interface MenteeAnalyticsData {
 }
 
 export default function MenteeAnalyticsPage() {
-  const { data: session } = useSession();
+
   const [analyticsData, setAnalyticsData] = useState<MenteeAnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [timeframe, setTimeframe] = useState<string>('MONTH');

@@ -1,62 +1,23 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
-import { revalidatePath } from 'next/cache';
-import { PrismaClient } from '@prisma/client';
 
 // Schema for creating a new quiz from the frontend
 const createQuizSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
-  instructions: z.string().optional(),
   timeLimit: z.number().int().min(0).optional(),
   passingScore: z.number().min(0).max(100).optional(),
   isPublished: z.boolean().optional(),
-  allowReview: z.boolean().optional(),
-  attemptsAllowed: z.number().int().min(1).optional(),
-  maxAttempts: z.number().int().min(0).optional(),
-  randomizeQuestions: z.boolean().optional(),
-  showCorrectAnswers: z.boolean().optional(),
-  questions: z.array(
-    z.object({
-      text: z.string().min(1, "Question text is required"),
-      type: z.enum(['MULTIPLE_CHOICE', 'SINGLE_CHOICE', 'TRUE_FALSE', 'SHORT_ANSWER']),
-      points: z.number().int().min(0).default(1),
-      explanation: z.string().optional(),
-      options: z.array(
-        z.object({
-          text: z.string().min(1, "Option text is required"),
-          isCorrect: z.boolean(),
-          explanation: z.string().optional(),
-        })
-      ).min(1, "At least one option is required"),
-    })
-  ).optional().default([]),
+  allowReview: z.boolean().optional().default(true),
+  attemptsAllowed: z.number().int().min(0).optional(),
 });
-
-// Log quiz activity
-const logQuizActivity = async (userId: string | number, action: string, quizId: string, details: any = {}) => {
-  try {
-    await prisma.activityLog.create({
-      data: {
-        userId: userId.toString(),
-        action,
-        entityType: 'quiz',
-        entityId: quizId,
-        details,
-      },
-    });
-  } catch (error) {
-    console.error('Failed to log quiz activity:', error);
-    // Non-blocking - we don't fail the request if logging fails
-  }
-};
 
 // GET /api/courses/[courseId]/modules/[moduleId]/quizzes - Get all quizzes for a module
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ courseId: string; moduleId: string }> }
 ): Promise<Response> {
   try {
@@ -79,28 +40,28 @@ export async function GET(
 
     const isInstructor = course?.instructorId === userId.toString();
 
-    if (!isInstructor) {
-      // Check if user is enrolled
-      const enrollment = await prisma.enrollment.findFirst({
-        where: { 
-          userId: userId.toString(), 
-          courseId, 
-          status: { in: ['ACTIVE', 'COMPLETED'] } 
-        },
-      });
-      
-      if (!enrollment) {
-        return NextResponse.json(
-          { error: 'You must be enrolled in this course to view quizzes' },
-          { status: 403 }
-        );
-      }
-    }
+    // Build query selector based on user role
+    const query = await request.json();
+    const { isPublished = true } = query;
 
-    // Get quizzes for this module
+    const selector = isInstructor ? {} : { isPublished };
+
+    // Get quizzes with questions and options
     const quizzes = await prisma.quiz.findMany({
-      where: { moduleId },
+      where: {
+        moduleId,
+        courseId,
+        ...selector
+      },
       include: {
+        questions: {
+          include: {
+            options: true
+          },
+          orderBy: {
+            createdAt: 'asc'
+          }
+        },
         _count: {
           select: { 
             questions: true,
@@ -111,14 +72,44 @@ export async function GET(
       orderBy: { createdAt: 'desc' }
     });
 
-    // For students, don't show quiz questions
-    const quizzesWithoutQuestions = quizzes.map(quiz => ({
-      ...quiz,
-      questions: isInstructor ? undefined : [],
-    }));
+    // For instructors, return full quiz data
+    if (isInstructor) {
+      return NextResponse.json({
+        data: quizzes,
+        total: quizzes.length
+      });
+    }
 
+    // For students, check enrollment and return limited data
+    const enrollment = await prisma.enrollment.findFirst({
+      where: { 
+        userId: userId.toString(), 
+        courseId, 
+        status: { in: ['ACTIVE', 'COMPLETED'] } 
+      },
+    });
+    
+    if (!enrollment) {
+      return NextResponse.json(
+        { error: 'You must be enrolled in this course to view quizzes' },
+        { status: 403 }
+      );
+    }
+
+    // For students, return limited quiz data without questions
     return NextResponse.json({
-      data: quizzesWithoutQuestions,
+      data: quizzes.map((quiz: any) => ({
+        id: quiz.id,
+        title: quiz.title,
+        description: quiz.description,
+        timeLimit: quiz.timeLimit,
+        passingScore: quiz.passingScore,
+        isPublished: quiz.isPublished,
+        allowReview: quiz.allowReview,
+        attemptsAllowed: quiz.attemptsAllowed,
+        questionCount: quiz._count.questions,
+        attemptCount: quiz._count.attempts
+      })),
       total: quizzes.length
     });
   } catch (error) {
@@ -132,7 +123,7 @@ export async function GET(
 
 // POST /api/courses/[courseId]/modules/[moduleId]/quizzes - Create a new quiz
 export async function POST(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ courseId: string; moduleId: string }> }
 ): Promise<Response> {
   try {
@@ -177,28 +168,26 @@ export async function POST(
       );
     }
 
-    // Parse request - don't validate strictly yet since we're fixing frontend-backend compatibility
+    // Parse and validate request
     const body = await request.json();
-    console.log('Quiz creation request body:', JSON.stringify(body));
-    
-    // Extract the basic quiz data from frontend request
+    const validationResult = createQuizSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { error: 'Invalid input', details: validationResult.error.errors },
+        { status: 400 }
+      );
+    }
+
     const { 
       title, 
       description, 
       timeLimit,
       passingScore,
-      isPublished = false,
-      maxAttempts = 3,
-      randomizeQuestions = false,
-      showCorrectAnswers = true,
-    } = body;
-
-    if (!title) {
-      return NextResponse.json(
-        { error: 'Title is required' },
-        { status: 400 }
-      );
-    }
+      isPublished,
+      allowReview,
+      attemptsAllowed
+    } = validationResult.data;
 
     try {
       // Create the quiz with only required fields first
@@ -209,8 +198,8 @@ export async function POST(
           timeLimit,
           passingScore,
           isPublished,
-          // Use maxAttempts from the frontend as attemptsAllowed
-          attemptsAllowed: maxAttempts,
+          allowReview,
+          attemptsAllowed,
           // Connect relationships
           moduleId,
           courseId,

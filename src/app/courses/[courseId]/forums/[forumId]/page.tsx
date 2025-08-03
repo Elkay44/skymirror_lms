@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -22,7 +21,6 @@ interface Post {
   authorName: string;
   authorImage: string | null;
   createdAt: string;
-  updatedAt: string;
   isPinned: boolean;
   isLocked: boolean;
   viewCount: number;
@@ -37,12 +35,6 @@ interface Forum {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-}
-
-// Type for the forum page props
-interface ForumPageProps {
-  params: PageParams;
-  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export default function ForumPage() {
@@ -61,7 +53,6 @@ export default function ForumPage() {
   });
 
   const { data: session, status } = useSession();
-  const router = useRouter();
 
   // Load forum and posts when component mounts
   useEffect(() => {
@@ -310,7 +301,6 @@ export default function ForumPage() {
                     authorName={post.authorName}
                     authorImage={post.authorImage}
                     createdAt={post.createdAt}
-                    updatedAt={post.updatedAt}
                     isPinned={post.isPinned}
                     isLocked={post.isLocked}
                     viewCount={post.viewCount || 0}

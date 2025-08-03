@@ -1,19 +1,22 @@
 /* eslint-disable */
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import { getServerSession } from 'next-auth';
 import { ExtendedPrismaClient } from '@/lib/prisma-extensions';
 
 const prisma = new PrismaClient() as unknown as ExtendedPrismaClient;
-const openai = new OpenAIApi(
-  new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-  })
-);
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+}) : null;
 
 export async function GET() {
   try {
+    // Check if OpenAI is available
+    if (!openai) {
+      return NextResponse.json({ error: 'OpenAI service not configured' }, { status: 503 });
+    }
+
     const session = await getServerSession();
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -58,48 +61,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { preferences } = body;
-
     // Get user's current progress and performance in parallel
-    const [user, enrollments, quizAttempts] = await Promise.all([
-      prisma.user.findUnique({
-        where: { email: session.user.email },
-      }),
-      prisma.enrollment.findMany({
-        where: { user: { email: session.user.email } },
-        include: { course: true },
-      }),
-      prisma.quizAttempt.findMany({
-        where: { user: { email: session.user.email } },
-        include: { quiz: true },
-      })
-    ]);
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+    const quizAttempts = await prisma.quizAttempt.findMany({
+      where: { userId: user?.id },
+      include: { quiz: true },
+    });
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Generate AI prompt based on user's current progress and preferences
-    const prompt = generateAIPrompt({
-      ...user,
-      enrollments,
-      quizAttempts
-    }, preferences);
-
-    // Get AI recommendations
-    const aiResponse = await openai.createCompletion({
-      model: 'text-davinci-003',
-      prompt,
-      max_tokens: 500,
-      temperature: 0.7,
-    });
-
-    const recommendations = parseAIRecommendations(aiResponse.data.choices[0]?.text || '');
-
     // Get request data
-    const requestData = await request.json();
-    const { goals, userPreferences } = requestData;
+    const { goals, userPreferences } = await request.json();
 
     // Update or create student profile with bio
     await prisma.studentProfile.upsert({
@@ -115,15 +91,18 @@ export async function POST(request: Request) {
     const aiRecommendations: any[] = [];
     if (userPreferences) {
       try {
-        const prompt = generateAIPrompt(user, userPreferences);
-        const aiResponse = await openai.createCompletion({
-          model: 'text-davinci-003',
-          prompt,
-          max_tokens: 150,
+        const prompt = generateAIPrompt({
+          ...user,
+          quizAttempts
+        }, userPreferences);
+        const chatCompletion = await openai!.chat.completions.create({
+          model: 'gpt-3.5-turbo',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 1000,
           temperature: 0.7,
         });
 
-        const recommendations = parseAIRecommendations(aiResponse.data.choices[0]?.text || '');
+        const recommendations = parseAIRecommendations(chatCompletion.choices[0].message.content as string);
         if (Array.isArray(recommendations)) {
           aiRecommendations.push(...recommendations);
         }
@@ -148,7 +127,7 @@ export async function POST(request: Request) {
   }
 }
 
-function generateAIPrompt(userData: any, preferences: any) {
+function generateAIPrompt(userData: any, preferences: any): string {
   // Extract user's current courses and performance
   const currentCourses = userData.enrollments
     ?.map((e: any) => e.course?.title || 'Unknown Course')
@@ -171,25 +150,43 @@ Learning Preferences:
 - Preferred learning style: ${preferences?.learningStyle || 'Not specified'}
 - Topics of interest: ${preferences?.interests?.join(', ') || 'Not specified'}
 
-Please provide a structured learning path with recommended courses, resources, and a study schedule.`;
+Please provide a structured learning path with recommended study schedule. Format the response as a JSON array:
+[
+  {
+    "course": "Course Title",
+    "reason": "Why this course is recommended",
+    "priority": "high/medium/low",
+    "estimated_duration": "X weeks",
+    "prerequisites": ["List of prerequisites"]
+  }
+]`;
 }
 
-function parseAIRecommendations(aiResponse: string) {
-  // Parse and structure the AI response
-  const recommendations = {
-    suggestedCourses: [],
-    learningPace: '',
-    contentPreferences: [],
-    practiceAreas: [],
-  };
+function parseAIRecommendations(aiResponse: string): any[] {
+  try {
+    // Remove any leading/trailing text and extract the JSON array
+    const jsonStart = aiResponse.indexOf('[');
+    const jsonEnd = aiResponse.lastIndexOf(']');
+    if (jsonStart === -1 || jsonEnd === -1) {
+      throw new Error('Invalid JSON format');
+    }
 
-  // Parse the AI response and populate the recommendations object
-  // This is a simplified version - you would need to implement proper parsing logic
-  
-  return recommendations;
+    const jsonStr = aiResponse.substring(jsonStart, jsonEnd + 1);
+    const recommendations = JSON.parse(jsonStr);
+    
+    // Validate the structure
+    if (!Array.isArray(recommendations)) {
+      throw new Error('Expected an array of recommendations');
+    }
+
+    return recommendations;
+  } catch (error) {
+    console.error('Error parsing AI recommendations:', error);
+    return [];
+  }
 }
 
-function calculateAverageQuizScore(quizAttempts: any[] = []) {
+function calculateAverageQuizScore(quizAttempts: any[] = []): number {
   if (!quizAttempts?.length) return 0;
   const validAttempts = quizAttempts.filter(attempt => typeof attempt?.score === 'number');
   if (!validAttempts.length) return 0;

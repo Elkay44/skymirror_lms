@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
-import { Key, PlusCircle, Copy, Eye, EyeOff, Clock, AlertTriangle } from 'lucide-react';
+import { PlusCircle, Copy, Eye, EyeOff, Clock, AlertTriangle } from 'lucide-react';
 
 interface ApiKey {
   id: string;
@@ -23,7 +23,6 @@ export default function InstructorApiKeysSettings() {
   const [showKeyId, setShowKeyId] = useState<string | null>(null);
   const [newKeyName, setNewKeyName] = useState('');
   const [newKeyPermissions, setNewKeyPermissions] = useState<string[]>(['read:courses']);
-  const [isCreatingKey, setIsCreatingKey] = useState(false);
   const [newKeyValue, setNewKeyValue] = useState<string | null>(null);
 
   const permissionOptions = [
@@ -102,7 +101,6 @@ export default function InstructorApiKeysSettings() {
         throw new Error('Failed to revoke API key');
       }
       
-      const data = await response.json();
       setApiKeys(prev => prev.map(key => 
         key.id === keyId ? { ...key, status: 'revoked' as const } : key
       ));
@@ -148,13 +146,13 @@ export default function InstructorApiKeysSettings() {
         throw new Error('Failed to create API key');
       }
       
-      const data = await response.json();
+      const apiKey = await response.json();
       
       // Set the new key value to show in the UI
-      setNewKeyValue(data.apiKey.key);
+      setNewKeyValue(apiKey.apiKey.key);
       
       // Add the new key to the list
-      setApiKeys(prev => [data.apiKey, ...prev]);
+      setApiKeys(prev => [apiKey.apiKey, ...prev]);
       setNewKeyName('');
       setNewKeyPermissions(['read:courses']);
       toast.success('New API key created');

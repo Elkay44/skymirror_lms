@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+
 import { Shield } from 'lucide-react';
 // Using relative path to avoid path resolution issues
 import StudentLayout from '../../../../components/layouts/StudentLayout';

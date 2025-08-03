@@ -8,8 +8,6 @@ import { toast } from 'react-hot-toast';
 import { 
   UserCircle, 
   BookOpen, 
-  Award, 
-  Users, 
   Save,
   Edit,
   Mail,

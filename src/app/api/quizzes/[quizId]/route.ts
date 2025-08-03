@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -16,21 +16,6 @@ const updateQuizSchema = z.object({
   randomizeQuestions: z.boolean().optional(),
   showCorrectAnswers: z.boolean().optional(),
   isPublished: z.boolean().optional(),
-});
-
-// Question update/create schema
-const questionSchema = z.object({
-  id: z.string().uuid('Invalid question ID').optional(),
-  text: z.string().min(1, 'Question text is required'),
-  type: z.enum(['MULTIPLE_CHOICE', 'SINGLE_CHOICE', 'TRUE_FALSE', 'FILL_IN_BLANK', 'ESSAY']),
-  points: z.number().int().min(1).default(1),
-  order: z.number().int().min(0).optional(),
-  options: z.array(z.object({
-    id: z.string().uuid('Invalid option ID').optional(),
-    text: z.string().min(1, 'Option text is required'),
-    isCorrect: z.boolean(),
-    explanation: z.string().optional(),
-  })).optional(),
 });
 
 /**
@@ -60,7 +45,7 @@ async function logQuizActivity(
 
 // GET handler - Get a specific quiz
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ quizId: string }> }
 ) {
   try {
@@ -73,7 +58,7 @@ export async function GET(
     }
 
     const { quizId } = await params;
-    const searchParams = request.nextUrl.searchParams;
+    const searchParams = new URL(request.url).searchParams;
     const includeQuestions = searchParams.get('includeQuestions') === 'true';
     
     // Get the quiz with optional questions
@@ -166,7 +151,7 @@ export async function GET(
 
 // PATCH handler - Update a quiz
 export async function PATCH(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ quizId: string }> }
 ) {
   try {
@@ -250,7 +235,7 @@ export async function PATCH(
 
 // DELETE handler - Delete a quiz
 export async function DELETE(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ quizId: string }> }
 ) {
   try {

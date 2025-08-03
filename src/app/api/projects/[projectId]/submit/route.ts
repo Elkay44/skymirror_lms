@@ -1,12 +1,12 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 // POST /api/projects/[projectId]/submit - Submit a project (students only)
 export async function POST(
-  req: NextRequest, 
+  req: Request, 
   { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
@@ -137,7 +137,7 @@ export async function POST(
 
 // GET /api/projects/[projectId]/submit - Get submission history (students only)
 export async function GET(
-  req: NextRequest, 
+  _req: Request, 
   { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {

@@ -6,16 +6,12 @@ import Image from 'next/image';
 import { ThumbsUp, Reply, MoreVertical, Edit, Trash, Flag } from 'lucide-react';
 
 interface ForumCommentProps {
-  id: string;
   content: string;
   authorId: string;
   authorName: string;
   authorImage?: string | null;
   createdAt: string;
-  updatedAt?: string;
   likes: number;
-  parentCommentId?: string | null;
-  isReply?: boolean;
   depth?: number;
   onLike?: () => void;
   onReply?: (commentContent: string) => void;
@@ -25,16 +21,12 @@ interface ForumCommentProps {
 }
 
 export function ForumComment({
-  id,
   content,
   authorId,
   authorName,
   authorImage,
   createdAt,
-  updatedAt,
   likes,
-  parentCommentId,
-  isReply = false,
   depth = 0,
   onLike,
   onReply,

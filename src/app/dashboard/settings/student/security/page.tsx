@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
-import { Shield, Save, Key, Lock, Eye, EyeOff } from 'lucide-react';
+import { Save, Key, Lock, Eye, EyeOff } from 'lucide-react';
 
 export default function StudentSecuritySettings() {
   const { data: session } = useSession();

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -61,7 +61,7 @@ interface SearchResult {
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
     // Rate limiting to prevent abuse
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
@@ -511,7 +511,7 @@ async function performSearch(
 }
 
 // POST endpoint for more complex search requests
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     // Rate limiting to prevent abuse
     const ip = req.headers.get('x-forwarded-for') || 'unknown';

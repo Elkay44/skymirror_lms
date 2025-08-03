@@ -1,12 +1,12 @@
 /* eslint-disable */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 // GET /api/admin/showcase - Get all showcase projects
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/admin/showcase - Create or update a showcase project
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Parse and validate request body
-    const body = await req.json();
+    const body = await request.json();
     
     // In a real implementation, you would validate the request body
     // and create/update a showcase project in the database
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
 }
 
 // PATCH /api/admin/showcase - Update showcase project status
-export async function PATCH(req: NextRequest) {
+export async function PATCH(request: Request) {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -137,7 +137,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Parse and validate request body
-    const { projectId, status } = await req.json();
+    const { projectId, status } = await request.json();
 
     if (!projectId || !status) {
       return NextResponse.json(
@@ -175,7 +175,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 // DELETE /api/admin/showcase - Delete a showcase project
-export async function DELETE(req: NextRequest) {
+export async function DELETE(request: Request) {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -200,7 +200,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Get project ID from query parameters
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('id');
 
     if (!projectId) {

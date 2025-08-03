@@ -10,20 +10,6 @@ interface AchievementCriteria {
   achievementId: string;                   // Unique identifier for the achievement
 }
 
-// Interface for a single achievement
-interface Achievement {
-  id: string;      // Unique achievement ID
-  points: number;  // Points awarded for this achievement
-}
-
-// Interface for user's achievements and progress
-interface UserAchievements {
-  id: string;          // User ID
-  points: number;      // Total points earned
-  level: number;       // Current level
-  achievements: Achievement[];  // List of earned achievements
-}
-
 // Database row interfaces
 interface AchievementRow {
   id: string;      // Achievement ID

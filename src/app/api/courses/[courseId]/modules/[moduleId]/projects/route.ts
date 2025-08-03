@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
@@ -51,12 +51,12 @@ const logProjectActivity = async (userId: string | number, action: string, proje
 };
 
 // GET /api/courses/[courseId]/modules/[moduleId]/projects - Get all projects for a module
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ courseId: string; moduleId: string }> }
-): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
   try {
-    const { courseId, moduleId } = await params;
+    // Extract parameters from URL
+    const url = new URL(request.url);
+    const courseId = url.pathname.split('/')[3];
+    const moduleId = url.pathname.split('/')[5];
     const session = await getServerSession(authOptions);
     const userId = session?.user?.id;
 
@@ -121,7 +121,7 @@ export async function GET(
 
 // POST /api/courses/[courseId]/modules/[moduleId]/projects - Create a new project
 export async function POST(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ courseId: string; moduleId: string }> }
 ): Promise<Response> {
   try {
@@ -248,7 +248,15 @@ export async function POST(
           course: { connect: { id: courseId } },
           // Standard fields from schema
           pointsValue: maxScore || 10,
-          isRequiredForCertification: true
+          isRequiredForCertification: true,
+          difficulty: difficulty || 'MEDIUM',
+          estimatedHours: estimatedHours || 0,
+          technologies: technologies || '',
+          requirements: requirements || '',
+          allowTeamSubmissions,
+          maxTeamSize: maxTeamSize || 3,
+          githubTemplateUrl: githubTemplateUrl || null,
+          skills: skillsRequired || []
         }
       });
     });

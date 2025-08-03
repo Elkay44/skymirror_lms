@@ -7,13 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Search, MessageSquare, Clock, Check, X, User, Star } from "lucide-react";
-import { format } from "date-fns";
+import { Search, MessageSquare, Clock, X, User, Star } from "lucide-react";
+
 import { useToast } from "@/components/ui/use-toast";
 import { Mentor, fetchMentors, requestMentorship, fetchMyMentorships, cancelMentorshipRequest } from "@/services/mentorship";
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { toast } from 'sonner';
+
 
 interface MentorshipRequest {
   id: string;
@@ -152,10 +152,10 @@ export default function MentorsPage() {
   const [mentorshipRequests, setMentorshipRequests] = useState<MentorshipRequest[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('browse');
-  const [myMentorships, setMyMentorships] = useState<MentorshipRequest[]>([]);
-  const [isRequesting, setIsRequesting] = useState(false);
-  const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+
+
+
 
   useEffect(() => {
     const loadData = async () => {
@@ -242,9 +242,9 @@ export default function MentorsPage() {
         description: `Your request has been sent to ${mentor.name}`,
       });
       
-      // Refresh the list of mentorships
-      const myMentorships = await fetchMyMentorships();
-      setMyMentorships(myMentorships);
+      // Refresh the list of mentorship requests
+      const newRequests = await fetchMyMentorships();
+      setMentorshipRequests(newRequests);
       
     } catch (error) {
       console.error('Error requesting mentorship:', error);

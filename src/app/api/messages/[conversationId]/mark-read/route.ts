@@ -1,15 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(
-  req: NextRequest,
-  { params }: { params: { conversationId: string } },
-  context: { params: { conversationId: string } }
+  _req: Request,
+  { params }: { params: Promise<{ conversationId: string }> }
 ) {
   try {
-    const conversationId = params.conversationId;
+    const { conversationId } = await params;
 
     // Get user session
     const session = await getServerSession(authOptions);

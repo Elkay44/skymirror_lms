@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from 'react';
 import { FilterButton } from './FilterButton';
 
 export interface FilterOption {

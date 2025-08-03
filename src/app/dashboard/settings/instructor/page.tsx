@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
-import { Save, UserCircle, BookOpen, GraduationCap } from 'lucide-react';
+import { Save, BookOpen } from 'lucide-react';
 
 export default function InstructorSettings() {
   const { data: session, update } = useSession();

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
-import { Bell, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 
 export default function StudentNotificationsSettings() {
   const { data: session } = useSession();

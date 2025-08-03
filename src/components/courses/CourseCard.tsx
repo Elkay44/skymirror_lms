@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Star, StarHalf, Heart, Share2, Clock, Users, BookOpen } from "lucide-react"
+import { Star, StarHalf, Heart, Clock, Users, BookOpen } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -32,7 +32,6 @@ export function CourseCard({
   className = '',
   onEnroll,
   onToggleFavorite,
-  onShare,
 }: CourseCardProps) {
   const { data: session } = useSession()
   const router = useRouter()
@@ -46,28 +45,16 @@ export function CourseCard({
     shortDescription,
     imageUrl,
     category,
-    level,
     price,
     discountedPrice,
     duration,
     isEnrolled,
-    isNew,
-    isBestSeller,
     progress,
-    modules,
-    projects,
-    grades,
-    promoVideo,
     instructor,
     rating,
     reviewCount,
     studentCount,
-    lessonCount,
-    requirements,
-    learningOutcomes,
-    targetAudience,
-    isPublished,
-    isPrivate
+    lessonCount
   } = course
 
   const handleEnroll = async () => {
@@ -114,22 +101,7 @@ export function CourseCard({
     }
   }
 
-  const handleShare = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (onShare) {
-      onShare(course)
-    } else if (navigator.share) {
-      navigator.share({
-        title: course.title,
-        text: course.shortDescription,
-        url: `${window.location.origin}/courses/${course.slug}`,
-      }).catch(console.error)
-    } else {
-      navigator.clipboard.writeText(`${window.location.origin}/courses/${course.slug}`)
-      toast.success('Link copied to clipboard!')
-    }
-  }
+
 
   const formatDuration = (minutes: number): string => {
     const hours = Math.floor(minutes / 60)

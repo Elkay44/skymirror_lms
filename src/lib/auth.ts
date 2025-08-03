@@ -1,6 +1,6 @@
 // Enhanced authentication system with security best practices
 /* eslint-disable */
-import { AuthOptions, User, Session, DefaultSession } from 'next-auth';
+import { AuthOptions, User, Session } from 'next-auth';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import prisma from './prisma-extensions';
@@ -11,16 +11,6 @@ import { logger } from './logger';
 // Simple base URL configuration
 const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 console.log('Auth base URL:', baseUrl);
-
-// Simple URL validation function
-const isValidUrl = (url: string): boolean => {
-  try {
-    // Just check if it's a relative path or a valid URL
-    return url.startsWith('/') || Boolean(new URL(url));
-  } catch {
-    return false;
-  }
-};
 
 // Extend NextAuth types with our custom fields
 declare module 'next-auth' {
@@ -214,7 +204,7 @@ const authOptions: AuthOptions = {
     updateAge: 24 * 60 * 60, // 24 hours
   } as const,
   callbacks: {
-    async signIn({ user, account, profile, email, credentials }) {
+    async signIn({ user }) {
       try {
         if (!user) {
           logger.error('No user in signIn callback');

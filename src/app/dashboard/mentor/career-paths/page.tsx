@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
+
 import Link from 'next/link';
 import {
   Target,
-  ArrowRight,
   Search,
   ChevronRight,
   Clock,
@@ -15,7 +14,6 @@ import {
   BookOpen,
   Plus,
   Filter,
-  ExternalLink,
   Edit
 } from 'lucide-react';
 
@@ -38,7 +36,7 @@ interface CareerPath {
 }
 
 export default function CareerPathsPage() {
-  const { data: session } = useSession();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedLevel, setSelectedLevel] = useState<string>('ALL');

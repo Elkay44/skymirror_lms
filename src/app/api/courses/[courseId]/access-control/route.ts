@@ -1,15 +1,15 @@
 /* eslint-disable */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
 
 // GET /api/courses/[courseId]/access-control - Get access control settings
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
     // Get the course ID from the URL
-    const courseId = request.nextUrl.pathname.split('/').pop() || '';
+    const url = new URL(request.url);
+    const courseId = url.pathname.split('/').pop() || '';
     
     // Validate course ID format
     if (!courseId || !courseId.match(/^[a-z0-9-]+$/i)) {
@@ -58,10 +58,11 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/courses/[courseId]/access-control - Update access control settings
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     // Get the course ID from the URL
-    const courseId = request.nextUrl.pathname.split('/').pop() || '';
+    const url = new URL(request.url);
+    const courseId = url.pathname.split('/').pop() || '';
     
     // Validate course ID format
     if (!courseId || !courseId.match(/^[a-z0-9-]+$/i)) {

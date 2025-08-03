@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useState, ReactNode } from 'react';
+import { useCallback } from 'react';
 import { CourseFormData } from '@/types/course';
 import { CourseFormProvider, FormData, Level, ApiLevel } from '@/context/CourseFormContext';
 import { CourseForm } from './CourseForm';
@@ -21,11 +21,10 @@ const levelToApi = {
 type FormLevel = Level;
 type ApiFormLevel = ApiLevel;
 
-type CourseFormWrapperProps = {
-  children: React.ReactNode;
+interface CourseFormWrapperProps {
+  children?: React.ReactNode;
   initialData?: Partial<CourseFormData>;
   onSubmit: (data: CourseFormData) => Promise<void>;
-  isSubmitting?: boolean;
   isEditMode?: boolean;
   onSuccess?: (courseId: string) => void;
   onError?: (error: Error) => void;
@@ -46,14 +45,10 @@ const toApiLevel = (level: FormLevel): ApiFormLevel => {
 export function CourseFormWrapper({
   initialData,
   onSubmit,
-  isSubmitting = false,
   isEditMode = false,
   onSuccess,
   onError,
-  children,
 }: CourseFormWrapperProps) {
-  const [isSubmittingState, setIsSubmittingState] = useState(false);
-  const effectiveIsSubmitting = isSubmitting || isSubmittingState;
   
   // Convert API data to form format if in edit mode
   const getFormInitialData = useCallback((): Partial<FormData> | undefined => {
@@ -104,7 +99,6 @@ export function CourseFormWrapper({
   const handleSubmit = useCallback(
     async (formData: FormData) => {
       try {
-        setIsSubmittingState(true);
 
         // Convert form data to API format
         const apiData: CourseFormData = {
@@ -135,7 +129,6 @@ export function CourseFormWrapper({
           onError(error instanceof Error ? error : new Error('An unknown error occurred'));
         }
       } finally {
-        setIsSubmittingState(false);
       }
     },
     [onSubmit, onSuccess, onError, initialData]

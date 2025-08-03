@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -59,12 +59,13 @@ interface SubmissionResponse {
 }
 
 export async function GET(
-  req: NextRequest, 
+  req: Request, 
   { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
     const { courseId } = await params;
-    const searchParams = req.nextUrl.searchParams;
+    const url = new URL(req.url);
+    const searchParams = url.searchParams;
     const status = searchParams.get('status') || 'submitted';
     
     // Get the current user session

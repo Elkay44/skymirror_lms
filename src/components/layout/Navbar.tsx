@@ -1,10 +1,9 @@
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { useState } from 'react';
+
 
 export default function Navbar() {
   const { data: session } = useSession();
-  const [isOpen, setIsOpen] = useState(false);
 
   const isAdmin = session?.user?.role === 'ADMIN';
   const isInstructor = session?.user?.role === 'INSTRUCTOR' || isAdmin;

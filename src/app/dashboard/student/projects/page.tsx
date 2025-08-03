@@ -7,8 +7,6 @@ import {
   Calendar, 
   Code2, 
   FileCheck, 
-  Github, 
-  Globe, 
   HelpCircle,
   Clock,
   Award,

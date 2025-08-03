@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { Award, ExternalLink, RefreshCw, AlertTriangle, Download, Share } from 'lucide-react';
+import { Award, ExternalLink, RefreshCw, AlertTriangle, Share } from 'lucide-react';
 // Using relative path to avoid path resolution issues
 import StudentLayout from '../../../../components/layouts/StudentLayout';
 import Link from 'next/link';

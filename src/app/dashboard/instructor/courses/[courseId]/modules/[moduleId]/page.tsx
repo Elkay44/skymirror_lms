@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Tooltip } from '@/components/ui/tooltip';
+
 import { 
   ArrowLeft, 
   Eye, 
@@ -11,17 +11,13 @@ import {
   LayoutGrid, 
   Loader2, 
   MessageCircle,
-  BarChart4,
   Plus,
   Settings, 
-  Trash,
-  Trash2,
   BookOpen,
   ClipboardList,
   HelpCircle, 
   GraduationCap, 
   CheckCircle2, 
-  Copy, 
   GripVertical, 
   Video, 
   FileCheck2, 
@@ -34,18 +30,17 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
 import { ModulePages } from './_components/ModulePages';
 import { ContentBlockEditor } from './_components/ContentBlockEditor';
-import { BlockItem } from './_components/BlockItem';
+
 import { PageLayout } from '../../_components/PageLayout';
 import { 
   Module, 
   ModulePage, 
   ContentBlock, 
-  ContentBlockType,
-  GetModulePagesResponse
+  ContentBlockType
 } from '@/types/module';
 // Use relative paths for module imports to avoid resolution issues
 import { Project } from '../../../../../../../types/project';
-import { Page } from '../../../../../../../types/page';
+
 import { Lesson } from '../../../../../../../types/lesson';
 import { Assignment } from '../../../../../../../types/assignment';
 import { Quiz } from '../../../../../../../types/quiz';
@@ -87,7 +82,7 @@ import {
 import { SortableItem } from "./_components/SortableItem";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { ModuleDiscussions } from "./_components/ModuleDiscussions";
+
 import { Badge } from '@/components/ui/badge';
 
 export default function ModuleDetailsPage() {
@@ -111,14 +106,7 @@ export default function ModuleDetailsPage() {
   const [activeTab, setActiveTab] = useState('pages');
   const [isSorting, setIsSorting] = useState(false);
 
-  const tabs = [
-    { id: 'pages', label: 'Pages' },
-    { id: 'lessons', label: 'Lessons' },
-    { id: 'assignments', label: 'Assignments' },
-    { id: 'quizzes', label: 'Quizzes' },
-    { id: 'projects', label: 'Projects' },
-    { id: 'forum', label: 'Discussion' },
-  ];
+
 
   // Initialize sensors for drag and drop
   const sensors = useSensors(

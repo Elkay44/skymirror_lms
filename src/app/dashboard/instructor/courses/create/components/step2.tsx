@@ -4,8 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useEffect, useState } from 'react';
-import { Plus, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+
+
 
 interface Step2Props {
   formData: {

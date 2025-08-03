@@ -1,9 +1,8 @@
 /* eslint-disable */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
 import { z } from 'zod';
 
 // Validation schema for assignment creation
@@ -17,7 +16,7 @@ const createAssignmentSchema = z.object({
 });
 
 // GET /api/assignments - Get assignments with optional filtering
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -61,7 +60,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/assignments - Create a new assignment
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     

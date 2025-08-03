@@ -19,7 +19,6 @@ import {
   ArrowUp,
   ArrowDown,
   Edit,
-  Trash2,
   FileText
 } from 'lucide-react';
 

@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-export async function PATCH(req: NextRequest) {
+export async function PATCH(req: Request) {
   try {
     // Get the current user session
     const session = await getServerSession(authOptions);
@@ -28,10 +28,10 @@ export async function PATCH(req: NextRequest) {
     // Get profile data from request body
     const data = await req.json();
     const { 
-      expertise, 
-      yearsOfExperience, 
-      education, 
-      teachingPhilosophy,
+      expertise: _expertise, 
+      yearsOfExperience: _yearsOfExperience, 
+      education: _education, 
+      teachingPhilosophy: _teachingPhilosophy,
       bio
     } = data;
     

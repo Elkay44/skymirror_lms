@@ -1,7 +1,6 @@
 'use client';
 
 import { useCourseForm } from '@/context/CourseFormContext';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';

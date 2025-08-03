@@ -46,7 +46,6 @@ export const SortableItem = ({ id, block, onEdit, onDelete }: SortableItemProps)
           ...attributes,
           ...listeners,
         }}
-        isDragging={isDragging}
       />
     </div>
   );

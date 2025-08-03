@@ -7,7 +7,6 @@ import {
   Bell,
   Book,
   BookOpen,
-  BookPlus,
   CheckCircle,
   ChevronDown,
   ChevronLeft,
@@ -48,7 +47,6 @@ import {
   TrendingUp,
   Upload,
   User,
-  UserPlus,
   Users,
   X,
 } from 'lucide-react';
@@ -89,7 +87,6 @@ export const Icons: Record<string, React.ElementType<LucideProps>> = {
   arrowRight: ArrowRight,
   award: Award,
   barChart: BarChart2,
-  bookPlus: BookPlus,
   bell: Bell,
   book: Book,
   bookOpen: BookOpen,

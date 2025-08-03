@@ -15,9 +15,6 @@ interface ProgressUpdateData {
   completedAt?: Date;
 }
 
-interface ProgressData {
-  enrollmentId: string;
-}
 
 interface Enrollment {
   id: string;
@@ -43,25 +40,6 @@ interface Lesson {
 interface Quiz {
   id: string;
   moduleId: string;
-}
-
-interface LessonProgress {
-  id: string;
-  userId: string;
-  lessonId: string;
-  isCompleted: boolean;
-  completedAt: Date | null;
-}
-
-interface QuizAttempt {
-  id: string;
-  userId: string;
-  quizId: string;
-  score: number;
-  passed: boolean;
-  answers: any;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 // Helper function to safely execute raw queries
@@ -190,30 +168,6 @@ async function calculateCourseProgress(enrollmentId: string): Promise<number> {
   } catch (error) {
     console.error('Error calculating course progress:', error);
     throw new Error('Failed to calculate course progress');
-  }
-}
-
-async function checkAndIssueCertificate(enrollmentId: string) {
-  const progress = await calculateCourseProgress(enrollmentId);
-  
-  if (progress >= 100) {
-    // Check if certificate already exists using raw query
-    const existingCertificate = await prisma.$queryRaw<{id: string}[]>`
-      SELECT id FROM "Certificate" WHERE "enrollmentId" = ${enrollmentId} LIMIT 1
-    `;
-
-    if (existingCertificate.length > 0) {
-      return NextResponse.json({ error: 'Certificate already issued' }, { status: 400 });
-    }
-
-    // Trigger certificate issuance
-    await fetch('/api/certificates/automation', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ enrollmentId }),
-    });
   }
 }
 

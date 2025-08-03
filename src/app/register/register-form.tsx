@@ -48,7 +48,6 @@ export default function RegisterForm() {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
     setValue,
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -58,7 +57,7 @@ export default function RegisterForm() {
     },
   });
 
-  const password = watch('password');
+
 
   // Handle form submission
   const onSubmit = async (data: RegisterFormValues) => {

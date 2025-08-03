@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+
 import axios from 'axios';
 
 interface LearningPreferences {
@@ -20,7 +20,7 @@ interface LearningPathData {
 }
 
 export default function LearningPathView() {
-  const { data: session } = useSession();
+
   const [learningPath, setLearningPath] = useState<LearningPathData | null>(null);
   const [loading, setLoading] = useState(true);
   const [preferences, setPreferences] = useState<LearningPreferences>({

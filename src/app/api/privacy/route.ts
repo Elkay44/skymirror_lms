@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 // GET: Fetch privacy settings for the current user
-export async function GET(req: NextRequest) {
+export async function GET(_req: Request) {
   try {
     // Authenticate the user
     const session = await getServerSession(authOptions);
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST: Update privacy settings for the current user
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     // Authenticate the user
     const session = await getServerSession(authOptions);
@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
 }
 
 // Request data export (GDPR compliance)
-export async function PUT(req: NextRequest) {
+export async function PUT(req: Request) {
   try {
     // Authenticate the user
     const session = await getServerSession(authOptions);

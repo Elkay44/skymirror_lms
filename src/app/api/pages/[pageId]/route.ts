@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic'; // Disable caching for this route
 import { z } from 'zod';
@@ -26,19 +26,15 @@ const logPageActivity = async (userId: string | number, action: string, pageId: 
 };
 
 // GET handler - Get a specific lesson page
-type RouteParams = {
-  pageId: string;
-};
 
-type RouteHandler = (
-  request: NextRequest,
-  context: { params: RouteParams }
-) => Promise<Response | NextResponse>;
 
-const GET: RouteHandler = async (request, { params }) => {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ pageId: string }> }
+) {
   try {
-    const { pageId } = params;
-    const searchParams = request.nextUrl.searchParams;
+    const { pageId } = await params;
+    const searchParams = new URL(request.url).searchParams;
     const includeContent = searchParams.get('includeContent') === 'true';
     const session = await getServerSession(authOptions);
     
@@ -130,7 +126,10 @@ const GET: RouteHandler = async (request, { params }) => {
 }
 
 // PATCH handler - Update a lesson
-const PATCH: RouteHandler = async (request, { params }) => {
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ pageId: string }> }
+) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -140,7 +139,7 @@ const PATCH: RouteHandler = async (request, { params }) => {
       );
     }
 
-    const { pageId } = params;
+    const { pageId } = await params;
     const body = await request.json();
 
     // Validate request body
@@ -224,7 +223,10 @@ const PATCH: RouteHandler = async (request, { params }) => {
 }
 
 // DELETE handler - Delete a lesson
-const DELETE: RouteHandler = async (request, { params }) => {
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ pageId: string }> }
+) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -234,7 +236,7 @@ const DELETE: RouteHandler = async (request, { params }) => {
       );
     }
 
-    const { pageId } = params;
+    const { pageId } = await params;
 
     // Check if lesson exists
     const existingLesson = await prisma.lesson.findUnique({

@@ -1,12 +1,12 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 // GET /api/projects/[projectId] - Get a specific project
 export async function GET(
-  req: NextRequest, 
+  _req: Request, 
   { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
@@ -132,7 +132,7 @@ export async function GET(
 
 // PATCH /api/projects/[projectId] - Update a project (instructors only)
 export async function PATCH(
-  req: NextRequest, 
+  req: Request, 
   { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
@@ -234,7 +234,7 @@ export async function PATCH(
 
 // DELETE /api/projects/[projectId] - Delete a project (instructors only)
 export async function DELETE(
-  req: NextRequest, 
+  _req: Request, 
   { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,15 +31,11 @@ import {
   BarChart3,
   Users2,
   FileQuestion,
-  GraduationCap,
-  Target,
-  ExternalLink,
   BookMarked,
   Info,
-  AlertCircle,
-  Search
+  AlertCircle
 } from 'lucide-react';
-import { Course, Module, Lesson, Project } from '@/types/course-detail';
+import { Course, Module } from '@/types/course-detail';
 
 // Define tab types
 type TabType = 'overview' | 'modules' | 'students' | 'analytics' | 'settings';
@@ -589,9 +585,9 @@ const AnalyticsTab = () => (
 
 // Main component
 export default function CourseDetailPage() {
-  const { data: session } = useSession();
+  const { data: _session } = useSession();
   const params = useParams();
-  const router = useRouter();
+
   const courseId = params.courseId as string;
   
   const [course, setCourse] = useState<Course | null>(null);

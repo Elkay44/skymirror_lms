@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { Award, Search, CheckCircle, XCircle, AlertTriangle, FileCheck, RefreshCw } from 'lucide-react';
+import { Award, CheckCircle, XCircle, AlertTriangle, FileCheck, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
 interface Course {

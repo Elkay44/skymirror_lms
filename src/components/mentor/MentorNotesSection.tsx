@@ -11,7 +11,7 @@ const MentorNotesSection: React.FC<MentorNotesSectionProps> = ({ menteeId, initi
   const [notes, setNotes] = useState<string>(initialNotes || '');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [quickNotes, setQuickNotes] = useState<string[]>([
+  const quickNotes = [
     'Shows strong analytical skills',
     'Needs help with time management',
     'Great progress in programming concepts',
@@ -20,7 +20,7 @@ const MentorNotesSection: React.FC<MentorNotesSectionProps> = ({ menteeId, initi
     'Struggling with algorithm complexity',
     'Excellent communication and collaboration',
     'Needs to focus on project planning'
-  ]);
+  ];
   
   useEffect(() => {
     setNotes(initialNotes || '');

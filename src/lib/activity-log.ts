@@ -144,6 +144,24 @@ export async function logCourseActivity(
 }
 
 /**
+ * Log module related activity
+ */
+export async function logModuleActivity(
+  userId: number,
+  moduleId: string,
+  action: ActivityAction,
+  details: ActivityLogDetails = {}
+) {
+  return await logActivity(
+    userId,
+    action,
+    'module',
+    moduleId,
+    details
+  );
+}
+
+/**
  * Log instructor related activity
  */
 export async function logInstructorActivity(

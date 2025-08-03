@@ -1,12 +1,12 @@
 /* eslint-disable */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 // GET /api/analytics/instructor - Get instructor analytics
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/analytics/instructor - Get filtered instructor analytics
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Parse request body for filters
-    const { startDate, endDate, courseId } = await req.json();
+    const { startDate, endDate, courseId } = await request.json();
 
     // In a real implementation, this would fetch filtered instructor analytics
     // For now, we'll return mock data

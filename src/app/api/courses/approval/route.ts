@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -10,18 +10,11 @@ const courseSubmissionSchema = z.object({
   submissionNotes: z.string().optional(),
 });
 
-// Schema for course review decision
-const courseReviewSchema = z.object({
-  courseId: z.string().min(1, 'Course ID is required'),
-  decision: z.enum(['approve', 'reject']),
-  feedback: z.string().optional(),
-});
-
 // Ensure the API route is always dynamically rendered
 export const dynamic = 'force-dynamic';
 
 // POST /api/courses/approval/submit - Submit a course for approval
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
@@ -133,7 +126,7 @@ export async function POST(req: NextRequest) {
 }
 
 // GET /api/courses/approval - Get pending course approvals (admin only)
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {

@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { createSuccessResponse, createErrorResponse, createUnauthorizedResponse, createNotFoundResponse } from '@/lib/api-utils';
+import { createSuccessResponse, createErrorResponse, createUnauthorizedResponse } from '@/lib/api-utils';
 import { courseFormSchema } from '@/validations/course';
 import { z } from 'zod';
-import { withErrorHandling, CommonErrors } from '@/lib/api-response';
 import { convertBase64ToUrl } from '@/utils/imageUtils';
 import { generateCourseSlug } from '@/utils/slugify';
 
@@ -13,47 +12,6 @@ import { generateCourseSlug } from '@/utils/slugify';
 const batchOperationsSchema = z.object({
   courseIds: z.array(z.string()).min(1, 'At least one course ID is required'),
   operation: z.enum(['publish', 'unpublish', 'archive', 'delete']),
-});
-
-// Schema for course search and pagination
-const courseSearchSchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(10),
-  search: z.string().optional(),
-  category: z.string().optional(),
-  categories: z.array(z.string()).optional(),
-  tags: z.array(z.string()).optional(),
-  difficulty: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']).optional(),
-  difficulties: z.array(z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED'])).optional(),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED', 'PENDING_APPROVAL']).optional(),
-  statuses: z.array(z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED', 'PENDING_APPROVAL'])).optional(),
-  sortBy: z.enum(['title', 'createdAt', 'updatedAt', 'price', 'enrollmentCount', 'rating', 'popularity', 'completionRate']).default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc'),
-  instructorId: z.coerce.number().optional(),
-  instructorIds: z.array(z.coerce.number()).optional(),
-  language: z.string().optional(),
-  languages: z.array(z.string()).optional(),
-  price: z.enum(['free', 'paid', 'all']).default('all'),
-  minPrice: z.coerce.number().min(0).optional(),
-  maxPrice: z.coerce.number().min(0).optional(),
-  featured: z.enum(['true', 'false']).transform(val => val === 'true').optional(),
-  withEnrollmentStats: z.enum(['true', 'false']).transform(val => val === 'true').optional(),
-  createdAfter: z.string().optional().refine(
-    (val) => val ? !isNaN(Date.parse(val)) : true,
-    { message: "createdAfter must be a valid ISO date string" }
-  ),
-  createdBefore: z.string().optional().refine(
-    (val) => val ? !isNaN(Date.parse(val)) : true,
-    { message: "createdBefore must be a valid ISO date string" }
-  ),
-  updatedAfter: z.string().optional().refine(
-    (val) => val ? !isNaN(Date.parse(val)) : true,
-    { message: "updatedAfter must be a valid ISO date string" }
-  ),
-  updatedBefore: z.string().optional().refine(
-    (val) => val ? !isNaN(Date.parse(val)) : true,
-    { message: "updatedBefore must be a valid ISO date string" }
-  ),
 });
 
 // Helper function to convert string IDs to numbers
@@ -66,7 +24,7 @@ function toNumber(id: string | number | undefined): number | undefined {
 export const dynamic = 'force-dynamic';
 
 // POST /api/courses - Create a new course
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   console.log('=== STARTING COURSE CREATION ===');
   
   try {
@@ -115,15 +73,17 @@ export async function POST(req: NextRequest) {
         slug: slug,
         image: validatedData.imagePreview ? await convertBase64ToUrl(validatedData.imagePreview) : null,
         isPublished: validatedData.isPublished,
-        price: 0, // Default price
+        isPrivate: validatedData.isPrivate || false,
+        price: validatedData.price || 0,
         level: validatedData.level.toUpperCase(), // Store in uppercase in the database
         category: validatedData.category,
         language: validatedData.language,
-        instructorId: parseInt(session.user.id),
+        instructorId: session.user.id, // Keep as string since schema expects String
+        status: validatedData.isPublished ? 'PUBLISHED' : 'DRAFT',
+        featured: validatedData.featured || false,
         requirements: JSON.stringify(validatedData.requirements),
         learningOutcomes: JSON.stringify(validatedData.learningOutcomes),
         targetAudience: JSON.stringify(validatedData.targetAudience),
-        status: validatedData.isPublished ? 'PUBLISHED' : 'DRAFT'
       }
     });
 
@@ -198,7 +158,7 @@ export async function POST(req: NextRequest) {
 }
 
 // GET /api/courses - Get all available courses with filtering, search, and pagination
-export async function GET(req: NextRequest) {
+export async function GET(req: Request) {
   console.log('=== STARTING COURSES API HANDLER ===');
   console.log('Request URL:', req.url);
   
@@ -462,7 +422,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/courses/batch - Perform batch operations on courses
-export async function PATCH(req: NextRequest) {
+export async function PATCH(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {

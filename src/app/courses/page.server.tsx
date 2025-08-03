@@ -1,6 +1,6 @@
 "use server";
 
-import { Course } from '@/types/course.types';
+
 import { prisma } from '@/lib/prisma';
 import { CourseCard } from '@/components/courses/CourseCard';
 import { CourseFilters } from '@/components/courses/CourseFilters';

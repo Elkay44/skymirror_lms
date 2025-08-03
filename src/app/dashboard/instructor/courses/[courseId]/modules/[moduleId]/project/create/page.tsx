@@ -4,14 +4,14 @@ import React, { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-import { ArrowLeft, Code, GitBranch, Calendar, Link2, Info, Clock } from 'lucide-react';
+import { ArrowLeft, Code, GitBranch, Info } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -149,7 +149,7 @@ export default function CreateProjectPage() {
           : {})
       };
       
-      const response = await axios.post(
+      await axios.post(
         `/api/courses/${courseId}/modules/${moduleId}/projects`,
         apiData
       );

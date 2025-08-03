@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -9,7 +9,7 @@ import { authOptions } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
 // GET /api/admin/courses/approval - Get courses pending approval
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/admin/courses/approval - Process a course approval action
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
     // Check if user is authenticated
     const session = await getServerSession(authOptions);
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Parse request body
-    const body = await req.json();
+    const body = await request.json();
     const { courseId, action, feedback } = body;
 
     if (!courseId || !action) {

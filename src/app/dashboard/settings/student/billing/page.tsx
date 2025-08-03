@@ -7,17 +7,12 @@ import {
   CreditCard, 
   Clock, 
   Download, 
-  Save, 
   PlusCircle, 
   CheckCircle, 
   Calendar, 
   DollarSign, 
   ChevronRight, 
-  AlertCircle,
-  ExternalLink,
-  Trash2,
-  Shield,
-  Tag
+  Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 

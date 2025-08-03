@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { PageLayout } from '../../_components/PageLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { getModules, createModule, updateModule, deleteModule, reorderModules } from '@/lib/api/modules';
-import type { Module, ModuleStatus, CreateModuleRequest, UpdateModuleRequest } from '@/types/module';
+import type { Module, CreateModuleRequest, UpdateModuleRequest } from '@/types/module';
 import { ModuleForm } from '../_components/ModuleForm';
 import { SortableModuleCard } from '../_components/SortableModuleCard';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
@@ -406,7 +406,7 @@ interface CourseError extends Error {
 export default function CourseModulesPage() {
   const router = useRouter();
   const [error, setError] = useState<CourseError | null>(null);
-  const [courseId] = useState(() => {
+  const [_courseId] = useState(() => {
     if (typeof window !== 'undefined') {
       const pathParts = window.location.pathname.split('/');
       return pathParts[pathParts.indexOf('courses') + 1];

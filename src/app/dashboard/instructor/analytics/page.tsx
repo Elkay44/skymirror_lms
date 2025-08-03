@@ -2,9 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  BarChart, 
   Bar, 
-  LineChart, 
   Line, 
   XAxis, 
   YAxis, 
@@ -16,7 +14,6 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
-  AreaChart,
   Area,
   ComposedChart
 } from 'recharts';
@@ -34,9 +31,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { format, subDays, isWithinInterval } from 'date-fns';
 import { 
   Users,
   CheckCircle,
@@ -44,7 +39,6 @@ import {
   FileText,
   BookOpen
 } from 'lucide-react';
-import Link from 'next/link';
 import type { TooltipProps } from 'recharts';
 
 // Types for analytics data

@@ -75,7 +75,7 @@ export async function PUT(request: Request) {
 
     // Parse the request body
     const data = await request.json();
-    const { name, bio, location, studentProfile } = data;
+    const { name, bio, location } = data;
 
     // Find the user
     const user = await prisma.user.findUnique({

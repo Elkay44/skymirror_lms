@@ -3,7 +3,7 @@
 import { useCourseForm } from '@/context/CourseFormContext';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Upload, Image as ImageIcon, X } from 'lucide-react';
+import { Upload } from 'lucide-react';
 
 export function MediaStep() {
   const { formData, errors, handleChange, handleImageChange } = useCourseForm();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CourseFilters, CourseFiltersType } from '@/components/courses/CourseFilters';
 
@@ -8,7 +8,7 @@ export default function CoursesPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [filters, setFilters] = useState({
+  const [filters, _setFilters] = useState({
     search: searchParams.get('search') || '',
     category: searchParams.get('category') || 'all',
     level: searchParams.get('level') || 'all',

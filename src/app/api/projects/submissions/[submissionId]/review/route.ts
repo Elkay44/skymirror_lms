@@ -1,12 +1,12 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import prisma from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 // POST /api/projects/submissions/[submissionId]/review - Review a project submission (instructors and mentors)
 export async function POST(
-  req: NextRequest, 
+  req: Request, 
   { params }: { params: Promise<{ submissionId: string }> }
 ) {
   try {
@@ -29,7 +29,6 @@ export async function POST(
     
     const { submissionId } = await params;
     const userId = session.user.id;
-    const role = session.user.role;
     
     // Get submission with project and student info
     const submission = await prisma.projectSubmission.findUnique({

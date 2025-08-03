@@ -2,19 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+
 import { 
   ArrowLeft, 
-  Calendar, 
   Clock, 
   FileText, 
   Upload, 
   Github,
   CheckCircle,
-  Link as LinkIcon,
-  Award,
   AlertCircle
 } from 'lucide-react';
 
@@ -47,11 +44,10 @@ interface Submission {
 
 export default function ProjectDetail() {
   const { data: session } = useSession();
-  const router = useRouter();
+  const params = useParams();
   const searchParams = useSearchParams();
   
   // Get project ID from the URL parameters or search params
-  const params = useParams();
   const projectIdFromParams = params?.projectId;
   const projectIdFromSearch = searchParams?.get('id');
   const projectId = projectIdFromParams || projectIdFromSearch;

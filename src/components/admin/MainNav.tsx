@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { Menu, Search, Bell, User, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,7 +18,7 @@ const UserMenu = () => {
 
 // Main navigation component
 export const MainNav = () => {
-  const { data: session } = useSession();
+
   const [searchQuery, setSearchQuery] = useState('');
 
   return (

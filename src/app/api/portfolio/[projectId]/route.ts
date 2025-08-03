@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
@@ -9,7 +9,7 @@ import prisma from '@/lib/prisma';
  * Get a specific project in the portfolio
  */
 export async function GET(
-  req: NextRequest, 
+  _req: Request, 
   { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
@@ -115,7 +115,7 @@ export async function GET(
  * Update a project in the portfolio
  */
 export async function PATCH(
-  req: NextRequest, 
+  req: Request, 
   { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {

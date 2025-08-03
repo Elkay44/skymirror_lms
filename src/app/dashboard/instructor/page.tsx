@@ -6,17 +6,15 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
-  LineChart, Line, PieChart as ReChartPieChart, Pie, Cell, AreaChart, Area
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  PieChart as ReChartPieChart, Pie, Cell
 } from 'recharts';
 import { 
   BookOpen, Video, MessageSquare, Clock, Users, FileText, User,
-  Calendar, FileCheck, Award, MessageSquare as MessageSquareText, User as UserIcon,
-  ArrowRight, Star, CheckCircle, ChevronRight, ChevronDown, MoreHorizontal, Check, Zap, TrendingUp, DollarSign, Plus,
-  BarChart2, LineChart as LineChartIcon, PieChart as PieChartIcon,
-  Book as BookIcon, BookOpen as BookOpenText, BookMarked, BookKey, BookPlus, BookCheck, BookX, BookMinus
+  Calendar, Star, ChevronDown, Check, Zap, TrendingUp, DollarSign,
+  PieChart as PieChartIcon
 } from 'lucide-react';
-import Image from 'next/image';
+
 
 // Type definitions
 interface BaseCourse {
@@ -114,35 +112,11 @@ interface DashboardData {
 }
 
 // Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { 
-      duration: 0.5,
-      ease: 'easeOut',
-    }, 
-  },
-};
 
-// Helper function to format currency
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
-};
+
+
+
 
 // Helper function to format dates
 const formatDate = (dateString?: string): string => {
@@ -154,104 +128,12 @@ const formatDate = (dateString?: string): string => {
   });
 };
 
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5, delay: 0.1 },
-};
 
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
 
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-};
 
-const sectionVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.5 },
-  },
-};
-
-const getSessionStatusColor = (status: string) => {
-  switch (status) {
-    case 'UPCOMING':
-      return 'bg-blue-100 text-blue-800';
-    case 'LIVE':
-      return 'bg-green-100 text-green-800';
-    case 'COMPLETED':
-      return 'bg-gray-100 text-gray-800';
-    case 'CANCELLED':
-      return 'bg-red-100 text-red-800';
-    default:
-      return 'bg-gray-100 text-gray-800';
-  }
-};
-
-const fallbackData: DashboardData = {
-  instructorName: "John Doe",
-  recentCourses: [],
-  recentActivity: [],
-  upcomingSessions: [],
-  projectPerformance: [
-    {
-      id: "1",
-      title: "Database Design",
-      courseId: "1",
-      courseTitle: "Full Stack Development",
-      submissions: 15,
-      pendingReview: 2,
-      averageScore: 85,
-      dueDate: "2023-06-20T23:59:59Z",
-      status: "SUBMITTED"
-    },
-    {
-      id: "2",
-      title: "API Integration",
-      courseId: "2",
-      courseTitle: "Advanced TypeScript",
-      submissions: 10,
-      pendingReview: 1,
-      averageScore: 92,
-      dueDate: "2023-06-25T23:59:59Z",
-      status: "SUBMITTED"
-    }
-  ],
-  earningsData: [
-    { month: 'Jan', amount: 4000 },
-    { month: 'Feb', amount: 3000 },
-    { month: 'Mar', amount: 5000 },
-    { month: 'Apr', amount: 2780 },
-    { month: 'May', amount: 1890 },
-    { month: 'Jun', amount: 2390 }
-  ],
-  projectAnalytics: {
-    labels: ['In Progress', 'Submitted', 'Reviewed', 'Approved'],
-    data: [12, 19, 3, 5]
-  },
-  overallStats: {
-    totalStudents: 120,
-    totalCourses: 10,
-    totalRevenue: 12500,
-    newEnrollments: 30,
-    completionRate: 82,
-    averageRating: 4.7
-  },
-};
 
 export default function InstructorDashboard(): JSX.Element {
-  const { data: session, status } = useSession({
+  const { data: session } = useSession({
     required: true,
     onUnauthenticated() {
       // This redirects to signin if not authenticated
@@ -344,39 +226,9 @@ export default function InstructorDashboard(): JSX.Element {
     );
   }
 
-  // Destructure dashboard data with defaults
-  const {
-    recentCourses = [],
-    recentActivity = [],
-    upcomingSessions = [],
-    projectPerformance = [],
-    overallStats = {
-      totalStudents: 0,
-      totalCourses: 0,
-      totalRevenue: 0,
-      newEnrollments: 0,
-      completionRate: 0,
-      averageRating: 0,
-    },
-    earningsData = [],
-    projectAnalytics = { labels: [], data: [] },
-  } = dashboardData;
 
-  // Helper function to safely format revenue
-  const formatRevenue = (amount?: number): string => {
-    if (amount === undefined) return '$0';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
-  // Safely access course revenue with fallback
-  const getCourseRevenue = (course: Course): number => {
-    return course.revenue ?? 0;
-  };
+
 
   // Helper function to render activity icon
   const renderActivityIcon = (type: Activity['activityType']): ReactElement => {
@@ -690,7 +542,7 @@ export default function InstructorDashboard(): JSX.Element {
                 {dashboardData.recentCourses.slice(0, 3).map((course) => (
                   <div key={course.id} className="flex items-center py-4 first:pt-0 last:pb-0">
                     <div className="h-12 w-12 flex-shrink-0 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center mr-4">
-                      <BookOpenText className="h-6 w-6 text-white" />
+                      <BookOpen className="h-6 w-6 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-base font-medium text-gray-900 truncate">{course.title}</h3>

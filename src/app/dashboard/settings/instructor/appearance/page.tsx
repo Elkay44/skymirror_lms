@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
-import { Layout, Save, Moon, Sun, Monitor } from 'lucide-react';
+import { Save, Moon, Sun, Monitor } from 'lucide-react';
 
 export default function InstructorAppearanceSettings() {
   const { data: session } = useSession();

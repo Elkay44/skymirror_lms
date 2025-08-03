@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { Star, Calendar, MessageSquare, Clock, Users } from 'lucide-react';
+import { Star, Clock, MessageSquare, Users } from 'lucide-react';
 
 export interface MentorProfile {
   id: string;

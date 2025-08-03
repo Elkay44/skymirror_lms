@@ -1,6 +1,6 @@
 'use client';
 
-import { GripVertical, Pencil, Trash2, FileText, Youtube, Video, FileCheck2, FileCode2, ListChecks, Code, Calendar, ExternalLink } from 'lucide-react';
+import { GripVertical, Pencil, Trash2, FileText, Youtube, Video, FileCheck2, ListChecks, Code, Calendar, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -12,11 +12,10 @@ interface BlockItemProps {
   onDelete: () => void;
   isReordering?: boolean;
   isSaving?: boolean;
-  isDragging?: boolean;
   dragHandleProps?: any;
 }
 
-export function BlockItem({ block, onEdit, onDelete, isReordering = false, isSaving = false, isDragging = false, dragHandleProps }: BlockItemProps) {
+export function BlockItem({ block, onEdit, onDelete, isReordering = false, isSaving = false, dragHandleProps }: BlockItemProps) {
   const blockIcons = {
     text: <FileText className="h-4 w-4" />,
     video: <Video className="h-4 w-4" />,

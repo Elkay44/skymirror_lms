@@ -30,7 +30,6 @@ export default function StudentPortfolio() {
   const [featuredProjects, setFeaturedProjects] = useState<PortfolioProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [activeSkills, setActiveSkills] = useState<string[]>([]);
   const [allSkills, setAllSkills] = useState<string[]>([]);
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -65,7 +64,6 @@ export default function StudentPortfolio() {
         setFeaturedProjects(featured);
         setAllSkills(Array.from(skillSet));
       } catch (err: any) {
-        setError(err.message || 'An error occurred while fetching your portfolio');
         console.error('Error fetching portfolio:', err);
       } finally {
         setLoading(false);
@@ -111,7 +109,6 @@ export default function StudentPortfolio() {
         }
       });
     } catch (err: any) {
-      setError(err.message || 'Failed to update project');
       console.error('Error updating project:', err);
     }
   };

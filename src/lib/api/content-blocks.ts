@@ -1,10 +1,6 @@
 import { ContentBlock } from '@/types/module';
 import { fetcher } from '../fetcher';
 
-interface UpdateBlockOrdersRequest {
-  blocks: { id: string; order: number }[];
-}
-
 /**
  * Updates the order of multiple content blocks
  */

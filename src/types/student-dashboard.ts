@@ -1,6 +1,4 @@
-import type { LucideIcon } from 'lucide-react';
-import { Users, Check, Star, MessageSquareText, FileCheck, MessageSquare } from 'lucide-react';
-import React from 'react';
+
 
 // Define course status types for student view
 export type StudentCourseStatus = 'ENROLLED' | 'IN_PROGRESS' | 'COMPLETED';

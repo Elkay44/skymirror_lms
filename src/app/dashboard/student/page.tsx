@@ -4,64 +4,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Clock, Award, Users, FileText, CheckCircle, Star } from 'lucide-react';
+import { Users, FileText, CheckCircle, Star } from 'lucide-react';
 import { StudentDashboardData } from '@/types/student-dashboard';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-
-interface CourseData {
-  id: string;
-  title: string;
-  description: string | null;
-  imageUrl: string | null;
-  totalLessons: number;
-  completedLessons: number;
-  completionPercentage: number;
-  nextLesson?: {
-    id: string;
-    title: string;
-  };
-}
-
-interface ProjectData {
-  id: string;
-  title: string;
-  courseId: string;
-  courseTitle: string;
-  status: string; // 'SUBMITTED', 'APPROVED', 'REVISION_REQUESTED', etc.
-  submittedAt: string;
-  feedback?: string;
-  dueDate?: string;
-}
-
-interface StreakData {
-  currentStreak: number;
-  longestStreak: number;
-  lastActiveDate: string;
-}
-
-interface UpcomingSession {
-  id: string;
-  title: string;
-  mentorName: string;
-  date: string;
-  time: string;
-  imageUrl?: string;
-}
-
-interface LearningGoal {
-  id: string;
-  title: string;
-  progress: number;
-  deadline?: string;
-}
 
 export default function StudentDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);

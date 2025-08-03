@@ -1,26 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-type Answer = {
-  questionId: string;
-  answer: any; // This can be string, string[], or { itemId: string; matchId: string }[]
-};
-
-type Question = {
-  id: string;
-  questionType: string;
-  points: number;
-  correctAnswers: Array<{
-    id: string;
-    optionText: string;
-  }>;
-};
-
 // POST endpoint to submit quiz answers
 export async function POST(
-  req: NextRequest,
+  req: Request,
   { params }: { params: Promise<{ courseId: string; quizId: string }> }
 ) {
   const { courseId, quizId } = await params;

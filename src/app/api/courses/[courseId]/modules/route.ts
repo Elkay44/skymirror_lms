@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma';
 // Module type will be inferred from Prisma client
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ courseId: string }> }
 ) {
   const startTime = Date.now();

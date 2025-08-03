@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Trophy, Award, Star, BookOpen, Users, Gift, Zap, Medal, Check, Percent, Clock } from 'lucide-react';
-import Image from 'next/image';
+
 
 // Sample achievement and progress data have been moved to the API endpoint
 
@@ -51,7 +51,7 @@ interface CareerAchievement extends BaseAchievement {
 type Achievement = LearningAchievement | FinancialAchievement | CommunityAchievement | CareerAchievement;
 
 export default function AchievementsPage() {
-  const { data: session, status } = useSession();
+  const { data: _session, status } = useSession();
   const router = useRouter();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [progress, setProgress] = useState({

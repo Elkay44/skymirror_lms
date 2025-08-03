@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Clock, Award, AlertCircle, CheckCircle, BarChart } from 'lucide-react';
+import { BookOpen, Clock, Award, CheckCircle, BarChart } from 'lucide-react';
 
 interface Module {
   id: string;
@@ -33,15 +33,6 @@ const CourseProgressSection: React.FC<CourseProgressSectionProps> = ({ courses }
       month: 'short',
       day: 'numeric',
       year: 'numeric'
-    });
-  };
-  
-  // Format time for display
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit'
     });
   };
   

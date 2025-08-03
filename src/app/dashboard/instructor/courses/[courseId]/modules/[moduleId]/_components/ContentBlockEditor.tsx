@@ -1,25 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useForm, useWatch, SubmitHandler, FieldValues, Controller, useFieldArray } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'react-hot-toast';
-import { Loader2, X, FileText, Video, Youtube, FileQuestion, FileCode, Check, Calendar, Clock, GripVertical, Plus, Trash } from 'lucide-react';
+import { Loader2, Plus, Trash } from 'lucide-react';
 
 // Import UI components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
+
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
@@ -29,10 +26,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 // Import types and API
-import { ContentBlock as ModuleContentBlock, ContentBlockType, TextBlock as ModuleTextBlock, VideoBlock as ModuleVideoBlock, YouTubeBlock as ModuleYouTubeBlock, AssignmentBlock as ModuleAssignmentBlock, ProjectBlock as ModuleProjectBlock, QuizBlock as ModuleQuizBlock, UpdateContentBlockRequest } from '@/types/module';
+import { ContentBlock as ModuleContentBlock, ContentBlockType, UpdateContentBlockRequest } from '@/types/module';
 
 // Define Question type locally if it's not exported from module types
 interface Question {
@@ -268,12 +265,6 @@ const blockFormSchema = z.discriminatedUnion('type', [
   quizBlockSchema,
 ]);
 
-// Define a function to convert string dates to Date objects
-const stringToDate = (dateStr?: string): Date | undefined => {
-  if (!dateStr) return undefined;
-  return new Date(dateStr);
-};
-
 // Helper function to format date to string in YYYY-MM-DD format
 const dateToString = (date?: Date | string | null): string | undefined => {
   if (!date) return undefined;
@@ -281,15 +272,6 @@ const dateToString = (date?: Date | string | null): string | undefined => {
   const d = typeof date === 'string' ? new Date(date) : date;
   return d.toISOString().split('T')[0];
 };
-
-const blockTypeOptions = [
-  { value: 'text' as const, label: 'Text', icon: <FileText className="h-4 w-4" /> },
-  { value: 'video' as const, label: 'Video', icon: <Video className="h-4 w-4" /> },
-  { value: 'youtube' as const, label: 'YouTube', icon: <Youtube className="h-4 w-4" /> },
-  { value: 'assignment' as const, label: 'Assignment', icon: <FileText className="h-4 w-4" /> },
-  { value: 'project' as const, label: 'Project', icon: <FileCode className="h-4 w-4" /> },
-  { value: 'quiz' as const, label: 'Quiz', icon: <FileQuestion className="h-4 w-4" /> },
-];
 
 // Component props
 interface ContentBlockFormProps {

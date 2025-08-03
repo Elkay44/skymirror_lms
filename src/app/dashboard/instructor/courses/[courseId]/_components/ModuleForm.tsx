@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useForm, useFieldArray, UseFormReturn, FieldValues, UseFieldArrayReturn } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useRouter } from 'next/navigation';
-import { Plus, X, PlusCircle, Trash2 } from 'lucide-react';
+
+import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -33,8 +33,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Module, ModuleStatus, CreateModuleRequest, UpdateModuleRequest } from '@/types/module';
-import { cn } from '@/lib/utils';
+import { Module, CreateModuleRequest, UpdateModuleRequest } from '@/types/module';
+
 import toast from 'react-hot-toast';
 
 const moduleFormSchema = z.object({
@@ -66,7 +66,7 @@ interface ModuleFormProps {
 
 export function ModuleForm({
   module,
-  courseId,
+  courseId: _courseId,
   modules,
   open,
   onSuccess,
@@ -77,7 +77,7 @@ export function ModuleForm({
   // Using react-hot-toast directly
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newObjective, setNewObjective] = useState('');
-  const [selectedPrerequisite, setSelectedPrerequisite] = useState('');
+  const [_selectedPrerequisite, setSelectedPrerequisite] = useState('');
 
   const defaultValues: Partial<ModuleFormValues> = {
     title: module?.title || '',
@@ -135,12 +135,7 @@ export function ModuleForm({
   }, [onOpenChange, module]);
 
   const {
-    register,
     handleSubmit,
-    formState: { errors },
-    control,
-    reset,
-    setValue,
   } = form;
 
   const handleFormSubmit = handleSubmit(async (values: FormValues) => {

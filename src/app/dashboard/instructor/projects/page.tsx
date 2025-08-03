@@ -6,15 +6,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { 
   Calendar, 
-  Code2, 
   FileText, 
   PlusCircle, 
-  HelpCircle,
   Users,
   Award,
   ChevronRight,
   AlertCircle,
-  CheckCircle,
   Edit,
   Trash2,
   BarChart3,

@@ -10,10 +10,8 @@ import {
   Clock,
   BookOpen,
   Video,
-  MessageSquare,
   User,
   Plus,
-  X,
   Check
 } from 'lucide-react';
 
@@ -59,7 +57,7 @@ const firstDayOfMonth = (year: number, month: number): number => {
 };
 
 export default function CalendarPage() {
-  const { data: session, status } = useSession();
+  const { data: _session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { Clock, Award, BookOpen, BarChart2, Activity, Calendar, TrendingUp, Target, CheckCircle, Zap } from 'lucide-react';
+import { Clock, Award, BookOpen, BarChart2, Calendar, TrendingUp, Zap } from 'lucide-react';
 
 interface CourseStats {
   courseId: string;

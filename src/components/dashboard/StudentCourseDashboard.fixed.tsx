@@ -1,43 +1,33 @@
 "use client";
 
-import { useSession } from 'next-auth/react';
+
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { formatDistanceToNow, addDays } from 'date-fns';
+
+
+
 import {
-  Activity,
   AlertCircle,
   ArrowLeft,
-  ArrowRight,
   ArrowRightCircle,
   Bookmark,
   BookOpen,
-  Bell,
-  Calendar,
-  CalendarCheck,
-  CalendarClock,
-  CalendarDays,
-  CalendarRange,
   Check,
   CheckCircle,
   CheckCircle2,
-  CircleCheck,
-  ChevronDown,
-  ChevronRight,
   Clock,
   Download,
   ExternalLink,
   FileText,
   Files,
-  BarChart,
   GitCommit,
   Lock,
   MessageCircle,
   MessageSquare,
-  Play,
   Users,
-  Video
+  Video,
+  CalendarRange,
+  BarChart,
 } from 'lucide-react';
 
 // Import UI components
@@ -53,7 +43,6 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  Separator,
   Tabs,
   TabsContent,
   TabsList,
@@ -62,18 +51,15 @@ import {
 import { Progress } from "@/components/ui/progress";
 
 // Define student dashboard props type
-interface StudentCourseDashboardProps {
-  courses?: any[];
-}
+interface StudentCourseDashboardProps {}
 
-export default function StudentCourseDashboard({ courses = [] }: StudentCourseDashboardProps) {
+export default function StudentCourseDashboard({}: StudentCourseDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const [animateTab, setAnimateTab] = useState(false);
   const router = useRouter();
-  const { data: session } = useSession();
 
   // Other state variables (using what was in the original file)
-  const [currentCourse, setCurrentCourse] = useState({
+  const currentCourse = {
     id: "1",
     title: "Modern Web Development",
     description: "Learn to build responsive web apps with React",
@@ -86,9 +72,9 @@ export default function StudentCourseDashboard({ courses = [] }: StudentCourseDa
       title: "Advanced Topics Q&A",
       date: "Feb 28, 2023 - 10:30 AM",
       platform: "Zoom",
-      attendance: 28
+      attendance: 28,
     }
-  });
+  }
 
   // Set up animation effect
   useEffect(() => {

@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // POST endpoint to mark all notifications as read
-export async function POST(req: NextRequest) {
+export async function POST(_req: Request) {
   try {
     // Get user session
     const session = await getServerSession(authOptions);

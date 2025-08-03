@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import {
@@ -14,7 +14,6 @@ import {
   FileText,
   ChevronLeft,
   Edit,
-  Trash2,
   Check,
   X,
   Download,
@@ -53,7 +52,7 @@ interface SessionDetails {
 export default function SessionDetailPage() {
   const { data: session } = useSession();
   const params = useParams();
-  const router = useRouter();
+
   const sessionId = params.sessionId as string;
   
   const [sessionDetails, setSessionDetails] = useState<SessionDetails | null>(null);

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
@@ -6,7 +6,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 // GET /api/user/wallet - Get user wallet information
-export async function GET(req: NextRequest) {
+export async function GET(_req: Request) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST /api/user/wallet - Update user wallet information
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     

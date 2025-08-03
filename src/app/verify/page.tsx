@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { Award, Search, CheckCircle, XCircle, ArrowRight, Shield, ExternalLink, FileCheck } from 'lucide-react';
-import Link from 'next/link';
-import Image from 'next/image';
 
 interface BlockchainDetails {
   tokenId: string;

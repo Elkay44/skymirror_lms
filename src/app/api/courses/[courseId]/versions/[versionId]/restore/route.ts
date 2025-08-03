@@ -1,16 +1,9 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
-// Extend the transaction client type to include our custom models
-type ExtendedTransactionClient = ReturnType<typeof prisma.$extends> & {
-  course: typeof prisma.course;
-  module: typeof prisma.module;
-  quiz: typeof prisma.quiz;
-  courseVersion: typeof prisma.courseVersion;
-};
 import { withErrorHandling } from '@/lib/api-response';
 
 interface VersionedModule {
@@ -67,7 +60,7 @@ interface RestoreOptions {
 }
 
 export async function POST(
-  req: NextRequest,
+  req: Request,
   { params }: { params: Promise<{ courseId: string; versionId: string }> }
 ) {
   const { courseId, versionId } = await params;

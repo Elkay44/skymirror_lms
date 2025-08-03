@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
@@ -6,7 +6,7 @@ import prisma from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 // Handler for GET requests to /api/dashboard
-export async function GET(request: NextRequest) {
+export async function GET(_request: Request) {
   try {
     // Get the authenticated user session
     const session = await getServerSession(authOptions);
@@ -153,26 +153,4 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Helper function to format relative time
-function getRelativeTimeString(date: Date): string {
-  const now = new Date();
-  const diffInMs = now.getTime() - new Date(date).getTime();
-  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-  
-  if (diffInDays === 0) {
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-    if (diffInHours === 0) {
-      const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-      return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
-    }
-    return `${diffInHours} hour${diffInHours !== 1 ? 's' : ''} ago`;
-  } else if (diffInDays < 7) {
-    return `${diffInDays} day${diffInDays !== 1 ? 's' : ''} ago`;
-  } else if (diffInDays < 30) {
-    const diffInWeeks = Math.floor(diffInDays / 7);
-    return `${diffInWeeks} week${diffInWeeks !== 1 ? 's' : ''} ago`;
-  } else {
-    const diffInMonths = Math.floor(diffInDays / 30);
-    return `${diffInMonths} month${diffInMonths !== 1 ? 's' : ''} ago`;
-  }
-}
+

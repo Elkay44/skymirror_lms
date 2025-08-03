@@ -30,7 +30,7 @@ interface Certificate {
 }
 
 export default function CertificatesPage() {
-  const { data: session, status } = useSession();
+  const { data: _session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [certificates, setCertificates] = useState<Certificate[]>([]);

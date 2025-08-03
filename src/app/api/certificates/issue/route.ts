@@ -1,12 +1,12 @@
 /* eslint-disable */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // POST /api/certificates/issue - Issue a new certificate
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);

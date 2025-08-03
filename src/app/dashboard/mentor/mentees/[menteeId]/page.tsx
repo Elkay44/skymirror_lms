@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
@@ -123,7 +123,7 @@ const mockMenteeData = {
 };
 
 export default function MenteeDetailPage() {
-  const { data: session } = useSession();
+
   const router = useRouter();
   const params = useParams();
   const menteeId = params.menteeId as string;

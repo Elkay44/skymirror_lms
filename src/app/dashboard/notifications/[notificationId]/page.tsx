@@ -3,7 +3,7 @@
 import React from "react";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 interface Notification {
   id: string;
@@ -23,7 +23,6 @@ interface Notification {
 }
 
 export default function NotificationDetailPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const notificationId = searchParams.get("notificationId") || "";
   const [notification, setNotification] = useState<Notification | null>(null);
@@ -63,7 +62,17 @@ export default function NotificationDetailPage() {
     <div className="px-6 py-8">
       <h1 className="text-2xl font-bold mb-4">Notification Details</h1>
       <div className="p-4 border rounded bg-gray-50">
-        <h2 className="text-lg font-semibold mb-2">{notification.title}</h2>
+        <div className="flex items-center mb-6">
+          <h2 className="text-lg font-semibold mr-4">{notification.title}</h2>
+          <button
+            onClick={() => window.location.href = '/dashboard/notifications'}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+        </div>
         <p className="mb-2">{notification.message}</p>
         <div className="text-xs text-gray-500 mb-2">
           {notification.timestamp && (typeof notification.timestamp === 'string' ? new Date(notification.timestamp).toLocaleString() : notification.timestamp.toLocaleString())}
@@ -83,4 +92,3 @@ export default function NotificationDetailPage() {
     </div>
   );
 }
-

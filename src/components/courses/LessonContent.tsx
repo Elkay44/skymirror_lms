@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react';
 import VideoPlayer from './VideoPlayer';
 import CourseNotes from './CourseNotes';
 import Link from 'next/link';
-import Image from 'next/image';
 import toast from 'react-hot-toast';
 
 interface Lesson {
@@ -156,6 +155,7 @@ export default function LessonContent({ courseId, lessonId, onComplete }: Lesson
       // to give users more control over their learning flow
       
       toast.success('Lesson marked as complete!');
+      onComplete?.();
     } catch (err) {
       console.error('Error marking lesson as complete:', err);
       toast.error('Failed to mark lesson as complete');

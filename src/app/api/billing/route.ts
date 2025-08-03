@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 // GET: Fetch billing information for the current user
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Authenticate the user
     const session = await getServerSession(authOptions);
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
 }
 
 // POST: Update billing information (e.g., change subscription plan)
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     // Authenticate the user
     const session = await getServerSession(authOptions);
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     
     // Parse request body
     const data = await req.json();
-    const { action, planId, paymentMethodId } = data;
+    const { action, planId } = data;
     
     // Handle different billing actions
     if (action === 'changePlan') {

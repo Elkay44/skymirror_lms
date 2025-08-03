@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Check, ExternalLink, FileCode, MessageSquare } from 'lucide-react';
+import { ArrowLeft, ExternalLink, FileCode, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
@@ -30,7 +30,7 @@ export default function SubmissionReviewPage() {
   const submissionId = params.id as string;
 
   const [loading, setLoading] = useState<boolean>(true);
-  const [saving, setSaving] = useState<boolean>(false);
+
   const [submission, setSubmission] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<string>('submission');
 
@@ -59,7 +59,7 @@ export default function SubmissionReviewPage() {
 
   const handleSaveAssessment = async (assessment: any) => {
     try {
-      setSaving(true);
+
       
       // Determine the final status based on assessment
       const passThreshold = 70; // Assuming 70% is the pass threshold
@@ -90,7 +90,7 @@ export default function SubmissionReviewPage() {
       console.error('Error saving assessment:', error);
       toast.error('Failed to submit review');
     } finally {
-      setSaving(false);
+
     }
   };
 

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import axios from 'axios';
 
 interface Question {
@@ -27,7 +26,6 @@ interface QuizViewProps {
 }
 
 export default function QuizView({ quizId, onComplete }: QuizViewProps) {
-  const { data: session } = useSession();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});

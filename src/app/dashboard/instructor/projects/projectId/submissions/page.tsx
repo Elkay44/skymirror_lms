@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -16,8 +16,7 @@ import {
   AlertCircle,
   Clock,
   MessageSquare,
-  ExternalLink,
-  BarChart3
+  ExternalLink
 } from 'lucide-react';
 
 // Status configuration for styling
@@ -87,7 +86,7 @@ interface Project {
 
 export default function ProjectSubmissions() {
   const { data: session } = useSession();
-  const router = useRouter();
+
   const { projectId } = useParams();
   
   const [project, setProject] = useState<Project | null>(null);
@@ -168,7 +167,7 @@ export default function ProjectSubmissions() {
       }
       
       // Update the submission in the list
-      const updatedSubmission = await response.json();
+      await response.json();
       setSubmissions(prev => 
         prev.map(sub => 
           sub.id === selectedSubmission.id 

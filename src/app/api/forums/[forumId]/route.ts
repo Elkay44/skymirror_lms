@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -34,7 +34,7 @@ const logForumActivity = async (userId: string | number, action: string, forumId
 
 // GET handler - Get a specific forum
 export async function GET(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ forumId: string }> }
 ) {
   try {
@@ -92,7 +92,7 @@ export async function GET(
 
 // PATCH handler - Update a forum
 export async function PATCH(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ forumId: string }> }
 ) {
   try {
@@ -179,7 +179,7 @@ export async function PATCH(
 
 // DELETE handler - Delete a forum
 export async function DELETE(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ forumId: string }> }
 ) {
   try {

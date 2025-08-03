@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { Resend } from 'resend';
 import { createHmac } from 'crypto';
 

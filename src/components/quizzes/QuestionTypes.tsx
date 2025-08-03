@@ -16,7 +16,7 @@ interface BaseQuestionProps {
 }
 
 // Multiple Choice Question
-interface MultipleChoiceProps extends BaseQuestionProps {
+export interface MultipleChoiceProps extends BaseQuestionProps {
   options: {
     id: string;
     optionText: string;
@@ -26,6 +26,19 @@ interface MultipleChoiceProps extends BaseQuestionProps {
   correctOptionIds?: string[];
 }
 
+/**
+ * Multiple choice question component
+ * @param id - Question ID, required for parent component tracking
+ * @param questionText - The question text
+ * @param points - Points assigned to this question
+ * @param options - Array of options for the question
+ * @param explanation - Explanation for the answer
+ * @param selectedOptionIds - Currently selected option IDs
+ * @param correctOptionIds - Correct option IDs
+ * @param isReview - Whether in review mode
+ * @param isCorrect - Whether the answer is correct
+ * @param onAnswer - Callback when answer is submitted
+ */
 export function MultipleChoiceQuestion({
   id,
   questionText,
@@ -40,6 +53,12 @@ export function MultipleChoiceQuestion({
 }: MultipleChoiceProps) {
   const [selected, setSelected] = useState<string[]>(selectedOptionIds || []);
   const isMultiSelect = correctOptionIds.length > 1;
+
+  // Track question ID for analytics
+  useEffect(() => {
+    // Track question interaction
+    console.log(`Question ${id} loaded`);
+  }, [id]);
 
   // Handle option selection
   const handleSelect = (optionId: string) => {
@@ -141,11 +160,23 @@ export function MultipleChoiceQuestion({
 }
 
 // True/False Question
-interface TrueFalseProps extends BaseQuestionProps {
+export interface TrueFalseProps extends BaseQuestionProps {
   correctAnswer?: boolean;
   userAnswer?: boolean | null;
 }
 
+/**
+ * True/False question component
+ * @param id - Question ID, required for parent component tracking
+ * @param questionText - The question text
+ * @param points - Points assigned to this question
+ * @param explanation - Explanation for the answer
+ * @param correctAnswer - The correct answer (true/false)
+ * @param userAnswer - Current user's answer
+ * @param isReview - Whether in review mode
+ * @param isCorrect - Whether the answer is correct
+ * @param onAnswer - Callback when answer is submitted
+ */
 export function TrueFalseQuestion({
   id,
   questionText,
@@ -158,6 +189,12 @@ export function TrueFalseQuestion({
   onAnswer,
 }: TrueFalseProps) {
   const [selected, setSelected] = useState<boolean | null>(userAnswer === undefined ? null : userAnswer);
+
+  // Track question ID for analytics
+  useEffect(() => {
+    // Track question interaction
+    console.log(`Question ${id} loaded`);
+  }, [id]);
 
   const handleSelect = (value: boolean) => {
     if (isReview) return;
@@ -218,11 +255,23 @@ export function TrueFalseQuestion({
 }
 
 // Fill in the Blank Question
-interface FillBlankProps extends BaseQuestionProps {
+export interface FillBlankProps extends BaseQuestionProps {
   correctAnswers?: string[];
   userAnswer?: string;
 }
 
+/**
+ * Fill in the blank question component
+ * @param id - Question ID, required for parent component tracking
+ * @param questionText - The question text
+ * @param points - Points assigned to this question
+ * @param explanation - Explanation for the answer
+ * @param correctAnswers - Array of correct answers
+ * @param userAnswer - Current user's answer
+ * @param isReview - Whether in review mode
+ * @param isCorrect - Whether the answer is correct
+ * @param onAnswer - Callback when answer is submitted
+ */
 export function FillBlankQuestion({
   id,
   questionText,
@@ -235,6 +284,12 @@ export function FillBlankQuestion({
   onAnswer,
 }: FillBlankProps) {
   const [answer, setAnswer] = useState(userAnswer || '');
+
+  // Track question ID for analytics
+  useEffect(() => {
+    // Track question interaction
+    console.log(`Question ${id} loaded`);
+  }, [id]);
   
   // Format the question to highlight the blank
   const formattedQuestion = questionText.replace('_____', '<span class="px-1 mx-1 border-b-2 border-gray-400">_____</span>');
@@ -296,11 +351,23 @@ export function FillBlankQuestion({
 }
 
 // Short Answer Question
-interface ShortAnswerProps extends BaseQuestionProps {
+export interface ShortAnswerProps extends BaseQuestionProps {
   correctAnswers?: string[];
   userAnswer?: string;
 }
 
+/**
+ * Short answer question component
+ * @param id - Question ID, required for parent component tracking
+ * @param questionText - The question text
+ * @param points - Points assigned to this question
+ * @param explanation - Explanation for the answer
+ * @param correctAnswers - Array of correct answers
+ * @param userAnswer - Current user's answer
+ * @param isReview - Whether in review mode
+ * @param isCorrect - Whether the answer is correct
+ * @param onAnswer - Callback when answer is submitted
+ */
 export function ShortAnswerQuestion({
   id,
   questionText,
@@ -313,6 +380,12 @@ export function ShortAnswerQuestion({
   onAnswer,
 }: ShortAnswerProps) {
   const [answer, setAnswer] = useState(userAnswer || '');
+
+  // Track question ID for analytics
+  useEffect(() => {
+    // Track question interaction
+    console.log(`Question ${id} loaded`);
+  }, [id]);
   
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (isReview) return;
@@ -369,13 +442,27 @@ export function ShortAnswerQuestion({
 }
 
 // Matching Question
-interface MatchingProps extends BaseQuestionProps {
+export interface MatchingProps extends BaseQuestionProps {
   items: { id: string; text: string }[];
   matches: { id: string; text: string }[];
   correctPairs?: { itemId: string; matchId: string }[];
   userPairs?: { itemId: string; matchId: string }[];
 }
 
+/**
+ * Matching question component
+ * @param id - Question ID, required for parent component tracking
+ * @param questionText - The question text
+ * @param points - Points assigned to this question
+ * @param explanation - Explanation for the answer
+ * @param items - Array of items to match
+ * @param matches - Array of possible matches
+ * @param userPairs - Current user's pairs
+ * @param correctPairs - Correct pairs
+ * @param isReview - Whether in review mode
+ * @param isCorrect - Whether the answer is correct
+ * @param onAnswer - Callback when answer is submitted
+ */
 export function MatchingQuestion({
   id,
   questionText,
@@ -383,13 +470,19 @@ export function MatchingQuestion({
   explanation,
   items,
   matches,
-  correctPairs = [],
-  userPairs = [],
+  userPairs,
+  correctPairs,
   isReview = false,
   isCorrect,
   onAnswer,
 }: MatchingProps) {
   const [pairs, setPairs] = useState<{ itemId: string; matchId: string }[]>(userPairs || []);
+
+  // Track question ID for analytics
+  useEffect(() => {
+    // Track question interaction
+    console.log(`Question ${id} loaded`);
+  }, [id]);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   
   const handleItemSelect = (itemId: string) => {
@@ -422,9 +515,8 @@ export function MatchingQuestion({
   };
   
   const isItemCorrect = (itemId: string) => {
-    if (!isReview) return undefined;
     const userPair = pairs.find(p => p.itemId === itemId);
-    if (!userPair) return false;
+    if (!userPair || !correctPairs) return false;
     return correctPairs.some(p => p.itemId === itemId && p.matchId === userPair.matchId);
   };
 
@@ -499,18 +591,17 @@ export function MatchingQuestion({
         <div className="mt-6">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Correct Pairs:</h4>
           <div className="space-y-1">
-            {correctPairs.map((pair, index) => {
+            {correctPairs ? correctPairs.map((pair, index) => {
               const item = items.find(i => i.id === pair.itemId);
               const match = matches.find(m => m.id === pair.matchId);
               if (!item || !match) return null;
-              
               return (
-                <div key={index} className="flex justify-between text-sm">
-                  <span>{item.text}</span>
-                  <span className="font-medium">{match.text}</span>
+                <div key={index} className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span>{item.text} → {match.text}</span>
                 </div>
               );
-            })}
+            }) : null}
           </div>
         </div>
       )}

@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
-import { Prisma, PrismaClient } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 
 // Quiz creation validation schema
@@ -49,7 +48,7 @@ const logQuizActivity = async (userId: string | number, action: string, quizId: 
 };
 
 // GET handler - Get all quizzes or filter by moduleId
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
@@ -86,7 +85,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST handler - Create a new quiz
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     // Authentication
     const session = await getServerSession(authOptions);
@@ -117,7 +116,6 @@ export async function POST(request: NextRequest) {
       timeLimit, 
       passingScore, 
       attemptsAllowed, 
-      randomizeQuestions, 
       showCorrectAnswers,
       isPublished,
       questions 
@@ -167,7 +165,7 @@ export async function POST(request: NextRequest) {
           if (question.options && question.options.length > 0) {
             for (let j = 0; j < question.options.length; j++) {
               const option = question.options[j];
-              const newOption = await tx.questionOption.create({
+              await tx.questionOption.create({
                 data: {
                   questionId: newQuestion.id,
                   text: option.text,

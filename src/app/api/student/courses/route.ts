@@ -40,36 +40,6 @@ interface Instructor {
   email: string;
 }
 
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  instructor: string | Instructor;
-  thumbnailUrl?: string;
-  duration: number;
-  level: 'beginner' | 'intermediate' | 'advanced' | string;
-  category: string;
-  modules: Module[];
-  createdAt: string | Date;
-  updatedAt: string | Date;
-  isPublished?: boolean;
-  imageUrl?: string | null;
-  difficulty?: string;
-}
-
-interface CourseData {
-  id: string;
-  title: string;
-  description: string | null;
-  imageUrl: string | null;
-  difficulty: string;
-  category: string;
-  instructor: Instructor;
-  modules: Module[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);

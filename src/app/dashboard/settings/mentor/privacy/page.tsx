@@ -100,7 +100,6 @@ export default function MentorPrivacySettings() {
         throw new Error('Failed to request data export');
       }
       
-      const data = await response.json();
       toast.success('Your data export request has been received. You will be notified when it\'s ready.');
     } catch (error) {
       console.error('Error requesting data export:', error);
