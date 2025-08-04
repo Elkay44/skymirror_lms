@@ -9,7 +9,11 @@ interface Message {
   id: string;
   content: string;
   senderId: string;
-  createdAt: string;
+  sentAt: string;
+  senderName?: string;
+  senderAvatar?: string | null;
+  senderRole?: string;
+  isRead?: boolean;
 }
 
 interface Participant {
@@ -41,47 +45,111 @@ const MessagesClient = () => {
   const [selectedRecipient, setSelectedRecipient] = useState<string>('');
   const [newMessage, setNewMessage] = useState('');
   const [recipients, setRecipients] = useState<Participant[]>([]);
+  const [isLoadingRecipients, setIsLoadingRecipients] = useState(false);
 
-  // Fetch recipients (in a real app, this would come from an API)
+  // Fetch recipients from the API
   useEffect(() => {
-    // Mock recipients
-    setRecipients([
-      { id: 'user2', name: 'Sarah Johnson', role: 'MENTOR', avatarUrl: '' },
-      { id: 'user3', name: 'Michael Lee', role: 'INSTRUCTOR', avatarUrl: '' },
-      { id: 'user4', name: 'Emma Wilson', role: 'STUDENT', avatarUrl: '' },
-    ]);
-  }, []);
+    const fetchRecipients = async () => {
+      try {
+        // Check authentication status before proceeding
+        if (status === 'unauthenticated') {
+          console.log('User not authenticated, skipping recipients fetch');
+          setError('You must be logged in to view recipients');
+          router.push('/login');
+          return;
+        }
+        
+        if (status === 'loading') {
+          // Wait for authentication status to resolve
+          return;
+        }
+        
+        setIsLoadingRecipients(true);
+        const response = await fetch('/api/recipients', {
+          headers: {
+            'Cache-Control': 'no-store, max-age=0',
+          },
+        });
+        
+        if (!response.ok) {
+          // Handle specific error codes
+          if (response.status === 401) {
+            console.warn('Authentication required for fetching recipients');
+            setError('Authentication required. Please log in.');
+            router.push('/login');
+            return;
+          }
+          
+          throw new Error(`Failed to fetch recipients: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (Array.isArray(data)) {
+          setRecipients(data);
+        } else {
+          console.warn('Unexpected response format from /api/recipients:', data);
+          setError('Unexpected response format from server');
+          setRecipients([]);
+        }
+      } catch (err) {
+        console.error('Error fetching recipients:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred while loading recipients');
+      } finally {
+        setIsLoadingRecipients(false);
+      }
+    };
+    
+    if (showNewConversationModal) {
+      fetchRecipients();
+    }
+  }, [showNewConversationModal, status, router]);
+
 
   // Fetch conversations
   useEffect(() => {
     const fetchConversations = async () => {
       try {
+        // Check authentication status
+        if (status === 'unauthenticated') {
+          console.log('User not authenticated, skipping conversation fetch');
+          return;
+        }
+        
+        if (status === 'loading') {
+          // Wait for authentication status to resolve
+          return;
+        }
+        
         setIsLoading(true);
         setError(null);
         
-        // Add a delay to show loading state (optional, can be removed)
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const response = await fetch('/api/conversations');
+        const response = await fetch('/api/conversations', {
+          headers: {
+            'Cache-Control': 'no-store, max-age=0',
+          },
+        });
         
         if (!response.ok) {
+          // Handle specific error codes
+          if (response.status === 401) {
+            console.warn('Authentication required for fetching conversations');
+            router.push('/login');
+            throw new Error('Authentication required. Please log in.');
+          }
+          
           throw new Error(`Failed to fetch conversations: ${response.status} ${response.statusText}`);
         }
         
         const data = await response.json();
         
-        // The API now returns the conversations array directly
+        // The API returns the conversations array directly
         if (Array.isArray(data)) {
           setConversations(data);
           return;
         }
         
         // Fallback for unexpected format
-        console.warn('Unexpected response format from /api/conversations:', data);
-        setError('Unexpected response format from server');
-        setConversations([]);
-        
-        // Fallback for any other case
         console.warn('Unexpected response format from /api/conversations:', data);
         setError('Unexpected response format from server');
         setConversations([]);
@@ -101,22 +169,51 @@ const MessagesClient = () => {
   // Handle conversation selection
   const handleSelectConversation = async (conversation: Conversation) => {
     try {
+      // Check authentication status before proceeding
+      if (status !== 'authenticated' || !session?.user) {
+        setError('You must be logged in to view messages');
+        router.push('/login');
+        return;
+      }
+      
       setIsLoading(true);
       setSelectedConversation(conversation);
       
       // Fetch messages for the selected conversation
-      const response = await fetch(`/api/conversations/${conversation.id}/messages`);
+      const response = await fetch(`/api/conversations/${conversation.id}/messages`, {
+        headers: {
+          'Cache-Control': 'no-store'
+        }
+      });
       
       if (!response.ok) {
-        throw new Error('Failed to fetch messages');
+        // Handle specific error codes
+        if (response.status === 401) {
+          throw new Error('Authentication required. Please log in again.');
+        } else if (response.status === 403) {
+          throw new Error('You do not have permission to view this conversation.');
+        }
+        
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
       
-      const messagesData = await response.json();
-      setMessages(Array.isArray(messagesData) ? messagesData : []);
+      const data = await response.json();
+      
+      // Check if the response has the expected format
+      if (data && data.messages && Array.isArray(data.messages)) {
+        setMessages(data.messages);
+      } else if (Array.isArray(data)) {
+        // Fallback for direct array response
+        setMessages(data);
+      } else {
+        console.warn('Unexpected message format:', data);
+        setMessages(conversation.lastMessage ? [conversation.lastMessage] : []);
+      }
       
     } catch (err) {
       console.error('Error fetching messages:', err);
-      setError('Failed to load messages. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to load messages. Please try again.');
       setMessages(conversation.lastMessage ? [conversation.lastMessage] : []);
     } finally {
       setIsLoading(false);
@@ -127,40 +224,87 @@ const MessagesClient = () => {
   const handleStartConversation = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedRecipient || !newMessage.trim()) {
-      setError('Please select a recipient and enter a message');
+    setIsSubmitting(true);
+    setError(null);
+    
+    if (!session?.user) {
+      setError('You must be logged in to start a conversation.');
+      setIsSubmitting(false);
+      return;
+    }
+    
+    if (!selectedRecipient) {
+      setError('Please select a recipient.');
+      setIsSubmitting(false);
+      return;
+    }
+    
+    if (!newMessage.trim()) {
+      setError('Please enter a message.');
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      setIsLoading(true);
-      setError(null);
+      console.log('Starting new conversation with:', { recipientId: selectedRecipient, message: newMessage.trim() });
+    
+    const requestBody = {
+      participantId: selectedRecipient,
+      message: { content: newMessage.trim() }
+    };
+    console.log('Request payload:', JSON.stringify(requestBody));
       
       const response = await fetch('/api/conversations', {
         method: 'POST',
-        headers: {
+        headers: { 
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-store'
         },
-        body: JSON.stringify({
-          participantId: selectedRecipient,
-          message: {
-            content: newMessage,
-            senderId: session?.user?.id,
-          },
-        }),
+        body: JSON.stringify(requestBody),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to start conversation');
+      let responseData;
+      try {
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+        
+        try {
+          responseData = JSON.parse(responseText);
+          console.log('Parsed response data:', responseData);
+        } catch (parseError) {
+          console.error('Error parsing JSON response:', parseError);
+          responseData = { error: 'Failed to parse server response', rawResponse: responseText };
+        }
+      } catch (e) {
+        console.error('Error reading response:', e);
+        responseData = { error: 'Failed to read server response' };
       }
 
-      const newConversation = await response.json();
+      if (!response.ok) {
+        // Handle specific error codes
+        if (response.status === 401) {
+          throw new Error('Authentication required. Please log in again.');
+        } else if (response.status === 403) {
+          throw new Error('You do not have permission to message this user.');
+        } else if (response.status === 400) {
+          throw new Error(responseData.error || 'Invalid request. Please check your inputs.');
+        } else if (response.status === 404) {
+          throw new Error('User not found. They may have been removed from the system.');
+        } else if (response.status === 500) {
+          console.error('Server error details:', responseData);
+          throw new Error(responseData.error || 'Server error. Please try again later.');
+        }
+        
+        throw new Error(responseData.error || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      console.log('Conversation created successfully:', responseData);
       
       // Add the new conversation to the list
-      setConversations(prev => [newConversation, ...prev]);
+      setConversations(prev => [responseData, ...prev]);
       
       // Select the new conversation
-      setSelectedConversation(newConversation);
+      setSelectedConversation(responseData);
       
       // Reset form
       setNewMessage('');
@@ -169,16 +313,28 @@ const MessagesClient = () => {
       
     } catch (err) {
       console.error('Error starting conversation:', err);
-      setError('Failed to start conversation. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to start conversation. Please try again.');
     } finally {
-      setIsLoading(false);
-    }
+      setIsSubmitting(false);
+    }  
   };
 
   // Handle sending a new message
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!messageInput.trim() || !selectedConversation || !session?.user?.id) return;
+    
+    // Check for message content and selected conversation
+    if (!messageInput.trim() || !selectedConversation) {
+      setError('Please enter a message');
+      return;
+    }
+    
+    // Check authentication status before proceeding
+    if (status !== 'authenticated' || !session?.user) {
+      setError('You must be logged in to send messages');
+      router.push('/login');
+      return;
+    }
     
     try {
       setIsSubmitting(true);
@@ -188,7 +344,11 @@ const MessagesClient = () => {
         id: 'temp-' + Date.now(), // Temporary ID that will be replaced by server
         content: messageInput,
         senderId: session.user.id,
-        createdAt: new Date().toISOString(),
+        sentAt: new Date().toISOString(),
+        senderName: session.user.name || 'You',
+        senderAvatar: session.user.image || null,
+        senderRole: session.user.role || 'STUDENT',
+        isRead: true,
       };
       
       // Optimistically update the UI
@@ -214,6 +374,7 @@ const MessagesClient = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-store'
         },
         body: JSON.stringify({
           content: messageInput,
@@ -221,33 +382,50 @@ const MessagesClient = () => {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to send message');
+        // Handle specific error codes
+        if (response.status === 401) {
+          throw new Error('Authentication required. Please log in again.');
+        } else if (response.status === 403) {
+          throw new Error('You do not have permission to send messages in this conversation.');
+        }
+        
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
       
       // Update with server response if needed
-      const sentMessage = await response.json();
+      const data = await response.json();
+      const sentMessage = data.message; // Extract the message from the response
       
-      // Replace the temporary message with the one from the server
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === newMessage.id ? sentMessage : msg
-        )
-      );
+      if (sentMessage) {
+        // Replace the temporary message with the one from the server
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === newMessage.id ? sentMessage : msg
+          )
+        );
+      }
       
     } catch (err) {
       console.error('Error sending message:', err);
-      setError('Failed to send message. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to send message. Please try again.');
       
       // Revert optimistic update on error
       setMessages(messages);
       
       // Re-fetch conversations to ensure consistency
-      const response = await fetch('/api/conversations');
-      if (response.ok) {
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setConversations(data);
+      try {
+        const response = await fetch('/api/conversations', {
+          headers: { 'Cache-Control': 'no-store' }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data)) {
+            setConversations(data);
+          }
         }
+      } catch (fetchError) {
+        console.error('Error re-fetching conversations:', fetchError);
       }
     } finally {
       setIsSubmitting(false);
@@ -282,7 +460,7 @@ const MessagesClient = () => {
   }
 
   if (status === 'unauthenticated') {
-    router.push('/auth/signin');
+    router.push('/login');
     return null;
   }
 
@@ -429,7 +607,7 @@ const MessagesClient = () => {
                   ) : (
                     <ul className="divide-y divide-gray-200">
                       {filteredConversations.map((conversation) => {
-                        const participant = conversation.participants[0]; // Simplified for demo
+                        const participant = conversation.participants[0];
                         const isActive = selectedConversation?.id === conversation.id;
                         
                         return (
@@ -446,31 +624,42 @@ const MessagesClient = () => {
                                     <img
                                       className="h-10 w-10 rounded-full"
                                       src={participant.avatarUrl}
-                                      alt={participant.name}
+                                      alt={participant.name || 'User'}
                                     />
                                   ) : (
-                                    <span className="text-gray-500">
-                                      {participant?.name?.charAt(0) || '?'}
+                                    <span className="text-gray-700 font-medium">
+                                      {(participant?.name || 'User').charAt(0)}
                                     </span>
                                   )}
                                 </div>
-                                <div className="ml-3 min-w-0 flex-1 min-w-0">
-                                  <div className="flex justify-between min-w-0">
+                              
+                                <div className="min-w-0 flex-1 ml-3">
+                                  <div className="flex items-center">
                                     <p className="text-sm font-medium text-gray-900 truncate break-words">
-                                      {participant?.name || 'Unknown User'}
+                                      {conversation.participants
+                                        .filter(p => p.id !== session?.user?.id)
+                                        .map(p => p.name)
+                                        .join(', ')}
                                     </p>
-                                    <p className="text-xs text-gray-500">
-                                      {new Date(conversation.updatedAt).toLocaleTimeString([], {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                      })}
-                                    </p>
+                                    <span className="ml-1 text-xs text-gray-500 truncate">
+                                      ({conversation.participants
+                                        .filter(p => p.id !== session?.user?.id)
+                                        .map(p => p.role.toLowerCase())
+                                        .join(', ')})
+                                    </span>
                                   </div>
-                                  <p className="text-sm text-gray-500 truncate break-words">
-                                    {conversation.lastMessage?.content || 'No messages yet'}
-                                  </p>
+                                  {conversation.lastMessage && (
+                                    <p className="text-sm text-gray-500 truncate break-words">
+                                      {conversation.lastMessage.content}
+                                    </p>
+                                  )}
                                 </div>
                               </div>
+                              {conversation.lastMessage && (
+                                <p className="text-xs text-gray-400 whitespace-nowrap ml-2">
+                                  {new Date(conversation.updatedAt).toLocaleDateString()}
+                                </p>
+                              )}
                             </button>
                           </li>
                         );
@@ -487,7 +676,10 @@ const MessagesClient = () => {
                     {/* Message header */}
                     <div className="p-4 border-b border-gray-200">
                       <h2 className="text-lg font-medium text-gray-900 break-words">
-                        {selectedConversation.participants[0]?.name || 'Conversation'}
+                        {selectedConversation.participants
+                          .filter(p => p.id !== session?.user?.id)
+                          .map(p => p.name)
+                          .join(', ') || 'Conversation'}
                       </h2>
                     </div>
                     
@@ -510,27 +702,57 @@ const MessagesClient = () => {
                           {messages.map((message) => (
                             <div
                               key={message.id}
-                              className={`flex ${
-                                message.senderId === session?.user?.id
-                                  ? 'justify-end'
-                                  : 'justify-start'
-                              }`}
+                              className={`flex ${message.senderId === session?.user?.id ? 'justify-end' : 'justify-start'}`}
                             >
+                              {message.senderId !== session?.user?.id && (
+                                <div className="flex-shrink-0 mr-2 self-end mb-1">
+                                  <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium overflow-hidden">
+                                    {message.senderAvatar ? (
+                                      <img 
+                                        src={message.senderAvatar} 
+                                        alt={message.senderName || 'User'} 
+                                        className="h-full w-full object-cover"
+                                      />
+                                    ) : (
+                                      <span>{(message.senderName || 'User').charAt(0)}</span>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
                               <div
-                                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                                  message.senderId === session?.user?.id
-                                    ? 'bg-indigo-100 text-indigo-900'
-                                    : 'bg-white text-gray-800 border border-gray-200'
-                                }`}
+                                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.senderId === session?.user?.id ? 'bg-indigo-100 text-indigo-900' : 'bg-white text-gray-800 border border-gray-200'}`}
                               >
+                                {message.senderId !== session?.user?.id && message.senderName && (
+                                  <p className="text-xs font-medium text-gray-700 mb-1">
+                                    {message.senderName}
+                                    {message.senderRole && (
+                                      <span className="text-xs text-gray-500 ml-1">({message.senderRole.toLowerCase()})</span>
+                                    )}
+                                  </p>
+                                )}
                                 <p className="text-sm break-words">{message.content}</p>
                                 <p className="text-xs text-gray-500 mt-1">
-                                  {new Date(message.createdAt).toLocaleTimeString([], {
+                                  {message.sentAt ? new Date(message.sentAt).toLocaleTimeString([], {
                                     hour: '2-digit',
                                     minute: '2-digit',
-                                  })}
+                                  }) : 'Sending...'}
                                 </p>
                               </div>
+                              {message.senderId === session?.user?.id && (
+                                <div className="flex-shrink-0 ml-2 self-end mb-1">
+                                  <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium overflow-hidden">
+                                    {session?.user?.image ? (
+                                      <img 
+                                        src={session.user.image} 
+                                        alt={session.user.name || 'You'} 
+                                        className="h-full w-full object-cover"
+                                      />
+                                    ) : (
+                                      <span>{(session?.user?.name || 'You').charAt(0)}</span>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -613,9 +835,10 @@ const MessagesClient = () => {
                     value={selectedRecipient}
                     onChange={(e) => setSelectedRecipient(e.target.value)}
                     required
+                    disabled={isLoadingRecipients}
                   >
-                    <option value="">Select a recipient</option>
-                    {recipients.map((recipient) => (
+                    <option value="">{isLoadingRecipients ? 'Loading recipients...' : 'Select a recipient'}</option>
+                    {!isLoadingRecipients && recipients.map((recipient) => (
                       <option key={recipient.id} value={recipient.id}>
                         {recipient.name} ({recipient.role})
                       </option>

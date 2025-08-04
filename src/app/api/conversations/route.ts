@@ -1,62 +1,116 @@
-/* eslint-disable */
-
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/prisma-extensions';
 
 // GET /api/conversations
 // Get all conversations for the current user
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    console.log('GET /api/conversations - Starting request');
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
-      console.log('GET /api/conversations - Unauthorized: No session or user ID');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    console.log('GET /api/conversations - User ID:', session.user.id);
+    // Get courseId from query params if provided
+    const url = new URL(req.url);
+    const courseId = url.searchParams.get('courseId');
     
-    // In a real implementation, this would fetch conversations from the database
-    // For now, we'll return mock data
-    const conversations = [
-      {
-        id: 'conv_1',
-        participants: [
-          {
-            id: 'user2',
-            name: 'Sarah Johnson',
-            email: 'sarah@example.com',
-            role: 'MENTOR',
-            isOnline: true
+    // Find all conversations where the user is a participant
+    const userConversations = await prisma.conversationParticipant.findMany({
+      where: {
+        userId: session.user.id,
+      },
+      include: {
+        conversation: true,
+      },
+    });
+    
+    const conversationIds = userConversations.map(uc => uc.conversationId);
+    
+    // Get conversations with participants and last message
+    let conversations = await prisma.conversation.findMany({
+      where: {
+        id: { in: conversationIds },
+        // Filter by courseId if provided
+        ...(courseId ? { courseId } : {}),
+      },
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                role: true,
+              },
+            },
           },
-          {
-            id: session.user.id,
-            name: session.user.name || 'User',
-            email: session.user.email || '',
-            role: (session.user as any)?.role || 'STUDENT',
-            isOnline: true
-          }
-        ],
-        lastMessage: {
-          id: 'msg_1',
-          senderId: 'user2',
-          content: 'Hi there! How can I help you today?',
-          timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-          isRead: false
         },
-        unreadCount: 1,
-        isGroupChat: false,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-        updatedAt: new Date(Date.now() - 1000 * 60 * 5).toISOString()
-      }
-    ];
+        messages: {
+          orderBy: {
+            sentAt: 'desc',
+          },
+          take: 1,
+          include: {
+            sender: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    });
     
-    console.log('Returning conversations:', conversations);
+    // Format conversations for the frontend
+    const formattedConversations = conversations.map(conversation => {
+      // Calculate unread count for current user
+      const unreadCount = conversation.messages.filter(
+        (message: { senderId: string, isRead: boolean }) => message.senderId !== session.user.id && !message.isRead
+      ).length;
+      
+      // Format participants
+      const participants = conversation.participants.map((participant: { user: { id: string, name: string | null, email: string | null, image: string | null, role: string } }) => ({
+        id: participant.user.id,
+        name: participant.user.name,
+        email: participant.user.email,
+        avatar: participant.user.image,
+        role: participant.user.role,
+        isOnline: false, // We could implement online status in the future
+      }));
+      
+      // Get the last message
+      const lastMessage = conversation.messages[0] ? {
+        id: conversation.messages[0].id,
+        senderId: conversation.messages[0].senderId,
+        senderName: conversation.messages[0].sender?.name || 'Unknown',
+        content: conversation.messages[0].content,
+        timestamp: conversation.messages[0].sentAt.toISOString(), // Using sentAt instead of createdAt
+        isRead: conversation.messages[0].isRead,
+      } : null;
+      
+      return {
+        id: conversation.id,
+        participants,
+        lastMessage,
+        unreadCount,
+        isGroupChat: participants.length > 2,
+        courseId: conversation.courseId,
+        createdAt: conversation.createdAt.toISOString(),
+        updatedAt: conversation.updatedAt.toISOString(),
+      };
+    });
     
-    // Return the conversations array directly as the response
-    return NextResponse.json(conversations);
+    return NextResponse.json(formattedConversations);
   } catch (error) {
     console.error('Error fetching conversations:', error);
     return NextResponse.json(
@@ -74,17 +128,16 @@ export async function GET() {
 // Create a new conversation
 export async function POST(req: Request) {
   try {
-    console.log('POST /api/conversations - Starting request');
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
-      console.log('POST /api/conversations - Unauthorized: No session or user ID');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    const { participantId, message } = await req.json();
+    const body = await req.json();
+    console.log('Received request body:', JSON.stringify(body));
     
-    console.log('Received request with:', { participantId, message });
+    const { participantId, message, courseId } = body;
     
     if (!participantId) {
       return NextResponse.json(
@@ -93,6 +146,7 @@ export async function POST(req: Request) {
       );
     }
     
+    console.log('Validating message object:', message);
     if (!message?.content) {
       return NextResponse.json(
         { error: 'Message content is required' },
@@ -100,44 +154,209 @@ export async function POST(req: Request) {
       );
     }
     
-    // In a real implementation, this would create a conversation in the database
-    // For now, we'll return a mock response
-    const conversation = {
-      id: `conv_${Date.now()}`,
-      participants: [
-        {
-          id: session.user.id,
-          name: session.user.name || 'User',
-          email: session.user.email || '',
-          role: (session.user as any)?.role || 'STUDENT',
-          isOnline: true
+    // Declare conversation variable in the outer scope so it's accessible outside the nested try block
+    let conversation;
+    
+    // Verify the participant exists before attempting to create a conversation
+    const participantExists = await prisma.user.findUnique({
+      where: { id: participantId }
+    });
+    
+    if (!participantExists) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Participant not found',
+          details: `User with ID ${participantId} does not exist`
         },
-        {
-          id: participantId,
-          name: message.senderName || 'Recipient',
-          role: message.senderRole || 'STUDENT',
-          isOnline: false
-        }
-      ],
-      lastMessage: {
-        id: `msg_${Date.now()}`,
-        senderId: session.user.id,
-        content: message.content,
-        timestamp: new Date().toISOString(),
-        isRead: false
+        { status: 404 }
+      );
+    }
+    
+    // Check if a conversation between these users already exists
+    // Use a more direct approach to find existing conversation
+    const existingConversation = await prisma.conversation.findFirst({
+      where: {
+        courseId: courseId || null,
+        AND: [
+          {
+            participants: {
+              some: {
+                userId: session.user.id
+              }
+            }
+          },
+          {
+            participants: {
+              some: {
+                userId: participantId
+              }
+            }
+          }
+        ]
       },
-      unreadCount: 0,
-      isGroupChat: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                role: true,
+              }
+            }
+          }
+        },
+        messages: {
+          orderBy: {
+            sentAt: 'desc'
+          },
+          take: 1,
+          include: {
+            sender: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    if (existingConversation) {
+      console.log('Using existing conversation:', existingConversation.id);
+      // Use existing conversation
+      conversation = existingConversation;
+      
+      // Add new message to existing conversation
+      await prisma.message.create({
+        data: {
+          content: message.content,
+          senderId: session.user.id,
+          conversationId: conversation.id,
+          isRead: false
+        }
+      });
+      
+      // Update conversation timestamp
+      await prisma.conversation.update({
+        where: { id: conversation.id },
+        data: { updatedAt: new Date() }
+      });
+    } else {
+      console.log('Creating new conversation between users:', session.user.id, 'and', participantId);
+      // Create new conversation
+      conversation = await prisma.conversation.create({
+        data: {
+          courseId: courseId || null,
+          participants: {
+            create: [
+              { userId: session.user.id, role: 'participant' },
+              { userId: participantId, role: 'participant' }
+            ]
+          },
+          messages: {
+            create: {
+              content: message.content,
+              senderId: session.user.id,
+              isRead: false
+            }
+          }
+        },
+        include: {
+          participants: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  image: true,
+                  role: true,
+                }
+              }
+            }
+          },
+          messages: {
+            orderBy: {
+              sentAt: 'desc'
+            },
+            take: 1,
+            include: {
+              sender: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Format conversation for frontend
+    const formattedConversation = {
+      id: conversation.id,
+      participants: conversation.participants.map((p: { userId: string; user: { name?: string | null; role?: string | null; image?: string | null } }) => ({
+        id: p.userId,
+        name: p.user.name || 'Unknown User',
+        role: p.user.role || 'user',
+        avatarUrl: p.user.image || null
+      })),
+      lastMessage: conversation.messages[0] ? {
+        id: conversation.messages[0].id,
+        content: conversation.messages[0].content,
+        senderId: conversation.messages[0].senderId,
+        sentAt: conversation.messages[0].sentAt,
+        senderName: conversation.messages[0].sender?.name || 'Unknown User',
+        senderAvatar: conversation.messages[0].sender?.image || null,
+        isRead: conversation.messages[0].isRead
+      } : null,
+      updatedAt: conversation.updatedAt.toISOString()
     };
     
-    console.log('Created conversation:', conversation);
-    
-    // Return the conversation object directly as the response
-    return NextResponse.json(conversation, { status: 201 });
+    return NextResponse.json(formattedConversation, { status: 201 });
   } catch (error) {
-    console.error('Error creating conversation:', error);
+    console.error('Error creating conversation:', error instanceof Error ? {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    } : error);
+    
+    // Provide more specific error messages based on error type
+    if (error instanceof Error) {
+      // Check for Prisma-specific errors
+      if (error.message.includes('Foreign key constraint failed')) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Invalid participant ID',
+            details: 'The specified participant does not exist'
+          },
+          { status: 400 }
+        );
+      }
+      
+      // Check for other specific error patterns
+      if (error.message.includes('not found') || error.message.includes('does not exist')) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Resource not found',
+            details: error.message
+          },
+          { status: 404 }
+        );
+      }
+    }
+    
+    // Default error response
     return NextResponse.json(
       { 
         success: false, 
