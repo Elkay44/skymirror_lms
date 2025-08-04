@@ -59,23 +59,30 @@ export async function GET(
     });
 
     // Get project marks from ProjectMark model
-    const projectMarks = await (prisma as any).projectMark.findMany({
-      where: {
-        project: { courseId },
-        studentId: { in: enrollments.map(e => e.userId) }
-      },
-      include: {
-        project: {
-          select: { id: true, title: true, pointsValue: true }
+    let projectMarks = [];
+    try {
+      projectMarks = await (prisma as any).projectMark.findMany({
+        where: {
+          project: { courseId },
+          studentId: { in: enrollments.map(e => e.userId) }
         },
-        submission: {
-          select: { id: true, status: true, submittedAt: true }
-        },
-        instructor: {
-          select: { id: true, name: true }
+        include: {
+          project: {
+            select: { id: true, title: true, pointsValue: true }
+          },
+          submission: {
+            select: { id: true, status: true, submittedAt: true }
+          },
+          instructor: {
+            select: { id: true, name: true }
+          }
         }
-      }
-    });
+      });
+      console.log('Found project marks:', projectMarks.length);
+    } catch (error) {
+      console.error('Error fetching project marks:', error);
+      projectMarks = [];
+    }
 
     // Get all project submissions for enrolled students (for fallback)
     const projectSubmissions = await prisma.projectSubmission.findMany({
@@ -117,17 +124,51 @@ export async function GET(
       // Get all project submissions for this student (fallback)
       const submissions = projectSubmissions.filter(s => s.studentId === studentId);
       
-      // Calculate project grades (prefer marks over submission grades)
-      const projectGrades = studentProjectMarks.length > 0
-        ? studentProjectMarks.map((m: any) => m.grade).filter((grade: number | null | undefined) => grade !== null && grade !== undefined)
-        : submissions
-            .filter(s => s.grade !== null && s.grade !== undefined)
-            .map(s => (s.grade || 0));
+      // Calculate project grades (prefer ProjectMark data over submission grades)
+      let projectGrades: number[] = [];
+      let projectGradesList: any[] = [];
       
-      const validProjectGrades = projectGrades.filter((grade: number) => grade !== null && grade !== undefined);
-      const projectAverage = validProjectGrades.length > 0 
-        ? validProjectGrades.reduce((sum: number, grade: number) => sum + grade, 0) / validProjectGrades.length 
+      if (studentProjectMarks.length > 0) {
+        // Use ProjectMark data (preferred)
+        console.log(`Student ${studentId} has ${studentProjectMarks.length} project marks`);
+        projectGrades = studentProjectMarks
+          .map((m: any) => m.grade)
+          .filter((grade: number | null | undefined) => grade !== null && grade !== undefined);
+        
+        projectGradesList = studentProjectMarks.map((m: any) => ({
+          projectId: m.project.id,
+          title: m.project.title,
+          grade: m.grade,
+          letterGrade: m.letterGrade || 'N/A',
+          feedback: m.feedback || '',
+          markedAt: m.markedAt,
+          pointsValue: m.project.pointsValue || 100
+        }));
+      } else {
+        // Fallback to submission grades
+        console.log(`Student ${studentId} has no project marks, using ${submissions.length} submissions`);
+        projectGrades = submissions
+          .filter(s => s.grade !== null && s.grade !== undefined)
+          .map(s => (s.grade || 0));
+        
+        projectGradesList = submissions
+          .filter(s => s.grade !== null && s.grade !== undefined)
+          .map(s => ({
+            projectId: s.project.id,
+            title: s.project.title,
+            grade: s.grade,
+            letterGrade: 'N/A',
+            feedback: '',
+            markedAt: s.submittedAt,
+            pointsValue: s.project.pointsValue || 100
+          }));
+      }
+      
+      const projectAverage = projectGrades.length > 0 
+        ? projectGrades.reduce((sum: number, grade: number) => sum + grade, 0) / projectGrades.length 
         : 0;
+      
+      console.log(`Student ${studentId} project average: ${projectAverage} from ${projectGrades.length} grades`);
 
       // Get quiz attempts for this student
       const studentQuizAttempts = quizAttempts.filter(q => q.userId === studentId);
@@ -214,8 +255,13 @@ export async function GET(
     });
   } catch (error) {
     console.error('Error fetching course marks:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      courseId
+    });
     return NextResponse.json(
-      { error: 'Failed to fetch marks data' },
+      { error: 'Failed to fetch marks data', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

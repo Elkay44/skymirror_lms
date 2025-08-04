@@ -1,28 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "sqlite"
   url      = "file:./dev.db"
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-
-
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
-  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -34,7 +32,7 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@map("sessions")
 }
 
@@ -50,11 +48,11 @@ model VerificationToken {
 model Notification {
   id        String   @id @default(cuid())
   userId    String
-  type      String   // e.g., 'course_approval', 'enrollment', etc.
+  type      String
   title     String
   message   String
   isRead    Boolean  @default(false)
-  metadata  String?    // Store additional data as JSON string
+  metadata  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -65,103 +63,98 @@ model Notification {
 model Authenticator {
   credentialID         String  @id
   credentialPublicKey  String  @unique
-  counter             Int
+  counter              Int
   credentialDeviceType String
-  credentialBackedUp  Boolean
-  transports          String?
-  userId              String
-  user                User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  credentialBackedUp   Boolean
+  transports           String?
+  userId               String
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("authenticators")
 }
 
 model User {
-  id                 String         @id @default(cuid())
-  name               String?
-  email              String?       @unique
-  emailVerified      DateTime?
-  image              String?
-  password           String?
-  role               String        @default("STUDENT")
-  points             Int           @default(0)
-  level              Int           @default(1)
-  needsOnboarding    Boolean       @default(false)
-  walletAddress      String?       @unique
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-
-  // Relations
-  accounts           Account[]
-  sessions           Session[]
-  studentProfile     StudentProfile?
-  mentorProfile      MentorProfile?
-  userAchievements   UserAchievement[]
-  mentorSessions     MentorSession[] @relation("MentorSessions")
-  menteeSessions     MentorSession[] @relation("MenteeSessions")
-  authenticators     Authenticator[]
-  likedProjects      ProjectLike[]
-  projectSubmissions ProjectSubmission[] @relation("StudentSubmissions")
+  id                    String                    @id @default(cuid())
+  name                  String?
+  email                 String?                   @unique
+  emailVerified         DateTime?
+  image                 String?
+  password              String?
+  role                  String                    @default("STUDENT")
+  points                Int                       @default(0)
+  level                 Int                       @default(1)
+  needsOnboarding       Boolean                   @default(false)
+  walletAddress         String?                   @unique
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  userAchievements      UserAchievement[]
+  accounts              Account[]
+  activityLogs          ActivityLog[]
   assignmentSubmissions AssignmentSubmission[]
-  showcaseProjects   ShowcaseProject[]
-  enrollments        Enrollment[]
-  instructorCourses  Course[]            @relation("InstructorCourses")
-  lessonViews        LessonView[]
-  lessonProgress     LessonProgress[]
-  certifications     Certification[]
-  quizAttempts       QuizAttempt[]
-  activityLogs       ActivityLog[]
-  notifications      Notification[]
-  conversations      ConversationParticipant[]
-  sentMessages       Message[]        @relation("MessageSender")
-  receivedMessages   Message[]        @relation("MessageReceiver")
-  posts              Post[]           // Forum posts by this user
-  codeCommits        CodeCommit[]     @relation("StudentCommits")
-  studentMarks       ProjectMark[]    @relation("StudentMarks")
-  instructorMarks    ProjectMark[]    @relation("InstructorMarks")
+  authenticators        Authenticator[]
+  certifications        Certification[]
+  codeCommits           CodeCommit[]              @relation("StudentCommits")
+  conversations         ConversationParticipant[]
+  instructorCourses     Course[]                  @relation("InstructorCourses")
+  enrollments           Enrollment[]
+  lessonProgress        LessonProgress[]
+  lessonViews           LessonView[]
+  mentorProfile         MentorProfile?
+  menteeSessions        MentorSession[]           @relation("MenteeSessions")
+  mentorSessions        MentorSession[]           @relation("MentorSessions")
+  receivedMessages      Message[]                 @relation("MessageReceiver")
+  sentMessages          Message[]                 @relation("MessageSender")
+  notifications         Notification[]
+  posts                 Post[]
+  likedProjects         ProjectLike[]
+  instructorMarks       ProjectMark[]             @relation("InstructorMarks")
+  studentMarks          ProjectMark[]             @relation("StudentMarks")
+  projectSubmissions    ProjectSubmission[]       @relation("StudentSubmissions")
+  quizAttempts          QuizAttempt[]
+  sessions              Session[]
+  showcaseProjects      ShowcaseProject[]
+  studentProfile        StudentProfile?
+
   @@map("users")
 }
 
-
-
 model Course {
-  id               String    @id @default(cuid())
+  id               String          @id @default(cuid())
   title            String
   description      String?
   shortDescription String?
-  slug             String    @unique
+  slug             String          @unique
   image            String?
-  isPublished      Boolean   @default(false)
-  isPrivate        Boolean   @default(false)
-  price            Float?    @default(0)
-  discountPrice    Float?    @default(0)
-  level            String?   // BEGINNER, INTERMEDIATE, ADVANCED
+  isPublished      Boolean         @default(false)
+  isPrivate        Boolean         @default(false)
+  price            Float?          @default(0)
+  discountPrice    Float?          @default(0)
+  level            String?
   category         String?
-  language         String?   @default("en")
-  totalHours       Float?    @default(0)
-  totalLectures    Int?      @default(0)
-  totalQuizzes     Int?      @default(0)
-  totalProjects    Int?      @default(0)
-  totalStudents    Int?      @default(0)
-  averageRating    Float?    @default(0)
-  totalReviews     Int?      @default(0)
+  language         String?         @default("en")
+  totalHours       Float?          @default(0)
+  totalLectures    Int?            @default(0)
+  totalQuizzes     Int?            @default(0)
+  totalProjects    Int?            @default(0)
+  totalStudents    Int?            @default(0)
+  averageRating    Float?          @default(0)
+  totalReviews     Int?            @default(0)
   instructorId     String
-  status           String    @default("DRAFT") // DRAFT, PUBLISHED, ARCHIVED, PENDING_APPROVAL, etc.
-  featured         Boolean   @default(false)
-  requirements     String?   // JSON array of requirements
-  learningOutcomes String?   // JSON array of learning outcomes
-  targetAudience   String?   // JSON array of target audience
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  
-  // Relations
-  instructor       User              @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
-  modules          Module[]
-  projects         Project[]         @relation("CourseProjects")
-  enrollments      Enrollment[]
-  certifications   Certification[]
+  status           String          @default("DRAFT")
+  featured         Boolean         @default(false)
+  requirements     String?
+  learningOutcomes String?
+  targetAudience   String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  projects         Project[]       @relation("CourseProjects")
   activityLogs     ActivityLog[]
+  certifications   Certification[]
   conversations    Conversation[]
-  
+  instructor       User            @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+  enrollments      Enrollment[]
+  modules          Module[]
+
   @@map("courses")
 }
 
@@ -171,189 +164,171 @@ model Page {
   content     String?
   description String?
   moduleId    String
-  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   isPublished Boolean  @default(false)
   order       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   createdBy   String
   updatedBy   String
+  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 
   @@index([moduleId])
   @@map("pages")
 }
 
 model Module {
-  id               String    @id @default(cuid())
-  title            String
-  description      String?
-  order            Int       @default(0)
-  isPublished      Boolean   @default(false)
-  courseId         String
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  
-  // Relations
-  course           Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons          Lesson[]
-  projects         Project[]
-  pages            Page[]
-  quizzes          Quiz[]
-  assignments      Assignment[]
-  activityLogs     ActivityLog[]
-  forums           Forum[]
-  
+  id           String        @id @default(cuid())
+  title        String
+  description  String?
+  order        Int           @default(0)
+  isPublished  Boolean       @default(false)
+  courseId     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  projects     Project[]
+  activityLogs ActivityLog[]
+  assignments  Assignment[]
+  forums       Forum[]
+  lessons      Lesson[]
+  course       Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  pages        Page[]
+  quizzes      Quiz[]
+
   @@map("modules")
 }
 
 model Lesson {
-  id               String       @id @default(cuid())
-  title            String
-  description      String?
-  content          String?      // Lesson content/body text
-  videoUrl         String?
-  duration         Int?         // in minutes
-  order            Int          @default(0)
-  isPublished      Boolean      @default(false)
-  isPreview        Boolean      @default(false)
-  moduleId         String
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  
-  // Relations
-  module           Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  views            LessonView[]
-  progress         LessonProgress[]
-  activityLogs     ActivityLog[]
-  
+  id           String           @id @default(cuid())
+  title        String
+  description  String?
+  videoUrl     String?
+  duration     Int?
+  order        Int              @default(0)
+  isPublished  Boolean          @default(false)
+  isPreview    Boolean          @default(false)
+  moduleId     String
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  content      String?
+  activityLogs ActivityLog[]
+  progress     LessonProgress[]
+  views        LessonView[]
+  module       Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
   @@map("lessons")
 }
 
 model LessonView {
-  id          String   @id @default(cuid())
-  lessonId    String
-  userId      String
-  viewCount   Int      @default(1)
-  lastViewed  DateTime @default(now())
-  
-  // Relations
-  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id         String   @id @default(cuid())
+  lessonId   String
+  userId     String
+  viewCount  Int      @default(1)
+  lastViewed DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson     Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
   @@unique([lessonId, userId])
   @@map("lesson_views")
 }
 
 model LessonProgress {
-  id               String    @id @default(cuid())
-  lessonId         String
-  userId           String
-  completed        Boolean   @default(false)
-  completedAt      DateTime?
-  lastAccessedAt   DateTime  @default(now())
-  timeSpent        Int       @default(0) // in seconds
-  progress         Int       @default(0) // 0-100 percentage
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  
-  // Relations
-  lesson           Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id             String    @id @default(cuid())
+  lessonId       String
+  userId         String
+  completed      Boolean   @default(false)
+  completedAt    DateTime?
+  lastAccessedAt DateTime  @default(now())
+  timeSpent      Int       @default(0)
+  progress       Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson         Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
   @@unique([lessonId, userId])
   @@map("lesson_progress")
 }
 
 model Project {
-  id               String            @id @default(cuid())
-  title            String
-  description      String?
-  instructions     String?
-  dueDate          DateTime?
-  pointsValue      Int               @default(10)
-  isPublished      Boolean           @default(false)
-  courseId         String
-  moduleId         String?
-  isRequiredForCertification Boolean @default(true)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  module           Module?           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  course           Course            @relation("CourseProjects", fields: [courseId], references: [id], onDelete: Cascade)
-  submissions      ProjectSubmission[]
-  likes            ProjectLike[]
-  codeCommits      CodeCommit[]
-  marks            ProjectMark[]
+  id                         String              @id @default(cuid())
+  title                      String
+  description                String?
+  instructions               String?
+  dueDate                    DateTime?
+  pointsValue                Int                 @default(10)
+  isPublished                Boolean             @default(false)
+  courseId                   String
+  moduleId                   String?
+  isRequiredForCertification Boolean             @default(true)
+  createdAt                  DateTime            @default(now())
+  updatedAt                  DateTime            @updatedAt
+  course                     Course              @relation("CourseProjects", fields: [courseId], references: [id], onDelete: Cascade)
+  module                     Module?             @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  codeCommits                CodeCommit[]
+  likes                      ProjectLike[]
+  marks                      ProjectMark[]
+  submissions                ProjectSubmission[]
 }
 
 model ProjectSubmission {
   id               String              @id @default(cuid())
-  project          Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId        String
-  student          User                @relation("StudentSubmissions", fields: [studentId], references: [id], onDelete: Cascade)
   studentId        String
-  // Submission content
-  submissionUrl    String?             // GitHub URL, file upload URL, etc.
-  submissionText   String?             // Text submission
-  submissionFiles  String?             // JSON string of file metadata
-  // Submission status and feedback
-  status           String              @default("SUBMITTED") // SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, REVISION_REQUESTED
-  grade            Int?                // 0-100
-  feedback         String?             // Instructor feedback
-  reviewerId       String?             // ID of the user who reviewed this submission
-  // Revisions tracking
+  submissionUrl    String?
+  submissionText   String?
+  submissionFiles  String?
+  status           String              @default("SUBMITTED")
+  grade            Int?
+  feedback         String?
+  reviewerId       String?
   revisionCount    Int                 @default(0)
-  // Timestamps
   submittedAt      DateTime            @default(now())
   reviewedAt       DateTime?
   updatedAt        DateTime            @updatedAt
-  
-  // Certification relation
-  certification    Certification? @relation("CertificationToProjectSubmission")
-  // Student response to feedback
-  response         SubmissionResponse?
-  
-  // Showcase projects
-  showcaseProjects ShowcaseProject[]   @relation("SubmissionShowcaseProjects")
-  // Project marks
+  certification    Certification?      @relation("CertificationToProjectSubmission")
   marks            ProjectMark[]
-  
+  student          User                @relation("StudentSubmissions", fields: [studentId], references: [id], onDelete: Cascade)
+  project          Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  showcaseProjects ShowcaseProject[]   @relation("SubmissionShowcaseProjects")
+  response         SubmissionResponse?
+
   @@unique([projectId, studentId])
   @@map("project_submissions")
 }
 
 model SubmissionResponse {
-  id                String           @id @default(cuid())
-  submission        ProjectSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  submissionId      String           @unique
+  id                String            @id @default(cuid())
+  submissionId      String            @unique
   responseText      String
   resubmissionUrl   String?
-  resubmissionFiles String?          // JSON string of file metadata
-  status            String           @default("PENDING") // PENDING, REVIEWED
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  
+  resubmissionFiles String?
+  status            String            @default("PENDING")
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  submission        ProjectSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
   @@map("submission_responses")
 }
 
 model ShowcaseProject {
-  id                String           @id @default(cuid())
-  title             String
-  description       String
-  featuredImage     String?
-  demoUrl           String?
-  sourceCodeUrl     String?
-  tags              String?          // Comma-separated tags
-  isPublished       Boolean          @default(false)
-  submission        ProjectSubmission @relation("SubmissionShowcaseProjects", fields: [submissionId], references: [id], onDelete: Cascade)
-  submissionId      String
-  student           User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId         String
-  likes             Int              @default(0)
-  views             Int              @default(0)
-  featuredAt        DateTime?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  
+  id            String            @id @default(cuid())
+  title         String
+  description   String
+  featuredImage String?
+  demoUrl       String?
+  sourceCodeUrl String?
+  tags          String?
+  isPublished   Boolean           @default(false)
+  submissionId  String
+  studentId     String
+  likes         Int               @default(0)
+  views         Int               @default(0)
+  featuredAt    DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  student       User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  submission    ProjectSubmission @relation("SubmissionShowcaseProjects", fields: [submissionId], references: [id], onDelete: Cascade)
+
   @@map("showcase_projects")
 }
 
@@ -363,29 +338,29 @@ model ProjectLike {
   projectId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, projectId])
   @@map("project_likes")
 }
 
 model Assignment {
-  id          String     @id @default(cuid())
+  id          String                 @id @default(cuid())
   title       String
   description String?
   content     String?
   dueDate     DateTime?
-  points      Int        @default(100)
-  isPublished Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  points      Int                    @default(100)
+  isPublished Boolean                @default(false)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
   moduleId    String?
-  module      Module?    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  rubric      Rubric?    @relation(fields: [rubricId], references: [id])
   rubricId    String?
   submissions AssignmentSubmission[]
-  
+  rubric      Rubric?                @relation(fields: [rubricId], references: [id])
+  module      Module?                @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
   @@map("assignments")
 }
 
@@ -397,27 +372,25 @@ model Forum {
   moduleId    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
   module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   posts       Post[]
-  
+
   @@map("forums")
 }
 
 model Post {
-  id          String   @id @default(cuid())
-  content     String
-  userId      String
-  forumId     String
-  parentId    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  forum       Forum    @relation(fields: [forumId], references: [id], onDelete: Cascade)
-  parent      Post?    @relation("PostHierarchy", fields: [parentId], references: [id])
-  replies     Post[]   @relation("PostHierarchy")
-  
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  forumId   String
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  parent    Post?    @relation("PostHierarchy", fields: [parentId], references: [id])
+  replies   Post[]   @relation("PostHierarchy")
+  forum     Forum    @relation(fields: [forumId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("posts")
 }
 
@@ -427,14 +400,14 @@ model AssignmentSubmission {
   fileUrl      String?
   grade        Float?
   feedback     String?
-  status       String     @default("DRAFT") // DRAFT, SUBMITTED, GRADED, REJECTED
+  status       String     @default("DRAFT")
   submittedAt  DateTime?
   gradedAt     DateTime?
   assignmentId String
   userId       String
-  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
   student      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
   @@map("assignment_submissions")
 }
 
@@ -445,93 +418,89 @@ model Rubric {
   isDefault   Boolean      @default(false)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  items       RubricItem[]
   assignments Assignment[]
-  
+  items       RubricItem[]
+
   @@map("rubrics")
 }
 
 model RubricItem {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   rubricId    String
   title       String
   description String?
   points      Int
-  order       Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
-  // Relations
-  rubric      Rubric    @relation(fields: [rubricId], references: [id], onDelete: Cascade)
-  
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  rubric      Rubric   @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+
   @@map("rubric_items")
 }
 
 model StudentProfile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bio         String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String              @id @default(cuid())
+  userId       String              @unique
+  bio          String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
   sentRequests MentorshipRequest[] @relation("SentRequests")
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("student_profiles")
 }
 
 model MentorshipRequest {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   message   String
-  status    String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, CANCELLED
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  mentor    MentorProfile @relation("ReceivedRequests", fields: [mentorId], references: [id])
+  status    String         @default("PENDING")
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
   mentorId  String
-  student   StudentProfile @relation("SentRequests", fields: [studentId], references: [id])
   studentId String
+  student   StudentProfile @relation("SentRequests", fields: [studentId], references: [id])
+  mentor    MentorProfile  @relation("ReceivedRequests", fields: [mentorId], references: [id])
 
   @@map("mentorship_requests")
 }
 
 model MentorProfile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bio         String?
-  specialties String?  // Store as JSON string
-  rating      Float    @default(0)
-  reviewCount Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String              @id @default(cuid())
+  userId           String              @unique
+  bio              String?
+  specialties      String?
+  rating           Float               @default(0)
+  reviewCount      Int                 @default(0)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   receivedRequests MentorshipRequest[] @relation("ReceivedRequests")
 
   @@map("mentor_profiles")
 }
 
 model Achievement {
-  id              String              @id @default(cuid())
-  type            String
-  title           String
-  description     String
-  icon            String?
-  category        String              // learning, financial, community, career
-  amount          Float?
-  currency        String?
-  validUntil      DateTime?
-  discountPercent Int?
-  issuer          String?
-  company         String?
-  position        String?
-  skillLevel      String?             // For learning achievements
-  courseId        String?             // For course-specific achievements
-  xpEarned        Int?                // XP awarded for this achievement
-  isActive        Boolean    @default(true)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  id               String            @id @default(cuid())
+  type             String
+  title            String
+  description      String
+  icon             String?
+  category         String
+  amount           Float?
+  currency         String?
+  validUntil       DateTime?
+  discountPercent  Int?
+  issuer           String?
+  company          String?
+  position         String?
+  skillLevel       String?
+  courseId         String?
+  xpEarned         Int?
+  isActive         Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   userAchievements UserAchievement[]
-  
+
   @@index([type])
   @@index([category])
 }
@@ -541,12 +510,10 @@ model UserAchievement {
   userId        String
   achievementId String
   earnedAt      DateTime    @default(now())
-  metadata      String?       @default("{}")  // For storing additional data like referral count, etc.
-  
-  // Relations
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  metadata      String?     @default("{}")
   achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
-  
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, achievementId])
   @@index([userId])
   @@index([achievementId])
@@ -554,225 +521,203 @@ model UserAchievement {
 }
 
 model Enrollment {
-  id                String           @id @default(cuid())
-  userId            String
-  courseId          String
-  status            String           @default("ACTIVE") // ACTIVE, COMPLETED, DROPPED, SUSPENDED
-  progress          Int              @default(0) // 0-100
-  completedAt       DateTime?
-  enrolledAt        DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  
-  // Relations
-  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course            Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  certification     Certification?   @relation(name: "EnrollmentCertification")
-  certificationId   String?          @unique
-  activityLogs      ActivityLog[]
-  
+  id              String         @id @default(cuid())
+  userId          String
+  courseId        String
+  status          String         @default("ACTIVE")
+  progress        Int            @default(0)
+  completedAt     DateTime?
+  enrolledAt      DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  certificationId String?        @unique
+  activityLogs    ActivityLog[]
+  certification   Certification? @relation("EnrollmentCertification")
+  course          Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, courseId])
   @@map("enrollments")
 }
 
 model Certification {
-  id                String           @id @default(cuid())
-  userId            String
-  courseId          String
-  enrollmentId      String           @unique
-  projectSubmissionId String?        @unique
-  issuedAt          DateTime         @default(now())
-  expiresAt         DateTime?
-  verificationUrl   String?
-  credentialId      String?          // External credential ID if issued by a third party
-  metadata          String?          // JSON string of additional data
-  
-  // Relations
-  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course            Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  enrollment        Enrollment       @relation("EnrollmentCertification", fields: [enrollmentId], references: [id])
-  projectSubmission ProjectSubmission? @relation("CertificationToProjectSubmission", fields: [projectSubmissionId], references: [id], onDelete: Cascade)
-  
+  id                  String             @id @default(cuid())
+  userId              String
+  courseId            String
+  enrollmentId        String             @unique
+  projectSubmissionId String?            @unique
+  issuedAt            DateTime           @default(now())
+  expiresAt           DateTime?
+  verificationUrl     String?
+  credentialId        String?
+  metadata            String?
+  projectSubmission   ProjectSubmission? @relation("CertificationToProjectSubmission", fields: [projectSubmissionId], references: [id], onDelete: Cascade)
+  enrollment          Enrollment         @relation("EnrollmentCertification", fields: [enrollmentId], references: [id])
+  course              Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, courseId])
   @@map("certifications")
 }
 
 model MentorSession {
-  id              String   @id @default(cuid())
-  mentorId        String
-  menteeId        String
-  title           String
-  description     String?
-  status          String   @default("SCHEDULED") // PENDING, SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
-  scheduledAt     DateTime
-  duration        Int      // Duration in minutes
-  meetingUrl      String?
-  notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  // Relations
-  mentor          User     @relation("MentorSessions", fields: [mentorId], references: [id])
-  mentee          User     @relation("MenteeSessions", fields: [menteeId], references: [id])
-  conversations   Conversation[]
-  
+  id            String         @id @default(cuid())
+  mentorId      String
+  menteeId      String
+  title         String
+  description   String?
+  status        String         @default("SCHEDULED")
+  scheduledAt   DateTime
+  duration      Int
+  meetingUrl    String?
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  conversations Conversation[]
+  mentee        User           @relation("MenteeSessions", fields: [menteeId], references: [id])
+  mentor        User           @relation("MentorSessions", fields: [mentorId], references: [id])
+
   @@index([mentorId])
   @@index([menteeId])
   @@map("mentor_sessions")
 }
 
 model Quiz {
-  id             String       @id @default(cuid())
-  title          String
-  description    String?
-  moduleId       String
-  timeLimit      Int?         // Time limit in minutes
-  passingScore   Int          @default(70) // 0-100
-  attemptsAllowed Int?        @default(1)
-  showCorrectAnswers Boolean   @default(true)
-  isPublished    Boolean      @default(false)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  
-  // Relations
-  module         Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  questions      Question[]
-  attempts       QuizAttempt[]
-  activityLogs    ActivityLog[]
-  
+  id                 String        @id @default(cuid())
+  title              String
+  description        String?
+  moduleId           String
+  timeLimit          Int?
+  passingScore       Int           @default(70)
+  attemptsAllowed    Int?          @default(1)
+  showCorrectAnswers Boolean       @default(true)
+  isPublished        Boolean       @default(false)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  activityLogs       ActivityLog[]
+  questions          Question[]
+  attempts           QuizAttempt[]
+  module             Module        @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
   @@map("quizzes")
 }
 
 model Question {
-  id             String         @id @default(cuid())
-  quizId         String
-  text           String
-  type           String         // MULTIPLE_CHOICE, TRUE_FALSE, SHORT_ANSWER, ESSAY
-  order          Int            @default(0)
-  points         Int            @default(1)
-  explanation    String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  
-  // Relations
-  quiz           Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  options        QuestionOption[]
-  userAnswers    UserAnswer[]
-  
+  id          String           @id @default(cuid())
+  quizId      String
+  text        String
+  type        String
+  order       Int              @default(0)
+  points      Int              @default(1)
+  explanation String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  options     QuestionOption[]
+  quiz        Quiz             @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userAnswers UserAnswer[]
+
   @@map("questions")
 }
 
 model Conversation {
-  id               String            @id @default(cuid())
-  isGroupChat      Boolean           @default(false)
-  courseId         String?
-  mentorshipId     String?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  
-  // Relations
-  course           Course?           @relation(fields: [courseId], references: [id])
-  mentorship       MentorSession?    @relation(fields: [mentorshipId], references: [id])
-  participants     ConversationParticipant[]
-  messages         Message[]
-  
+  id           String                    @id @default(cuid())
+  isGroupChat  Boolean                   @default(false)
+  courseId     String?
+  mentorshipId String?
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  participants ConversationParticipant[]
+  mentorship   MentorSession?            @relation(fields: [mentorshipId], references: [id])
+  course       Course?                   @relation(fields: [courseId], references: [id])
+  messages     Message[]
+
   @@map("conversations")
 }
 
 model ConversationParticipant {
-  id               String            @id @default(cuid())
-  conversationId   String
-  userId           String
-  role             String            // MEMBER, ADMIN
-  unreadCount      Int               @default(0)
+  id                String       @id @default(cuid())
+  conversationId    String
+  userId            String
+  role              String
+  unreadCount       Int          @default(0)
   lastReadMessageId String?
-  createdAt        DateTime          @default(now())
-  
-  // Relations
-  conversation     Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lastReadMessage  Message?          @relation(fields: [lastReadMessageId], references: [id])
-  
+  createdAt         DateTime     @default(now())
+  lastReadMessage   Message?     @relation(fields: [lastReadMessageId], references: [id])
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
   @@unique([conversationId, userId])
   @@map("conversation_participants")
 }
 
 model Message {
-  id               String            @id @default(cuid())
-  conversationId   String
-  senderId         String
-  receiverId       String?
-  content          String
-  isRead           Boolean           @default(false)
-  sentAt           DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  lastReadBy       ConversationParticipant[]
-  
-  // Relations
-  conversation     Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender           User              @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver         User?             @relation("MessageReceiver", fields: [receiverId], references: [id])
-  
+  id             String                    @id @default(cuid())
+  conversationId String
+  senderId       String
+  receiverId     String?
+  content        String
+  isRead         Boolean                   @default(false)
+  sentAt         DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
+  lastReadBy     ConversationParticipant[]
+  receiver       User?                     @relation("MessageReceiver", fields: [receiverId], references: [id])
+  sender         User                      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  conversation   Conversation              @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
   @@map("messages")
 }
 
 model QuestionOption {
-  id             String         @id @default(cuid())
-  questionId     String
-  text           String
-  isCorrect      Boolean        @default(false)
-  order          Int            @default(0)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  
-  // Relations
-  question       Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  userAnswers    UserAnswer[]
-  
+  id          String       @id @default(cuid())
+  questionId  String
+  text        String
+  isCorrect   Boolean      @default(false)
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userAnswers UserAnswer[]
+
   @@map("question_options")
 }
 
 model QuizAttempt {
-  id             String         @id @default(cuid())
-  quizId         String
-  userId         String
-  score          Float?
-  completed      Boolean        @default(false)
-  startedAt      DateTime       @default(now())
-  submittedAt    DateTime?
-  timeSpent      Int?           // Time spent in seconds
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  
-  // Relations
-  quiz           Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  answers        UserAnswer[]
-  
+  id          String       @id @default(cuid())
+  quizId      String
+  userId      String
+  score       Float?
+  completed   Boolean      @default(false)
+  startedAt   DateTime     @default(now())
+  submittedAt DateTime?
+  timeSpent   Int?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz        Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  answers     UserAnswer[]
+
   @@map("quiz_attempts")
 }
 
 model UserAnswer {
-  id               String         @id @default(cuid())
-  attemptId        String
-  questionId       String
-  optionId         String?
-  textAnswer       String?
-  isCorrect        Boolean        @default(false)
-  pointsAwarded    Float?         // Points awarded for this answer
-  gradedAt         DateTime?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  
-  // Relations
-  attempt         QuizAttempt    @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-  question        Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  selectedOption  QuestionOption? @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  
+  id             String          @id @default(cuid())
+  attemptId      String
+  questionId     String
+  optionId       String?
+  textAnswer     String?
+  isCorrect      Boolean         @default(false)
+  pointsAwarded  Float?
+  gradedAt       DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  selectedOption QuestionOption? @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  question       Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  attempt        QuizAttempt     @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
   @@map("user_answers")
 }
 
 model ActivityLog {
-  id           String    @id @default(cuid())
+  id           String      @id @default(cuid())
   userId       String
   courseId     String?
   moduleId     String?
@@ -781,17 +726,15 @@ model ActivityLog {
   quizId       String?
   type         String
   details      String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  
-  // Relations
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course       Course?    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  module       Module?    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  lesson       Lesson?    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  quiz         Quiz?       @relation(fields: [quizId], references: [id], onDelete: Cascade)
   enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  quiz         Quiz?      @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  
+  lesson       Lesson?     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  module       Module?     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  course       Course?     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([courseId])
   @@index([moduleId])
@@ -802,24 +745,22 @@ model ActivityLog {
 }
 
 model CodeCommit {
-  id               String            @id @default(cuid())
-  projectId        String
-  studentId        String
-  commitHash       String            // Git commit hash
-  message          String            // Commit message
-  branch           String            @default("main")
-  repositoryUrl    String?           // GitHub/GitLab repository URL
-  filesChanged     Int               @default(0)
-  linesAdded       Int               @default(0)
-  linesDeleted     Int               @default(0)
-  commitDate       DateTime          @default(now())
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  
-  // Relations
-  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  student          User              @relation("StudentCommits", fields: [studentId], references: [id], onDelete: Cascade)
-  
+  id            String   @id @default(cuid())
+  projectId     String
+  studentId     String
+  commitHash    String
+  message       String
+  branch        String   @default("main")
+  repositoryUrl String?
+  filesChanged  Int      @default(0)
+  linesAdded    Int      @default(0)
+  linesDeleted  Int      @default(0)
+  commitDate    DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  student       User     @relation("StudentCommits", fields: [studentId], references: [id], onDelete: Cascade)
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   @@unique([projectId, studentId, commitHash])
   @@index([projectId])
   @@index([studentId])
@@ -828,25 +769,23 @@ model CodeCommit {
 }
 
 model ProjectMark {
-  id               String            @id @default(cuid())
-  projectId        String
-  studentId        String
-  submissionId     String?           // Link to project submission
-  grade            Float             // Numerical grade (0-100)
-  letterGrade      String?           // Letter grade (A, B, C, etc.)
-  feedback         String?           // Detailed feedback
-  rubricScores     String?           // JSON string of rubric scores
-  markedBy         String            // Instructor who marked it
-  markedAt         DateTime          @default(now())
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  
-  // Relations
-  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  student          User              @relation("StudentMarks", fields: [studentId], references: [id], onDelete: Cascade)
-  submission       ProjectSubmission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
-  instructor       User              @relation("InstructorMarks", fields: [markedBy], references: [id], onDelete: Cascade)
-  
+  id           String             @id @default(cuid())
+  projectId    String
+  studentId    String
+  submissionId String?
+  grade        Float
+  letterGrade  String?
+  feedback     String?
+  rubricScores String?
+  markedBy     String
+  markedAt     DateTime           @default(now())
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  instructor   User               @relation("InstructorMarks", fields: [markedBy], references: [id], onDelete: Cascade)
+  submission   ProjectSubmission? @relation(fields: [submissionId], references: [id])
+  student      User               @relation("StudentMarks", fields: [studentId], references: [id], onDelete: Cascade)
+  project      Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
   @@unique([projectId, studentId])
   @@index([projectId])
   @@index([studentId])
@@ -854,4 +793,3 @@ model ProjectMark {
   @@index([markedAt])
   @@map("project_marks")
 }
-
