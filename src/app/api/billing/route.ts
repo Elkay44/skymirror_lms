@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
 // GET: Fetch billing information for the current user
 export async function GET() {
@@ -12,58 +13,65 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    // In a real application, this would fetch from a database
-    // For now, we'll return mock data based on the user's role
     if (session.user.role !== 'STUDENT') {
       return NextResponse.json({ error: 'Billing is only available for students' }, { status: 403 });
     }
     
-    // Mock data for student billing
+    // Get user from database
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email! },
+      include: {
+        subscription: true,
+        paymentMethods: {
+          orderBy: { createdAt: 'desc' }
+        },
+        invoices: {
+          orderBy: { createdAt: 'desc' },
+          take: 10
+        }
+      }
+    });
+    
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    
+    // Format subscription data
+    const subscription = user.subscription ? {
+      plan: user.subscription.plan,
+      status: user.subscription.status,
+      renewalDate: user.subscription.currentPeriodEnd.toISOString().split('T')[0],
+      price: user.subscription.price,
+      interval: user.subscription.interval
+    } : null;
+    
+    // Format payment methods
+    const paymentMethods = user.paymentMethods.map((pm: any) => ({
+      id: pm.id,
+      type: pm.type,
+      brand: pm.brand,
+      last4: pm.last4,
+      expMonth: pm.expMonth,
+      expYear: pm.expYear,
+      isDefault: pm.isDefault,
+      cardholderName: pm.cardholderName
+    }));
+    
+    // Format billing history
+    const billingHistory = user.invoices.map((invoice: any) => ({
+      id: invoice.id,
+      date: invoice.createdAt.toISOString().split('T')[0],
+      amount: invoice.amount,
+      description: invoice.description,
+      status: invoice.status,
+      invoice_url: invoice.invoiceUrl || '#',
+      paymentMethod: invoice.paymentMethodId ? 'Card' : 'Unknown'
+    }));
+    
     const billingData = {
-      subscription: {
-        plan: 'premium',
-        status: 'active',
-        renewalDate: '2025-06-15',
-        price: 49.99,
-        interval: 'monthly'
-      },
-      paymentMethods: [
-        {
-          id: 'card_1',
-          type: 'credit_card',
-          brand: 'Visa',
-          last4: '4242',
-          expMonth: 12,
-          expYear: 2026,
-          isDefault: true,
-        }
-      ],
-      billingHistory: [
-        {
-          id: 'inv_001',
-          date: '2025-04-15',
-          amount: 49.99,
-          description: 'Premium Subscription - Monthly',
-          status: 'paid',
-          invoice_url: '#'
-        },
-        {
-          id: 'inv_002',
-          date: '2025-03-15',
-          amount: 49.99,
-          description: 'Premium Subscription - Monthly',
-          status: 'paid',
-          invoice_url: '#'
-        },
-        {
-          id: 'inv_003',
-          date: '2025-02-15',
-          amount: 149.99,
-          description: 'Advanced Python Course',
-          status: 'paid',
-          invoice_url: '#'
-        }
-      ]
+      subscription,
+      paymentMethods,
+      billingHistory
     };
     
     return NextResponse.json(billingData);
