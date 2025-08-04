@@ -114,6 +114,7 @@ model User {
   sessions              Session[]
   showcaseProjects      ShowcaseProject[]
   studentProfile        StudentProfile?
+  courseInvitations     CourseInvitation[]    @relation("CourseInvitations")
 
   @@map("users")
 }
@@ -154,6 +155,7 @@ model Course {
   instructor       User            @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
   enrollments      Enrollment[]
   modules          Module[]
+  invitations      CourseInvitation[]
 
   @@map("courses")
 }
@@ -792,4 +794,26 @@ model ProjectMark {
   @@index([markedBy])
   @@index([markedAt])
   @@map("project_marks")
+}
+
+model CourseInvitation {
+  id         String   @id @default(cuid())
+  email      String
+  courseId   String
+  invitedBy  String
+  message    String?
+  status     String   @default("PENDING") // PENDING, ACCEPTED, DECLINED, EXPIRED
+  invitedAt  DateTime @default(now())
+  respondedAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  course        Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  invitedByUser User   @relation("CourseInvitations", fields: [invitedBy], references: [id], onDelete: Cascade)
+  
+  @@unique([email, courseId])
+  @@index([courseId])
+  @@index([email])
+  @@index([status])
+  @@map("course_invitations")
 }

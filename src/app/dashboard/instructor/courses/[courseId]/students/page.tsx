@@ -48,14 +48,16 @@ interface StudentsPageProps {
 export default function StudentsPage({ searchParams: searchParamsPromise }: StudentsPageProps) {
   const [searchParams, setSearchParams] = useState<{ status?: string }>({});
   const [students, setStudents] = useState<StudentData[]>([]);
+  const [pendingInvitations, setPendingInvitations] = useState<any[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<StudentData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteMessage, setInviteMessage] = useState('');
+  const [isEnrollDialogOpen, setIsEnrollDialogOpen] = useState(false);
+  const [enrollmentType, setEnrollmentType] = useState<'invite' | 'direct'>('invite');
+  const [enrollmentData, setEnrollmentData] = useState({ emails: '', names: '', message: '' });
   const [selectedStudent, setSelectedStudent] = useState<StudentData | null>(null);
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+  const [enrollmentLoading, setEnrollmentLoading] = useState(false);
   
   const params = useParams();
   const router = useRouter();
@@ -75,27 +77,29 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
     loadSearchParams();
   }, [searchParamsPromise]);
 
-  // Fetch students data
+  // Fetch students data and pending invitations
   useEffect(() => {
-    const fetchStudents = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/instructor/courses/${params.courseId}/students`);
         
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('API Error:', response.status, errorText);
-          throw new Error(`Failed to fetch students: ${response.status}`);
+        // Fetch enrolled students
+        const studentsResponse = await fetch(`/api/instructor/courses/${params.courseId}/students`);
+        
+        if (!studentsResponse.ok) {
+          const errorText = await studentsResponse.text();
+          console.error('Students API Error:', studentsResponse.status, errorText);
+          throw new Error(`Failed to fetch students: ${studentsResponse.status}`);
         }
         
-        const data = await response.json();
-        console.log('Students API Response:', data);
+        const studentsData = await studentsResponse.json();
+        console.log('Students API Response:', studentsData);
         
         // Handle different response structures
-        const studentsArray = Array.isArray(data) ? data : (data.students || []);
+        const studentsArray = Array.isArray(studentsData) ? studentsData : (studentsData.students || []);
         
         if (!Array.isArray(studentsArray)) {
-          console.error('Invalid data structure:', data);
+          console.error('Invalid data structure:', studentsData);
           throw new Error('Invalid response format');
         }
         
@@ -115,27 +119,58 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
         }));
         
         setStudents(transformedStudents);
+        
+        // Fetch pending invitations
+        try {
+          const invitationsResponse = await fetch(`/api/courses/${params.courseId}/enroll`);
+          if (invitationsResponse.ok) {
+            const invitationsData = await invitationsResponse.json();
+            setPendingInvitations(invitationsData.invitations || []);
+          }
+        } catch (inviteError) {
+          console.error('Error fetching invitations:', inviteError);
+          setPendingInvitations([]);
+        }
+        
       } catch (error) {
-        console.error('Error fetching students:', error);
-        setStudents([]); // Set empty array on error
+        console.error('Error fetching data:', error);
+        setStudents([]);
+        setPendingInvitations([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStudents();
+    fetchData();
   }, [params.courseId]);
 
-  // Filter students based on search term and status
+  // Filter students and invitations based on search term and status
   useEffect(() => {
-    if (students.length === 0) return;
-
-    let result = [...students];
+    const status = searchParams.status || urlSearchParams.get('status') || 'active';
+    let result: StudentData[] = [];
     
-    // Filter by status
-    const status = searchParams.status || urlSearchParams.get('status');
-    if (status) {
-      result = result.filter(student => student.status === status);
+    if (status === 'pending') {
+      // Show pending invitations as student-like objects
+      result = pendingInvitations.map((invitation: any) => ({
+        id: invitation.id,
+        name: invitation.email.split('@')[0],
+        email: invitation.email,
+        avatarUrl: undefined,
+        status: 'pending' as const,
+        lastActive: invitation.invitedAt,
+        progress: 0,
+        completedLessons: 0,
+        totalLessons: 0,
+        joinDate: invitation.invitedAt,
+        grade: 'N/A'
+      }));
+    } else {
+      // Show enrolled students
+      result = students.filter(student => {
+        if (status === 'active') return student.status === 'active';
+        if (status === 'inactive') return student.status === 'inactive';
+        return true;
+      });
     }
     
     // Filter by search term
@@ -149,32 +184,63 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
     }
     
     setFilteredStudents(result);
-  }, [students, searchTerm, searchParams.status, urlSearchParams]);
+  }, [students, pendingInvitations, searchTerm, searchParams.status, urlSearchParams]);
 
-  const handleInviteStudent = async () => {
-    if (!inviteEmail) {
-      toast.error('Please enter an email address');
+  const handleEnrollStudents = async () => {
+    if (!enrollmentData.emails.trim()) {
+      toast.error('Please enter at least one email address');
       return;
     }
     
     try {
-      // In a real app, you would call your API to send the invitation
-      // await fetch(`/api/courses/${params.courseId}/invite`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email: inviteEmail, message: inviteMessage })
-      // });
+      setEnrollmentLoading(true);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Parse emails and names
+      const emails = enrollmentData.emails.split('\n').map(e => e.trim()).filter(e => e);
+      const names = enrollmentData.names.split('\n').map(n => n.trim()).filter(n => n);
       
-      toast.success(`Invitation sent to ${inviteEmail}`);
-      setInviteEmail('');
-      setInviteMessage('');
-      setIsInviteDialogOpen(false);
+      // Create students array
+      const students = emails.map((email, index) => ({
+        email,
+        name: names[index] || email.split('@')[0]
+      }));
+      
+      const response = await fetch(`/api/courses/${params.courseId}/enroll`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: enrollmentType,
+          students,
+          message: enrollmentData.message || null
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to process enrollment');
+      }
+      
+      const result = await response.json();
+      
+      // Show results
+      if (result.results.success.length > 0) {
+        toast.success(`Successfully processed ${result.results.success.length} students`);
+      }
+      if (result.results.errors.length > 0) {
+        toast.error(`${result.results.errors.length} errors occurred`);
+      }
+      
+      // Reset form and close dialog
+      setEnrollmentData({ emails: '', names: '', message: '' });
+      setIsEnrollDialogOpen(false);
+      
+      // Refresh data
+      window.location.reload();
+      
     } catch (error) {
-      console.error('Error sending invitation:', error);
-      toast.error('Failed to send invitation');
+      console.error('Error processing enrollment:', error);
+      toast.error('Failed to process enrollment');
+    } finally {
+      setEnrollmentLoading(false);
     }
   };
 
@@ -212,9 +278,9 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
       description="Manage and communicate with your students"
       backHref={`/dashboard/instructor/courses/${params.courseId}`}
       actions={
-        <Button key="invite" onClick={() => setIsInviteDialogOpen(true)}>
+        <Button key="enroll" onClick={() => setIsEnrollDialogOpen(true)}>
           <UserPlus className="mr-2 h-4 w-4" />
-          Invite Students
+          Add Students
         </Button>
       }
     >
@@ -372,41 +438,100 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
         )}
       </div>
 
-      {/* Invite Student Dialog */}
-      <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-        <DialogContent>
+      {/* Enrollment Dialog */}
+      <Dialog open={isEnrollDialogOpen} onOpenChange={setIsEnrollDialogOpen}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Invite Students</DialogTitle>
+            <DialogTitle>Add Students to Course</DialogTitle>
             <DialogDescription>
-              Invite students to join your course by entering their email addresses below.
+              Add students to your course by invitation or direct enrollment.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none break-words">Email Address</label>
-              <Input
-                type="email"
-                placeholder="student@example.com"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-              />
+          <div className="space-y-6 py-4">
+            {/* Enrollment Type Selection */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium leading-none">Enrollment Type</label>
+              <div className="flex gap-4">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="enrollmentType"
+                    value="invite"
+                    checked={enrollmentType === 'invite'}
+                    onChange={(e) => setEnrollmentType(e.target.value as 'invite' | 'direct')}
+                    className="text-blue-600"
+                  />
+                  <span className="text-sm">Send Invitation (requires confirmation)</span>
+                </label>
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="enrollmentType"
+                    value="direct"
+                    checked={enrollmentType === 'direct'}
+                    onChange={(e) => setEnrollmentType(e.target.value as 'invite' | 'direct')}
+                    className="text-blue-600"
+                  />
+                  <span className="text-sm">Direct Enrollment (immediate access)</span>
+                </label>
+              </div>
             </div>
+
+            {/* Email Addresses */}
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none break-words">Message (Optional)</label>
+              <label className="text-sm font-medium leading-none">Email Addresses</label>
               <Textarea
-                placeholder="Add a personal message..."
-                rows={4}
-                value={inviteMessage}
-                onChange={(e) => setInviteMessage(e.target.value)}
+                placeholder="Enter email addresses (one per line)&#10;student1@example.com&#10;student2@example.com"
+                rows={6}
+                value={enrollmentData.emails}
+                onChange={(e) => setEnrollmentData(prev => ({ ...prev, emails: e.target.value }))}
               />
+              <p className="text-xs text-gray-500">Enter one email address per line</p>
             </div>
+
+            {/* Names (Optional) */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none">Full Names (Optional)</label>
+              <Textarea
+                placeholder="Enter full names (one per line, matching email order)&#10;John Doe&#10;Jane Smith"
+                rows={6}
+                value={enrollmentData.names}
+                onChange={(e) => setEnrollmentData(prev => ({ ...prev, names: e.target.value }))}
+              />
+              <p className="text-xs text-gray-500">Enter names in the same order as emails. If not provided, names will be generated from email addresses.</p>
+            </div>
+
+            {/* Message (for invitations) */}
+            {enrollmentType === 'invite' && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium leading-none">Invitation Message (Optional)</label>
+                <Textarea
+                  placeholder="Add a personal message to the invitation..."
+                  rows={3}
+                  value={enrollmentData.message}
+                  onChange={(e) => setEnrollmentData(prev => ({ ...prev, message: e.target.value }))}
+                />
+              </div>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsEnrollDialogOpen(false);
+                setEnrollmentData({ emails: '', names: '', message: '' });
+              }}
+              disabled={enrollmentLoading}
+            >
               Cancel
             </Button>
-            <Button onClick={handleInviteStudent}>
-              Send Invitation
+            <Button 
+              onClick={handleEnrollStudents}
+              disabled={enrollmentLoading || !enrollmentData.emails.trim()}
+            >
+              {enrollmentLoading ? 'Processing...' : 
+                enrollmentType === 'invite' ? 'Send Invitations' : 'Enroll Students'
+              }
             </Button>
           </DialogFooter>
         </DialogContent>
