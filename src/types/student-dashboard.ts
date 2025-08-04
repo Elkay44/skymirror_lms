@@ -40,6 +40,7 @@ export interface MentorSession {
 export interface StudentDashboardStats {
   totalStudyHours: number;
   totalCertificates: number;
+  totalEnrolledCourses: number;
   currentStreak: number;
   activeStudents: number;
 }

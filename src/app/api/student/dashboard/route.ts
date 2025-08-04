@@ -72,13 +72,38 @@ export async function GET(request: Request) {
       where: {
         enrollments: {
           some: {
+            userId: userId,
+            status: 'ACTIVE'
+          }
+        }
+      },
+      include: {
+        enrollments: {
+          where: {
             userId: userId
+          },
+          select: {
+            enrolledAt: true,
+            status: true
+          }
+        },
+        _count: {
+          select: {
+            enrollments: true
           }
         }
       },
       take: 5,
       orderBy: {
         createdAt: 'desc'
+      }
+    });
+
+    // Get total enrolled courses count
+    const totalEnrolledCourses = await prisma.enrollment.count({
+      where: {
+        userId: userId,
+        status: 'ACTIVE'
       }
     });
 
@@ -116,6 +141,7 @@ export async function GET(request: Request) {
       overallStats: {
         totalStudyHours: totalStudyHours,
         totalCertificates: certificates,
+        totalEnrolledCourses: totalEnrolledCourses,
         currentStreak,
         activeStudents
       }

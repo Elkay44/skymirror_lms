@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Users, FileText, CheckCircle, Star } from 'lucide-react';
+import { FileText, CheckCircle, Star } from 'lucide-react';
 import { StudentDashboardData } from '@/types/student-dashboard';
 
 import { Button } from '@/components/ui/button';
@@ -241,23 +241,12 @@ export default function StudentDashboardPage() {
         {/* Right Column */}
         <div className="space-y-4 lg:space-y-6">
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between min-w-0">
-                <div>
-                  <h3 className="text-lg font-medium break-words">Total Students</h3>
-                  <p className="text-2xl font-bold break-words">{dashboardData.overallStats.activeStudents}</p>
-                </div>
-                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center min-w-0">
-                  <Users className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
               <div className="flex items-center justify-between min-w-0">
                 <div>
-                  <h3 className="text-lg font-medium break-words">Total Courses</h3>
-                  <p className="text-2xl font-bold break-words">{dashboardData.overallStats.totalCertificates}</p>
+                  <h3 className="text-lg font-medium break-words">Enrolled Courses</h3>
+                  <p className="text-2xl font-bold break-words">{dashboardData.overallStats.totalEnrolledCourses || 0}</p>
                 </div>
                 <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center min-w-0">
                   <FileText className="w-6 h-6 text-green-600" />
@@ -267,7 +256,7 @@ export default function StudentDashboardPage() {
             <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
               <div className="flex items-center justify-between min-w-0">
                 <div>
-                  <h3 className="text-lg font-medium break-words">Completion Rate</h3>
+                  <h3 className="text-lg font-medium break-words">Study Streak</h3>
                   <p className="text-2xl font-bold break-words">{dashboardData.overallStats.currentStreak} days</p>
                 </div>
                 <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center min-w-0">
@@ -278,8 +267,8 @@ export default function StudentDashboardPage() {
             <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white">
               <div className="flex items-center justify-between min-w-0">
                 <div>
-                  <h3 className="text-lg font-medium break-words">Average Rating</h3>
-                  <p className="text-2xl font-bold break-words">{dashboardData.overallStats.totalStudyHours} hours</p>
+                  <h3 className="text-lg font-medium break-words">Study Hours</h3>
+                  <p className="text-2xl font-bold break-words">{dashboardData.overallStats.totalStudyHours}</p>
                 </div>
                 <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center min-w-0">
                   <Star className="w-6 h-6 text-orange-600" />
