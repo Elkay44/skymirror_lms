@@ -184,9 +184,11 @@ export default function StudentBillingSettings() {
         }
         
         const data = await response.json();
-        setSubscription(data.subscription);
-        setPaymentMethods(data.paymentMethods);
-        setBillingHistory(data.billingHistory);
+        if (data.subscription) {
+          setSubscription(data.subscription);
+        }
+        setPaymentMethods(data.paymentMethods || []);
+        setBillingHistory(data.billingHistory || []);
       } catch (error) {
         console.error('Error fetching billing data:', error);
         toast.error('Failed to load billing information');
@@ -357,13 +359,13 @@ export default function StudentBillingSettings() {
               <div className="flex items-center justify-between min-w-0">
                 <div>
                   <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 uppercase break-words">
-                    {subscription.interval}
+                    {subscription?.interval || 'monthly'}
                   </span>
-                  <h4 className="mt-1 text-lg font-semibold text-gray-900 capitalize break-words">{subscription.plan} Plan</h4>
+                  <h4 className="mt-1 text-lg font-semibold text-gray-900 capitalize break-words">{subscription?.plan || 'Basic'} Plan</h4>
                 </div>
                 <div className="text-right">
                   <span className="text-2xl font-bold text-gray-900 break-words">${subscription?.price ? subscription.price.toFixed(2) : '0.00'}</span>
-                  <span className="text-gray-500 text-sm break-words">/{subscription.interval}</span>
+                  <span className="text-gray-500 text-sm break-words">/{subscription?.interval || 'monthly'}</span>
                 </div>
               </div>
             </div>
@@ -374,7 +376,7 @@ export default function StudentBillingSettings() {
                   <Calendar className="h-5 w-5 text-gray-400 mr-3" />
                   <span className="text-sm text-gray-700 break-words">Started on</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900 break-words">{subscription.startDate}</span>
+                <span className="text-sm font-medium text-gray-900 break-words">{subscription?.startDate || 'N/A'}</span>
               </div>
               
               <div className="py-3 flex items-center justify-between min-w-0">
@@ -382,7 +384,7 @@ export default function StudentBillingSettings() {
                   <Clock className="h-5 w-5 text-gray-400 mr-3" />
                   <span className="text-sm text-gray-700 break-words">Next billing date</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900 break-words">{subscription.renewalDate}</span>
+                <span className="text-sm font-medium text-gray-900 break-words">{subscription?.renewalDate || 'N/A'}</span>
               </div>
               
               <div className="py-3 flex items-center justify-between min-w-0">
@@ -444,14 +446,14 @@ export default function StudentBillingSettings() {
                   <div className="mt-5">
                     <button
                       onClick={() => handleChangePlan(plan.id)}
-                      disabled={plan.id === subscription.plan}
-                      className={`w-full inline-flex justify-center items-center px-4 py-2 border text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                        plan.id === subscription.plan ? 
-                        'border-blue-300 text-blue-700 bg-blue-50 cursor-default' : 
-                        'border-transparent text-white bg-blue-600 hover:bg-blue-700'
-                      }`}
+                      disabled={plan.id === subscription?.plan}
+                      className={`w-full px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                        plan.id === subscription?.plan ? 
+                          'bg-gray-100 text-gray-400 cursor-not-allowed' : 
+                          'bg-blue-600 text-white hover:bg-blue-700'
+                      } break-words`}
                     >
-                      {plan.id === subscription.plan ? (
+                      {plan.id === subscription?.plan ? (
                         <>Current Plan</>
                       ) : (
                         <>Switch to {plan.name}</>

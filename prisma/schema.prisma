@@ -117,6 +117,15 @@ model User {
   courseInvitations     CourseInvitation[]    @relation("CourseInvitations")
   createdCareerPaths    CareerPath[]          @relation("CreatedCareerPaths")
   careerPathEnrollments CareerPathEnrollment[] @relation("CareerPathEnrollments")
+  
+  // Billing relations
+  subscription          Subscription?
+  paymentMethods        PaymentMethod[]
+  invoices              Invoice[]
+  mentorEarnings        MentorEarning[]       @relation("MentorEarnings")
+  menteePayments        MentorEarning[]       @relation("MenteePayments")
+  instructorRevenues    InstructorRevenue[]   @relation("InstructorRevenues")
+  payouts               Payout[]
 
   @@map("users")
 }
@@ -158,6 +167,7 @@ model Course {
   enrollments      Enrollment[]
   modules          Module[]
   invitations      CourseInvitation[]
+  instructorRevenues InstructorRevenue[]
 
   @@map("courses")
 }
@@ -469,16 +479,22 @@ model MentorshipRequest {
 }
 
 model MentorProfile {
-  id               String              @id @default(cuid())
-  userId           String              @unique
-  bio              String?
-  specialties      String?
-  rating           Float               @default(0)
-  reviewCount      Int                 @default(0)
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  receivedRequests MentorshipRequest[] @relation("ReceivedRequests")
+  id                      String              @id @default(cuid())
+  userId                  String              @unique
+  bio                     String?
+  specialties             String?
+  yearsOfExperience       String?
+  mentorshipPhilosophy    String?
+  credentials             String?
+  hourlyRate              String?
+  availabilityPreference  String?
+  sessionDuration         String?
+  rating                  Float               @default(0)
+  reviewCount             Int                 @default(0)
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+  user                    User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  receivedRequests        MentorshipRequest[] @relation("ReceivedRequests")
 
   @@map("mentor_profiles")
 }
@@ -579,6 +595,7 @@ model MentorSession {
   conversations Conversation[]
   mentee        User           @relation("MenteeSessions", fields: [menteeId], references: [id])
   mentor        User           @relation("MentorSessions", fields: [mentorId], references: [id])
+  earnings      MentorEarning[]
 
   @@index([mentorId])
   @@index([menteeId])
@@ -879,4 +896,151 @@ model CareerPathEnrollment {
   @@index([userId])
   @@index([status])
   @@map("career_path_enrollments")
+}
+
+// Billing and Payment Models
+model Subscription {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  plan            String   // 'basic', 'premium', 'annual'
+  status          String   // 'active', 'cancelled', 'expired', 'past_due'
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean @default(false)
+  price           Float
+  interval        String   // 'monthly', 'yearly'
+  stripeSubscriptionId String? @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices        Invoice[]
+  
+  @@index([userId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model PaymentMethod {
+  id              String   @id @default(cuid())
+  userId          String
+  type            String   // 'credit_card', 'bank_account'
+  brand           String   // 'visa', 'mastercard', etc.
+  last4           String
+  expMonth        Int?
+  expYear         Int?
+  isDefault       Boolean  @default(false)
+  cardholderName  String?
+  stripePaymentMethodId String? @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices        Invoice[]
+  
+  @@index([userId])
+  @@map("payment_methods")
+}
+
+model Invoice {
+  id              String   @id @default(cuid())
+  userId          String
+  subscriptionId  String?
+  paymentMethodId String?
+  amount          Float
+  currency        String   @default("usd")
+  status          String   // 'paid', 'pending', 'failed', 'cancelled'
+  description     String
+  invoiceUrl      String?
+  stripeInvoiceId String?  @unique
+  paidAt          DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription    Subscription?  @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("invoices")
+}
+
+model MentorEarning {
+  id              String   @id @default(cuid())
+  mentorId        String
+  sessionId       String?
+  amount          Float
+  currency        String   @default("usd")
+  status          String   // 'pending', 'completed', 'paid_out'
+  description     String
+  sessionType     String?  // '1-hour session', '2-hour session', etc.
+  menteeId        String?
+  menteeName      String?
+  earnedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  mentor          User     @relation("MentorEarnings", fields: [mentorId], references: [id], onDelete: Cascade)
+  mentee          User?    @relation("MenteePayments", fields: [menteeId], references: [id], onDelete: SetNull)
+  session         MentorSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  
+  @@index([mentorId])
+  @@index([status])
+  @@index([earnedAt])
+  @@map("mentor_earnings")
+}
+
+model InstructorRevenue {
+  id              String   @id @default(cuid())
+  instructorId    String
+  courseId        String?
+  amount          Float
+  currency        String   @default("usd")
+  status          String   // 'pending', 'completed', 'paid_out'
+  description     String
+  revenueType     String   // 'course_sale', 'subscription'
+  studentCount    Int      @default(0)
+  courseName      String?
+  earnedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  instructor      User     @relation("InstructorRevenues", fields: [instructorId], references: [id], onDelete: Cascade)
+  course          Course?  @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  
+  @@index([instructorId])
+  @@index([status])
+  @@index([earnedAt])
+  @@map("instructor_revenues")
+}
+
+model Payout {
+  id              String   @id @default(cuid())
+  userId          String
+  amount          Float
+  currency        String   @default("usd")
+  status          String   // 'pending', 'processing', 'completed', 'failed'
+  method          String   // 'bank_transfer', 'paypal', etc.
+  reference       String?
+  stripePayoutId  String?  @unique
+  requestedAt     DateTime @default(now())
+  processedAt     DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([status])
+  @@index([requestedAt])
+  @@map("payouts")
 }

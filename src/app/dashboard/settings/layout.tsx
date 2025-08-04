@@ -48,7 +48,7 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
       name: 'Billing',
       href: `/dashboard/settings/${userRole.toLowerCase()}/billing`,
       icon: CreditCard,
-      forRoles: ['STUDENT'],
+      forRoles: ['STUDENT', 'INSTRUCTOR', 'MENTOR'],
     },
     {
       name: 'API Keys',

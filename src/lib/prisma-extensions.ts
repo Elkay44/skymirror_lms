@@ -130,6 +130,114 @@ type CareerPathEnrollment = {
   user?: any;
 };
 
+// Billing types
+type Subscription = {
+  id: string;
+  userId: string;
+  plan: string;
+  status: string;
+  currentPeriodStart: Date;
+  currentPeriodEnd: Date;
+  cancelAtPeriodEnd: boolean;
+  price: number;
+  interval: string;
+  stripeSubscriptionId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: any;
+  invoices?: Invoice[];
+};
+
+type PaymentMethod = {
+  id: string;
+  userId: string;
+  type: string;
+  brand: string;
+  last4: string;
+  expMonth: number | null;
+  expYear: number | null;
+  isDefault: boolean;
+  cardholderName: string | null;
+  stripePaymentMethodId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: any;
+  invoices?: Invoice[];
+};
+
+type Invoice = {
+  id: string;
+  userId: string;
+  subscriptionId: string | null;
+  paymentMethodId: string | null;
+  amount: number;
+  currency: string;
+  status: string;
+  description: string;
+  invoiceUrl: string | null;
+  stripeInvoiceId: string | null;
+  paidAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: any;
+  subscription?: Subscription;
+  paymentMethod?: PaymentMethod;
+};
+
+type MentorEarning = {
+  id: string;
+  mentorId: string;
+  sessionId: string | null;
+  amount: number;
+  currency: string;
+  status: string;
+  description: string;
+  sessionType: string | null;
+  menteeId: string | null;
+  menteeName: string | null;
+  earnedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  mentor?: any;
+  mentee?: any;
+  session?: any;
+};
+
+type InstructorRevenue = {
+  id: string;
+  instructorId: string;
+  courseId: string | null;
+  amount: number;
+  currency: string;
+  status: string;
+  description: string;
+  revenueType: string;
+  studentCount: number;
+  courseName: string | null;
+  earnedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  instructor?: any;
+  course?: any;
+};
+
+type Payout = {
+  id: string;
+  userId: string;
+  amount: number;
+  currency: string;
+  status: string;
+  method: string;
+  reference: string | null;
+  stripePayoutId: string | null;
+  requestedAt: Date;
+  processedAt: Date | null;
+  completedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: any;
+};
+
 // Mentorship type
 type Mentorship = {
   id: string;
@@ -681,6 +789,14 @@ export type ExtendedPrismaClient = PrismaClient & {
   careerPath: BaseModel<CareerPath>;
   careerPathMilestone: BaseModel<CareerPathMilestone>;
   careerPathEnrollment: BaseModel<CareerPathEnrollment>;
+  
+  // Billing models
+  subscription: BaseModel<Subscription>;
+  paymentMethod: BaseModel<PaymentMethod>;
+  invoice: BaseModel<Invoice>;
+  mentorEarning: BaseModel<MentorEarning>;
+  instructorRevenue: BaseModel<InstructorRevenue>;
+  payout: BaseModel<Payout>;
   
   // Add other models as needed
 };

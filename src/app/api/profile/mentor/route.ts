@@ -117,6 +117,7 @@ export async function PUT(request: Request) {
       name, 
       bio, 
       location,
+      mentorProfile,
     } = data;
 
     // Find the user
@@ -142,20 +143,35 @@ export async function PUT(request: Request) {
       });
     }
 
-    // Update or create mentor profile if bio is provided
-    if (bio !== undefined) {
-      if (user.mentorProfile) {
-        await prisma.mentorProfile.update({
-          where: { userId: user.id },
-          data: { bio },
-        });
-      } else if (user.role === 'MENTOR') {
-        await prisma.mentorProfile.create({
-          data: {
-            userId: user.id,
-            bio,
-          },
-        });
+    // Update or create mentor profile
+    if (bio !== undefined || mentorProfile) {
+      const mentorProfileData: any = {};
+      
+      if (bio !== undefined) mentorProfileData.bio = bio;
+      if (mentorProfile) {
+        if (mentorProfile.specialties !== undefined) mentorProfileData.specialties = mentorProfile.specialties;
+        if (mentorProfile.yearsOfExperience !== undefined) mentorProfileData.yearsOfExperience = mentorProfile.yearsOfExperience;
+        if (mentorProfile.mentorshipPhilosophy !== undefined) mentorProfileData.mentorshipPhilosophy = mentorProfile.mentorshipPhilosophy;
+        if (mentorProfile.credentials !== undefined) mentorProfileData.credentials = mentorProfile.credentials;
+        if (mentorProfile.hourlyRate !== undefined) mentorProfileData.hourlyRate = mentorProfile.hourlyRate;
+        if (mentorProfile.availabilityPreference !== undefined) mentorProfileData.availabilityPreference = mentorProfile.availabilityPreference;
+        if (mentorProfile.sessionDuration !== undefined) mentorProfileData.sessionDuration = mentorProfile.sessionDuration;
+      }
+      
+      if (Object.keys(mentorProfileData).length > 0) {
+        if (user.mentorProfile) {
+          await prisma.mentorProfile.update({
+            where: { userId: user.id },
+            data: mentorProfileData,
+          });
+        } else if (user.role === 'MENTOR') {
+          await prisma.mentorProfile.create({
+            data: {
+              userId: user.id,
+              ...mentorProfileData,
+            },
+          });
+        }
       }
     }
 
