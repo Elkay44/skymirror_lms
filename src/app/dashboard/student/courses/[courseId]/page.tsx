@@ -3,7 +3,25 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { ArrowLeft, BookOpen, Clock, Users, Play, CheckCircle, Lock, MessageSquare, Award, TrendingUp, Star, FolderOpen, GitCommit, FileText, Target, GitBranch } from 'lucide-react';
+import { 
+  BookOpen, 
+  FileText, 
+  Award, 
+  MessageSquare, 
+  Target, 
+  GitBranch, 
+  ArrowLeft, 
+  CheckCircle, 
+  TrendingUp, 
+  Star, 
+  Clock, 
+  Play, 
+  Users, 
+  FileBox,
+  Lock,
+  FolderOpen,
+  GitCommit
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -355,6 +373,22 @@ export default function StudentCourseDashboard() {
                               {overviewData.quickActions.activeForums} active topics
                             </span>
                           )}
+                        </div>
+                      </div>
+                      <ArrowLeft className="h-5 w-5 text-gray-400 rotate-180" />
+                    </button>
+                    
+                    <button 
+                      onClick={() => window.location.href = `/tips`}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-800/50 rounded-lg transition-colors"
+                    >
+                      <div className="flex items-center">
+                        <FileBox className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-3" />
+                        <div className="text-left">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white block">Learning Resources</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            Tips and strategies to improve learning
+                          </span>
                         </div>
                       </div>
                       <ArrowLeft className="h-5 w-5 text-gray-400 rotate-180" />
