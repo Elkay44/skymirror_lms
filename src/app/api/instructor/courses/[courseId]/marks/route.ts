@@ -207,16 +207,7 @@ export async function GET(
         else letterGrade = 'F';
       }
 
-      // Format project grades by project
-      const projectGradesList = projects.map(project => {
-        const submission = submissions.find(s => s.project.id === project.id);
-        return {
-          projectId: project.id,
-          title: project.title,
-          grade: submission?.grade ?? null,
-          status: submission?.status ?? 'NOT_SUBMITTED'
-        };
-      });
+      // Project grades list is already created above in the enhanced section
 
       // Format quiz grades by quiz
       const quizGrades = studentQuizAttempts.map(attempt => ({
