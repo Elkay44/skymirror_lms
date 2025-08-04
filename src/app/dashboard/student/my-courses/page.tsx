@@ -130,7 +130,7 @@ export default function MyCoursesPage() {
               ></div>
             </div>
             <Link
-              href={`/courses/${enrollment.course.id}`}
+              href={`/dashboard/student/courses/${enrollment.course.id}`}
               className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition inline-block text-center"
             >
               Go to Course

@@ -294,8 +294,10 @@ const CourseDetailPage = () => {
       }
       
       setEnrolled(true);
-      // Refresh course data to reflect enrollment
-      fetchCourse();
+      
+      // Redirect to course dashboard after successful enrollment
+      router.push(`/dashboard/student/courses/${courseId}`);
+      
     } catch (err) {
       console.error('Error enrolling in course:', err);
       setError(err instanceof Error ? err.message : 'Failed to enroll in course. Please try again.');

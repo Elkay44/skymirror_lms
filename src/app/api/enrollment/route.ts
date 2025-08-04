@@ -10,7 +10,7 @@ export async function GET(_request: Request) {
     if (!session?.user?.id) {
       return NextResponse.json([], { status: 200 });
     }
-    const userId = Number(session.user.id);
+    const userId = session.user.id;
     const enrollments = await prisma.enrollment.findMany({
       where: { userId: userId },
       include: {
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       );
     }
     
-    const userId = Number(session.user.id);
+    const userId = session.user.id;
     // Get the course ID from the request body
     const { courseId } = await request.json();
     
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
 
     // Award points to the user for enrolling in a new course
     await prisma.user.update({
-      where: { id: String(userId) },
+      where: { id: userId },
       data: {
         points: { increment: 10 }, // Add 10 points for enrolling in a course
       },

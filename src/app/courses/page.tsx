@@ -169,14 +169,19 @@ export default function CoursesPage() {
         body: JSON.stringify({ courseId }),
       });
 
-      if (!response.ok) throw new Error('Failed to enroll in course');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to enroll in course');
+      }
 
       toast.success('Successfully enrolled in course');
-      // Refresh course list to update enrollment status
-      fetchCourses();
+      
+      // Redirect to course dashboard after successful enrollment
+      window.location.href = `/dashboard/student/courses/${courseId}`;
+      
     } catch (error) {
       console.error('Enrollment error:', error);
-      toast.error('Failed to enroll in course');
+      toast.error(error instanceof Error ? error.message : 'Failed to enroll in course');
     }
   };
 

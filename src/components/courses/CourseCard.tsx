@@ -64,7 +64,7 @@ export function CourseCard({
     }
 
     if (isEnrolled) {
-      router.push(`/courses/${course.slug}`)
+      router.push(`/dashboard/student/courses/${id}`)
       return
     }
 
@@ -74,7 +74,8 @@ export function CourseCard({
         await onEnroll(id)
       }
       toast.success('Successfully enrolled in the course!')
-      router.push(`/courses/${course.slug}`)
+      // Redirect to student course dashboard after enrollment
+      router.push(`/dashboard/student/courses/${id}`)
     } catch (error) {
       console.error('Enrollment error:', error)
       toast.error('Failed to enroll in the course. Please try again.')
