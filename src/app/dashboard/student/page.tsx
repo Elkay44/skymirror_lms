@@ -138,13 +138,13 @@ export default function StudentDashboardPage() {
   }, [session?.user?.id, router]); // Only depend on user ID and router
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen min-w-0">Loading...</div>;
   }
 
   if (!session?.user?.id) {
-    return <div className="flex items-center justify-center min-h-screen">
+    return <div className="flex items-center justify-center min-h-screen min-w-0">
       <div className="text-center">
-        <h2 className="text-xl font-semibold mb-4">Not Authenticated</h2>
+        <h2 className="text-xl font-semibold mb-4 break-words">Not Authenticated</h2>
         <p className="text-gray-600">Please log in to access your dashboard.</p>
         <Button onClick={() => router.push('/login')} className="mt-4">
           Go to Login
@@ -154,9 +154,9 @@ export default function StudentDashboardPage() {
   }
 
   if (!dashboardData) {
-    return <div className="flex items-center justify-center min-h-screen">
+    return <div className="flex items-center justify-center min-h-screen min-w-0">
       <div className="text-center">
-        <h2 className="text-xl font-semibold mb-4">Data Not Available</h2>
+        <h2 className="text-xl font-semibold mb-4 break-words">Data Not Available</h2>
         <p className="text-gray-600">Please try refreshing the page or contact support if the issue persists.</p>
         <Button onClick={fetchData} className="mt-4">
           Refresh Data
@@ -166,28 +166,28 @@ export default function StudentDashboardPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-8">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 lg:space-y-8">
       {/* Hero Section with User Welcome */}
       <section className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between min-w-0">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Welcome back, {dashboardData.instructorName}!</h1>
+            <h1 className="text-3xl font-bold mb-2 break-words">Welcome back, {dashboardData.instructorName}!</h1>
           </div>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Left Column */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 lg:space-y-6">
           {/* Recent Courses Section */}
-          <section className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-4">Recent Courses</h2>
+          <section className="bg-white rounded-xl shadow-sm p-6 overflow-hidden">
+            <h2 className="text-xl font-semibold mb-4 break-words">Recent Courses</h2>
             {dashboardData.recentCourses && dashboardData.recentCourses.length > 0 ? (
               <div className="space-y-4">
                 {dashboardData.recentCourses.map((course) => (
-                  <div key={course.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <div key={course.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg min-w-0">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center min-w-0">
                         {course.imageUrl && (
                           <img 
                             src={course.imageUrl} 
@@ -199,9 +199,9 @@ export default function StudentDashboardPage() {
                         )}
                       </div>
                       <div>
-                        <h3 className="font-semibold">{course.title}</h3>
-                        <p className="text-sm text-gray-600">Status: {course.status}</p>
-                        <p className="text-sm text-gray-600">Enrollment: {course.enrollmentCount}</p>
+                        <h3 className="font-semibold break-words">{course.title}</h3>
+                        <p className="text-sm text-gray-600 break-words">Status: {course.status}</p>
+                        <p className="text-sm text-gray-600 break-words">Enrollment: {course.enrollmentCount}</p>
                       </div>
                     </div>
                   </div>
@@ -215,18 +215,18 @@ export default function StudentDashboardPage() {
           </section>
 
           {/* Recent Activity Section */}
-          <section className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
+          <section className="bg-white rounded-xl shadow-sm p-6 overflow-hidden">
+            <h2 className="text-xl font-semibold mb-4 break-words">Recent Activity</h2>
             {(dashboardData.recentActivity || []).length > 0 ? (
               <div className="space-y-4">
                 {(dashboardData.recentActivity || []).map((activity) => (
-                  <div key={activity.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div key={activity.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg min-w-0">
                     <div>
-                      <h3 className="text-sm font-semibold">{activity.courseTitle}</h3>
-                      <p className="text-sm text-gray-600">Activity: {activity.type}</p>
-                      <p className="text-sm text-gray-600">{activity.message}</p>
+                      <h3 className="text-sm font-semibold break-words">{activity.courseTitle}</h3>
+                      <p className="text-sm text-gray-600 break-words">Activity: {activity.type}</p>
+                      <p className="text-sm text-gray-600 break-words">{activity.message}</p>
                     </div>
-                    <p className="text-sm text-gray-600">{activity.timestamp}</p>
+                    <p className="text-sm text-gray-600 break-words">{activity.timestamp}</p>
                   </div>
                 ))}
               </div>
@@ -239,49 +239,49 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* Right Column */}
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
-                  <h3 className="text-lg font-medium">Total Students</h3>
-                  <p className="text-2xl font-bold">{dashboardData.overallStats.activeStudents}</p>
+                  <h3 className="text-lg font-medium break-words">Total Students</h3>
+                  <p className="text-2xl font-bold break-words">{dashboardData.overallStats.activeStudents}</p>
                 </div>
-                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center min-w-0">
                   <Users className="w-6 h-6 text-blue-600" />
                 </div>
               </div>
             </div>
             <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
-                  <h3 className="text-lg font-medium">Total Courses</h3>
-                  <p className="text-2xl font-bold">{dashboardData.overallStats.totalCertificates}</p>
+                  <h3 className="text-lg font-medium break-words">Total Courses</h3>
+                  <p className="text-2xl font-bold break-words">{dashboardData.overallStats.totalCertificates}</p>
                 </div>
-                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center min-w-0">
                   <FileText className="w-6 h-6 text-green-600" />
                 </div>
               </div>
             </div>
             <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
-                  <h3 className="text-lg font-medium">Completion Rate</h3>
-                  <p className="text-2xl font-bold">{dashboardData.overallStats.currentStreak} days</p>
+                  <h3 className="text-lg font-medium break-words">Completion Rate</h3>
+                  <p className="text-2xl font-bold break-words">{dashboardData.overallStats.currentStreak} days</p>
                 </div>
-                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center min-w-0">
                   <CheckCircle className="w-6 h-6 text-purple-600" />
                 </div>
               </div>
             </div>
             <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
-                  <h3 className="text-lg font-medium">Average Rating</h3>
-                  <p className="text-2xl font-bold">{dashboardData.overallStats.totalStudyHours} hours</p>
+                  <h3 className="text-lg font-medium break-words">Average Rating</h3>
+                  <p className="text-2xl font-bold break-words">{dashboardData.overallStats.totalStudyHours} hours</p>
                 </div>
-                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center min-w-0">
                   <Star className="w-6 h-6 text-orange-600" />
                 </div>
               </div>
@@ -289,21 +289,21 @@ export default function StudentDashboardPage() {
           </div>
 
           {/* Upcoming Sessions */}
-          <section className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-4">Upcoming Sessions</h2>
+          <section className="bg-white rounded-xl shadow-sm p-6 overflow-hidden">
+            <h2 className="text-xl font-semibold mb-4 break-words">Upcoming Sessions</h2>
             {(dashboardData.upcomingSessions || []).length > 0 ? (
               <div className="space-y-4">
                 {(dashboardData.upcomingSessions || []).map((session) => (
                   <div 
                     key={session.id} 
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg min-w-0"
                   >
                     <div>
-                      <h3 className="font-semibold">{session.title}</h3>
-                      <p className="text-sm text-gray-600">{session.mentorName}</p>
-                      <p className="text-sm text-gray-600">{new Date(session.scheduledAt).toLocaleString()}</p>
+                      <h3 className="font-semibold break-words">{session.title}</h3>
+                      <p className="text-sm text-gray-600 break-words">{session.mentorName}</p>
+                      <p className="text-sm text-gray-600 break-words">{new Date(session.scheduledAt).toLocaleString()}</p>
                     </div>
-                    <p className="text-sm text-gray-600">{session.attendees}/{session.maxAttendees}</p>
+                    <p className="text-sm text-gray-600 break-words">{session.attendees}/{session.maxAttendees}</p>
                   </div>
                 ))}
               </div>
@@ -314,11 +314,11 @@ export default function StudentDashboardPage() {
 
           {/* Daily Tip */}
           <section className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl shadow-sm p-6 text-white">
-            <div className="flex items-center mb-3">
-              <h2 className="text-xl font-semibold">Daily Tip</h2>
+            <div className="flex items-center mb-3 min-w-0">
+              <h2 className="text-xl font-semibold break-words">Daily Tip</h2>
             </div>
             <p className="mb-4">"Consistency is key to mastery. Try to study for at least 25 minutes each day rather than cramming hours in a single session."</p>
-            <div className="text-sm">
+            <div className="text-sm break-words">
               <Link href="/tips" className="text-white underline hover:no-underline">Get more learning tips</Link>
             </div>
           </section>

@@ -88,7 +88,7 @@ function Calendar({
   
   return (
     <div className={cn("p-3", className)} {...props}>
-      <div className="flex justify-center pt-1 relative items-center mb-4">
+      <div className="flex justify-center pt-1 relative items-center mb-4 min-w-0">
         <button
           type="button"
           onClick={goToPreviousMonth}
@@ -97,7 +97,7 @@ function Calendar({
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <div className="text-sm font-medium">{monthName}</div>
+        <div className="text-sm font-medium break-words">{monthName}</div>
         <button
           type="button"
           onClick={goToNextMonth}

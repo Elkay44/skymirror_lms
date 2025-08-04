@@ -120,16 +120,16 @@ export default function ConversationList({
   };
   
   return (
-    <div className="h-full flex flex-col bg-white border-r border-gray-200">
+    <div className="h-full flex flex-col bg-white border-r border-gray-200 min-w-0">
       <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-medium text-gray-900">Messages</h2>
+        <h2 className="text-lg font-medium text-gray-900 break-words">Messages</h2>
         <div className="mt-2 relative rounded-md shadow-sm">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
             <Search className="h-4 w-4 text-gray-400" />
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
             placeholder="Search messages"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -137,7 +137,7 @@ export default function ConversationList({
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-w-0">
         {filteredConversations.length > 0 ? (
           <ul className="divide-y divide-gray-200">
             {filteredConversations.map((conversation) => {
@@ -152,9 +152,9 @@ export default function ConversationList({
                   onClick={() => onSelectConversation(conversation.id)}
                 >
                   <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center">
-                      <div className="min-w-0 flex-1 flex items-center">
-                        <div className="flex-shrink-0 relative">
+                    <div className="flex items-center min-w-0">
+                      <div className="min-w-0 flex-1 flex items-center min-w-0">
+                        <div className="flex-shrink-0 relative min-w-0">
                           {primaryParticipant.avatar || primaryParticipant.avatarUrl ? (
                             <img 
                               className="h-10 w-10 rounded-full" 
@@ -172,20 +172,20 @@ export default function ConversationList({
                             <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white"></span>
                           )}
                         </div>
-                        <div className="min-w-0 flex-1 px-4">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-gray-900 truncate">
+                        <div className="min-w-0 flex-1 px-4 min-w-0">
+                          <div className="flex items-center justify-between min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate break-words">
                               {conversation.isGroupChat 
                                 ? (conversation.courseName || 'Group Chat') 
                                 : primaryParticipant.name}
                             </p>
-                            <div className="ml-2 flex-shrink-0 flex">
+                            <div className="ml-2 flex-shrink-0 flex min-w-0">
                               <p className="text-xs text-gray-500">
                                 {formatTime(conversation.lastMessage.timestamp)}
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between min-w-0">
                             <p className={`text-sm truncate ${conversation.unreadCount > 0 ? 'font-medium text-gray-900' : 'text-gray-500'}`}>
                               {getConversationIcon(conversation)}
                               <span className="ml-1">
@@ -193,8 +193,8 @@ export default function ConversationList({
                               </span>
                             </p>
                             {conversation.unreadCount > 0 && (
-                              <div className="ml-2 flex-shrink-0">
-                                <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-blue-100 text-xs font-medium text-blue-800">
+                              <div className="ml-2 flex-shrink-0 min-w-0">
+                                <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-blue-100 text-xs font-medium text-blue-800 break-words min-w-0">
                                   {conversation.unreadCount}
                                 </span>
                               </div>
@@ -216,8 +216,8 @@ export default function ConversationList({
         ) : (
           <div className="px-4 py-8 text-center">
             <MessageSquare className="mx-auto h-10 w-10 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No conversations found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 break-words">No conversations found</h3>
+            <p className="mt-1 text-sm text-gray-500 break-words">
               {searchQuery ? 'Try different search terms' : 'Start a new conversation'}
             </p>
           </div>

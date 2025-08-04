@@ -190,15 +190,15 @@ export function CurriculumStep() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col space-y-2">
-        <h2 className="text-xl font-semibold">Course Curriculum</h2>
-        <p className="text-muted-foreground text-sm">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col space-y-2 min-w-0">
+        <h2 className="text-xl font-semibold break-words">Course Curriculum</h2>
+        <p className="text-muted-foreground text-sm break-words">
           Organize your course content into sections and lessons.
         </p>
         
         {sections.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-md bg-muted/40 mt-6">
+          <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-md bg-muted/40 mt-6 min-w-0">
             <p className="text-muted-foreground mb-4">No sections yet. Add your first section.</p>
             <Button onClick={addSection}>
               <PlusCircle className="h-4 w-4 mr-2" />
@@ -207,7 +207,7 @@ export function CurriculumStep() {
           </div>
         ) : (
           <div className="w-full space-y-4 mt-6">
-            <div className="flex justify-end">
+            <div className="flex justify-end min-w-0">
               <Button onClick={addSection} variant="outline" size="sm">
                 <PlusCircle className="h-4 w-4 mr-1" />
                 Add Section
@@ -219,11 +219,11 @@ export function CurriculumStep() {
                 <Card key={section.id} className="overflow-hidden border">
                   <AccordionItem value={section.id} className="border-0">
                     <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                      <div className="flex items-center gap-2 text-left">
-                        <div className="h-6 w-6 flex items-center justify-center rounded-full bg-muted">
+                      <div className="flex items-center gap-2 text-left min-w-0">
+                        <div className="h-6 w-6 flex items-center justify-center rounded-full bg-muted min-w-0">
                           {index + 1}
                         </div>
-                        <div className="font-medium">{section.title}</div>
+                        <div className="font-medium break-words">{section.title}</div>
                         {section.isPublished ? (
                           <Badge variant="outline" className="ml-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400">
                             Published
@@ -246,7 +246,7 @@ export function CurriculumStep() {
                             value={section.title}
                             onChange={(e) => updateSection(section.id, 'title', e.target.value)}
                             placeholder="Section Title"
-                            className="font-medium"
+                            className="font-medium break-words"
                           />
                           
                           <Textarea
@@ -259,8 +259,8 @@ export function CurriculumStep() {
                         
                         {/* Lessons */}
                         <div className="space-y-3">
-                          <div className="flex justify-between items-center">
-                            <h4 className="text-sm font-medium">Lessons</h4>
+                          <div className="flex justify-between items-center min-w-0">
+                            <h4 className="text-sm font-medium break-words">Lessons</h4>
                             <Button variant="ghost" size="sm" onClick={() => addLesson(section.id)}>
                               <PlusCircle className="h-3.5 w-3.5 mr-1.5" />
                               Add Lesson
@@ -269,30 +269,30 @@ export function CurriculumStep() {
                           
                           <div className="space-y-2">
                             {section.lessons.length === 0 ? (
-                              <div className="p-4 border border-dashed rounded-md flex items-center justify-center">
-                                <p className="text-sm text-muted-foreground">No lessons yet</p>
+                              <div className="p-4 border border-dashed rounded-md flex items-center justify-center min-w-0">
+                                <p className="text-sm text-muted-foreground break-words">No lessons yet</p>
                               </div>
                             ) : (
                               section.lessons.map((lesson, lessonIndex) => (
                                 <Card key={lesson.id} className="overflow-hidden">
                                   <CardContent className="p-3">
-                                    <div className="flex items-start gap-3">
-                                      <div className="h-5 w-5 flex items-center justify-center rounded-full bg-muted text-xs">
+                                    <div className="flex items-start gap-3 min-w-0">
+                                      <div className="h-5 w-5 flex items-center justify-center rounded-full bg-muted text-xs min-w-0">
                                         {lessonIndex + 1}
                                       </div>
                                       
-                                      <div className="flex-1 space-y-2">
-                                        <div className="flex items-center justify-between">
-                                          <div className="flex items-center">
+                                      <div className="flex-1 space-y-2 min-w-0">
+                                        <div className="flex items-center justify-between min-w-0">
+                                          <div className="flex items-center min-w-0">
                                             {getLessonTypeIcon(lesson.type)}
                                             <Input
                                               value={lesson.title}
                                               onChange={(e) => updateLesson(section.id, lesson.id, 'title', e.target.value)}
                                               placeholder="Lesson title"
-                                              className="h-8 text-sm border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                                              className="h-8 text-sm border-0 bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0 break-words"
                                             />
                                           </div>
-                                          <div className="flex items-center gap-2">
+                                          <div className="flex items-center gap-2 min-w-0">
                                             <Select 
                                               value={lesson.type}
                                               onValueChange={(value: any) => updateLesson(section.id, lesson.id, 'type', value)}
@@ -320,7 +320,7 @@ export function CurriculumStep() {
                                         </div>
                                         
                                         <div className="grid grid-cols-2 gap-2 mt-2">
-                                          <div className="flex items-center gap-2 text-xs">
+                                          <div className="flex items-center gap-2 text-xs min-w-0">
                                             <Label htmlFor={`duration-${lesson.id}`} className="text-muted-foreground">
                                               <Clock className="h-3 w-3 inline mr-1" /> Duration
                                             </Label>
@@ -334,8 +334,8 @@ export function CurriculumStep() {
                                             /> min
                                           </div>
                                           
-                                          <div className="flex items-center justify-end gap-4">
-                                            <div className="flex items-center space-x-2">
+                                          <div className="flex items-center justify-end gap-4 min-w-0">
+                                            <div className="flex items-center space-x-2 min-w-0">
                                               <Switch 
                                                 id={`free-${lesson.id}`}
                                                 checked={lesson.isFree}
@@ -344,7 +344,7 @@ export function CurriculumStep() {
                                               <Label htmlFor={`free-${lesson.id}`} className="text-xs">Free</Label>
                                             </div>
                                             
-                                            <div className="flex items-center space-x-2">
+                                            <div className="flex items-center space-x-2 min-w-0">
                                               <Switch 
                                                 id={`preview-${lesson.id}`}
                                                 checked={lesson.isPreview}
@@ -364,7 +364,7 @@ export function CurriculumStep() {
                         </div>
                         
                         {/* Section Actions */}
-                        <div className="flex justify-between pt-2 border-t border-border">
+                        <div className="flex justify-between pt-2 border-t border-border min-w-0">
                           <Button
                             onClick={() => removeSection(section.id)}
                             variant="ghost"

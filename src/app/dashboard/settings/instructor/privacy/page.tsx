@@ -109,7 +109,7 @@ export default function InstructorPrivacySettings() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center h-64 min-w-0">
         <div className="animate-spin h-8 w-8 border-4 border-purple-600 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -117,22 +117,22 @@ export default function InstructorPrivacySettings() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8">
         {/* Profile Privacy */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
           <div className="px-4 py-5 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Profile Privacy</h3>
-            <p className="mt-1 text-sm text-gray-500">Control who can see your instructor profile information</p>
+            <h3 className="text-lg font-medium text-gray-900 break-words">Profile Privacy</h3>
+            <p className="mt-1 text-sm text-gray-500 break-words">Control who can see your instructor profile information</p>
           </div>
           
-          <div className="px-4 py-5 space-y-6">
+          <div className="px-4 py-5 space-y-4 lg:space-y-6">
             <div>
-              <label htmlFor="profile-visibility" className="block text-sm font-medium text-gray-700">Profile Visibility</label>
+              <label htmlFor="profile-visibility" className="block text-sm font-medium text-gray-700 break-words">Profile Visibility</label>
               <select
                 id="profile-visibility"
                 value={privacySettings.profileVisibility}
                 onChange={(e) => handleSelectChange('profileVisibility', e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm break-words"
               >
                 <option value="all_platform_users">All SkyMirror Academy Users</option>
                 <option value="students_only">Students Only</option>
@@ -143,12 +143,12 @@ export default function InstructorPrivacySettings() {
             </div>
             
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
-                  <label htmlFor="show-course-statistics" className="text-sm font-medium text-gray-700">Show Course Statistics</label>
+                  <label htmlFor="show-course-statistics" className="text-sm font-medium text-gray-700 break-words">Show Course Statistics</label>
                   <p className="text-xs text-gray-500">Display statistics about your courses and student numbers</p>
                 </div>
-                <div className="ml-4 flex-shrink-0">
+                <div className="ml-4 flex-shrink-0 min-w-0">
                   <button
                     type="button"
                     className={`${privacySettings.showCourseStatistics ? 'bg-purple-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -162,12 +162,12 @@ export default function InstructorPrivacySettings() {
                 </div>
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
-                  <label htmlFor="show-ratings" className="text-sm font-medium text-gray-700">Show Ratings</label>
+                  <label htmlFor="show-ratings" className="text-sm font-medium text-gray-700 break-words">Show Ratings</label>
                   <p className="text-xs text-gray-500">Display your course ratings and student feedback</p>
                 </div>
-                <div className="ml-4 flex-shrink-0">
+                <div className="ml-4 flex-shrink-0 min-w-0">
                   <button
                     type="button"
                     className={`${privacySettings.showRatings ? 'bg-purple-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -181,12 +181,12 @@ export default function InstructorPrivacySettings() {
                 </div>
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
-                  <label htmlFor="show-teaching-history" className="text-sm font-medium text-gray-700">Show Teaching History</label>
+                  <label htmlFor="show-teaching-history" className="text-sm font-medium text-gray-700 break-words">Show Teaching History</label>
                   <p className="text-xs text-gray-500">Display your previous teaching experience and history</p>
                 </div>
-                <div className="ml-4 flex-shrink-0">
+                <div className="ml-4 flex-shrink-0 min-w-0">
                   <button
                     type="button"
                     className={`${privacySettings.showTeachingHistory ? 'bg-purple-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -204,19 +204,19 @@ export default function InstructorPrivacySettings() {
         </div>
         
         {/* Course Privacy and Communication */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
           <div className="px-4 py-5 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Course Privacy & Communication</h3>
-            <p className="mt-1 text-sm text-gray-500">Manage how students and other instructors interact with you and your content</p>
+            <h3 className="text-lg font-medium text-gray-900 break-words">Course Privacy & Communication</h3>
+            <p className="mt-1 text-sm text-gray-500 break-words">Manage how students and other instructors interact with you and your content</p>
           </div>
           
           <div className="px-4 py-5 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-w-0">
               <div>
-                <label htmlFor="allow-student-messaging" className="text-sm font-medium text-gray-700">Student Direct Messaging</label>
+                <label htmlFor="allow-student-messaging" className="text-sm font-medium text-gray-700 break-words">Student Direct Messaging</label>
                 <p className="text-xs text-gray-500">Allow students to send you direct messages</p>
               </div>
-              <div className="ml-4 flex-shrink-0">
+              <div className="ml-4 flex-shrink-0 min-w-0">
                 <button
                   type="button"
                   className={`${privacySettings.allowStudentMessaging ? 'bg-purple-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -230,12 +230,12 @@ export default function InstructorPrivacySettings() {
               </div>
             </div>
             
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-w-0">
               <div>
-                <label htmlFor="allow-course-feedback" className="text-sm font-medium text-gray-700">Course Feedback</label>
+                <label htmlFor="allow-course-feedback" className="text-sm font-medium text-gray-700 break-words">Course Feedback</label>
                 <p className="text-xs text-gray-500">Allow students to provide feedback and ratings on your courses</p>
               </div>
-              <div className="ml-4 flex-shrink-0">
+              <div className="ml-4 flex-shrink-0 min-w-0">
                 <button
                   type="button"
                   className={`${privacySettings.allowCourseFeedback ? 'bg-purple-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -249,12 +249,12 @@ export default function InstructorPrivacySettings() {
               </div>
             </div>
             
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-w-0">
               <div>
-                <label htmlFor="allow-profile-searching" className="text-sm font-medium text-gray-700">Profile Searching</label>
+                <label htmlFor="allow-profile-searching" className="text-sm font-medium text-gray-700 break-words">Profile Searching</label>
                 <p className="text-xs text-gray-500">Allow your profile to appear in instructor search results</p>
               </div>
-              <div className="ml-4 flex-shrink-0">
+              <div className="ml-4 flex-shrink-0 min-w-0">
                 <button
                   type="button"
                   className={`${privacySettings.allowProfileSearching ? 'bg-purple-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -268,12 +268,12 @@ export default function InstructorPrivacySettings() {
               </div>
             </div>
             
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-w-0">
               <div>
-                <label htmlFor="allow-other-instructors-to-view-materials" className="text-sm font-medium text-gray-700">Content Sharing with Instructors</label>
+                <label htmlFor="allow-other-instructors-to-view-materials" className="text-sm font-medium text-gray-700 break-words">Content Sharing with Instructors</label>
                 <p className="text-xs text-gray-500">Allow other instructors to view your course materials for reference</p>
               </div>
-              <div className="ml-4 flex-shrink-0">
+              <div className="ml-4 flex-shrink-0 min-w-0">
                 <button
                   type="button"
                   className={`${privacySettings.allowOtherInstructorsToViewMaterials ? 'bg-purple-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -290,9 +290,9 @@ export default function InstructorPrivacySettings() {
         </div>
         
         {/* Data Management */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
           <div className="px-4 py-5 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900 flex items-center">
+            <h3 className="text-lg font-medium text-gray-900 flex items-center break-words min-w-0">
               <Shield className="mr-2 h-5 w-5 text-purple-500" />
               Data Management
             </h3>
@@ -300,14 +300,14 @@ export default function InstructorPrivacySettings() {
           
           <div className="px-4 py-5 space-y-4">
             <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Download Your Data</h4>
-              <p className="text-sm text-gray-500 mb-3">
+              <h4 className="text-sm font-medium text-gray-700 mb-2 break-words">Download Your Data</h4>
+              <p className="text-sm text-gray-500 mb-3 break-words">
                 You can request a copy of all the data we have stored about you, including your profile information, course content, student interactions, and analytics.
               </p>
               <button
                 type="button"
                 onClick={downloadData}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 break-words min-w-0"
               >
                 <Download className="mr-2 h-4 w-4 text-gray-500" />
                 Request Data Export
@@ -315,14 +315,14 @@ export default function InstructorPrivacySettings() {
             </div>
             
             <div className="border-t border-gray-200 pt-4">
-              <h4 className="text-sm font-medium text-red-600 mb-2">Delete Account</h4>
-              <p className="text-sm text-gray-500 mb-3">
+              <h4 className="text-sm font-medium text-red-600 mb-2 break-words">Delete Account</h4>
+              <p className="text-sm text-gray-500 mb-3 break-words">
                 Permanently delete your account and all associated data. This action cannot be undone. Note that course content you've created will remain available to enrolled students unless you explicitly request content removal.
               </p>
               <button
                 type="button"
                 onClick={() => toast.error('Please contact support to delete your account.')}
-                className="inline-flex items-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                className="inline-flex items-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 break-words min-w-0"
               >
                 Delete My Account
               </button>
@@ -331,10 +331,10 @@ export default function InstructorPrivacySettings() {
         </div>
 
         <div className="pt-5">
-          <div className="flex justify-end">
+          <div className="flex justify-end min-w-0">
             <button
               type="submit"
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 break-words min-w-0"
             >
               <Save className="h-4 w-4 mr-2" />
               Save Privacy Settings

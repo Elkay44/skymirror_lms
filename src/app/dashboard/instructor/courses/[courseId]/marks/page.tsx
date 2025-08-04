@@ -57,7 +57,7 @@ export default function MarksPage() {
         description="Please wait while we load student grades"
         backHref="/dashboard/instructor/courses"
       >
-        <div className="flex items-center justify-center h-64">
+        <div className="flex items-center justify-center h-64 min-w-0">
           <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
         </div>
       </PageLayout>
@@ -95,35 +95,35 @@ export default function MarksPage() {
       description="View and manage student grades"
       backHref="/dashboard/instructor/courses"
       actions={
-        <div className="flex space-x-3">
-          <button className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <div className="flex space-x-3 min-w-0">
+          <button className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 break-words min-w-0">
             <Filter className="h-4 w-4 mr-2" />
             Filter
           </button>
-          <button className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <button className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 break-words min-w-0">
             <Download className="h-4 w-4 mr-2" />
             Export
           </button>
         </div>
       }
     >
-      <div className="p-6">
+      <div className="p-4 lg:p-6">
         {/* Grade Summary */}
         <div className="mb-8">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Grade Distribution</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 break-words">Grade Distribution</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
             {gradeScale.map((item) => (
               <div key={item.grade} className={`text-center py-2 px-3 rounded-md ${item.color}`}>
-                <div className="text-xl font-semibold">{item.grade}</div>
+                <div className="text-xl font-semibold break-words">{item.grade}</div>
                 <div className="text-xs">{item.range}%</div>
               </div>
             ))}
           </div>
           
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-gray-900 dark:text-white">Class Average: {classAverage.toFixed(1)}%</h4>
-              <span className="text-sm text-gray-500 dark:text-gray-400">{students.length} students</span>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="flex items-center justify-between mb-2 min-w-0">
+              <h4 className="font-medium text-gray-900 dark:text-white break-words">Class Average: {classAverage.toFixed(1)}%</h4>
+              <span className="text-sm text-gray-500 dark:text-gray-400 break-words">{students.length} students</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
               <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: `${classAverage}%` }}></div>
@@ -133,15 +133,15 @@ export default function MarksPage() {
 
         {/* Student Grades Table */}
         <div>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2 sm:mb-0">Student Grades</h3>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 min-w-0">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2 sm:mb-0 break-words">Student Grades</h3>
             <div className="relative w-full sm:w-64">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
                 <Search className="h-4 w-4 text-gray-400" />
               </div>
               <input
                 type="text"
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm break-words"
                 placeholder="Search students..."
               />
             </div>
@@ -151,22 +151,22 @@ export default function MarksPage() {
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider break-words">
                     Student
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider break-words">
                     Project 1
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider break-words">
                     Project 2
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider break-words">
                     Quiz 1
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider break-words">
                     Total
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider break-words">
                     Grade
                   </th>
                 </tr>
@@ -175,26 +175,26 @@ export default function MarksPage() {
                 {students.map((student) => (
                   <tr key={student.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-medium">
+                      <div className="flex items-center min-w-0">
+                        <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-300 font-medium break-words min-w-0">
                           {student.name.charAt(0)}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">{student.name}</div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">{student.email}</div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white break-words">{student.name}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400 break-words">{student.email}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 break-words">
                       {student.project1}%
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 break-words">
                       {student.project2}%
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 break-words">
                       {student.quiz1}%
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white break-words">
                       {student.total}%
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

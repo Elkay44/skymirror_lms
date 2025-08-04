@@ -33,7 +33,7 @@ export default function LearningJourneyCard({
 
   return (
     <div className={`bg-white rounded-xl shadow-sm p-6 ${className}`}>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4 break-words">{title}</h3>
       
       {description && (
         <p className="text-gray-600 mb-4">{description}</p>
@@ -45,7 +45,7 @@ export default function LearningJourneyCard({
           <div className="absolute top-0 left-7 bottom-0 w-0.5 bg-gray-200"></div>
           
           {/* Milestones */}
-          <div className="space-y-8">
+          <div className="space-y-6 lg:space-y-8">
             {milestones.map(milestone => {
               let statusColor = '';
               let iconContent = <></>;
@@ -76,7 +76,7 @@ export default function LearningJourneyCard({
               }
               
               return (
-                <div key={milestone.id} className="relative flex items-start">
+                <div key={milestone.id} className="relative flex items-start min-w-0">
                   {/* Milestone marker */}
                   <div className={`absolute top-0 left-0 h-7 w-7 rounded-full border-2 flex items-center justify-center ${statusColor} z-10`}>
                     {iconContent}
@@ -89,7 +89,7 @@ export default function LearningJourneyCard({
                     </h4>
                     
                     {milestone.description && (
-                      <p className="mt-1 text-sm text-gray-500">{milestone.description}</p>
+                      <p className="mt-1 text-sm text-gray-500 break-words">{milestone.description}</p>
                     )}
                     
                     {milestone.link && milestone.status !== 'upcoming' && (
@@ -118,9 +118,9 @@ export default function LearningJourneyCard({
       {/* Progress indicator - only show for milestone cards */}
       {hasMilestones && (
         <div className="mt-6 pt-4 border-t border-gray-100">
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between text-sm break-words min-w-0">
             <span className="text-gray-500">{currentIndex + 1} of {milestones.length} steps completed</span>
-            <span className="font-medium text-indigo-600">{Math.round(((currentIndex + 1) / milestones.length) * 100)}% complete</span>
+            <span className="font-medium text-indigo-600 break-words">{Math.round(((currentIndex + 1) / milestones.length) * 100)}% complete</span>
           </div>
           <div className="mt-2 h-2 bg-gray-100 rounded-full">
             <div 
@@ -136,7 +136,7 @@ export default function LearningJourneyCard({
         <div className="mt-4">
           <Link 
             href={actionLink}
-            className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800"
+            className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 break-words min-w-0"
           >
             {actionText}
             <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

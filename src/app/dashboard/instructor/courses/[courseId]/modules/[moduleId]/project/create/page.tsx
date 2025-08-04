@@ -169,8 +169,8 @@ export default function CreateProjectPage() {
 
   return (
     <div className="max-w-5xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
+      <div className="flex items-center justify-between mb-6 min-w-0">
+        <div className="flex items-center min-w-0">
           <Button
             variant="ghost"
             size="icon"
@@ -179,7 +179,7 @@ export default function CreateProjectPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-semibold">Create New Project</h1>
+          <h1 className="text-2xl font-semibold break-words">Create New Project</h1>
         </div>
       </div>
 
@@ -193,12 +193,12 @@ export default function CreateProjectPage() {
         <TabsContent value="details">
           <Card>
             <CardHeader className="border-b">
-              <div className="flex items-center">
+              <div className="flex items-center min-w-0">
                 <Code className="mr-2 h-5 w-5 text-emerald-500" />
-                <h3 className="text-lg font-medium">Project Details</h3>
+                <h3 className="text-lg font-medium break-words">Project Details</h3>
               </div>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="pt-6 space-y-4 lg:space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
                 <Input
@@ -222,7 +222,7 @@ export default function CreateProjectPage() {
                   rows={3}
                   className="max-w-2xl"
                 />
-                <p className="text-sm text-muted-foreground">A short summary that will appear in project listings</p>
+                <p className="text-sm text-muted-foreground break-words">A short summary that will appear in project listings</p>
               </div>
 
               <div className="space-y-2">
@@ -237,7 +237,7 @@ export default function CreateProjectPage() {
                 />
               </div>
 
-              <div className="grid gap-6 sm:grid-cols-2">
+              <div className="grid gap-4 lg:gap-6 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="difficulty">Difficulty Level</Label>
                   <Select 
@@ -268,7 +268,7 @@ export default function CreateProjectPage() {
                     onChange={handleNumberChange}
                     className="max-w-[200px]"
                   />
-                  <p className="text-sm text-muted-foreground">Approximate time to complete</p>
+                  <p className="text-sm text-muted-foreground break-words">Approximate time to complete</p>
                 </div>
               </div>
 
@@ -282,7 +282,7 @@ export default function CreateProjectPage() {
                   onChange={handleChange}
                   className="max-w-2xl"
                 />
-                <p className="text-sm text-muted-foreground">Technologies or frameworks used in this project</p>
+                <p className="text-sm text-muted-foreground break-words">Technologies or frameworks used in this project</p>
               </div>
             </CardContent>
           </Card>
@@ -291,12 +291,12 @@ export default function CreateProjectPage() {
         <TabsContent value="requirements">
           <Card>
             <CardHeader className="border-b">
-              <div className="flex items-center">
+              <div className="flex items-center min-w-0">
                 <Info className="mr-2 h-5 w-5 text-blue-500" />
-                <h3 className="text-lg font-medium">Project Instructions & Requirements</h3>
+                <h3 className="text-lg font-medium break-words">Project Instructions & Requirements</h3>
               </div>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="pt-6 space-y-4 lg:space-y-6">
               <div className="space-y-2">
                 <Label>Detailed Instructions</Label>
                 <div className="border rounded-md p-1">
@@ -306,7 +306,7 @@ export default function CreateProjectPage() {
                     placeholder="Enter detailed project instructions..."
                   />
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground break-words">
                   Format instructions using markdown. Include project goals and context.
                 </p>
               </div>
@@ -322,7 +322,7 @@ export default function CreateProjectPage() {
                   rows={4}
                   className="max-w-2xl"
                 />
-                <p className="text-sm text-muted-foreground">Specific features, functionality, or deliverables required</p>
+                <p className="text-sm text-muted-foreground break-words">Specific features, functionality, or deliverables required</p>
               </div>
 
               <div className="space-y-2">
@@ -336,7 +336,7 @@ export default function CreateProjectPage() {
                   rows={3}
                   className="max-w-2xl"
                 />
-                <p className="text-sm text-muted-foreground">Helpful links, documentation, or materials</p>
+                <p className="text-sm text-muted-foreground break-words">Helpful links, documentation, or materials</p>
               </div>
             </CardContent>
           </Card>
@@ -345,16 +345,16 @@ export default function CreateProjectPage() {
         <TabsContent value="settings">
           <Card>
             <CardHeader className="border-b">
-              <div className="flex items-center">
+              <div className="flex items-center min-w-0">
                 <GitBranch className="mr-2 h-5 w-5 text-purple-500" />
-                <h3 className="text-lg font-medium">Project Settings</h3>
+                <h3 className="text-lg font-medium break-words">Project Settings</h3>
               </div>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-              <div className="flex items-center justify-between">
+            <CardContent className="pt-6 space-y-4 lg:space-y-6">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
                   <Label htmlFor="isPublished" className="cursor-pointer">Publish Project</Label>
-                  <p className="text-sm text-muted-foreground">Make visible to students immediately</p>
+                  <p className="text-sm text-muted-foreground break-words">Make visible to students immediately</p>
                 </div>
                 <Switch
                   id="isPublished"
@@ -365,7 +365,7 @@ export default function CreateProjectPage() {
               
               <div className="space-y-2">
                 <Label htmlFor="githubTemplateUrl">GitHub Template Repository</Label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 min-w-0">
                   <Input
                     id="githubTemplateUrl"
                     name="githubTemplateUrl"
@@ -375,15 +375,15 @@ export default function CreateProjectPage() {
                     className="max-w-2xl"
                   />
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground break-words">
                   Optional GitHub template repository for students to start from
                 </p>
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
                   <Label htmlFor="allowTeamSubmissions" className="cursor-pointer">Allow Team Submissions</Label>
-                  <p className="text-sm text-muted-foreground">Students can work in teams</p>
+                  <p className="text-sm text-muted-foreground break-words">Students can work in teams</p>
                 </div>
                 <Switch
                   id="allowTeamSubmissions"
@@ -406,7 +406,7 @@ export default function CreateProjectPage() {
                       onChange={handleNumberChange}
                       className="max-w-[200px]"
                     />
-                    <p className="text-sm text-muted-foreground">Maximum number of students per team</p>
+                    <p className="text-sm text-muted-foreground break-words">Maximum number of students per team</p>
                   </div>
                 </div>
               )}
@@ -415,7 +415,7 @@ export default function CreateProjectPage() {
         </TabsContent>
       </Tabs>
 
-      <div className="flex justify-end mt-6 space-x-4">
+      <div className="flex justify-end mt-6 space-x-4 min-w-0">
         <Button
           variant="outline"
           onClick={() => router.back()}
@@ -426,7 +426,7 @@ export default function CreateProjectPage() {
           type="submit"
           onClick={handleSubmit}
           disabled={isLoading}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 min-w-0"
         >
           {isLoading ? 'Creating...' : 'Create Project'}
           {isLoading && <span className="animate-spin">⏳</span>}

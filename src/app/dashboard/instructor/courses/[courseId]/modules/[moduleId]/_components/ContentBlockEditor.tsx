@@ -576,11 +576,11 @@ export const ContentBlockEditor = ({
               <Label>Requirements</Label>
               <div className="space-y-2 mt-2">
                 {(form.watch('requirements') || []).map((_, index) => (
-                  <div key={index} className="flex gap-2">
+                  <div key={index} className="flex gap-2 min-w-0">
                     <Input
                       placeholder={`Requirement ${index + 1}`}
                       {...form.register(`requirements.${index}`)}
-                      className="flex-1"
+                      className="flex-1 min-w-0"
                     />
                     <Button
                       type="button"
@@ -665,7 +665,7 @@ export const ContentBlockEditor = ({
             
             {/* Quiz Show Results */}
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <Checkbox
                   id="showResults"
                   {...(form.register as any)('showResults')}
@@ -674,7 +674,7 @@ export const ContentBlockEditor = ({
               </div>
               
               {/* Quiz Allow Retake */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <Checkbox
                   id="allowRetake"
                   {...(form.register as any)('allowRetake')}

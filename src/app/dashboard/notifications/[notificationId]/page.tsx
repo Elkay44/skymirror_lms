@@ -52,7 +52,7 @@ export default function NotificationDetailPage() {
   if (loading) return <div className="px-6 py-8">Loading...</div>;
   if (error) return (
     <div className="px-6 py-8">
-      <h1 className="text-2xl font-bold mb-4">Notification Details</h1>
+      <h1 className="text-2xl font-bold mb-4 break-words">Notification Details</h1>
       <div className="p-4 border rounded bg-red-50 text-red-700">{error}</div>
     </div>
   );
@@ -60,10 +60,10 @@ export default function NotificationDetailPage() {
 
   return (
     <div className="px-6 py-8">
-      <h1 className="text-2xl font-bold mb-4">Notification Details</h1>
+      <h1 className="text-2xl font-bold mb-4 break-words">Notification Details</h1>
       <div className="p-4 border rounded bg-gray-50">
-        <div className="flex items-center mb-6">
-          <h2 className="text-lg font-semibold mr-4">{notification.title}</h2>
+        <div className="flex items-center mb-6 min-w-0">
+          <h2 className="text-lg font-semibold mr-4 break-words">{notification.title}</h2>
           <button
             onClick={() => window.location.href = '/dashboard/notifications'}
             className="text-gray-500 hover:text-gray-700"
@@ -78,10 +78,10 @@ export default function NotificationDetailPage() {
           {notification.timestamp && (typeof notification.timestamp === 'string' ? new Date(notification.timestamp).toLocaleString() : notification.timestamp.toLocaleString())}
         </div>
         {notification.isPriority && (
-          <div className="mb-2 text-red-600 font-semibold">Priority Notification</div>
+          <div className="mb-2 text-red-600 font-semibold break-words">Priority Notification</div>
         )}
         {notification.actionLabel && notification.actionUrl && (
-          <a href={notification.actionUrl} className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium hover:bg-blue-200">
+          <a href={notification.actionUrl} className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium hover:bg-blue-200 break-words">
             {notification.actionLabel}
           </a>
         )}

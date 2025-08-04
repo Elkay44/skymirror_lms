@@ -127,9 +127,9 @@ export default function ProfileLayout({
     <div className="bg-gray-50 min-h-screen py-4 sm:py-8 px-2 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Mobile Profile Toggle */}
-        <div className="lg:hidden mb-4 bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="p-4 flex items-center justify-between">
-            <div className="flex items-center">
+        <div className="lg:hidden mb-4 bg-white rounded-xl shadow-sm overflow-hidden overflow-hidden">
+          <div className="p-4 flex items-center justify-between min-w-0">
+            <div className="flex items-center min-w-0">
               {userImage ? (
                 <div className="relative h-10 w-10 mr-3">
                   <Image 
@@ -140,12 +140,12 @@ export default function ProfileLayout({
                   />
                 </div>
               ) : (
-                <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
+                <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3 min-w-0">
                   <User className="h-6 w-6 text-gray-400" />
                 </div>
               )}
               <div>
-                <h2 className="text-sm font-bold text-gray-900">{userName}</h2>
+                <h2 className="text-sm font-bold text-gray-900 break-words">{userName}</h2>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${roleStyles.roleBadge}`}>
                   {roleText[userRole]}
                 </span>
@@ -161,21 +161,21 @@ export default function ProfileLayout({
           </div>
         </div>
         
-        <div className="lg:flex lg:gap-8">
+        <div className="lg:flex lg:gap-6 lg:gap-8 min-w-0">
           {/* Left Sidebar with user info and navigation */}
-          <div className="lg:w-80 flex-shrink-0">
+          <div className="lg:w-80 flex-shrink-0 min-w-0">
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-white rounded-xl shadow-sm overflow-hidden hidden lg:block sticky top-8"
+              className="bg-white rounded-xl shadow-sm overflow-hidden hidden lg:block sticky top-8 overflow-hidden"
             >
               {/* Profile Header with backdrop */}
               <div className="relative">
                 {/* Decorative header background */}
                 <div className={`absolute top-0 left-0 w-full h-24 bg-gradient-to-r ${roleStyles.gradientBg} opacity-70`}></div>
                 
-                <div className="relative pt-16 pb-6 px-6 flex flex-col items-center">
+                <div className="relative pt-16 pb-6 px-6 flex flex-col items-center min-w-0">
                   {/* Profile Image */}
                   <div className="relative -mt-16 w-24 h-24 mb-3">
                     {userImage ? (
@@ -186,15 +186,15 @@ export default function ProfileLayout({
                         className="rounded-full object-cover border-4 border-white shadow-md"
                       />
                     ) : (
-                      <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center border-4 border-white shadow-md">
+                      <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center border-4 border-white shadow-md min-w-0">
                         <User className="h-12 w-12 text-gray-400" />
                       </div>
                     )}
                   </div>
                   
                   {/* User Info */}
-                  <h2 className="text-xl font-bold text-gray-900">{userName}</h2>
-                  <div className="mt-1 flex items-center space-x-1 text-sm text-gray-500">
+                  <h2 className="text-xl font-bold text-gray-900 break-words">{userName}</h2>
+                  <div className="mt-1 flex items-center space-x-1 text-sm text-gray-500 break-words min-w-0">
                     <Mail className="h-3 w-3" />
                     <span>{userEmail}</span>
                   </div>
@@ -207,7 +207,7 @@ export default function ProfileLayout({
                   </div>
                   
                   {/* Member Since */}
-                  <div className="mt-2 flex items-center space-x-1 text-xs text-gray-500">
+                  <div className="mt-2 flex items-center space-x-1 text-xs text-gray-500 min-w-0">
                     <Clock className="h-3 w-3" />
                     <span>Member since {formattedJoinDate}</span>
                   </div>
@@ -224,7 +224,7 @@ export default function ProfileLayout({
 
               {/* Navigation Menu */}
               <div className="px-3 py-4">
-                <nav className="space-y-6">
+                <nav className="space-y-4 lg:space-y-6">
                   {/* Main Profile Link */}
                   <div>
                     <Link 
@@ -238,7 +238,7 @@ export default function ProfileLayout({
                   
                   {/* Role-specific Quick Links */}
                   <div>
-                    <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 break-words">
                       Quick Links
                     </h3>
                     
@@ -296,7 +296,7 @@ export default function ProfileLayout({
                   
                   {/* Settings Link */}
                   <div>
-                    <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 break-words">
                       Settings
                     </h3>
                     <Link 
@@ -310,7 +310,7 @@ export default function ProfileLayout({
                   
                   {/* Help and Support */}
                   <div>
-                    <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <h3 className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 break-words">
                       Support
                     </h3>
                     <Link href="/help" className={getLinkClasses('/help')}>
@@ -324,12 +324,12 @@ export default function ProfileLayout({
           </div>
           
           {/* Main Content Area */}
-          <div className="mt-6 lg:mt-0 lg:flex-1">
+          <div className="mt-6 lg:mt-0 lg:flex-1 min-w-0">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="bg-white rounded-xl shadow-sm overflow-hidden"
+              className="bg-white rounded-xl shadow-sm overflow-hidden overflow-hidden"
             >
               {children}
             </motion.div>

@@ -115,7 +115,7 @@ export default function InstructorSettings() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center h-64 min-w-0">
         <div className="animate-spin h-8 w-8 border-4 border-purple-600 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -125,10 +125,10 @@ export default function InstructorSettings() {
     <div>
 
       
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
         <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 break-words">
               Full Name
             </label>
             <input
@@ -136,13 +136,13 @@ export default function InstructorSettings() {
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm break-words"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 break-words">
               Email Address
             </label>
             <input
@@ -150,13 +150,13 @@ export default function InstructorSettings() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm break-words"
               required
             />
           </div>
 
           <div className="sm:col-span-2">
-            <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="bio" className="block text-sm font-medium text-gray-700 break-words">
               Bio
             </label>
             <textarea
@@ -164,13 +164,13 @@ export default function InstructorSettings() {
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={3}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm break-words"
               placeholder="Tell students about your professional background"
             />
           </div>
 
           <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700 break-words">
               Location
             </label>
             <input
@@ -178,13 +178,13 @@ export default function InstructorSettings() {
               id="location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm break-words"
               placeholder="City, Country"
             />
           </div>
 
           <div>
-            <label htmlFor="profile-image" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="profile-image" className="block text-sm font-medium text-gray-700 break-words">
               Profile Image URL
             </label>
             <input
@@ -192,20 +192,20 @@ export default function InstructorSettings() {
               id="profile-image"
               value={image || ''}
               onChange={(e) => setImage(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm break-words"
               placeholder="https://example.com/image.jpg"
             />
           </div>
         </div>
 
         <div className="pt-5">
-          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center break-words min-w-0">
             <BookOpen className="mr-2 h-5 w-5 text-purple-500" />
             Teaching Profile
           </h3>
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="expertise" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="expertise" className="block text-sm font-medium text-gray-700 break-words">
                 Areas of Expertise
               </label>
               <input
@@ -216,13 +216,13 @@ export default function InstructorSettings() {
                   ...teachingDetails,
                   expertise: e.target.value
                 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm break-words"
                 placeholder="e.g. Machine Learning, Web Development"
               />
             </div>
 
             <div>
-              <label htmlFor="years-experience" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="years-experience" className="block text-sm font-medium text-gray-700 break-words">
                 Years of Teaching Experience
               </label>
               <input
@@ -233,14 +233,14 @@ export default function InstructorSettings() {
                   ...teachingDetails,
                   yearsOfExperience: e.target.value
                 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm break-words"
                 min="0"
                 placeholder="e.g. 5"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label htmlFor="teaching-philosophy" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="teaching-philosophy" className="block text-sm font-medium text-gray-700 break-words">
                 Teaching Philosophy
               </label>
               <textarea
@@ -251,13 +251,13 @@ export default function InstructorSettings() {
                   teachingPhilosophy: e.target.value
                 })}
                 rows={3}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm break-words"
                 placeholder="Share your approach to teaching and education"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label htmlFor="credentials" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="credentials" className="block text-sm font-medium text-gray-700 break-words">
                 Credentials & Certifications
               </label>
               <textarea
@@ -268,13 +268,13 @@ export default function InstructorSettings() {
                   credentials: e.target.value
                 })}
                 rows={3}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm break-words"
                 placeholder="List your relevant credentials, degrees, and certifications"
               />
             </div>
 
             <div>
-              <label htmlFor="communication-preference" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="communication-preference" className="block text-sm font-medium text-gray-700 break-words">
                 Preferred Communication Method
               </label>
               <select
@@ -284,7 +284,7 @@ export default function InstructorSettings() {
                   ...teachingDetails,
                   preferredCommunicationMethod: e.target.value
                 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm break-words"
               >
                 <option value="email">Email</option>
                 <option value="messaging">In-platform Messaging</option>
@@ -296,10 +296,10 @@ export default function InstructorSettings() {
         </div>
 
         <div className="pt-5">
-          <div className="flex justify-end">
+          <div className="flex justify-end min-w-0">
             <button
               type="submit"
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 break-words min-w-0"
             >
               <Save className="h-4 w-4 mr-2" />
               Save Settings

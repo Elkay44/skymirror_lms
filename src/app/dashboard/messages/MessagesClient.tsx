@@ -256,21 +256,21 @@ const MessagesClient = () => {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6 min-w-0">
         <div className="bg-red-50 border-l-4 border-red-400 p-4 w-full max-w-2xl">
-          <div className="flex">
-            <div className="flex-shrink-0">
+          <div className="flex min-w-0">
+            <div className="flex-shrink-0 min-w-0">
               <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm text-red-700">
+              <p className="text-sm text-red-700 break-words">
                 {error}
               </p>
               <button
                 onClick={() => window.location.reload()}
-                className="mt-2 text-sm font-medium text-red-700 hover:text-red-600 focus:outline-none focus:underline transition duration-150 ease-in-out"
+                className="mt-2 text-sm font-medium text-red-700 hover:text-red-600 focus:outline-none focus:underline transition duration-150 ease-in-out break-words"
               >
                 Try again
               </button>
@@ -309,7 +309,7 @@ const MessagesClient = () => {
   // Handle loading state
   if (status === 'loading' || isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4 min-w-0">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mb-4"></div>
         <p className="text-gray-600">Loading your messages...</p>
       </div>
@@ -319,21 +319,21 @@ const MessagesClient = () => {
   // Handle error state
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6 min-w-0">
         <div className="bg-red-50 border-l-4 border-red-400 p-4 w-full max-w-2xl">
-          <div className="flex">
-            <div className="flex-shrink-0">
+          <div className="flex min-w-0">
+            <div className="flex-shrink-0 min-w-0">
               <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm text-red-700">
+              <p className="text-sm text-red-700 break-words">
                 {error}
               </p>
               <button
                 onClick={() => window.location.reload()}
-                className="mt-2 text-sm font-medium text-red-700 hover:text-red-600 focus:outline-none focus:underline transition duration-150 ease-in-out"
+                className="mt-2 text-sm font-medium text-red-700 hover:text-red-600 focus:outline-none focus:underline transition duration-150 ease-in-out break-words"
               >
                 Try again
               </button>
@@ -346,15 +346,15 @@ const MessagesClient = () => {
 
   return (
     <div className="relative">
-      <div className="flex flex-col h-screen bg-gray-50">
+      <div className="flex flex-col h-screen bg-gray-50 min-w-0">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-900">Messages</h1>
+          <div className="flex justify-between items-center min-w-0">
+            <h1 className="text-2xl font-semibold text-gray-900 break-words">Messages</h1>
             <button
               onClick={() => setShowNewConversationModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 break-words min-w-0"
             >
               <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
               New Message
@@ -364,15 +364,15 @@ const MessagesClient = () => {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-hidden min-w-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="flex h-[calc(100vh-200px)]">
+          <div className="bg-white rounded-lg shadow overflow-hidden overflow-hidden">
+            <div className="flex h-[calc(100vh-200px)] min-w-0">
               {/* Sidebar */}
-              <div className="w-1/3 border-r border-gray-200 flex flex-col">
+              <div className="w-1/3 border-r border-gray-200 flex flex-col min-w-0">
                 <div className="p-4 border-b border-gray-200">
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
                       <svg
                         className="h-5 w-5 text-gray-400"
                         xmlns="http://www.w3.org/2000/svg"
@@ -389,7 +389,7 @@ const MessagesClient = () => {
                     </div>
                     <input
                       type="text"
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm break-words"
                       placeholder="Search conversations"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -398,14 +398,14 @@ const MessagesClient = () => {
                 </div>
                 
                 {/* Conversation list */}
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto min-w-0">
                   {filteredConversations.length === 0 ? (
                     <div className="p-8 text-center">
-                      <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gray-100">
+                      <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 min-w-0">
                         <MessageSquare className="h-12 w-12 text-gray-400" />
                       </div>
-                      <h3 className="mt-4 text-lg font-medium text-gray-900">No conversations yet</h3>
-                      <p className="mt-1 text-sm text-gray-500">
+                      <h3 className="mt-4 text-lg font-medium text-gray-900 break-words">No conversations yet</h3>
+                      <p className="mt-1 text-sm text-gray-500 break-words">
                         {isLoading 
                           ? 'Loading conversations...' 
                           : searchQuery 
@@ -418,7 +418,7 @@ const MessagesClient = () => {
                           <button
                             type="button"
                             onClick={() => setShowNewConversationModal(true)}
-                            className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 break-words min-w-0"
                           >
                             <PlusCircle className="-ml-1 mr-2 h-5 w-5" />
                             New Message
@@ -440,8 +440,8 @@ const MessagesClient = () => {
                                 isActive ? 'bg-blue-50' : ''
                               }`}
                             >
-                              <div className="flex items-center">
-                                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                              <div className="flex items-center min-w-0">
+                                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center min-w-0">
                                   {participant?.avatarUrl ? (
                                     <img
                                       className="h-10 w-10 rounded-full"
@@ -454,9 +454,9 @@ const MessagesClient = () => {
                                     </span>
                                   )}
                                 </div>
-                                <div className="ml-3 min-w-0 flex-1">
-                                  <div className="flex justify-between">
-                                    <p className="text-sm font-medium text-gray-900 truncate">
+                                <div className="ml-3 min-w-0 flex-1 min-w-0">
+                                  <div className="flex justify-between min-w-0">
+                                    <p className="text-sm font-medium text-gray-900 truncate break-words">
                                       {participant?.name || 'Unknown User'}
                                     </p>
                                     <p className="text-xs text-gray-500">
@@ -466,7 +466,7 @@ const MessagesClient = () => {
                                       })}
                                     </p>
                                   </div>
-                                  <p className="text-sm text-gray-500 truncate">
+                                  <p className="text-sm text-gray-500 truncate break-words">
                                     {conversation.lastMessage?.content || 'No messages yet'}
                                   </p>
                                 </div>
@@ -481,26 +481,26 @@ const MessagesClient = () => {
               </div>
               
               {/* Message area */}
-              <div className="flex-1 flex flex-col">
+              <div className="flex-1 flex flex-col min-w-0">
                 {selectedConversation ? (
-                  <div className="flex-1 flex flex-col">
+                  <div className="flex-1 flex flex-col min-w-0">
                     {/* Message header */}
                     <div className="p-4 border-b border-gray-200">
-                      <h2 className="text-lg font-medium text-gray-900">
+                      <h2 className="text-lg font-medium text-gray-900 break-words">
                         {selectedConversation.participants[0]?.name || 'Conversation'}
                       </h2>
                     </div>
                     
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+                    <div className="flex-1 overflow-y-auto p-4 bg-gray-50 min-w-0">
                       {messages.length === 0 ? (
-                        <div className="h-full flex items-center justify-center">
+                        <div className="h-full flex items-center justify-center min-w-0">
                           <div className="text-center">
                             <MessageSquare className="mx-auto h-12 w-12 text-gray-400" />
-                            <h3 className="mt-2 text-sm font-medium text-gray-900">
+                            <h3 className="mt-2 text-sm font-medium text-gray-900 break-words">
                               No messages yet
                             </h3>
-                            <p className="mt-1 text-sm text-gray-500">
+                            <p className="mt-1 text-sm text-gray-500 break-words">
                               Be the first to send a message!
                             </p>
                           </div>
@@ -523,7 +523,7 @@ const MessagesClient = () => {
                                     : 'bg-white text-gray-800 border border-gray-200'
                                 }`}
                               >
-                                <p className="text-sm">{message.content}</p>
+                                <p className="text-sm break-words">{message.content}</p>
                                 <p className="text-xs text-gray-500 mt-1">
                                   {new Date(message.createdAt).toLocaleTimeString([], {
                                     hour: '2-digit',
@@ -539,10 +539,10 @@ const MessagesClient = () => {
                     
                     {/* Message input */}
                     <div className="p-4 border-t border-gray-200">
-                      <form onSubmit={handleSendMessage} className="flex items-center">
+                      <form onSubmit={handleSendMessage} className="flex items-center min-w-0">
                         <input
                           type="text"
-                          className="flex-1 border border-gray-300 rounded-l-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                          className="flex-1 border border-gray-300 rounded-l-md px-4 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 min-w-0"
                           placeholder="Type a message..."
                           value={messageInput}
                           onChange={(e) => setMessageInput(e.target.value)}
@@ -563,10 +563,10 @@ const MessagesClient = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                  <div className="flex-1 flex flex-col items-center justify-center p-6 text-center min-w-0">
                     <MessageSquare className="h-12 w-12 text-gray-400 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-1">No conversation selected</h3>
-                    <p className="text-sm text-gray-500">
+                    <h3 className="text-lg font-medium text-gray-900 mb-1 break-words">No conversation selected</h3>
+                    <p className="text-sm text-gray-500 break-words">
                       Select a conversation or create a new one to start messaging
                     </p>
                   </div>
@@ -580,11 +580,11 @@ const MessagesClient = () => {
       
       {/* New Conversation Modal */}
       {showNewConversationModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">New Message</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 min-w-0">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+            <div className="p-4 lg:p-6">
+              <div className="flex justify-between items-center mb-4 min-w-0">
+                <h3 className="text-lg font-medium text-gray-900 break-words">New Message</h3>
                 <button
                   onClick={() => {
                     setShowNewConversationModal(false);
@@ -592,19 +592,19 @@ const MessagesClient = () => {
                   }}
                   className="text-gray-400 hover:text-gray-500"
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5 lg:h-6 lg:w-6" />
                 </button>
               </div>
               
               <form onSubmit={handleStartConversation}>
                 {error && (
-                  <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
+                  <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm break-words">
                     {error}
                   </div>
                 )}
                 
                 <div className="mb-4">
-                  <label htmlFor="recipient" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="recipient" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     To:
                   </label>
                   <select
@@ -624,7 +624,7 @@ const MessagesClient = () => {
                 </div>
                 
                 <div className="mb-4">
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Message:
                   </label>
                   <textarea
@@ -638,21 +638,21 @@ const MessagesClient = () => {
                   />
                 </div>
                 
-                <div className="flex justify-end space-x-3">
+                <div className="flex justify-end space-x-3 min-w-0">
                   <button
                     type="button"
                     onClick={() => {
                       setShowNewConversationModal(false);
                       setError(null);
                     }}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 break-words"
                     disabled={isLoading}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 break-words"
                     disabled={isLoading || !selectedRecipient || !newMessage.trim()}
                   >
                     {isLoading ? 'Sending...' : 'Send Message'}

@@ -115,7 +115,7 @@ export default function MainNavigation() {
   }
   
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-100">
+    <div className="h-screen flex overflow-hidden bg-gray-100 min-w-0">
       {/* Off-canvas menu for mobile, show/hide based on off-canvas menu state */}
       <div
         className={`${isOpen ? 'block' : 'hidden'} md:hidden fixed inset-0 flex z-40`}
@@ -126,11 +126,11 @@ export default function MainNavigation() {
           aria-hidden="true"
         ></div>
         
-        <div className="relative flex-1 flex flex-col max-w-xs w-full bg-indigo-800 transform transition ease-in-out duration-300">
+        <div className="relative flex-1 flex flex-col max-w-xs w-full bg-indigo-800 transform transition ease-in-out duration-300 min-w-0">
           <div className="absolute top-0 right-0 -mr-12 pt-2">
             <button
               type="button"
-              className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+              className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white min-w-0"
               onClick={() => setIsOpen(false)}
             >
               <span className="sr-only">Close sidebar</span>
@@ -151,9 +151,9 @@ export default function MainNavigation() {
             </button>
           </div>
           
-          <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-            <div className="flex-shrink-0 flex items-center px-4">
-              <h1 className="text-2xl font-bold text-white">SkyMirror LMS</h1>
+          <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto min-w-0">
+            <div className="flex-shrink-0 flex items-center px-4 min-w-0">
+              <h1 className="text-2xl font-bold text-white break-words">SkyMirror LMS</h1>
             </div>
             <nav className="mt-5 px-2 space-y-1">
               {navigation.map((item) => (
@@ -169,9 +169,9 @@ export default function MainNavigation() {
             </nav>
           </div>
           
-          <div className="flex-shrink-0 flex border-t border-indigo-900 p-4">
-            <div className="flex-shrink-0 group block">
-              <div className="flex items-center">
+          <div className="flex-shrink-0 flex border-t border-indigo-900 p-4 min-w-0">
+            <div className="flex-shrink-0 group block min-w-0">
+              <div className="flex items-center min-w-0">
                 <div>
                   {session.user.image ? (
                     <Image 
@@ -182,20 +182,20 @@ export default function MainNavigation() {
                       height={40}
                     />
                   ) : (
-                    <div className="inline-block h-10 w-10 rounded-full bg-indigo-900 text-white flex items-center justify-center">
-                      <span className="text-xl font-medium">
+                    <div className="inline-block h-10 w-10 rounded-full bg-indigo-900 text-white flex items-center justify-center min-w-0">
+                      <span className="text-xl font-medium break-words">
                         {session.user.name?.charAt(0) || session.user.email?.charAt(0) || '?'}
                       </span>
                     </div>
                   )}
                 </div>
                 <div className="ml-3">
-                  <p className="text-base font-medium text-white">
+                  <p className="text-base font-medium text-white break-words">
                     {session.user.name || 'User'}
                   </p>
                   <button
                     onClick={() => signOut({ callbackUrl: '/' })}
-                    className="text-sm font-medium text-indigo-200 hover:text-white"
+                    className="text-sm font-medium text-indigo-200 hover:text-white break-words"
                   >
                     Sign out
                   </button>
@@ -205,20 +205,20 @@ export default function MainNavigation() {
           </div>
         </div>
         
-        <div className="flex-shrink-0 w-14" aria-hidden="true">
+        <div className="flex-shrink-0 w-14 min-w-0" aria-hidden="true">
           {/* Dummy element to force sidebar to shrink to fit close icon */}
         </div>
       </div>
       
       {/* Static sidebar for desktop */}
-      <div className="hidden md:flex md:flex-shrink-0">
-        <div className="flex flex-col w-64">
-          <div className="flex flex-col h-0 flex-1 bg-indigo-800">
-            <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-              <div className="flex items-center flex-shrink-0 px-4">
-                <h1 className="text-2xl font-bold text-white">SkyMirror LMS</h1>
+      <div className="hidden md:flex md:flex-shrink-0 min-w-0">
+        <div className="flex flex-col w-64 min-w-0">
+          <div className="flex flex-col h-0 flex-1 bg-indigo-800 min-w-0">
+            <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto min-w-0">
+              <div className="flex items-center flex-shrink-0 px-4 min-w-0">
+                <h1 className="text-2xl font-bold text-white break-words">SkyMirror LMS</h1>
               </div>
-              <nav className="mt-5 flex-1 px-2 space-y-1">
+              <nav className="mt-5 flex-1 px-2 space-y-1 min-w-0">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
@@ -232,9 +232,9 @@ export default function MainNavigation() {
               </nav>
             </div>
             
-            <div className="flex-shrink-0 flex border-t border-indigo-900 p-4">
-              <div className="flex-shrink-0 w-full group block">
-                <div className="flex items-center">
+            <div className="flex-shrink-0 flex border-t border-indigo-900 p-4 min-w-0">
+              <div className="flex-shrink-0 w-full group block min-w-0">
+                <div className="flex items-center min-w-0">
                   <div>
                     {session.user.image ? (
                       <Image 
@@ -245,20 +245,20 @@ export default function MainNavigation() {
                         height={36}
                       />
                     ) : (
-                      <div className="inline-block h-9 w-9 rounded-full bg-indigo-900 text-white flex items-center justify-center">
-                        <span className="text-lg font-medium">
+                      <div className="inline-block h-9 w-9 rounded-full bg-indigo-900 text-white flex items-center justify-center min-w-0">
+                        <span className="text-lg font-medium break-words">
                           {session.user.name?.charAt(0) || session.user.email?.charAt(0) || '?'}
                         </span>
                       </div>
                     )}
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-white">
+                    <p className="text-sm font-medium text-white break-words">
                       {session.user.name || 'User'}
                     </p>
                     <button
                       onClick={() => signOut({ callbackUrl: '/' })}
-                      className="text-xs font-medium text-indigo-200 hover:text-white"
+                      className="text-xs font-medium text-indigo-200 hover:text-white break-words"
                     >
                       Sign out
                     </button>
@@ -271,16 +271,16 @@ export default function MainNavigation() {
       </div>
       
       {/* Content area */}
-      <div className="flex flex-col w-0 flex-1 overflow-hidden">
+      <div className="flex flex-col w-0 flex-1 overflow-hidden min-w-0">
         <div className="md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3">
           <button
             type="button"
-            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+            className="-ml-0.5 -mt-0.5 h-12 w-12 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 min-w-0"
             onClick={() => setIsOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
             <svg
-              className="h-6 w-6"
+              className="h-5 w-5 lg:h-6 lg:w-6"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -297,20 +297,20 @@ export default function MainNavigation() {
         </div>
         
         {/* Top navigation bar for mobile */}
-        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white shadow md:hidden">
-          <div className="flex-1 flex justify-between px-4 sm:px-6">
-            <div className="flex-1 flex">
-              <div className="w-full flex items-center">
-                <h1 className="text-xl font-bold text-gray-900">SkyMirror LMS</h1>
+        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white shadow md:hidden min-w-0">
+          <div className="flex-1 flex justify-between px-4 sm:px-6 min-w-0">
+            <div className="flex-1 flex min-w-0">
+              <div className="w-full flex items-center min-w-0">
+                <h1 className="text-xl font-bold text-gray-900 break-words">SkyMirror LMS</h1>
               </div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0">
               {/* Profile dropdown */}
               <div className="ml-3 relative">
                 <div>
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    className="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 break-words min-w-0 overflow-hidden"
                   >
                     <span className="sr-only">Open user menu</span>
                     {session.user.image ? (
@@ -322,8 +322,8 @@ export default function MainNavigation() {
                         height={32}
                       />
                     ) : (
-                      <div className="h-8 w-8 rounded-full bg-indigo-700 text-white flex items-center justify-center">
-                        <span className="text-sm font-medium">
+                      <div className="h-8 w-8 rounded-full bg-indigo-700 text-white flex items-center justify-center min-w-0">
+                        <span className="text-sm font-medium break-words">
                           {session.user.name?.charAt(0) || session.user.email?.charAt(0) || '?'}
                         </span>
                       </div>
@@ -332,15 +332,15 @@ export default function MainNavigation() {
                 </div>
                 {userMenuOpen && (
                   <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 break-words">
                       Your Profile
                     </Link>
-                    <Link href="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <Link href="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 break-words">
                       Settings
                     </Link>
                     <button
                       onClick={() => signOut({ callbackUrl: '/' })}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 break-words"
                     >
                       Sign out
                     </button>

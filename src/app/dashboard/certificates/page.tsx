@@ -56,13 +56,13 @@ export default function CertificatesPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Certificates</h1>
+      <h1 className="text-2xl font-bold mb-4 break-words">Certificates</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {certificates.map(cert => (
-          <div key={cert.id} className="bg-white rounded shadow p-4 flex flex-col">
-            <div className="font-semibold text-lg mb-2">{cert.courseTitle}</div>
-            <div className="text-sm text-gray-500 mb-4">Completed: {cert.issuedAt ? new Date(cert.issuedAt).toLocaleDateString() : '-'}</div>
-            <a href={cert.blockchainUrl} target="_blank" rel="noopener noreferrer" className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 w-max">View Certificate</a>
+          <div key={cert.id} className="bg-white rounded shadow p-4 flex flex-col min-w-0 overflow-hidden">
+            <div className="font-semibold text-lg mb-2 break-words">{cert.courseTitle}</div>
+            <div className="text-sm text-gray-500 mb-4 break-words">Completed: {cert.issuedAt ? new Date(cert.issuedAt).toLocaleDateString() : '-'}</div>
+            <a href={cert.blockchainUrl} target="_blank" rel="noopener noreferrer" className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 w-max break-words">View Certificate</a>
           </div>
         ))}
       </div>

@@ -168,7 +168,7 @@ export default function InstructorApiKeysSettings() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center h-64 min-w-0">
         <div className="animate-spin h-8 w-8 border-4 border-purple-600 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -180,12 +180,12 @@ export default function InstructorApiKeysSettings() {
       
       {/* API Key Info */}
       <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-        <div className="flex">
-          <div className="flex-shrink-0">
+        <div className="flex min-w-0">
+          <div className="flex-shrink-0 min-w-0">
             <AlertTriangle className="h-5 w-5 text-yellow-400" />
           </div>
           <div className="ml-3">
-            <p className="text-sm text-yellow-700">
+            <p className="text-sm text-yellow-700 break-words">
               API keys provide full access to your account. Keep them secure and never share them in public repositories or client-side code.
             </p>
           </div>
@@ -194,29 +194,29 @@ export default function InstructorApiKeysSettings() {
       
       {/* Create New Key */}
       {!newKeyValue && (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden mb-6">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden mb-6 overflow-hidden">
           <div className="px-4 py-5 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Create New API Key</h3>
+            <h3 className="text-lg font-medium text-gray-900 break-words">Create New API Key</h3>
           </div>
           
           <div className="px-4 py-5 space-y-4">
             <div>
-              <label htmlFor="key-name" className="block text-sm font-medium text-gray-700">Key Name</label>
+              <label htmlFor="key-name" className="block text-sm font-medium text-gray-700 break-words">Key Name</label>
               <input
                 type="text"
                 id="key-name"
                 value={newKeyName}
                 onChange={(e) => setNewKeyName(e.target.value)}
                 placeholder="e.g., Course Builder Integration"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm break-words"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2 break-words">Permissions</label>
               <div className="space-y-2">
                 {permissionOptions.map(permission => (
-                  <div key={permission.value} className="flex items-center">
+                  <div key={permission.value} className="flex items-center min-w-0">
                     <input
                       id={permission.value}
                       type="checkbox"
@@ -224,7 +224,7 @@ export default function InstructorApiKeysSettings() {
                       onChange={() => handlePermissionChange(permission.value)}
                       className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                     />
-                    <label htmlFor={permission.value} className="ml-2 block text-sm text-gray-900">
+                    <label htmlFor={permission.value} className="ml-2 block text-sm text-gray-900 break-words">
                       {permission.label} <span className="text-xs text-gray-500">({permission.description})</span>
                     </label>
                   </div>
@@ -235,7 +235,7 @@ export default function InstructorApiKeysSettings() {
             <div className="pt-3">
               <button
                 onClick={createNewKey}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 break-words min-w-0"
               >
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Create API Key
@@ -249,25 +249,25 @@ export default function InstructorApiKeysSettings() {
       {newKeyValue && (
         <div className="bg-purple-50 border border-purple-200 rounded-lg shadow-sm overflow-hidden mb-6">
           <div className="px-4 py-5 border-b border-purple-200">
-            <h3 className="text-lg font-medium text-purple-900">Your New API Key</h3>
+            <h3 className="text-lg font-medium text-purple-900 break-words">Your New API Key</h3>
           </div>
           
           <div className="px-4 py-5 space-y-4">
-            <div className="bg-white p-3 rounded-md border border-purple-200 break-all font-mono text-sm">
+            <div className="bg-white p-3 rounded-md border border-purple-200 break-all font-mono text-sm break-words overflow-hidden">
               {newKeyValue}
             </div>
             
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0">
               <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2" />
-              <p className="text-sm text-gray-700 font-medium">
+              <p className="text-sm text-gray-700 font-medium break-words">
                 This key will only be displayed once. Please copy it and store it securely.
               </p>
             </div>
             
-            <div className="flex space-x-3">
+            <div className="flex space-x-3 min-w-0">
               <button
                 onClick={() => copyKeyToClipboard(newKeyValue)}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 break-words min-w-0"
               >
                 <Copy className="mr-2 h-4 w-4" />
                 Copy Key
@@ -275,7 +275,7 @@ export default function InstructorApiKeysSettings() {
               
               <button
                 onClick={closeNewKeyModal}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 break-words min-w-0"
               >
                 I've Saved My Key
               </button>
@@ -285,24 +285,24 @@ export default function InstructorApiKeysSettings() {
       )}
       
       {/* API Keys List */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
         <div className="px-4 py-5 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Your API Keys</h3>
-          <p className="mt-1 text-sm text-gray-500">Manage your existing API keys</p>
+          <h3 className="text-lg font-medium text-gray-900 break-words">Your API Keys</h3>
+          <p className="mt-1 text-sm text-gray-500 break-words">Manage your existing API keys</p>
         </div>
         
         <div>
           {apiKeys.length === 0 ? (
             <div className="px-4 py-5 text-center">
-              <p className="text-gray-500 text-sm">You don't have any API keys yet.</p>
+              <p className="text-gray-500 text-sm break-words">You don't have any API keys yet.</p>
             </div>
           ) : (
             <ul className="divide-y divide-gray-200">
               {apiKeys.map((apiKey) => (
                 <li key={apiKey.id} className="px-4 py-5">
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start min-w-0">
                     <div>
-                      <h4 className="text-md font-medium text-gray-900 flex items-center">
+                      <h4 className="text-md font-medium text-gray-900 flex items-center break-words min-w-0">
                         {apiKey.name}
                         {apiKey.status !== 'active' && (
                           <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${apiKey.status === 'expired' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800'} capitalize`}>
@@ -311,7 +311,7 @@ export default function InstructorApiKeysSettings() {
                         )}
                       </h4>
                       
-                      <div className="mt-2 flex items-center text-sm text-gray-500">
+                      <div className="mt-2 flex items-center text-sm text-gray-500 break-words min-w-0">
                         <Clock className="mr-1 h-4 w-4 text-gray-400" />
                         Created {formatDate(apiKey.createdAt)}
                         {apiKey.expiresAt && (
@@ -322,29 +322,29 @@ export default function InstructorApiKeysSettings() {
                       </div>
                       
                       {apiKey.lastUsed && (
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 text-sm text-gray-500 break-words">
                           Last used {formatDate(apiKey.lastUsed)}
                         </p>
                       )}
                       
                       <div className="mt-2">
                         {apiKey.permissions.map(permission => (
-                          <span key={permission} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mr-1 mb-1">
+                          <span key={permission} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 mr-1 mb-1 break-words min-w-0">
                             {permission}
                           </span>
                         ))}
                       </div>
                       
                       {apiKey.status === 'active' && (
-                        <div className="mt-3 flex items-center">
-                          <div className="relative flex-grow">
+                        <div className="mt-3 flex items-center min-w-0">
+                          <div className="relative flex-grow min-w-0">
                             <input 
                               type={showKeyId === apiKey.id ? 'text' : 'password'} 
                               value={apiKey.key} 
                               readOnly 
-                              className="pr-10 block w-full bg-gray-50 border-gray-300 rounded-md shadow-sm text-sm font-mono focus:ring-purple-500 focus:border-purple-500"
+                              className="pr-10 block w-full bg-gray-50 border-gray-300 rounded-md shadow-sm text-sm font-mono focus:ring-purple-500 focus:border-purple-500 break-words"
                             />
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 min-w-0">
                               <button 
                                 onClick={() => toggleShowKey(apiKey.id)}
                                 className="text-gray-400 hover:text-gray-500"
@@ -359,7 +359,7 @@ export default function InstructorApiKeysSettings() {
                           </div>
                           <button
                             onClick={() => copyKeyToClipboard(apiKey.key)}
-                            className="ml-2 inline-flex items-center p-1.5 border border-gray-300 shadow-sm text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-purple-500"
+                            className="ml-2 inline-flex items-center p-1.5 border border-gray-300 shadow-sm text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-purple-500 min-w-0"
                           >
                             <Copy className="h-4 w-4" />
                           </button>
@@ -370,7 +370,7 @@ export default function InstructorApiKeysSettings() {
                     {apiKey.status === 'active' && (
                       <button
                         onClick={() => revokeKey(apiKey.id)}
-                        className="ml-4 text-sm text-red-600 hover:text-red-900"
+                        className="ml-4 text-sm text-red-600 hover:text-red-900 break-words"
                       >
                         Revoke
                       </button>

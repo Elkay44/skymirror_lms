@@ -180,17 +180,17 @@ const CertificateManagementPage = () => {
       {/* Header with back button */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
+          <div className="flex justify-between items-center py-6 min-w-0">
+            <div className="flex items-center min-w-0">
               <Link
                 href="/dashboard/instructor"
                 className="mr-4 text-gray-500 hover:text-gray-700"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 lg:h-6 lg:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+              <h1 className="text-2xl font-bold text-gray-900 flex items-center break-words min-w-0">
                 <Award className="h-6 w-6 mr-2 text-indigo-600" />
                 Certificate Management
               </h1>
@@ -199,7 +199,7 @@ const CertificateManagementPage = () => {
               <select
                 value={selectedCourse}
                 onChange={(e) => setSelectedCourse(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md break-words"
               >
                 <option value="">Select a course</option>
                 {courses.map((course) => (
@@ -216,8 +216,8 @@ const CertificateManagementPage = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {message && (
           <div className={`mb-6 p-4 rounded-md ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
-            <div className="flex">
-              <div className="flex-shrink-0">
+            <div className="flex min-w-0">
+              <div className="flex-shrink-0 min-w-0">
                 {message.type === 'success' ? (
                   <CheckCircle className="h-5 w-5 text-green-400" />
                 ) : (
@@ -225,14 +225,14 @@ const CertificateManagementPage = () => {
                 )}
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium">{message.text}</p>
+                <p className="text-sm font-medium break-words">{message.text}</p>
               </div>
               <div className="ml-auto pl-3">
                 <div className="-mx-1.5 -my-1.5">
                   <button
                     type="button"
                     onClick={() => setMessage(null)}
-                    className="inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-50 focus:ring-green-600"
+                    className="inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-50 focus:ring-green-600 min-w-0"
                   >
                     <span className="sr-only">Dismiss</span>
                     <XCircle className={`h-5 w-5 ${message.type === 'success' ? 'text-green-500' : 'text-red-500'}`} />
@@ -245,20 +245,20 @@ const CertificateManagementPage = () => {
 
         {selectedCourse ? (
           isLoading ? (
-            <div className="flex justify-center items-center py-12">
+            <div className="flex justify-center items-center py-12 min-w-0">
               <RefreshCw className="h-8 w-8 text-blue-500 animate-spin" />
               <span className="ml-2 text-gray-600">Loading...</span>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-8">
+            <div className="grid grid-cols-1 gap-6 lg:gap-8">
               {/* Pending Submissions Section */}
-              <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="bg-white shadow overflow-hidden sm:rounded-md overflow-hidden">
                 <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center break-words min-w-0">
                     <FileCheck className="h-5 w-5 mr-2 text-green-600" />
                     Students Eligible for Certification
                   </h3>
-                  <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  <p className="mt-1 max-w-2xl text-sm text-gray-500 break-words">
                     Students who have completed all required projects for this course.
                   </p>
                 </div>
@@ -268,25 +268,25 @@ const CertificateManagementPage = () => {
                     {pendingSubmissions.map((submission) => (
                       <li key={submission.id}>
                         <div className="px-4 py-4 sm:px-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex flex-col">
-                              <p className="text-sm font-medium text-blue-600 truncate">
+                          <div className="flex items-center justify-between min-w-0">
+                            <div className="flex flex-col min-w-0">
+                              <p className="text-sm font-medium text-blue-600 truncate break-words">
                                 {submission.student.name}
                               </p>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-gray-500 break-words">
                                 {submission.student.email}
                               </p>
-                              <div className="mt-2 flex items-center text-sm text-gray-500">
+                              <div className="mt-2 flex items-center text-sm text-gray-500 break-words min-w-0">
                                 <p>
-                                  Project: <span className="font-medium">{submission.project.title}</span>
+                                  Project: <span className="font-medium break-words">{submission.project.title}</span>
                                 </p>
                                 <span className="mx-1">•</span>
                                 <p>
-                                  Submitted: <span className="font-medium">{formatDate(submission.submittedAt)}</span>
+                                  Submitted: <span className="font-medium break-words">{formatDate(submission.submittedAt)}</span>
                                 </p>
                               </div>
                               {!submission.student.walletAddress && (
-                                <p className="mt-1 text-xs text-yellow-600 flex items-center">
+                                <p className="mt-1 text-xs text-yellow-600 flex items-center min-w-0">
                                   <AlertTriangle className="h-3 w-3 mr-1" />
                                   Student has not connected a wallet address
                                 </p>
@@ -297,7 +297,7 @@ const CertificateManagementPage = () => {
                                 type="button"
                                 onClick={() => handleIssueCertificate(submission.student.id)}
                                 disabled={isSubmitting || !submission.student.walletAddress}
-                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed break-words min-w-0"
                               >
                                 {isSubmitting ? 'Issuing...' : 'Issue Certificate'}
                               </button>
@@ -315,13 +315,13 @@ const CertificateManagementPage = () => {
               </div>
 
               {/* Issued Certificates Section */}
-              <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="bg-white shadow overflow-hidden sm:rounded-md overflow-hidden">
                 <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center break-words min-w-0">
                     <Award className="h-5 w-5 mr-2 text-blue-600" />
                     Issued Certificates
                   </h3>
-                  <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  <p className="mt-1 max-w-2xl text-sm text-gray-500 break-words">
                     Certificates that have already been issued for this course.
                   </p>
                 </div>
@@ -331,27 +331,27 @@ const CertificateManagementPage = () => {
                     {certificates.map((certificate) => (
                       <li key={certificate.id}>
                         <div className="px-4 py-4 sm:px-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex flex-col">
-                              <p className="text-sm font-medium text-blue-600 truncate">
+                          <div className="flex items-center justify-between min-w-0">
+                            <div className="flex flex-col min-w-0">
+                              <p className="text-sm font-medium text-blue-600 truncate break-words">
                                 {certificate.student.name}
                               </p>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-gray-500 break-words">
                                 {certificate.student.email}
                               </p>
-                              <div className="mt-2 flex items-center text-sm text-gray-500">
+                              <div className="mt-2 flex items-center text-sm text-gray-500 break-words min-w-0">
                                 <p>
-                                  Token ID: <span className="font-mono font-medium">{certificate.tokenId}</span>
+                                  Token ID: <span className="font-mono font-medium break-words">{certificate.tokenId}</span>
                                 </p>
                                 <span className="mx-1">•</span>
                                 <p>
-                                  Issued: <span className="font-medium">{formatDate(certificate.issuedAt)}</span>
+                                  Issued: <span className="font-medium break-words">{formatDate(certificate.issuedAt)}</span>
                                 </p>
                                 {certificate.expiresAt && (
                                   <>
                                     <span className="mx-1">•</span>
                                     <p>
-                                      Expires: <span className="font-medium">{formatDate(certificate.expiresAt)}</span>
+                                      Expires: <span className="font-medium break-words">{formatDate(certificate.expiresAt)}</span>
                                     </p>
                                   </>
                                 )}
@@ -361,7 +361,7 @@ const CertificateManagementPage = () => {
                               <Link 
                                 href={`/verify?id=${certificate.id}`}
                                 target="_blank"
-                                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 break-words min-w-0"
                               >
                                 View Certificate
                               </Link>
@@ -381,12 +381,12 @@ const CertificateManagementPage = () => {
           )
         ) : (
           <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 my-8">
-            <div className="flex">
-              <div className="flex-shrink-0">
+            <div className="flex min-w-0">
+              <div className="flex-shrink-0 min-w-0">
                 <AlertTriangle className="h-5 w-5 text-yellow-400" />
               </div>
               <div className="ml-3">
-                <p className="text-sm text-yellow-700">
+                <p className="text-sm text-yellow-700 break-words">
                   Please select a course to manage certificates.
                 </p>
               </div>

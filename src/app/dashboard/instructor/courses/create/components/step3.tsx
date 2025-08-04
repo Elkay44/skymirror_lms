@@ -42,14 +42,14 @@ export function Step3({ formData, onFormChange }: Step3Props) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 lg:space-y-8">
       {/* Requirements */}
       <div>
         <Label>Course Requirements</Label>
-        <p className="text-sm text-gray-500 mb-2">
+        <p className="text-sm text-gray-500 mb-2 break-words">
           What do students need to know before taking this course?
         </p>
-        <div className="flex gap-2 mb-2">
+        <div className="flex gap-2 mb-2 min-w-0">
           <Input
             value={requirement}
             onChange={(e) => setRequirement(e.target.value)}
@@ -67,7 +67,7 @@ export function Step3({ formData, onFormChange }: Step3Props) {
         </div>
         <div className="space-y-1">
           {formData.requirements.map((req, index) => (
-            <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+            <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded min-w-0 flex-shrink-0">
               <span>{req}</span>
               <Button
                 type="button"
@@ -85,10 +85,10 @@ export function Step3({ formData, onFormChange }: Step3Props) {
       {/* Learning Outcomes */}
       <div>
         <Label>What Will Students Learn?</Label>
-        <p className="text-sm text-gray-500 mb-2">
+        <p className="text-sm text-gray-500 mb-2 break-words">
           List the key learning outcomes for this course
         </p>
-        <div className="flex gap-2 mb-2">
+        <div className="flex gap-2 mb-2 min-w-0">
           <Input
             value={outcome}
             onChange={(e) => setOutcome(e.target.value)}
@@ -106,7 +106,7 @@ export function Step3({ formData, onFormChange }: Step3Props) {
         </div>
         <div className="space-y-1">
           {formData.learningOutcomes.map((outcome, index) => (
-            <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+            <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded min-w-0 flex-shrink-0">
               <span>{outcome}</span>
               <Button
                 type="button"
@@ -124,10 +124,10 @@ export function Step3({ formData, onFormChange }: Step3Props) {
       {/* Target Audience */}
       <div>
         <Label>Target Audience</Label>
-        <p className="text-sm text-gray-500 mb-2">
+        <p className="text-sm text-gray-500 mb-2 break-words">
           Who is this course for?
         </p>
-        <div className="flex gap-2 mb-2">
+        <div className="flex gap-2 mb-2 min-w-0">
           <Input
             value={audience}
             onChange={(e) => setAudience(e.target.value)}
@@ -145,7 +145,7 @@ export function Step3({ formData, onFormChange }: Step3Props) {
         </div>
         <div className="space-y-1">
           {formData.targetAudience.map((aud, index) => (
-            <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+            <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded min-w-0 flex-shrink-0">
               <span>{aud}</span>
               <Button
                 type="button"

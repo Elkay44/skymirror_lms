@@ -113,7 +113,7 @@ export default function SubmissionDetailsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen min-w-0">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
       </div>
     );
@@ -122,7 +122,7 @@ export default function SubmissionDetailsPage() {
   if (!submission) {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Submission Not Found</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-4 break-words">Submission Not Found</h2>
         <p className="text-gray-600 mb-6">The submission you're looking for doesn't exist or you don't have permission to view it.</p>
         <Button onClick={() => router.push('/dashboard/student/projects')}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects
@@ -143,9 +143,9 @@ export default function SubmissionDetailsPage() {
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects
         </Button>
         
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 min-w-0">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 break-words">
               Project Submission
             </h1>
             <p className="text-gray-600 mt-1">
@@ -171,7 +171,7 @@ export default function SubmissionDetailsPage() {
         </TabsList>
         
         {/* Submission Details Tab */}
-        <TabsContent value="details" className="space-y-6">
+        <TabsContent value="details" className="space-y-4 lg:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Submission Information</CardTitle>
@@ -180,20 +180,20 @@ export default function SubmissionDetailsPage() {
               </CardDescription>
             </CardHeader>
             
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 lg:space-y-6">
               {/* Submission Metadata */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Submitted On</h3>
-                  <p className="font-medium">
+                  <h3 className="text-sm font-medium text-gray-500 mb-1 break-words">Submitted On</h3>
+                  <p className="font-medium break-words">
                     {new Date(submission.submittedAt).toLocaleDateString()} at {new Date(submission.submittedAt).toLocaleTimeString()}
                   </p>
                 </div>
                 
                 {submission.reviewedAt && (
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-500 mb-1">Reviewed On</h3>
-                    <p className="font-medium">
+                    <h3 className="text-sm font-medium text-gray-500 mb-1 break-words">Reviewed On</h3>
+                    <p className="font-medium break-words">
                       {new Date(submission.reviewedAt).toLocaleDateString()} at {new Date(submission.reviewedAt).toLocaleTimeString()}
                     </p>
                   </div>
@@ -207,10 +207,10 @@ export default function SubmissionDetailsPage() {
                     href={submission.repositoryUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 min-w-0"
                   >
                     <FileCode className="h-5 w-5 mr-2 text-blue-600" />
-                    <span className="flex-1 font-medium">View Repository</span>
+                    <span className="flex-1 font-medium break-words min-w-0">View Repository</span>
                     <ExternalLink className="h-4 w-4 text-gray-400" />
                   </a>
                 )}
@@ -220,10 +220,10 @@ export default function SubmissionDetailsPage() {
                     href={submission.demoUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 min-w-0"
                   >
                     <ExternalLink className="h-5 w-5 mr-2 text-blue-600" />
-                    <span className="flex-1 font-medium">View Live Demo</span>
+                    <span className="flex-1 font-medium break-words min-w-0">View Live Demo</span>
                     <ExternalLink className="h-4 w-4 text-gray-400" />
                   </a>
                 )}
@@ -231,7 +231,7 @@ export default function SubmissionDetailsPage() {
               
               {/* Submission Description */}
               <div>
-                <h3 className="font-medium text-gray-900 mb-2">Your Description</h3>
+                <h3 className="font-medium text-gray-900 mb-2 break-words">Your Description</h3>
                 <div className="bg-gray-50 rounded-lg p-4 prose max-w-none">
                   {submission.description ? (
                     <div dangerouslySetInnerHTML={{ 
@@ -249,7 +249,7 @@ export default function SubmissionDetailsPage() {
               {/* Screenshots or Images */}
               {submission.screenshots && submission.screenshots.length > 0 && (
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-2">Screenshots</h3>
+                  <h3 className="font-medium text-gray-900 mb-2 break-words">Screenshots</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {submission.screenshots.map((screenshot: string, index: number) => (
                       <div key={index} className="relative aspect-video rounded-lg overflow-hidden border border-gray-200">
@@ -266,8 +266,8 @@ export default function SubmissionDetailsPage() {
               )}
             </CardContent>
             
-            <CardFooter className="border-t border-gray-100 bg-gray-50 gap-4 flex-wrap">
-              <p className="text-sm text-gray-600">
+            <CardFooter className="border-t border-gray-100 bg-gray-50 gap-4 flex-wrap min-w-0">
+              <p className="text-sm text-gray-600 break-words">
                 Submission ID: {submission.id}
               </p>
               
@@ -290,14 +290,14 @@ export default function SubmissionDetailsPage() {
               </CardDescription>
             </CardHeader>
             
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 lg:space-y-6">
               {/* Grade and Status */}
               <div className="bg-gray-50 rounded-lg p-6">
-                <div className="flex justify-between items-start mb-4">
+                <div className="flex justify-between items-start mb-4 min-w-0">
                   {submission.grade !== null && submission.grade !== undefined && (
                     <div>
-                      <p className="text-sm text-gray-500">Grade</p>
-                      <p className="text-2xl font-bold text-gray-900">{submission.grade}%</p>
+                      <p className="text-sm text-gray-500 break-words">Grade</p>
+                      <p className="text-2xl font-bold text-gray-900 break-words">{submission.grade}%</p>
                     </div>
                   )}
                   
@@ -325,29 +325,29 @@ export default function SubmissionDetailsPage() {
               {/* Rubric Assessment if available */}
               {submission.assessment && (
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-2">Assessment Details</h3>
-                  <div className="bg-white border border-gray-200 rounded-lg divide-y divide-gray-200">
+                  <h3 className="font-medium text-gray-900 mb-2 break-words">Assessment Details</h3>
+                  <div className="bg-white border border-gray-200 rounded-lg divide-y divide-gray-200 overflow-hidden">
                     {submission.assessment.criteriaAssessments?.map((ca: any) => {
                       const criterion = submission.project.rubric.criteria.find((c: any) => c.id === ca.criterionId);
                       const level = criterion?.levels.find((l: any) => l.id === ca.levelId);
                       
                       return (
                         <div key={ca.criterionId} className="p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-medium text-gray-900">{criterion?.name}</h4>
+                          <div className="flex justify-between items-start mb-2 min-w-0">
+                            <h4 className="font-medium text-gray-900 break-words">{criterion?.name}</h4>
                             <div className="text-right">
-                              <span className="text-sm text-gray-600">{ca.score} / {ca.maxScore}</span>
+                              <span className="text-sm text-gray-600 break-words">{ca.score} / {ca.maxScore}</span>
                             </div>
                           </div>
                           
                           {level && (
-                            <div className="bg-blue-50 text-blue-800 px-3 py-2 rounded-md text-sm mb-2">
-                              <span className="font-medium">{level.name}:</span> {level.description}
+                            <div className="bg-blue-50 text-blue-800 px-3 py-2 rounded-md text-sm mb-2 break-words">
+                              <span className="font-medium break-words">{level.name}:</span> {level.description}
                             </div>
                           )}
                           
                           {ca.comment && (
-                            <div className="text-sm text-gray-700 italic">
+                            <div className="text-sm text-gray-700 italic break-words">
                               "{ca.comment}"
                             </div>
                           )}
@@ -389,18 +389,18 @@ export default function SubmissionDetailsPage() {
             <CardContent>
               <div className="space-y-4">
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800">
-                  <h3 className="font-medium mb-2 flex items-center">
+                  <h3 className="font-medium mb-2 flex items-center break-words min-w-0">
                     <AlertCircle className="h-5 w-5 mr-2" />
                     Revision Requested
                   </h3>
-                  <p className="text-sm">
+                  <p className="text-sm break-words">
                     Your instructor has requested revisions to your project. Please review their feedback, 
                     respond with your understanding of the changes needed, and then resubmit your project with the required changes.
                   </p>
                 </div>
                 
                 <div className="mt-4">
-                  <label htmlFor="response" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="response" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Your Response
                   </label>
                   <Textarea

@@ -95,7 +95,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
 
   return (
     <div className="border rounded-md">
-      <div className="bg-gray-50 p-2 border-b flex flex-wrap items-center gap-1">
+      <div className="bg-gray-50 p-2 border-b flex flex-wrap items-center gap-1 min-w-0">
         <Button 
           type="button" 
           variant="ghost" 

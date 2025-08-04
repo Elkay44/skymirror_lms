@@ -280,7 +280,7 @@ export default function NotificationsPage() {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
+      <div className="min-h-screen bg-gray-50 flex justify-center items-center min-w-0">
         <div className="animate-spin h-10 w-10 border-4 border-blue-600 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -291,19 +291,19 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
+          <div className="flex justify-between items-center min-w-0">
+            <div className="flex items-center min-w-0">
               <Bell className="h-6 w-6 text-gray-900" />
-              <h1 className="ml-2 text-2xl font-bold text-gray-900">Notifications</h1>
+              <h1 className="ml-2 text-2xl font-bold text-gray-900 break-words">Notifications</h1>
               {unreadCount > 0 && (
-                <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full break-words">
                   {unreadCount} new
                 </span>
               )}
             </div>
-            <div className="flex space-x-3">
+            <div className="flex space-x-3 min-w-0">
               <button
-                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 break-words min-w-0"
                 onClick={markAllAsRead}
               >
                 <CheckCircle2 className="mr-1.5 h-4 w-4" />
@@ -311,7 +311,7 @@ export default function NotificationsPage() {
               </button>
               <div className="relative">
                 <button
-                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 break-words min-w-0"
                   onClick={() => setExpandedSettings(!expandedSettings)}
                 >
                   <Settings className="mr-1.5 h-4 w-4" />
@@ -321,14 +321,14 @@ export default function NotificationsPage() {
                 
                 {expandedSettings && (
                   <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                    <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 break-words">
                       Notification preferences
                     </a>
-                    <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 break-words">
                       Email notifications
                     </a>
                     <button
-                      className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 break-words"
                       onClick={() => {
                         // This would be an API call in a real app
                         setNotifications([]);
@@ -345,7 +345,7 @@ export default function NotificationsPage() {
           
           {/* Tabs */}
           <div className="mt-4 border-b border-gray-200">
-            <nav className="-mb-px flex space-x-6 overflow-x-auto">
+            <nav className="-mb-px flex space-x-6 overflow-x-auto min-w-0">
               <button
                 className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'all' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
                 onClick={() => setActiveTab('all')}
@@ -396,23 +396,23 @@ export default function NotificationsPage() {
       {/* Notification content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {filteredNotifications.length === 0 ? (
-          <div className="bg-white shadow rounded-lg p-8 text-center">
-            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
+          <div className="bg-white shadow rounded-lg p-8 text-center overflow-hidden">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 min-w-0">
               <Bell className="h-6 w-6 text-gray-400" />
             </div>
-            <h3 className="mt-2 text-lg font-medium text-gray-900">No notifications</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-lg font-medium text-gray-900 break-words">No notifications</h3>
+            <p className="mt-1 text-sm text-gray-500 break-words">
               {activeTab === 'all' 
                 ? 'You don\'t have any notifications yet.'
                 : `You don\'t have any ${getTabText(activeTab).toLowerCase()} notifications.`}
             </p>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6 lg:space-y-8">
             {Object.entries(groupedNotifications).map(([date, notifications]) => (
               notifications.length > 0 && (
                 <div key={date}>
-                  <h2 className="text-sm font-medium text-gray-500 mb-4">{date}</h2>
+                  <h2 className="text-sm font-medium text-gray-500 mb-4 break-words">{date}</h2>
                   <div className="space-y-3">
                     {notifications.map(notification => (
                       <div 
@@ -423,8 +423,8 @@ export default function NotificationsPage() {
                         onClick={() => handleNotificationClick(notification)}
                       >
                         <div className="p-5">
-                          <div className="flex">
-                            <div className="flex-shrink-0">
+                          <div className="flex min-w-0">
+                            <div className="flex-shrink-0 min-w-0">
                               {notification.senderAvatar ? (
                                 <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100">
                                   <img 
@@ -434,17 +434,17 @@ export default function NotificationsPage() {
                                   />
                                 </div>
                               ) : (
-                                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center min-w-0">
                                   {getNotificationIcon(notification.type)}
                                 </div>
                               )}
                             </div>
-                            <div className="ml-4 flex-1">
-                              <div className="flex items-center justify-between">
+                            <div className="ml-4 flex-1 min-w-0">
+                              <div className="flex items-center justify-between min-w-0">
                                 <h3 className={`text-sm font-medium ${notification.isRead ? 'text-gray-900' : 'text-blue-600'}`}>
                                   {notification.title}
                                   {notification.isPriority && (
-                                    <span className="ml-2 bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded">
+                                    <span className="ml-2 bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded break-words">
                                       <AlertCircle className="inline-block h-3 w-3 mr-1" />
                                       Priority
                                     </span>
@@ -454,14 +454,14 @@ export default function NotificationsPage() {
                                   {formatRelativeTime(notification.timestamp)}
                                 </span>
                               </div>
-                              <p className="mt-1 text-sm text-gray-600">
+                              <p className="mt-1 text-sm text-gray-600 break-words">
                                 {notification.message}
                               </p>
                               {notification.actionLabel && (
                                 <div className="mt-3">
                                   <a 
                                     href={notification.actionUrl} 
-                                    className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100"
+                                    className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 break-words min-w-0"
                                     onClick={(e) => e.stopPropagation()}
                                   >
                                     {notification.actionLabel}

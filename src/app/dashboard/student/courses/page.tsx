@@ -73,7 +73,7 @@ export default function StudentCoursesPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex items-center justify-center min-h-[60vh] min-w-0">
         <div className="text-center space-y-4">
           <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
           <p className="text-muted-foreground">Loading your courses...</p>
@@ -104,7 +104,7 @@ export default function StudentCoursesPage() {
       <div className="container mx-auto p-6 text-center">
         <div className="max-w-md mx-auto space-y-4">
           <BookOpen className="h-12 w-12 mx-auto text-muted-foreground" />
-          <h2 className="text-2xl font-bold">No Courses Enrolled</h2>
+          <h2 className="text-2xl font-bold break-words">No Courses Enrolled</h2>
           <p className="text-muted-foreground">
             You haven't enrolled in any courses yet. Browse our courses to get started!
           </p>
@@ -117,10 +117,10 @@ export default function StudentCoursesPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="container mx-auto p-6 space-y-6 lg:space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 min-w-0">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">My Courses</h1>
+          <h1 className="text-3xl font-bold tracking-tight break-words">My Courses</h1>
           <p className="text-muted-foreground">
             View and manage your enrolled courses
           </p>

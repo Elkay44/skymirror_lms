@@ -92,7 +92,7 @@ export function CreateForumModal({ open, onOpenChange, courseId, moduleId }: Cre
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <label htmlFor="title" className="text-sm font-medium">
+            <label htmlFor="title" className="text-sm font-medium break-words">
               Forum Title
             </label>
             <Input
@@ -106,7 +106,7 @@ export function CreateForumModal({ open, onOpenChange, courseId, moduleId }: Cre
           </div>
           
           <div className="space-y-2">
-            <label htmlFor="description" className="text-sm font-medium">
+            <label htmlFor="description" className="text-sm font-medium break-words">
               Description (Optional)
             </label>
             <Textarea

@@ -111,7 +111,7 @@ export default function CreateLessonPage() {
   
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center gap-2 mb-6 min-w-0">
         <Button 
           variant="ghost" 
           size="sm" 
@@ -124,14 +124,14 @@ export default function CreateLessonPage() {
       </div>
       
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Create New Lesson</h1>
+        <h1 className="text-3xl font-bold break-words">Create New Lesson</h1>
         <p className="text-gray-500 mt-1">
           Add lesson content for your students. You can use markdown, embed videos, and more.
         </p>
       </div>
       
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-4 lg:gap-6">
           {/* Lesson Title */}
           <div className="grid gap-2">
             <Label htmlFor="title">Lesson Title <span className="text-red-500">*</span></Label>
@@ -161,7 +161,7 @@ export default function CreateLessonPage() {
           
           {/* Lesson Duration */}
           <div className="grid gap-2">
-            <Label htmlFor="duration" className="flex items-center gap-2">
+            <Label htmlFor="duration" className="flex items-center gap-2 min-w-0">
               <Clock className="h-4 w-4" /> 
               Estimated Duration (minutes)
             </Label>
@@ -190,10 +190,10 @@ export default function CreateLessonPage() {
               className="w-full"
             >
               <TabsList className="grid grid-cols-2 mb-4">
-                <TabsTrigger value="markdown" className="flex items-center gap-2">
+                <TabsTrigger value="markdown" className="flex items-center gap-2 min-w-0">
                   <FileText className="h-4 w-4" /> Markdown & Text
                 </TabsTrigger>
-                <TabsTrigger value="video" className="flex items-center gap-2">
+                <TabsTrigger value="video" className="flex items-center gap-2 min-w-0">
                   <Video className="h-4 w-4" /> Video
                 </TabsTrigger>
               </TabsList>
@@ -230,7 +230,7 @@ export default function CreateLessonPage() {
                 
                 <Card>
                   <CardHeader>
-                    <h3 className="text-lg font-medium">Add Video</h3>
+                    <h3 className="text-lg font-medium break-words">Add Video</h3>
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-4">
@@ -244,14 +244,14 @@ export default function CreateLessonPage() {
                           onChange={handleChange}
                           disabled={isLoading}
                         />
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 break-words">
                           Supports YouTube, Vimeo, and other embed-friendly video platforms
                         </p>
                       </div>
                       
                       {lessonData.videoUrl && (
-                        <div className="aspect-video bg-black/5 rounded-lg flex items-center justify-center">
-                          <p className="text-sm text-gray-500">
+                        <div className="aspect-video bg-black/5 rounded-lg flex items-center justify-center min-w-0">
+                          <p className="text-sm text-gray-500 break-words">
                             Video preview will be available after saving
                           </p>
                         </div>
@@ -263,7 +263,7 @@ export default function CreateLessonPage() {
             </Tabs>
           </div>
           
-          <div className="flex justify-end gap-2 mt-6">
+          <div className="flex justify-end gap-2 mt-6 min-w-0">
             <Button
               type="button"
               variant="outline"

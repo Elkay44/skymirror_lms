@@ -91,14 +91,14 @@ export default function AdminDashboardPage() {
   const StatCard = ({ title, value, icon: Icon, change }: StatCardProps) => {
     return (
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 min-w-0">
+          <CardTitle className="text-sm font-medium break-words">
             {title}
           </CardTitle>
           <Icon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{value}</div>
+          <div className="text-2xl font-bold break-words">{value}</div>
           <p className="text-xs text-muted-foreground">{change}</p>
         </CardContent>
       </Card>
@@ -106,12 +106,12 @@ export default function AdminDashboardPage() {
   };
 
   const ActivityItem = ({ user, action, time, icon: Icon }: ActivityItemProps) => (
-    <div className="flex items-center">
-      <div className="flex-shrink-0">
+    <div className="flex items-center min-w-0">
+      <div className="flex-shrink-0 min-w-0">
         <Icon className="h-4 w-4 text-muted-foreground" />
       </div>
       <div className="ml-3">
-        <p className="text-sm font-medium">
+        <p className="text-sm font-medium break-words">
           <span className="text-foreground">{user}</span> {action}
         </p>
         <p className="text-xs text-muted-foreground">{time}</p>
@@ -120,13 +120,13 @@ export default function AdminDashboardPage() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col min-w-0">
       <MainNav />
       
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div className="container py-6">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <h1 className="text-3xl font-bold tracking-tight break-words">Dashboard</h1>
             <p className="text-muted-foreground">Welcome back! Here's what's happening with your platform.</p>
           </div>
           

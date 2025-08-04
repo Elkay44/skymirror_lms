@@ -205,11 +205,11 @@ export default function ProjectSubmissions() {
   if (loading) {
     return (
       <div className="p-6 max-w-6xl mx-auto">
-        <div className="flex items-center mb-6">
+        <div className="flex items-center mb-6 min-w-0">
           <Link href="/dashboard/instructor/projects" className="mr-2">
             <ArrowLeft className="h-5 w-5 text-gray-500" />
           </Link>
-          <h1 className="text-2xl font-bold">Loading Project Submissions...</h1>
+          <h1 className="text-2xl font-bold break-words">Loading Project Submissions...</h1>
         </div>
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
@@ -222,17 +222,17 @@ export default function ProjectSubmissions() {
   if (error) {
     return (
       <div className="p-6 max-w-6xl mx-auto">
-        <div className="flex items-center mb-6">
+        <div className="flex items-center mb-6 min-w-0">
           <Link href="/dashboard/instructor/projects" className="mr-2">
             <ArrowLeft className="h-5 w-5 text-gray-500" />
           </Link>
-          <h1 className="text-2xl font-bold">Project Submissions</h1>
+          <h1 className="text-2xl font-bold break-words">Project Submissions</h1>
         </div>
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
           <p>Error: {error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+            className="mt-2 text-sm text-red-600 hover:text-red-800 underline break-words"
           >
             Try Again
           </button>
@@ -244,17 +244,17 @@ export default function ProjectSubmissions() {
   if (!project) {
     return (
       <div className="p-6 max-w-6xl mx-auto">
-        <div className="flex items-center mb-6">
+        <div className="flex items-center mb-6 min-w-0">
           <Link href="/dashboard/instructor/projects" className="mr-2">
             <ArrowLeft className="h-5 w-5 text-gray-500" />
           </Link>
-          <h1 className="text-2xl font-bold">Project Not Found</h1>
+          <h1 className="text-2xl font-bold break-words">Project Not Found</h1>
         </div>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800">
           <p>The project could not be found. It may have been deleted or you don't have permission to access it.</p>
           <Link 
             href="/dashboard/instructor/projects" 
-            className="mt-2 text-sm text-yellow-600 hover:text-yellow-800 underline"
+            className="mt-2 text-sm text-yellow-600 hover:text-yellow-800 underline break-words"
           >
             Back to Projects
           </Link>
@@ -265,43 +265,43 @@ export default function ProjectSubmissions() {
   
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex items-center mb-2">
+      <div className="flex items-center mb-2 min-w-0">
         <Link href="/dashboard/instructor/projects" className="mr-2">
           <ArrowLeft className="h-5 w-5 text-gray-500 hover:text-gray-700" />
         </Link>
-        <h1 className="text-2xl font-bold">{project.title}</h1>
+        <h1 className="text-2xl font-bold break-words">{project.title}</h1>
       </div>
       
-      <div className="mb-6 text-sm text-gray-500">
-        <p className="flex items-center mb-1">
+      <div className="mb-6 text-sm text-gray-500 break-words">
+        <p className="flex items-center mb-1 min-w-0">
           <FileText className="h-4 w-4 mr-1.5" />
           Course: {project.course?.title || 'Unknown Course'}
         </p>
         {project.dueDate && (
-          <p className="flex items-center mb-1">
+          <p className="flex items-center mb-1 min-w-0">
             <Calendar className="h-4 w-4 mr-1.5" />
             Due: {new Date(project.dueDate).toLocaleDateString()}
           </p>
         )}
-        <p className="flex items-center">
+        <p className="flex items-center min-w-0">
           <Users className="h-4 w-4 mr-1.5" />
           Submissions: {submissions.length}
         </p>
       </div>
       
-      <div className="flex flex-col lg:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 min-w-0">
         {/* Submissions List */}
         <div className="w-full lg:w-2/5">
-          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
             <div className="p-4 border-b border-gray-200 bg-gray-50">
-              <h2 className="text-lg font-semibold text-gray-900">Student Submissions</h2>
+              <h2 className="text-lg font-semibold text-gray-900 break-words">Student Submissions</h2>
             </div>
             
             {submissions.length === 0 ? (
               <div className="p-6 text-center">
                 <Users className="h-12 w-12 mx-auto text-gray-400 mb-3" />
                 <p className="text-gray-600 mb-2">No submissions yet</p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 break-words">
                   Students haven't submitted this project yet.
                 </p>
               </div>
@@ -313,9 +313,9 @@ export default function ProjectSubmissions() {
                     onClick={() => handleSelectSubmission(submission)}
                     className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${selectedSubmission?.id === submission.id ? 'bg-blue-50' : ''}`}
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full overflow-hidden mr-3 bg-gray-200 flex-shrink-0">
+                    <div className="flex items-start justify-between mb-2 min-w-0">
+                      <div className="flex items-center min-w-0">
+                        <div className="h-10 w-10 rounded-full overflow-hidden mr-3 bg-gray-200 flex-shrink-0 min-w-0">
                           {submission.student.image ? (
                             <Image
                               src={submission.student.image}
@@ -325,13 +325,13 @@ export default function ProjectSubmissions() {
                               className="object-cover"
                             />
                           ) : (
-                            <div className="h-full w-full flex items-center justify-center bg-blue-100 text-blue-600 font-semibold">
+                            <div className="h-full w-full flex items-center justify-center bg-blue-100 text-blue-600 font-semibold break-words min-w-0">
                               {submission.student.name.charAt(0)}
                             </div>
                           )}
                         </div>
                         <div>
-                          <h3 className="font-medium text-gray-900">{submission.student.name}</h3>
+                          <h3 className="font-medium text-gray-900 break-words">{submission.student.name}</h3>
                           <p className="text-xs text-gray-500">{submission.student.email}</p>
                         </div>
                       </div>
@@ -355,7 +355,7 @@ export default function ProjectSubmissions() {
                         </p>
                       )}
                       {submission.grade !== undefined && (
-                        <p className="font-medium text-green-600">
+                        <p className="font-medium text-green-600 break-words">
                           Grade: {submission.grade}%
                         </p>
                       )}
@@ -373,10 +373,10 @@ export default function ProjectSubmissions() {
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
+              className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden"
             >
-              <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-gray-900">
+              <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center min-w-0">
+                <h2 className="text-lg font-semibold text-gray-900 break-words">
                   Submission Details
                 </h2>
                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig[selectedSubmission.status].color}`}>
@@ -386,11 +386,11 @@ export default function ProjectSubmissions() {
               
               <div className="p-5">
                 <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2 break-words">
                     Student Information
                   </h3>
-                  <div className="flex items-center">
-                    <div className="h-10 w-10 rounded-full overflow-hidden mr-3 bg-gray-200 flex-shrink-0">
+                  <div className="flex items-center min-w-0">
+                    <div className="h-10 w-10 rounded-full overflow-hidden mr-3 bg-gray-200 flex-shrink-0 min-w-0">
                       {selectedSubmission.student.image ? (
                         <Image
                           src={selectedSubmission.student.image}
@@ -400,24 +400,24 @@ export default function ProjectSubmissions() {
                           className="object-cover"
                         />
                       ) : (
-                        <div className="h-full w-full flex items-center justify-center bg-blue-100 text-blue-600 font-semibold">
+                        <div className="h-full w-full flex items-center justify-center bg-blue-100 text-blue-600 font-semibold break-words min-w-0">
                           {selectedSubmission.student.name.charAt(0)}
                         </div>
                       )}
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">{selectedSubmission.student.name}</h3>
+                      <h3 className="font-medium text-gray-900 break-words">{selectedSubmission.student.name}</h3>
                       <p className="text-xs text-gray-500">{selectedSubmission.student.email}</p>
                     </div>
                   </div>
                 </div>
                 
                 <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2 break-words">
                     Submission Details
                   </h3>
                   <div className="space-y-4">
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-gray-600 break-words">
                       <p className="mb-1">Submitted: {new Date(selectedSubmission.submittedAt).toLocaleString()}</p>
                       {selectedSubmission.reviewedAt && (
                         <p className="mb-1">Last reviewed: {new Date(selectedSubmission.reviewedAt).toLocaleString()}</p>
@@ -434,7 +434,7 @@ export default function ProjectSubmissions() {
                           href={selectedSubmission.submissionUrl} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className="text-blue-600 hover:text-blue-800 flex items-center"
+                          className="text-blue-600 hover:text-blue-800 flex items-center min-w-0"
                         >
                           {selectedSubmission.submissionUrl}
                           <ExternalLink className="h-3 w-3 ml-1" />
@@ -445,7 +445,7 @@ export default function ProjectSubmissions() {
                     {selectedSubmission.submissionText && (
                       <div>
                         <h4 className="text-xs uppercase tracking-wide text-gray-500 mb-2">Project Description</h4>
-                        <div className="bg-gray-50 rounded-md p-3 text-sm text-gray-800">
+                        <div className="bg-gray-50 rounded-md p-3 text-sm text-gray-800 break-words">
                           {selectedSubmission.submissionText}
                         </div>
                       </div>
@@ -456,12 +456,12 @@ export default function ProjectSubmissions() {
                         <h4 className="text-xs uppercase tracking-wide text-gray-500 mb-2">Submitted Files</h4>
                         <ul className="space-y-1">
                           {parseSubmissionFiles(selectedSubmission.submissionFiles).map((file: any, index: number) => (
-                            <li key={index} className="text-sm">
+                            <li key={index} className="text-sm break-words">
                               <a 
                                 href={file.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer" 
-                                className="text-blue-600 hover:text-blue-800 flex items-center"
+                                className="text-blue-600 hover:text-blue-800 flex items-center min-w-0"
                               >
                                 <FileText className="h-4 w-4 mr-1" />
                                 {file.name}
@@ -476,12 +476,12 @@ export default function ProjectSubmissions() {
                 </div>
                 
                 <div className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2 break-words">
                     Review & Feedback
                   </h3>
                   <form onSubmit={handleSubmitReview} className="space-y-4">
                     <div>
-                      <label htmlFor="feedback" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="feedback" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                         Feedback
                       </label>
                       <textarea
@@ -498,7 +498,7 @@ export default function ProjectSubmissions() {
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="grade" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="grade" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                           Grade (0-100)
                         </label>
                         <input
@@ -515,7 +515,7 @@ export default function ProjectSubmissions() {
                       </div>
                       
                       <div>
-                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                           Status
                         </label>
                         <select
@@ -535,8 +535,8 @@ export default function ProjectSubmissions() {
                     </div>
                     
                     {reviewSuccess && (
-                      <div className="bg-green-50 border border-green-200 rounded-md p-3 text-green-800 text-sm">
-                        <p className="flex items-center">
+                      <div className="bg-green-50 border border-green-200 rounded-md p-3 text-green-800 text-sm break-words">
+                        <p className="flex items-center min-w-0">
                           <CheckCircle className="h-4 w-4 mr-1.5" />
                           Review submitted successfully!
                         </p>
@@ -544,15 +544,15 @@ export default function ProjectSubmissions() {
                     )}
                     
                     {error && (
-                      <div className="bg-red-50 border border-red-200 rounded-md p-3 text-red-800 text-sm">
-                        <p className="flex items-center">
+                      <div className="bg-red-50 border border-red-200 rounded-md p-3 text-red-800 text-sm break-words">
+                        <p className="flex items-center min-w-0">
                           <XCircle className="h-4 w-4 mr-1.5" />
                           {error}
                         </p>
                       </div>
                     )}
                     
-                    <div className="flex justify-end">
+                    <div className="flex justify-end min-w-0">
                       <button
                         type="submit"
                         disabled={submitting}
@@ -566,10 +566,10 @@ export default function ProjectSubmissions() {
               </div>
             </motion.div>
           ) : (
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden h-full flex items-center justify-center p-8">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden h-full flex items-center justify-center p-8 min-w-0 overflow-hidden">
               <div className="text-center">
                 <MessageSquare className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Submission Selected</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2 break-words">No Submission Selected</h3>
                 <p className="text-gray-600 max-w-md">
                   Select a student submission from the list to view details and provide feedback.
                 </p>

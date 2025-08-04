@@ -135,9 +135,9 @@ export default function ResourceLibraryPage() {
   
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 min-w-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center break-words min-w-0">
             <Database className="mr-2 h-6 w-6 text-teal-600" />
             Resource Library
           </h1>
@@ -148,7 +148,7 @@ export default function ResourceLibraryPage() {
         
         <div className="mt-4 md:mt-0">
           <button
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
           >
             <Plus className="-ml-1 mr-2 h-4 w-4" />
             Add Resource
@@ -157,11 +157,11 @@ export default function ResourceLibraryPage() {
       </div>
       
       {/* Search and Filter */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6">
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm mb-6 overflow-hidden">
         <div className="p-4">
-          <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-            <div className="flex-1 relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 min-w-0">
+            <div className="flex-1 relative min-w-0">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
                 <Search className="h-5 w-5 text-gray-400" />
               </div>
               <input
@@ -169,19 +169,19 @@ export default function ResourceLibraryPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search resources by title, description, or tags..."
-                className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md break-words"
               />
             </div>
             
             <div className="w-full md:w-64">
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
                   <Filter className="h-5 w-5 text-gray-400" />
                 </div>
                 <select
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
-                  className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                  className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md break-words"
                 >
                   <option value="ALL">All Types</option>
                   <option value="DOCUMENT">Documents</option>
@@ -196,12 +196,12 @@ export default function ResourceLibraryPage() {
       </div>
       
       {/* Resources Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {filteredResources.length > 0 ? (
           filteredResources.map((resource) => (
             <div 
               key={resource.id} 
-              className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden flex flex-col h-full"
+              className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden flex flex-col h-full min-w-0 overflow-hidden"
             >
               {/* Resource thumbnail for videos */}
               {resource.type === 'VIDEO' && resource.thumbnail && (
@@ -214,13 +214,13 @@ export default function ResourceLibraryPage() {
                 </div>
               )}
               
-              <div className="p-5 flex-1 flex flex-col">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center mr-3">
+              <div className="p-5 flex-1 flex flex-col min-w-0">
+                <div className="flex items-start min-w-0">
+                  <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center mr-3 min-w-0">
                     {getResourceIcon(resource.type)}
                   </div>
                   <div>
-                    <div className="flex items-center">
+                    <div className="flex items-center min-w-0">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         resource.type === 'DOCUMENT' ? 'bg-blue-100 text-blue-800' :
                         resource.type === 'VIDEO' ? 'bg-red-100 text-red-800' :
@@ -231,19 +231,19 @@ export default function ResourceLibraryPage() {
                       </span>
                       <span className="ml-2 text-xs text-gray-500">{formatDate(resource.dateAdded)}</span>
                     </div>
-                    <h3 className="mt-1 text-lg font-medium text-gray-900">{resource.title}</h3>
+                    <h3 className="mt-1 text-lg font-medium text-gray-900 break-words">{resource.title}</h3>
                   </div>
                 </div>
                 
-                <p className="mt-3 text-sm text-gray-600">{resource.description}</p>
+                <p className="mt-3 text-sm text-gray-600 break-words">{resource.description}</p>
                 
                 {/* Tags */}
                 {resource.tags && resource.tags.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="mt-4 flex flex-wrap gap-2 min-w-0">
                     {resource.tags.map((tag) => (
                       <span 
                         key={tag} 
-                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 break-words min-w-0"
                       >
                         <Tag className="mr-1 h-3 w-3" />
                         {tag}
@@ -252,9 +252,9 @@ export default function ResourceLibraryPage() {
                   </div>
                 )}
                 
-                <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+                <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center min-w-0">
                   {resource.downloads !== undefined && (
-                    <span className="text-xs text-gray-500 flex items-center">
+                    <span className="text-xs text-gray-500 flex items-center min-w-0">
                       <Download className="mr-1 h-3 w-3" />
                       {resource.downloads} downloads
                     </span>
@@ -294,11 +294,11 @@ export default function ResourceLibraryPage() {
           ))
         ) : (
           <div className="col-span-3 py-8 text-center">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 min-w-0">
               <Search className="h-8 w-8 text-gray-400" />
             </div>
-            <h3 className="mt-2 text-lg font-medium text-gray-900">No resources found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-lg font-medium text-gray-900 break-words">No resources found</h3>
+            <p className="mt-1 text-sm text-gray-500 break-words">
               Try adjusting your search or filter to find what you're looking for.
             </p>
           </div>

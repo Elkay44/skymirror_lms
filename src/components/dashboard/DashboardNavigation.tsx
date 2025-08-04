@@ -68,7 +68,7 @@ export default function DashboardNavigation({ unreadNotificationsCount = 0 }: Da
         <Bell className={`mr-3 h-5 w-5 ${iconColorClass(userRole)}`} />
         Notifications
         {unreadNotificationsCount > 0 && (
-          <span className="ml-auto inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          <span className="ml-auto inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 break-words min-w-0">
             {unreadNotificationsCount}
           </span>
         )}
@@ -106,7 +106,7 @@ export default function DashboardNavigation({ unreadNotificationsCount = 0 }: Da
       </Link>
 
       <div className="pt-5 pb-2">
-        <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider break-words">
           Achievements
         </p>
       </div>
@@ -139,7 +139,7 @@ export default function DashboardNavigation({ unreadNotificationsCount = 0 }: Da
       </Link>
 
       <div className="pt-5 pb-2">
-        <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider break-words">
           Support
         </p>
       </div>
@@ -169,7 +169,7 @@ export default function DashboardNavigation({ unreadNotificationsCount = 0 }: Da
         Overview
       </Link>
       <div className="pt-5 pb-2">
-        <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider break-words">
           Teaching
         </p>
       </div>
@@ -193,7 +193,7 @@ export default function DashboardNavigation({ unreadNotificationsCount = 0 }: Da
       </Link>
 
       <div className="pt-5 pb-2">
-        <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider break-words">
           Schedule & Analytics
         </p>
       </div>
@@ -232,7 +232,7 @@ export default function DashboardNavigation({ unreadNotificationsCount = 0 }: Da
         Overview
       </Link>
       <div className="pt-5 pb-2">
-        <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider break-words">
           Mentorship
         </p>
       </div>
@@ -274,7 +274,7 @@ export default function DashboardNavigation({ unreadNotificationsCount = 0 }: Da
       </Link>
 
       <div className="pt-5 pb-2">
-        <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider break-words">
           Career Development
         </p>
       </div>
@@ -304,7 +304,7 @@ export default function DashboardNavigation({ unreadNotificationsCount = 0 }: Da
   // Navigation section title
   const navTitle = (
     <div className="px-3 pt-4 pb-2">
-      <span className="uppercase text-xs text-gray-400 font-semibold tracking-wider">Dashboard</span>
+      <span className="uppercase text-xs text-gray-400 font-semibold tracking-wider break-words">Dashboard</span>
     </div>
   );
 

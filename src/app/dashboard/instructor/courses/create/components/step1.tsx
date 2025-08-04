@@ -41,7 +41,7 @@ export function Step1({ formData, onChange }: Step1Props) {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       <div>
         <Label htmlFor="title">Course Title</Label>
         <Input

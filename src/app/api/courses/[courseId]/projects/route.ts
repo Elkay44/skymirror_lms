@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 // GET /api/courses/[courseId]/projects - Get all projects for a course
 export async function GET(
   _request: Request,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
     const { courseId } = await params;
@@ -83,7 +83,7 @@ export async function GET(
 // POST /api/courses/[courseId]/projects - Create a new project
 export async function POST(
   request: Request,
-  { params }: { params: { courseId: string } }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
     const { courseId } = await params;

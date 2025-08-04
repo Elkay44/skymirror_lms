@@ -96,7 +96,7 @@ export default function SubmissionReviewPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen min-w-0">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
       </div>
     );
@@ -105,7 +105,7 @@ export default function SubmissionReviewPage() {
   if (!submission) {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Submission Not Found</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-4 break-words">Submission Not Found</h2>
         <p className="text-gray-600 mb-6">The submission you're looking for doesn't exist or you don't have permission to view it.</p>
         <Button onClick={() => router.push('/dashboard/instructor/projects')}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects
@@ -126,9 +126,9 @@ export default function SubmissionReviewPage() {
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Projects
         </Button>
         
-        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+        <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 min-w-0">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 break-words">
               Review Submission
             </h1>
             <p className="text-gray-600 mt-1">
@@ -146,20 +146,20 @@ export default function SubmissionReviewPage() {
       
       {/* Student info card */}
       <Card className="mb-6">
-        <CardContent className="p-6">
-          <div className="flex items-center">
+        <CardContent className="p-4 lg:p-6">
+          <div className="flex items-center min-w-0">
             <Avatar className="h-12 w-12 mr-4">
               <AvatarImage src={submission.student.image || ''} alt={submission.student.name} />
               <AvatarFallback>{submission.student.name.charAt(0)}</AvatarFallback>
             </Avatar>
             
             <div>
-              <h3 className="text-lg font-medium text-gray-900">{submission.student.name}</h3>
+              <h3 className="text-lg font-medium text-gray-900 break-words">{submission.student.name}</h3>
               <p className="text-gray-600">{submission.student.email}</p>
             </div>
             
             <div className="ml-auto text-right">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 break-words">
                 Submitted {formatDistanceToNow(new Date(submission.submittedAt), { addSuffix: true })}
               </p>
             </div>
@@ -176,7 +176,7 @@ export default function SubmissionReviewPage() {
         </TabsList>
         
         {/* Submission Content Tab */}
-        <TabsContent value="submission" className="space-y-6">
+        <TabsContent value="submission" className="space-y-4 lg:space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Project Submission</CardTitle>
@@ -185,7 +185,7 @@ export default function SubmissionReviewPage() {
               </CardDescription>
             </CardHeader>
             
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 lg:space-y-6">
               {/* Repository and Demo Links */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {submission.repositoryUrl && (
@@ -193,10 +193,10 @@ export default function SubmissionReviewPage() {
                     href={submission.repositoryUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 min-w-0"
                   >
                     <FileCode className="h-5 w-5 mr-2 text-blue-600" />
-                    <span className="flex-1 font-medium">View Repository</span>
+                    <span className="flex-1 font-medium break-words min-w-0">View Repository</span>
                     <ExternalLink className="h-4 w-4 text-gray-400" />
                   </a>
                 )}
@@ -206,10 +206,10 @@ export default function SubmissionReviewPage() {
                     href={submission.demoUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 min-w-0"
                   >
                     <ExternalLink className="h-5 w-5 mr-2 text-blue-600" />
-                    <span className="flex-1 font-medium">View Live Demo</span>
+                    <span className="flex-1 font-medium break-words min-w-0">View Live Demo</span>
                     <ExternalLink className="h-4 w-4 text-gray-400" />
                   </a>
                 )}
@@ -217,7 +217,7 @@ export default function SubmissionReviewPage() {
               
               {/* Submission Description */}
               <div>
-                <h3 className="font-medium text-gray-900 mb-2">Student Description</h3>
+                <h3 className="font-medium text-gray-900 mb-2 break-words">Student Description</h3>
                 <div className="bg-gray-50 rounded-lg p-4 prose max-w-none">
                   {submission.description ? (
                     <div dangerouslySetInnerHTML={{ 
@@ -235,7 +235,7 @@ export default function SubmissionReviewPage() {
               {/* Screenshots or Images */}
               {submission.screenshots && submission.screenshots.length > 0 && (
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-2">Screenshots</h3>
+                  <h3 className="font-medium text-gray-900 mb-2 break-words">Screenshots</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {submission.screenshots.map((screenshot: string, index: number) => (
                       <div key={index} className="relative aspect-video rounded-lg overflow-hidden border border-gray-200">
@@ -301,12 +301,12 @@ export default function SubmissionReviewPage() {
                 </CardDescription>
               </CardHeader>
               
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 lg:space-y-6">
                 <div className="bg-gray-50 rounded-lg p-6">
-                  <div className="flex justify-between items-start mb-4">
+                  <div className="flex justify-between items-start mb-4 min-w-0">
                     <div>
-                      <p className="text-sm text-gray-500">Final Grade</p>
-                      <p className="text-2xl font-bold text-gray-900">{submission.grade}%</p>
+                      <p className="text-sm text-gray-500 break-words">Final Grade</p>
+                      <p className="text-2xl font-bold text-gray-900 break-words">{submission.grade}%</p>
                     </div>
                     
                     <Badge 
@@ -331,29 +331,29 @@ export default function SubmissionReviewPage() {
                 </div>
                 
                 <div>
-                  <h3 className="font-medium text-gray-900 mb-2">Assessment Details</h3>
-                  <div className="bg-white border border-gray-200 rounded-lg divide-y divide-gray-200">
+                  <h3 className="font-medium text-gray-900 mb-2 break-words">Assessment Details</h3>
+                  <div className="bg-white border border-gray-200 rounded-lg divide-y divide-gray-200 overflow-hidden">
                     {submission.assessment.criteriaAssessments?.map((ca: any) => {
                       const criterion = submission.project.rubric.criteria.find((c: any) => c.id === ca.criterionId);
                       const level = criterion?.levels.find((l: any) => l.id === ca.levelId);
                       
                       return (
                         <div key={ca.criterionId} className="p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-medium text-gray-900">{criterion?.name}</h4>
+                          <div className="flex justify-between items-start mb-2 min-w-0">
+                            <h4 className="font-medium text-gray-900 break-words">{criterion?.name}</h4>
                             <div className="text-right">
-                              <span className="text-sm text-gray-600">{ca.score} / {ca.maxScore}</span>
+                              <span className="text-sm text-gray-600 break-words">{ca.score} / {ca.maxScore}</span>
                             </div>
                           </div>
                           
                           {level && (
-                            <div className="bg-blue-50 text-blue-800 px-3 py-2 rounded-md text-sm mb-2">
-                              <span className="font-medium">{level.name}:</span> {level.description}
+                            <div className="bg-blue-50 text-blue-800 px-3 py-2 rounded-md text-sm mb-2 break-words">
+                              <span className="font-medium break-words">{level.name}:</span> {level.description}
                             </div>
                           )}
                           
                           {ca.comment && (
-                            <div className="text-sm text-gray-700 italic">
+                            <div className="text-sm text-gray-700 italic break-words">
                               "{ca.comment}"
                             </div>
                           )}
@@ -365,7 +365,7 @@ export default function SubmissionReviewPage() {
               </CardContent>
               
               <CardFooter className="border-t border-gray-200 bg-gray-50">
-                <div className="w-full text-sm text-gray-500">
+                <div className="w-full text-sm text-gray-500 break-words">
                   Assessment submitted {submission.reviewedAt && formatDistanceToNow(new Date(submission.reviewedAt), { addSuffix: true })}
                 </div>
               </CardFooter>
@@ -374,7 +374,7 @@ export default function SubmissionReviewPage() {
             <Card>
               <CardContent className="p-8 text-center">
                 <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Feedback Yet</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2 break-words">No Feedback Yet</h3>
                 <p className="text-gray-600 mb-6">
                   This submission hasn't been assessed yet. Go to the Assessment tab to provide feedback.
                 </p>

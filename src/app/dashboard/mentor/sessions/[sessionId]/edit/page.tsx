@@ -169,7 +169,7 @@ export default function EditSessionPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center h-64">
+        <div className="flex justify-center items-center h-64 min-w-0">
           <div className="animate-spin h-12 w-12 border-4 border-teal-600 rounded-full border-t-transparent"></div>
         </div>
       </div>
@@ -180,15 +180,15 @@ export default function EditSessionPage() {
   if (!sessionDetails) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+        <div className="bg-white rounded-lg shadow-sm p-6 text-center overflow-hidden">
           <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">Session Not Found</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-1 break-words">Session Not Found</h3>
           <p className="text-gray-500 max-w-md mx-auto mb-6">
             The session you are trying to edit does not exist or you don't have access to modify it.
           </p>
           <Link
             href="/dashboard/mentor/sessions"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to Sessions
@@ -202,18 +202,18 @@ export default function EditSessionPage() {
   if (sessionDetails.status !== 'SCHEDULED') {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+        <div className="bg-white rounded-lg shadow-sm p-6 text-center overflow-hidden">
           <AlertTriangle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">Cannot Edit This Session</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-1 break-words">Cannot Edit This Session</h3>
           <p className="text-gray-500 max-w-md mx-auto mb-6">
             {sessionDetails.status === 'COMPLETED' ? 
               'This session has already been completed and cannot be modified.' : 
               'This session has been cancelled and cannot be modified.'}
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className="flex flex-wrap justify-center gap-3 min-w-0">
             <Link
               href={`/dashboard/mentor/sessions/${sessionId}`}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
               Back to Session Details
@@ -221,7 +221,7 @@ export default function EditSessionPage() {
             
             <Link
               href="/dashboard/mentor/sessions"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
             >
               View All Sessions
             </Link>
@@ -236,13 +236,13 @@ export default function EditSessionPage() {
       <div className="mb-6">
         <Link 
           href={`/dashboard/mentor/sessions/${sessionId}`} 
-          className="inline-flex items-center text-sm text-teal-600 hover:text-teal-800 mb-4"
+          className="inline-flex items-center text-sm text-teal-600 hover:text-teal-800 mb-4 break-words min-w-0"
         >
           <ChevronLeft className="mr-1 h-4 w-4" />
           Back to Session Details
         </Link>
         
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center break-words min-w-0">
           <Calendar className="mr-2 h-7 w-7 text-teal-600" />
           Edit Session
         </h1>
@@ -251,10 +251,10 @@ export default function EditSessionPage() {
         </p>
       </div>
       
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
         <div className="p-6 border-b border-gray-200 bg-gray-50">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden mr-4">
+          <div className="flex items-center min-w-0">
+            <div className="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden mr-4 min-w-0">
               {sessionDetails.menteeAvatar ? (
                 <img 
                   src={sessionDetails.menteeAvatar} 
@@ -262,24 +262,24 @@ export default function EditSessionPage() {
                   className="h-10 w-10 object-cover" 
                 />
               ) : (
-                <div className="h-10 w-10 bg-teal-100 flex items-center justify-center rounded-full">
+                <div className="h-10 w-10 bg-teal-100 flex items-center justify-center rounded-full min-w-0">
                   <User className="h-5 w-5 text-teal-600" />
                 </div>
               )}
             </div>
             <div>
-              <h2 className="text-md font-medium text-gray-900">Session with {sessionDetails.menteeName}</h2>
-              <p className="text-sm text-gray-500">ID: {sessionId}</p>
+              <h2 className="text-md font-medium text-gray-900 break-words">Session with {sessionDetails.menteeName}</h2>
+              <p className="text-sm text-gray-500 break-words">ID: {sessionId}</p>
             </div>
           </div>
         </div>
         
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           <form onSubmit={handleSubmit}>
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               {/* Session Type */}
               <div>
-                <label htmlFor="sessionType" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="sessionType" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                   Session Type <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -289,7 +289,7 @@ export default function EditSessionPage() {
                       onClick={() => handleSessionTypeChange(type.id)}
                       className={`cursor-pointer border rounded-lg p-4 transition-colors ${sessionType === type.id ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'}`}
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center min-w-0">
                         <input
                           type="radio"
                           id={`type-${type.id}`}
@@ -300,7 +300,7 @@ export default function EditSessionPage() {
                           className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300"
                         />
                         <label htmlFor={`type-${type.id}`} className="ml-3 cursor-pointer">
-                          <span className="block text-sm font-medium text-gray-900">{type.name}</span>
+                          <span className="block text-sm font-medium text-gray-900 break-words">{type.name}</span>
                           <span className="block text-xs text-gray-500 mt-0.5">{type.description}</span>
                         </label>
                       </div>
@@ -310,13 +310,13 @@ export default function EditSessionPage() {
               </div>
               
               {/* Date and Time */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                 <div>
-                  <label htmlFor="sessionDate" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="sessionDate" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Date <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
                       <Calendar className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
@@ -324,7 +324,7 @@ export default function EditSessionPage() {
                       id="sessionDate"
                       value={sessionDate}
                       onChange={(e) => setSessionDate(e.target.value)}
-                      className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md break-words"
                       min={new Date().toISOString().split('T')[0]}
                       required
                     />
@@ -332,11 +332,11 @@ export default function EditSessionPage() {
                 </div>
                 
                 <div>
-                  <label htmlFor="sessionTime" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="sessionTime" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Time <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
                       <Clock className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
@@ -344,7 +344,7 @@ export default function EditSessionPage() {
                       id="sessionTime"
                       value={sessionTime}
                       onChange={(e) => setSessionTime(e.target.value)}
-                      className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md break-words"
                       required
                     />
                   </div>
@@ -353,11 +353,11 @@ export default function EditSessionPage() {
               
               {/* Duration */}
               <div>
-                <label htmlFor="sessionDuration" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="sessionDuration" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                   Duration (minutes) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
                     <Clock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
@@ -368,7 +368,7 @@ export default function EditSessionPage() {
                     min={15}
                     max={120}
                     step={5}
-                    className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                    className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md break-words"
                     required
                   />
                 </div>
@@ -377,7 +377,7 @@ export default function EditSessionPage() {
               
               {/* Session Topic */}
               <div>
-                <label htmlFor="sessionTopic" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="sessionTopic" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                   Session Topic <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -386,14 +386,14 @@ export default function EditSessionPage() {
                   value={sessionTopic}
                   onChange={(e) => setSessionTopic(e.target.value)}
                   placeholder="E.g., Career Planning Discussion, Project Review, etc."
-                  className="focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                  className="focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md break-words"
                   required
                 />
               </div>
               
               {/* Session Notes */}
               <div>
-                <label htmlFor="sessionNotes" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="sessionNotes" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                   Session Notes (Optional)
                 </label>
                 <div className="relative">
@@ -406,17 +406,17 @@ export default function EditSessionPage() {
                     onChange={(e) => setSessionNotes(e.target.value)}
                     rows={4}
                     placeholder="Add any additional information, agenda items, or preparation notes for the session..."
-                    className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                    className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md break-words"
                   />
                 </div>
               </div>
               
               {/* Submit Button */}
-              <div className="flex justify-end">
-                <div className="flex space-x-3">
+              <div className="flex justify-end min-w-0">
+                <div className="flex space-x-3 min-w-0">
                   <Link
                     href={`/dashboard/mentor/sessions/${sessionId}`}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
                   >
                     Cancel
                   </Link>
@@ -424,7 +424,7 @@ export default function EditSessionPage() {
                   <button
                     type="submit"
                     disabled={saving || !sessionDate || !sessionTime || !sessionType || !sessionTopic}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed break-words min-w-0"
                   >
                     {saving ? (
                       <>

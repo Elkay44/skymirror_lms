@@ -319,14 +319,14 @@ export default function RubricBuilder({
   };
   
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-      <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-        <h3 className="text-lg font-semibold">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden overflow-hidden">
+      <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex justify-between items-center min-w-0">
+        <h3 className="text-lg font-semibold break-words">
           {initialRubric ? 'Edit Rubric' : 'Create New Rubric'}
         </h3>
         
         {!readOnly && (
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 min-w-0">
             {onCancel && (
               <button
                 onClick={onCancel}
@@ -348,12 +348,12 @@ export default function RubricBuilder({
         )}
       </div>
       
-      <div className="p-6">
+      <div className="p-4 lg:p-6">
         {/* Rubric Header Information */}
         <div className="mb-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-4 lg:gap-6">
             <div>
-              <label htmlFor="rubric-title" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="rubric-title" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                 Rubric Title
               </label>
               <input
@@ -368,7 +368,7 @@ export default function RubricBuilder({
             </div>
             
             <div>
-              <label htmlFor="rubric-max-points" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="rubric-max-points" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                 Maximum Points
               </label>
               <input
@@ -384,7 +384,7 @@ export default function RubricBuilder({
           </div>
           
           <div className="mt-4">
-            <label htmlFor="rubric-description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="rubric-description" className="block text-sm font-medium text-gray-700 mb-1 break-words">
               Description
             </label>
             <textarea
@@ -402,11 +402,11 @@ export default function RubricBuilder({
         {/* Validation Errors */}
         {validationErrors.length > 0 && !readOnly && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4">
-            <div className="flex items-start">
+            <div className="flex items-start min-w-0">
               <AlertTriangle className="h-5 w-5 text-red-500 mr-2 mt-0.5" />
               <div>
-                <h4 className="text-sm font-medium text-red-800">Please fix the following issues:</h4>
-                <ul className="mt-1 text-sm text-red-700 list-disc list-inside">
+                <h4 className="text-sm font-medium text-red-800 break-words">Please fix the following issues:</h4>
+                <ul className="mt-1 text-sm text-red-700 list-disc list-inside break-words">
                   {validationErrors.map((error, index) => (
                     <li key={index}>{error}</li>
                   ))}
@@ -418,13 +418,13 @@ export default function RubricBuilder({
         
         {/* Criteria List */}
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h4 className="text-lg font-medium">Criteria</h4>
+          <div className="flex justify-between items-center min-w-0">
+            <h4 className="text-lg font-medium break-words">Criteria</h4>
             
             {!readOnly && (
               <button
                 onClick={addCriterion}
-                className="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm flex items-center"
+                className="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm flex items-center break-words min-w-0"
               >
                 <PlusCircle className="h-4 w-4 mr-1.5" />
                 Add Criterion
@@ -441,7 +441,7 @@ export default function RubricBuilder({
                   <p className="text-gray-500 mb-3">No criteria defined yet. Add your first criterion to get started.</p>
                   <button
                     onClick={addCriterion}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 inline-flex items-center"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 inline-flex items-center min-w-0"
                   >
                     <PlusCircle className="h-4 w-4 mr-1.5" />
                     Add Criterion
@@ -460,21 +460,21 @@ export default function RubricBuilder({
                     className={`bg-gray-50 px-4 py-3 flex items-center justify-between cursor-pointer ${activeAccordion === criterion.id ? 'border-b border-gray-200' : ''}`}
                     onClick={() => toggleAccordion(criterion.id)}
                   >
-                    <div className="flex items-center">
-                      <span className="bg-blue-100 text-blue-800 font-medium rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">
+                    <div className="flex items-center min-w-0">
+                      <span className="bg-blue-100 text-blue-800 font-medium rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 break-words min-w-0">
                         {index + 1}
                       </span>
-                      <h5 className="font-medium text-gray-900">
+                      <h5 className="font-medium text-gray-900 break-words">
                         {criterion.name || 'Unnamed Criterion'}
                       </h5>
-                      <span className="ml-3 text-sm text-gray-500">
+                      <span className="ml-3 text-sm text-gray-500 break-words">
                         ({criterion.levels.length} levels, weight: {criterion.weight})
                       </span>
                     </div>
                     
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 min-w-0">
                       {!readOnly && (
-                        <div className="flex space-x-1">
+                        <div className="flex space-x-1 min-w-0">
                           <button 
                             onClick={(e) => { e.stopPropagation(); moveCriterionUp(criterion.id); }}
                             disabled={index === 0}
@@ -525,9 +525,9 @@ export default function RubricBuilder({
                         className="overflow-hidden"
                       >
                         <div className="p-4">
-                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-4 lg:gap-6">
                             <div>
-                              <label htmlFor={`criterion-name-${criterion.id}`} className="block text-sm font-medium text-gray-700 mb-1">
+                              <label htmlFor={`criterion-name-${criterion.id}`} className="block text-sm font-medium text-gray-700 mb-1 break-words">
                                 Criterion Name
                               </label>
                               <input
@@ -542,7 +542,7 @@ export default function RubricBuilder({
                             </div>
                             
                             <div>
-                              <label htmlFor={`criterion-weight-${criterion.id}`} className="block text-sm font-medium text-gray-700 mb-1">
+                              <label htmlFor={`criterion-weight-${criterion.id}`} className="block text-sm font-medium text-gray-700 mb-1 break-words">
                                 Weight
                               </label>
                               <input
@@ -559,7 +559,7 @@ export default function RubricBuilder({
                           </div>
                           
                           <div className="mt-4">
-                            <label htmlFor={`criterion-desc-${criterion.id}`} className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor={`criterion-desc-${criterion.id}`} className="block text-sm font-medium text-gray-700 mb-1 break-words">
                               Description
                             </label>
                             <textarea
@@ -575,13 +575,13 @@ export default function RubricBuilder({
                           
                           {/* Levels Section */}
                           <div className="mt-6">
-                            <div className="flex justify-between items-center mb-3">
-                              <h6 className="text-sm font-medium text-gray-700">Assessment Levels</h6>
+                            <div className="flex justify-between items-center mb-3 min-w-0">
+                              <h6 className="text-sm font-medium text-gray-700 break-words">Assessment Levels</h6>
                               
                               {!readOnly && (
                                 <button
                                   onClick={() => addLevel(criterion.id)}
-                                  className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs flex items-center"
+                                  className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-xs flex items-center min-w-0"
                                 >
                                   <PlusCircle className="h-3 w-3 mr-1" />
                                   Add Level
@@ -590,7 +590,7 @@ export default function RubricBuilder({
                             </div>
                             
                             <div className="bg-gray-50 rounded-md p-3">
-                              <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 mb-2 px-2">
+                              <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-500 mb-2 px-2 break-words">
                                 <div className="col-span-3">Level</div>
                                 <div className="col-span-2">Points</div>
                               </div>
@@ -603,7 +603,7 @@ export default function RubricBuilder({
                                       onChange={(e) => updateLevel(criterion.id, level.id, 'name', e.target.value)}
                                       placeholder="Level name"
                                       disabled={readOnly}
-                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500 break-words"
                                     />
                                   </div>
                                   <div className="col-span-2">
@@ -614,7 +614,7 @@ export default function RubricBuilder({
                                       min="0"
                                       max={rubric.maxPoints}
                                       disabled={readOnly}
-                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500 break-words"
                                     />
                                   </div>
                                   <div className="col-span-6">
@@ -624,10 +624,10 @@ export default function RubricBuilder({
                                       onChange={(e) => updateLevel(criterion.id, level.id, 'description', e.target.value)}
                                       placeholder="Describe the expectations for this level..."
                                       disabled={readOnly}
-                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                                      className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500 break-words"
                                     />
                                   </div>
-                                  <div className="col-span-1 flex justify-end">
+                                  <div className="col-span-1 flex justify-end min-w-0">
                                     {!readOnly && criterion.levels.length > 1 && (
                                       <button
                                         onClick={() => removeLevel(criterion.id, level.id)}

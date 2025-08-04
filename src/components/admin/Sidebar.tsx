@@ -57,15 +57,15 @@ export const Sidebar = () => {
   const pathname = usePathname();
 
   return (
-    <div className="hidden md:flex md:flex-shrink-0">
-      <div className="flex flex-col w-64 border-r">
-        <div className="flex items-center h-16 flex-shrink-0 px-4 bg-background">
-          <Link href="/admin/dashboard" className="flex items-center">
-            <span className="text-xl font-bold">Admin Dashboard</span>
+    <div className="hidden md:flex md:flex-shrink-0 min-w-0">
+      <div className="flex flex-col w-64 border-r min-w-0">
+        <div className="flex items-center h-16 flex-shrink-0 px-4 bg-background min-w-0">
+          <Link href="/admin/dashboard" className="flex items-center min-w-0">
+            <span className="text-xl font-bold break-words">Admin Dashboard</span>
           </Link>
         </div>
-        <div className="flex-1 flex flex-col overflow-y-auto">
-          <nav className="flex-1 px-2 py-4 bg-background space-y-1">
+        <div className="flex-1 flex flex-col overflow-y-auto min-w-0">
+          <nav className="flex-1 px-2 py-4 bg-background space-y-1 min-w-0">
             {navItems.map((item) => {
               const isActive = pathname.startsWith(item.href);
               const Icon = item.icon;

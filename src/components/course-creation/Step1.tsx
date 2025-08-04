@@ -12,7 +12,7 @@ interface Step1Props {
 
 export function Step1({ formData, onChange }: Step1Props) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       <div>
         <Label htmlFor="title">Course Title *</Label>
         <Input
@@ -39,7 +39,7 @@ export function Step1({ formData, onChange }: Step1Props) {
           maxLength={160}
           required
         />
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-gray-500 break-words">
           {formData.shortDescription.length}/160 characters
         </p>
       </div>
@@ -57,7 +57,7 @@ export function Step1({ formData, onChange }: Step1Props) {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <div>
           <Label htmlFor="category">Category *</Label>
           <Select

@@ -23,11 +23,11 @@ export const MainNav = () => {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between py-4">
-        <div className="flex items-center space-x-4">
+      <div className="container flex h-16 items-center justify-between py-4 min-w-0">
+        <div className="flex items-center space-x-4 min-w-0">
           <div className="md:hidden">
             <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5 lg:h-6 lg:w-6" />
               <span className="sr-only">Toggle menu</span>
             </Button>
           </div>
@@ -44,14 +44,14 @@ export const MainNav = () => {
           </div>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 min-w-0">
           <ModeToggle />
           
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             <span className="sr-only">View notifications</span>
             <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-primary">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75 min-w-0"></span>
             </span>
           </Button>
           
@@ -59,7 +59,7 @@ export const MainNav = () => {
             <Mail className="h-5 w-5" />
             <span className="sr-only">Messages</span>
             <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-primary">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75 min-w-0"></span>
             </span>
           </Button>
           

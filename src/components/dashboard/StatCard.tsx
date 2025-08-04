@@ -34,21 +34,21 @@ export default function StatCard({
         </div>
       ) : (
         <>
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between items-start min-w-0">
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
-              <h3 className="text-2xl font-bold text-gray-900">{value}{suffix && ` ${suffix}`}</h3>
-              {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+              <p className="text-sm font-medium text-gray-500 mb-1 break-words">{title}</p>
+              <h3 className="text-2xl font-bold text-gray-900 break-words">{value}{suffix && ` ${suffix}`}</h3>
+              {description && <p className="text-sm text-gray-500 mt-1 break-words">{description}</p>}
             </div>
             {icon && (
-              <div className="p-2 rounded-full bg-indigo-50 text-indigo-600">
+              <div className="p-2 rounded-full bg-indigo-50 text-indigo-600 flex-shrink-0">
                 {icon}
               </div>
             )}
           </div>
           
           {trend && (
-            <div className="mt-3 flex items-center">
+            <div className="mt-3 flex items-center min-w-0">
               <span className={`text-sm font-medium ${trend.isPositive ? 'text-green-600' : 'text-red-600'} flex items-center`}>
                 {trend.isPositive ? (
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

@@ -255,7 +255,7 @@ export default function InstructorProjects() {
   if (loading) {
     return (
       <div className="p-6 max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Projects</h1>
+        <h1 className="text-2xl font-bold mb-6 break-words">Projects</h1>
         <div className="animate-pulse">
           <div className="h-10 bg-gray-200 rounded w-1/3 mb-4"></div>
           <div className="h-64 bg-gray-200 rounded mb-6"></div>
@@ -266,12 +266,12 @@ export default function InstructorProjects() {
   
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="text-2xl font-bold mb-2 sm:mb-0">Projects</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 min-w-0">
+        <h1 className="text-2xl font-bold mb-2 sm:mb-0 break-words">Projects</h1>
         {activeTab === 'projects' ? (
           <button
             onClick={() => setIsCreatingProject(true)}
-            className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
+            className="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors break-words min-w-0"
           >
             <PlusCircle className="h-5 w-5 mr-2" />
             Create Project
@@ -280,7 +280,7 @@ export default function InstructorProjects() {
       </div>
       
       {/* Tab Navigation */}
-      <div className="flex border-b border-gray-200 mb-6">
+      <div className="flex border-b border-gray-200 mb-6 min-w-0">
         <button
           onClick={() => setActiveTab('projects')}
           className={`flex items-center px-4 py-2 border-b-2 font-medium text-sm ${
@@ -312,7 +312,7 @@ export default function InstructorProjects() {
           <p>Error: {error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+            className="mt-2 text-sm text-red-600 hover:text-red-800 underline break-words"
           >
             Try Again
           </button>
@@ -320,7 +320,7 @@ export default function InstructorProjects() {
       )}
       
       {/* Tab Navigation */}
-      <div className="flex border-b border-gray-200 mb-6">
+      <div className="flex border-b border-gray-200 mb-6 min-w-0">
         <button
           onClick={() => setActiveTab('projects')}
           className={`flex items-center px-4 py-2 border-b-2 font-medium text-sm ${
@@ -352,7 +352,7 @@ export default function InstructorProjects() {
           <p>Error: {error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+            className="mt-2 text-sm text-red-600 hover:text-red-800 underline break-words"
           >
             Try Again
           </button>
@@ -362,12 +362,12 @@ export default function InstructorProjects() {
       {activeTab === 'projects' ? (
         <>
           {/* Course Filter */}
-          <div className="mb-6 bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">Course Projects</h2>
-            <p className="text-sm text-gray-600 mb-3">
+          <div className="mb-6 bg-white border border-gray-200 rounded-lg p-4 shadow-sm overflow-hidden">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3 break-words">Course Projects</h2>
+            <p className="text-sm text-gray-600 mb-3 break-words">
               Each course has its own set of projects. Select a course to view and manage its projects.
             </p>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
               <select
                 id="courseFilter"
                 value={selectedCourseId}
@@ -383,7 +383,7 @@ export default function InstructorProjects() {
               {selectedCourseId && (
                 <Link
                   href={`/dashboard/instructor/courses/${selectedCourseId}`}
-                  className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                  className="text-sm text-blue-600 hover:text-blue-800 flex items-center break-words min-w-0"
                 >
                   View Course Dashboard
                   <ChevronRight className="h-4 w-4 ml-1" />
@@ -394,7 +394,7 @@ export default function InstructorProjects() {
         
           {/* Projects List */}
           {loading ? (
-            <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-sm">
+            <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-sm overflow-hidden">
               <div className="animate-pulse inline-block h-8 w-8 rounded-full bg-blue-200"></div>
               <p className="mt-2 text-gray-600">Loading projects...</p>
             </div>
@@ -410,9 +410,9 @@ export default function InstructorProjects() {
               </button>
             </div>
           ) : filterProjectsByCourse().length === 0 ? (
-            <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-sm">
+            <div className="bg-white border border-gray-200 rounded-lg p-6 text-center shadow-sm overflow-hidden">
               <FileText className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-gray-900">No projects found</h3>
+              <h3 className="text-lg font-medium text-gray-900 break-words">No projects found</h3>
               <p className="mt-1 text-gray-500">
                 {selectedCourseId 
                   ? 'There are no projects for the selected course yet.' 
@@ -420,26 +420,26 @@ export default function InstructorProjects() {
               </p>
               <button
                 onClick={() => setIsCreatingProject(true)}
-                className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 min-w-0"
               >
                 <PlusCircle className="h-5 w-5 mr-2" />
                 Create Project
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
               {filterProjectsByCourse().map(project => (
                 <motion.div
                   key={project.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
+                  className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden"
                 >
                   <div className="p-5">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{project.title}</h3>
-                      <div className="flex items-center gap-2">
+                    <div className="flex justify-between items-start mb-2 min-w-0">
+                      <h3 className="text-lg font-semibold text-gray-900 break-words">{project.title}</h3>
+                      <div className="flex items-center gap-2 min-w-0">
                         <button
                           onClick={() => router.push(`/dashboard/instructor/projects/${project.id}`)}
                           className="text-blue-600 hover:text-blue-800"
@@ -457,22 +457,22 @@ export default function InstructorProjects() {
                       </div>
                     </div>
                     
-                    <div className="text-sm text-gray-500 mb-3">
-                      <p className="flex items-center mb-1">
+                    <div className="text-sm text-gray-500 mb-3 break-words">
+                      <p className="flex items-center mb-1 min-w-0">
                         <FileText className="h-4 w-4 mr-1.5" />
                         Course: {project.course?.title || 'Unknown Course'}
                       </p>
                       {project.dueDate && (
-                        <p className="flex items-center mb-1">
+                        <p className="flex items-center mb-1 min-w-0">
                           <Calendar className="h-4 w-4 mr-1.5" />
                           Due: {new Date(project.dueDate).toLocaleDateString()}
                         </p>
                       )}
-                      <p className="flex items-center mb-1">
+                      <p className="flex items-center mb-1 min-w-0">
                         <Users className="h-4 w-4 mr-1.5" />
                         Submissions: {project._count?.submissions || 0}
                       </p>
-                      <p className="flex items-center">
+                      <p className="flex items-center min-w-0">
                         <Award className="h-4 w-4 mr-1.5" />
                         {project.isRequiredForCertification 
                           ? 'Required for certification' 
@@ -486,7 +486,7 @@ export default function InstructorProjects() {
                     
                     {project.skills && project.skills.length > 0 && (
                       <div className="mb-4">
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1.5 min-w-0">
                           {project.skills.map((skill, i) => (
                             <span 
                               key={i} 
@@ -499,10 +499,10 @@ export default function InstructorProjects() {
                       </div>
                     )}
                     
-                    <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                    <div className="flex justify-between items-center pt-3 border-t border-gray-100 min-w-0">
                       <Link 
                         href={`/dashboard/instructor/projects/${project.id}/submissions`}
-                        className="text-sm text-blue-600 hover:text-blue-800 flex items-center font-medium"
+                        className="text-sm text-blue-600 hover:text-blue-800 flex items-center font-medium break-words min-w-0"
                       >
                         View Submissions
                         <ChevronRight className="h-4 w-4 ml-1" />
@@ -510,7 +510,7 @@ export default function InstructorProjects() {
                       
                       <Link 
                         href={`/dashboard/instructor/projects/${project.id}/analytics`}
-                        className="text-sm text-green-600 hover:text-green-800 flex items-center font-medium"
+                        className="text-sm text-green-600 hover:text-green-800 flex items-center font-medium break-words min-w-0"
                       >
                         <BarChart3 className="h-4 w-4 mr-1" />
                         Analytics
@@ -524,13 +524,13 @@ export default function InstructorProjects() {
         </>
       ) : (
         <>
-          <div className="space-y-6">
-            <div className="mb-6 bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900 mb-3">Project Submissions</h2>
-              <p className="text-sm text-gray-600 mb-3">
+          <div className="space-y-4 lg:space-y-6">
+            <div className="mb-6 bg-white border border-gray-200 rounded-lg p-4 shadow-sm overflow-hidden">
+              <h2 className="text-lg font-semibold text-gray-900 mb-3 break-words">Project Submissions</h2>
+              <p className="text-sm text-gray-600 mb-3 break-words">
                 View and assess student submissions for all your projects. Filter by course to narrow down the results.
               </p>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
                 <select
                   id="submissionCourseFilter"
                   value={selectedCourseId}
@@ -553,20 +553,20 @@ export default function InstructorProjects() {
       
       {/* Create Project Modal */}
       {isCreatingProject && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 min-w-0">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto overflow-hidden"
           >
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-900">Create New Project</h2>
+            <div className="p-4 lg:p-6">
+              <div className="flex justify-between items-center mb-4 min-w-0">
+                <h2 className="text-xl font-bold text-gray-900 break-words">Create New Project</h2>
                 <button 
                   onClick={() => setIsCreatingProject(false)}
                   className="text-gray-500 hover:text-gray-700"
                 >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-5 w-5 lg:h-6 lg:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -574,7 +574,7 @@ export default function InstructorProjects() {
               
               <form onSubmit={handleCreateProject} className="space-y-4">
                 <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Project Title *
                   </label>
                   <input
@@ -590,7 +590,7 @@ export default function InstructorProjects() {
                 </div>
                 
                 <div>
-                  <label htmlFor="courseId" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="courseId" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Course *
                   </label>
                   <select
@@ -609,7 +609,7 @@ export default function InstructorProjects() {
                 </div>
                 
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Description
                   </label>
                   <textarea
@@ -624,7 +624,7 @@ export default function InstructorProjects() {
                 </div>
                 
                 <div>
-                  <label htmlFor="instructions" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="instructions" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Instructions
                   </label>
                   <textarea
@@ -639,7 +639,7 @@ export default function InstructorProjects() {
                 </div>
                 
                 <div>
-                  <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Due Date
                   </label>
                   <input
@@ -653,7 +653,7 @@ export default function InstructorProjects() {
                 </div>
                 
                 <div>
-                  <label htmlFor="pointsValue" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="pointsValue" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Points Value
                   </label>
                   <input
@@ -670,10 +670,10 @@ export default function InstructorProjects() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Skills (optional)
                   </label>
-                  <div className="flex">
+                  <div className="flex min-w-0">
                     <input
                       type="text"
                       value={skillInput}
@@ -691,11 +691,11 @@ export default function InstructorProjects() {
                     </button>
                   </div>
                   {formData.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
+                    <div className="flex flex-wrap gap-2 mt-2 min-w-0">
                       {formData.skills.map((skill, index) => (
                         <span 
                           key={index} 
-                          className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full flex items-center"
+                          className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full flex items-center min-w-0"
                         >
                           {skill}
                           <button 
@@ -711,7 +711,7 @@ export default function InstructorProjects() {
                   )}
                 </div>
                 
-                <div className="flex items-center mb-4">
+                <div className="flex items-center mb-4 min-w-0">
                   <input
                     type="checkbox"
                     id="isPublished"
@@ -720,12 +720,12 @@ export default function InstructorProjects() {
                     onChange={handleCheckboxChange}
                     className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <label htmlFor="isPublished" className="ml-2 block text-sm text-gray-700">
+                  <label htmlFor="isPublished" className="ml-2 block text-sm text-gray-700 break-words">
                     Publish immediately (make visible to students)
                   </label>
                 </div>
                 
-                <div className="flex items-center">
+                <div className="flex items-center min-w-0">
                   <input
                     type="checkbox"
                     id="isRequiredForCertification"
@@ -734,12 +734,12 @@ export default function InstructorProjects() {
                     onChange={handleCheckboxChange}
                     className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
-                  <label htmlFor="isRequiredForCertification" className="ml-2 block text-sm text-gray-700">
+                  <label htmlFor="isRequiredForCertification" className="ml-2 block text-sm text-gray-700 break-words">
                     Required for course certification
                   </label>
                 </div>
                 
-                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 min-w-0">
                   <button
                     type="button"
                     onClick={() => setIsCreatingProject(false)}

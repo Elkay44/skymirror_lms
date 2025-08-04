@@ -10,7 +10,7 @@ export function BasicInfoStep() {
   const { formData, errors, handleChange } = useCourseForm();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       <div>
         <Label htmlFor="title">Course Title *</Label>
         <Input
@@ -20,7 +20,7 @@ export function BasicInfoStep() {
           placeholder="e.g., Learn Advanced React"
           className={errors.title ? 'border-red-500' : ''}
         />
-        {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title}</p>}
+        {errors.title && <p className="text-sm text-red-500 mt-1 break-words">{errors.title}</p>}
         <p className="text-xs text-muted-foreground mt-1">
           {formData.title.length}/100 characters
         </p>
@@ -37,7 +37,7 @@ export function BasicInfoStep() {
           className={errors.shortDescription ? 'border-red-500' : ''}
         />
         {errors.shortDescription && (
-          <p className="text-sm text-red-500 mt-1">{errors.shortDescription}</p>
+          <p className="text-sm text-red-500 mt-1 break-words">{errors.shortDescription}</p>
         )}
         <p className="text-xs text-muted-foreground mt-1">
           {formData.shortDescription.length}/200 characters

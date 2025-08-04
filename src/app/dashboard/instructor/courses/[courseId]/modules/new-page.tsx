@@ -290,7 +290,7 @@ const CourseModulesContent: React.FC<CourseModulesContentProps> = () => {
   const renderContent = () => {
     if (isLoading) {
       return (
-        <div className="flex items-center justify-center h-64">
+        <div className="flex items-center justify-center h-64 min-w-0">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
           <span className="sr-only">Loading modules...</span>
         </div>
@@ -312,8 +312,8 @@ const CourseModulesContent: React.FC<CourseModulesContentProps> = () => {
       return (
         <div className="text-center py-12">
           <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No modules</h3>
-          <p className="mt-1 text-sm text-gray-500">Get started by creating a new module.</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900 break-words">No modules</h3>
+          <p className="mt-1 text-sm text-gray-500 break-words">Get started by creating a new module.</p>
           <div className="mt-6">
             <Button onClick={() => setIsFormOpen(true)}>
               <Plus className="-ml-1 mr-2 h-5 w-5" />
@@ -356,7 +356,7 @@ const CourseModulesContent: React.FC<CourseModulesContentProps> = () => {
         <Button 
           onClick={() => setIsFormOpen(true)} 
           disabled={isLoading}
-          className="flex items-center"
+          className="flex items-center min-w-0"
         >
           <Plus className="mr-2 h-4 w-4" />
           New Module
@@ -450,7 +450,7 @@ export default function CourseModulesPage() {
         >
           <div className="text-center py-12">
             <BookOpen className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Course Not Found</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2 break-words">Course Not Found</h2>
             <p className="text-gray-600 mb-6">The course you're looking for doesn't exist or you don't have permission to view it.</p>
             <Button onClick={() => router.push('/dashboard/instructor/courses')}>
               Back to Courses
@@ -468,7 +468,7 @@ export default function CourseModulesPage() {
       >
         <div className="text-center py-12">
           <BookOpen className="mx-auto h-12 w-12 text-red-500 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2 break-words">Something went wrong</h2>
           <p className="text-gray-600 mb-6">We couldn't load the course modules. Please try again later.</p>
           <div className="space-x-4">
             <Button variant="outline" onClick={() => window.location.reload()}>

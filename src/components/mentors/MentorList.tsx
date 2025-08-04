@@ -38,10 +38,10 @@ export function MentorList({ searchTerm }: { searchTerm: string }) {
 
   if (isLoading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 lg:gap-6 md:grid-cols-2 lg:grid-cols-3">
         {[...Array(3)].map((_, i) => (
           <Card key={i}>
-            <CardHeader className="flex flex-row items-center gap-4">
+            <CardHeader className="flex flex-row items-center gap-4 min-w-0">
               <Skeleton className="h-12 w-12 rounded-full" />
               <div className="space-y-2">
                 <Skeleton className="h-4 w-32" />
@@ -89,10 +89,10 @@ export function MentorList({ searchTerm }: { searchTerm: string }) {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 lg:gap-6 md:grid-cols-2 lg:grid-cols-3">
       {mentors.map((mentor) => (
         <Card key={mentor.id}>
-          <CardHeader className="flex flex-row items-center gap-4">
+          <CardHeader className="flex flex-row items-center gap-4 min-w-0">
             <Avatar className="h-12 w-12">
               <AvatarImage src={mentor.user?.image || ''} />
               <AvatarFallback>
@@ -100,17 +100,17 @@ export function MentorList({ searchTerm }: { searchTerm: string }) {
               </AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="text-lg">{mentor.user?.name}</CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <CardTitle className="text-lg break-words">{mentor.user?.name}</CardTitle>
+              <p className="text-sm text-muted-foreground break-words">
                 {mentor.specialties?.split(',').slice(0, 2).join(' • ')}
               </p>
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-sm line-clamp-3">
+            <p className="text-sm line-clamp-3 break-words">
               {mentor.bio || 'No bio available.'}
             </p>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2 min-w-0">
               {mentor.specialties?.split(',').slice(0, 3).map((specialty: string) => (
                 <Badge key={specialty} variant="secondary">
                   {specialty.trim()}

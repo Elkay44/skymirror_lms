@@ -99,7 +99,7 @@ const AssignmentsSection: React.FC<AssignmentsSectionProps> = ({ assignments }) 
     return (
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
         <CheckSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-1">No Assignments Found</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-1 break-words">No Assignments Found</h3>
         <p className="text-gray-500 max-w-md mx-auto">
           This mentee doesn't have any assignments to track at the moment. When they receive assignments, you'll be able to monitor them here.
         </p>
@@ -108,8 +108,8 @@ const AssignmentsSection: React.FC<AssignmentsSectionProps> = ({ assignments }) 
   }
   
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-4 min-w-0">
         <div className="relative">
           <input
             type="text"
@@ -137,17 +137,17 @@ const AssignmentsSection: React.FC<AssignmentsSectionProps> = ({ assignments }) 
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         {filteredAssignments.map((assignment) => (
           <div 
             key={assignment.id} 
             className={`bg-white border rounded-lg shadow-sm overflow-hidden transition-all duration-200 ${assignment.submitted ? 'border-green-200' : daysUntilDue(assignment.dueDate) <= 0 ? 'border-red-200' : 'border-gray-200'}`}
           >
             <div className="p-4 border-b border-gray-200 bg-gray-50">
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-start min-w-0">
                 <div>
-                  <h4 className="text-md font-medium text-gray-900">{assignment.title}</h4>
-                  <p className="text-sm text-gray-500 mt-1">{assignment.courseName}</p>
+                  <h4 className="text-md font-medium text-gray-900 break-words">{assignment.title}</h4>
+                  <p className="text-sm text-gray-500 mt-1 break-words">{assignment.courseName}</p>
                 </div>
                 <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(assignment)}`}>
                   {getStatusText(assignment)}
@@ -159,7 +159,7 @@ const AssignmentsSection: React.FC<AssignmentsSectionProps> = ({ assignments }) 
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <p className="text-xs text-gray-500">Due Date</p>
-                  <p className="text-sm font-medium flex items-center">
+                  <p className="text-sm font-medium flex items-center break-words min-w-0">
                     <Calendar className="h-4 w-4 mr-1 text-gray-400" />
                     {formatDate(assignment.dueDate)}
                   </p>
@@ -168,7 +168,7 @@ const AssignmentsSection: React.FC<AssignmentsSectionProps> = ({ assignments }) 
                 {assignment.submitted && assignment.submissionDate && (
                   <div>
                     <p className="text-xs text-gray-500">Submitted On</p>
-                    <p className="text-sm font-medium flex items-center">
+                    <p className="text-sm font-medium flex items-center break-words min-w-0">
                       <Clock className="h-4 w-4 mr-1 text-gray-400" />
                       {formatDate(assignment.submissionDate)}
                     </p>
@@ -178,7 +178,7 @@ const AssignmentsSection: React.FC<AssignmentsSectionProps> = ({ assignments }) 
                 {assignment.submitted && assignment.grade && (
                   <div>
                     <p className="text-xs text-gray-500">Grade</p>
-                    <p className="text-sm font-medium">{assignment.grade}</p>
+                    <p className="text-sm font-medium break-words">{assignment.grade}</p>
                   </div>
                 )}
               </div>
@@ -186,20 +186,20 @@ const AssignmentsSection: React.FC<AssignmentsSectionProps> = ({ assignments }) 
               {assignment.feedback && (
                 <div className="mt-4">
                   <p className="text-xs text-gray-500 mb-1">Instructor Feedback</p>
-                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-md text-sm">
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-md text-sm break-words">
                     {assignment.feedback}
                   </div>
                 </div>
               )}
               
-              <div className="mt-4 flex items-center justify-end">
+              <div className="mt-4 flex items-center justify-end min-w-0">
                 <button
                   onClick={() => {
                     // Logic to view assignment details would go here
                     // For now, just show a toast message
                     console.log(`View assignment ${assignment.id}`);
                   }}
-                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
                 >
                   View Details
                 </button>
@@ -212,16 +212,16 @@ const AssignmentsSection: React.FC<AssignmentsSectionProps> = ({ assignments }) 
       {filteredAssignments.length === 0 && (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
           <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No Matching Assignments</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-1 break-words">No Matching Assignments</h3>
           <p className="text-gray-500 max-w-md mx-auto">
             No assignments match your current filters. Try adjusting your search or filter criteria.
           </p>
         </div>
       )}
       
-      <div className="mt-6 flex justify-between items-center bg-gray-50 border border-gray-200 rounded-lg p-4">
+      <div className="mt-6 flex justify-between items-center bg-gray-50 border border-gray-200 rounded-lg p-4 min-w-0">
         <div>
-          <h4 className="text-sm font-medium text-gray-700">Assignment Summary</h4>
+          <h4 className="text-sm font-medium text-gray-700 break-words">Assignment Summary</h4>
           <p className="text-xs text-gray-500 mt-1">
             {assignments.filter(a => a.submitted).length} of {assignments.length} assignments submitted
             {assignments.filter(a => !a.submitted && daysUntilDue(a.dueDate) <= 0).length > 0 && (
@@ -231,14 +231,14 @@ const AssignmentsSection: React.FC<AssignmentsSectionProps> = ({ assignments }) 
             )}
           </p>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center min-w-0">
           <div className="w-20 bg-gray-200 rounded-full h-2.5">
             <div 
               className="bg-teal-500 h-2.5 rounded-full" 
               style={{ width: `${Math.round((assignments.filter(a => a.submitted).length / assignments.length) * 100)}%` }}
             ></div>
           </div>
-          <span className="ml-2 text-sm font-medium">
+          <span className="ml-2 text-sm font-medium break-words">
             {Math.round((assignments.filter(a => a.submitted).length / assignments.length) * 100)}%
           </span>
         </div>

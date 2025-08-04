@@ -218,10 +218,10 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
         </Button>
       }
     >
-      <div className="space-y-6">
+      <div className="space-y-4 lg:space-y-6">
         {/* Search and filter bar */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
+        <div className="flex flex-col sm:flex-row gap-4 min-w-0">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               className="pl-10 w-full"
@@ -251,7 +251,7 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
 
         {/* Students list */}
         {loading ? (
-          <div className="flex justify-center py-12">
+          <div className="flex justify-center py-12 min-w-0">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
           </div>
         ) : filteredStudents.length === 0 ? (
@@ -269,21 +269,21 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
             </Button>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-white rounded-lg shadow overflow-hidden overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">
                       Student
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">
                       Status
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">
                       Progress
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">
                       Last Active
                     </th>
                     <th scope="col" className="relative px-6 py-3">
@@ -295,8 +295,8 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
                   {filteredStudents.map((student) => (
                     <tr key={student.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10">
+                        <div className="flex items-center min-w-0">
+                          <div className="flex-shrink-0 h-10 w-10 min-w-0">
                             <Avatar>
                               {student.avatarUrl ? (
                                 <img src={student.avatarUrl} alt={student.name} />
@@ -311,8 +311,8 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
                             </Avatar>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{student.name}</div>
-                            <div className="text-sm text-gray-500">{student.email}</div>
+                            <div className="text-sm font-medium text-gray-900 break-words">{student.name}</div>
+                            <div className="text-sm text-gray-500 break-words">{student.email}</div>
                           </div>
                         </div>
                       </td>
@@ -332,11 +332,11 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
                           {student.completedLessons} of {student.totalLessons} lessons
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 break-words">
                         {new Date(student.lastActive).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex space-x-2 justify-end">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium break-words">
+                        <div className="flex space-x-2 justify-end min-w-0">
                           <Button 
                             variant="ghost" 
                             size="sm" 
@@ -383,7 +383,7 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">Email Address</label>
+              <label className="text-sm font-medium leading-none break-words">Email Address</label>
               <Input
                 type="email"
                 placeholder="student@example.com"
@@ -392,7 +392,7 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none">Message (Optional)</label>
+              <label className="text-sm font-medium leading-none break-words">Message (Optional)</label>
               <Textarea
                 placeholder="Add a personal message..."
                 rows={4}
@@ -418,7 +418,7 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
           {selectedStudent && (
             <>
               <DialogHeader>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 min-w-0">
                   <Avatar className="h-12 w-12">
                     {selectedStudent.avatarUrl ? (
                       <img src={selectedStudent.avatarUrl} alt={selectedStudent.name} />
@@ -439,31 +439,31 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
               </DialogHeader>
               <div className="grid grid-cols-2 gap-4 py-4">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">Status</h4>
-                  <p className="mt-1 text-sm">
+                  <h4 className="text-sm font-medium text-gray-500 break-words">Status</h4>
+                  <p className="mt-1 text-sm break-words">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(selectedStudent.status)}`}>
                       {selectedStudent.status.charAt(0).toUpperCase() + selectedStudent.status.slice(1)}
                     </span>
                   </p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">Grade</h4>
-                  <p className="mt-1 text-sm">{selectedStudent.grade || 'N/A'}</p>
+                  <h4 className="text-sm font-medium text-gray-500 break-words">Grade</h4>
+                  <p className="mt-1 text-sm break-words">{selectedStudent.grade || 'N/A'}</p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">Joined</h4>
-                  <p className="mt-1 text-sm">
+                  <h4 className="text-sm font-medium text-gray-500 break-words">Joined</h4>
+                  <p className="mt-1 text-sm break-words">
                     {new Date(selectedStudent.joinDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500">Last Active</h4>
-                  <p className="mt-1 text-sm">
+                  <h4 className="text-sm font-medium text-gray-500 break-words">Last Active</h4>
+                  <p className="mt-1 text-sm break-words">
                     {new Date(selectedStudent.lastActive).toLocaleString()}
                   </p>
                 </div>
                 <div className="col-span-2">
-                  <h4 className="text-sm font-medium text-gray-500">Progress</h4>
+                  <h4 className="text-sm font-medium text-gray-500 break-words">Progress</h4>
                   <div className="mt-2">
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div 
@@ -471,7 +471,7 @@ export default function StudentsPage({ searchParams: searchParamsPromise }: Stud
                         style={{ width: `${selectedStudent.progress}%` }}
                       ></div>
                     </div>
-                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <div className="flex justify-between text-xs text-gray-500 mt-1 min-w-0">
                       <span>{selectedStudent.completedLessons} of {selectedStudent.totalLessons} lessons</span>
                       <span>{selectedStudent.progress}%</span>
                     </div>

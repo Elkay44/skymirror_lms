@@ -123,7 +123,7 @@ export function CourseCard({
     const hasHalfStar = rating % 1 >= 0.5
     
     return (
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 min-w-0">
         {[...Array(5)].map((_, i) => {
           if (i < fullStars) {
             return <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -133,7 +133,7 @@ export function CourseCard({
             return <Star key={i} className="w-4 h-4 text-gray-300" />
           }
         })}
-        <span className="ml-1 text-sm text-gray-600 dark:text-gray-400">
+        <span className="ml-1 text-sm text-gray-600 dark:text-gray-400 break-words">
           {rating.toFixed(1)} ({reviewCount.toLocaleString()})
         </span>
       </div>
@@ -145,8 +145,8 @@ export function CourseCard({
     return (
       <Link href={`/courses/${course.slug}`} className="block group">
         <Card className={cn("overflow-hidden transition-all hover:shadow-lg dark:hover:shadow-gray-700/50", className)}>
-          <div className="flex">
-            <div className="relative w-32 h-24 flex-shrink-0">
+          <div className="flex min-w-0">
+            <div className="relative w-32 h-24 flex-shrink-0 min-w-0">
               <Image
                 src={imageUrl || '/images/course-placeholder.jpg'}
                 alt={title}
@@ -154,18 +154,18 @@ export function CourseCard({
                 className="object-cover"
               />
             </div>
-            <div className="flex-1 p-3 flex flex-col justify-between">
+            <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
               <div>
-                <h3 className="font-medium text-sm line-clamp-2">{title}</h3>
+                <h3 className="font-medium text-sm line-clamp-2 break-words">{title}</h3>
                 {instructor && showInstructor && (
                   <p className="text-xs text-gray-500 mt-1">{instructor.name}</p>
                 )}
               </div>
-              <div className="flex items-center justify-between mt-2">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between mt-2 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
                   {renderRating()}
                 </div>
-                <div className="text-sm font-medium">
+                <div className="text-sm font-medium break-words">
                   {price === 0 ? 'Free' : formatPrice(price)}
                 </div>
               </div>
@@ -186,7 +186,7 @@ export function CourseCard({
             fill
             className="object-cover"
           />
-          <div className="absolute top-2 left-2 flex gap-2">
+          <div className="absolute top-2 left-2 flex gap-2 min-w-0">
             {course.isNew && (
               <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                 New
@@ -200,7 +200,7 @@ export function CourseCard({
           </div>
           <button
             onClick={handleToggleFavorite}
-            className="absolute top-2 right-2 p-2 rounded-full bg-white/90 hover:bg-white transition-colors"
+            className="absolute top-2 right-2 p-2 rounded-full bg-white/90 hover:bg-white transition-colors flex-shrink-0"
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
             <Heart 
@@ -210,29 +210,29 @@ export function CourseCard({
         </div>
         
         <div className="p-4">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 min-w-0">
             <Badge variant="outline" className="text-xs">
               {category}
             </Badge>
-            <div className="text-xs text-gray-500 flex items-center gap-1">
+            <div className="text-xs text-gray-500 flex items-center gap-1 min-w-0">
               <Clock className="w-3 h-3" />
               {formatDuration(duration)}
             </div>
           </div>
           
-          <h3 className="font-semibold text-lg mb-2 line-clamp-2">{title}</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+          <h3 className="font-semibold text-lg mb-2 line-clamp-2 break-words">{title}</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2 break-words">
             {shortDescription || description}
           </p>
           
           {showInstructor && instructor && (
-            <div className="flex items-center gap-2 mb-3">
-              <Avatar className="h-8 w-8">
+            <div className="flex items-center gap-2 mb-3 min-w-0">
+              <Avatar className="h-6 w-6 lg:h-8 lg:w-8">
                 <AvatarImage src={instructor.avatarUrl} alt={instructor.name} />
                 <AvatarFallback>{instructor.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-sm font-medium">{instructor.name}</p>
+                <p className="text-sm font-medium break-words">{instructor.name}</p>
                 {instructor.title && (
                   <p className="text-xs text-gray-500">{instructor.title}</p>
                 )}
@@ -240,17 +240,17 @@ export function CourseCard({
             </div>
           )}
           
-          <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center justify-between mt-4 min-w-0">
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <Users className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="text-sm text-gray-600 dark:text-gray-300 break-words">
                   {studentCount.toLocaleString()} students
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <BookOpen className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="text-sm text-gray-600 dark:text-gray-300 break-words">
                   {lessonCount} {lessonCount === 1 ? 'lesson' : 'lessons'}
                 </span>
               </div>
@@ -258,11 +258,11 @@ export function CourseCard({
             
             <div className="text-right">
               {discountedPrice && price > discountedPrice && (
-                <span className="text-sm text-gray-500 line-through mr-2">
+                <span className="text-sm text-gray-500 line-through mr-2 break-words">
                   {formatPrice(price)}
                 </span>
               )}
-              <div className="text-lg font-bold">
+              <div className="text-lg font-bold break-words">
                 {price === 0 ? 'Free' : formatPrice(discountedPrice || price)}
               </div>
             </div>
@@ -282,7 +282,7 @@ export function CourseCard({
           
           {showProgress && progress > 0 && (
             <div className="mt-4">
-              <div className="flex justify-between text-sm mb-1">
+              <div className="flex justify-between text-sm mb-1 break-words min-w-0">
                 <span>Progress</span>
                 <span>{Math.round(progress)}%</span>
               </div>
@@ -305,7 +305,7 @@ export function CourseCard({
             fill
             className="object-cover"
           />
-          <div className="absolute top-2 left-2 flex gap-2">
+          <div className="absolute top-2 left-2 flex gap-2 min-w-0">
             {course.isNew && (
               <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs">
                 New
@@ -319,7 +319,7 @@ export function CourseCard({
           </div>
           <button
             onClick={handleToggleFavorite}
-            className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 hover:bg-white transition-colors"
+            className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 hover:bg-white transition-colors flex-shrink-0"
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
             <Heart 
@@ -328,39 +328,39 @@ export function CourseCard({
           </button>
         </div>
         
-        <div className="p-4 flex-1 flex flex-col">
-          <div className="flex items-center justify-between mb-2">
+        <div className="p-4 flex-1 flex flex-col min-w-0">
+          <div className="flex items-center justify-between mb-2 min-w-0">
             <Badge variant="outline" className="text-xs">
               {category}
             </Badge>
-            <div className="flex items-center gap-1 text-xs text-gray-500">
+            <div className="flex items-center gap-1 text-xs text-gray-500 min-w-0">
               <Clock className="w-3 h-3" />
               {formatDuration(duration)}
             </div>
           </div>
           
-          <h3 className="font-semibold text-base mb-2 line-clamp-2">{title}</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2 flex-1">
+          <h3 className="font-semibold text-base mb-2 line-clamp-2 break-words">{title}</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2 flex-1 break-words min-w-0">
             {shortDescription}
           </p>
           
           {showInstructor && instructor && (
-            <div className="flex items-center gap-2 mb-3">
-              <Avatar className="h-6 w-6">
+            <div className="flex items-center gap-2 mb-3 min-w-0">
+              <Avatar className="h-5 w-5 lg:h-6 lg:w-6">
                 <AvatarImage src={instructor.avatarUrl} alt={instructor.name} />
                 <AvatarFallback>{instructor.name.charAt(0)}</AvatarFallback>
               </Avatar>
-              <span className="text-sm text-gray-600 dark:text-gray-300">
+              <span className="text-sm text-gray-600 dark:text-gray-300 break-words">
                 {instructor.name}
               </span>
             </div>
           )}
           
           <div className="mt-auto">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-1">
+            <div className="flex items-center justify-between mb-2 min-w-0">
+              <div className="flex items-center gap-1 min-w-0">
                 <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span className="text-sm font-medium">
+                <span className="text-sm font-medium break-words">
                   {rating.toFixed(1)}
                 </span>
                 <span className="text-xs text-gray-500">
@@ -373,7 +373,7 @@ export function CourseCard({
                     {formatPrice(price)}
                   </span>
                 )}
-                <span className="font-bold">
+                <span className="font-bold break-words">
                   {price === 0 ? 'Free' : formatPrice(discountedPrice || price)}
                 </span>
               </div>

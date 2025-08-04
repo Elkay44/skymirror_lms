@@ -101,19 +101,19 @@ export function SeoStep() {
   };
   
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 lg:space-y-8">
+      <div className="flex items-center justify-between min-w-0">
         <div>
-          <h2 className="text-xl font-semibold">Search Engine Optimization</h2>
-          <p className="text-muted-foreground text-sm">
+          <h2 className="text-xl font-semibold break-words">Search Engine Optimization</h2>
+          <p className="text-muted-foreground text-sm break-words">
             Improve your course's visibility in search results
           </p>
         </div>
         
-        <div className="flex flex-col items-center">
-          <div className="flex items-center gap-2">
-            <div className="text-sm font-medium">SEO Score:</div>
-            <div className="text-xl font-bold">{seoScore}%</div>
+        <div className="flex flex-col items-center min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="text-sm font-medium break-words">SEO Score:</div>
+            <div className="text-xl font-bold break-words">{seoScore}%</div>
           </div>
           <div className="w-full mt-1">
             <Progress value={seoScore} className={`h-2 ${getSeoScoreColor()}`} />
@@ -124,14 +124,14 @@ export function SeoStep() {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+        <div className="space-y-4 lg:space-y-6">
           <Card>
             <CardContent className="p-6 space-y-4">
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <Search className="h-4 w-4 text-muted-foreground" />
-                  <Label htmlFor="seoTitle" className="font-medium">SEO Title</Label>
+                  <Label htmlFor="seoTitle" className="font-medium break-words">SEO Title</Label>
                 </div>
                 <Input
                   id="seoTitle"
@@ -140,7 +140,7 @@ export function SeoStep() {
                   placeholder="Optimized title for search engines"
                   className="mt-1"
                 />
-                <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center justify-between mt-1 min-w-0">
                   <Button 
                     type="button" 
                     variant="ghost" 
@@ -160,7 +160,7 @@ export function SeoStep() {
               </div>
               
               <div>
-                <Label htmlFor="seoDescription" className="font-medium">Meta Description</Label>
+                <Label htmlFor="seoDescription" className="font-medium break-words">Meta Description</Label>
                 <Textarea
                   id="seoDescription"
                   value={formData.seoDescription || ''}
@@ -169,7 +169,7 @@ export function SeoStep() {
                   className="mt-1"
                   rows={3}
                 />
-                <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center justify-between mt-1 min-w-0">
                   <Button 
                     type="button" 
                     variant="ghost" 
@@ -189,22 +189,22 @@ export function SeoStep() {
               </div>
               
               <div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <Tag className="h-4 w-4 text-muted-foreground" />
-                    <Label htmlFor="keywords" className="font-medium">Keywords</Label>
+                    <Label htmlFor="keywords" className="font-medium break-words">Keywords</Label>
                   </div>
                   <Badge variant="outline" className="text-xs">
                     {keywords.length}/5 recommended
                   </Badge>
                 </div>
-                <div className="flex gap-2 mt-1">
+                <div className="flex gap-2 mt-1 min-w-0">
                   <Input
                     id="keywords"
                     value={keywordInput}
                     onChange={(e) => setKeywordInput(e.target.value)}
                     placeholder="Enter a keyword"
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                     onKeyDown={(e) => e.key === 'Enter' && addKeyword()}
                   />
                   <Button type="button" onClick={addKeyword} variant="secondary">
@@ -212,9 +212,9 @@ export function SeoStep() {
                   </Button>
                 </div>
                 {keywords.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-3">
+                  <div className="flex flex-wrap gap-2 mt-3 min-w-0">
                     {keywords.map((keyword, index) => (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1 px-2 py-1">
+                      <Badge key={index} variant="secondary" className="flex items-center gap-1 px-2 py-1 min-w-0">
                         {keyword}
                         <Button
                           type="button"
@@ -235,10 +235,10 @@ export function SeoStep() {
               </div>
               
               <div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <Globe className="h-4 w-4 text-muted-foreground" />
-                    <Label htmlFor="slug" className="font-medium">URL Slug</Label>
+                    <Label htmlFor="slug" className="font-medium break-words">URL Slug</Label>
                   </div>
                   <Button 
                     type="button" 
@@ -265,11 +265,11 @@ export function SeoStep() {
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           <Card>
             <CardContent className="p-6 space-y-4">
               <div>
-                <Label htmlFor="socialTitle" className="font-medium">Social Media Title</Label>
+                <Label htmlFor="socialTitle" className="font-medium break-words">Social Media Title</Label>
                 <Input
                   id="socialTitle"
                   value={formData.socialTitle || ''}
@@ -277,7 +277,7 @@ export function SeoStep() {
                   placeholder="Title for social media shares"
                   className="mt-1"
                 />
-                <div className="flex justify-end mt-1">
+                <div className="flex justify-end mt-1 min-w-0">
                   <p className="text-xs text-muted-foreground">
                     {(formData.socialTitle?.length || 0)}/60
                   </p>
@@ -285,7 +285,7 @@ export function SeoStep() {
               </div>
               
               <div>
-                <Label htmlFor="socialDescription" className="font-medium">Social Media Description</Label>
+                <Label htmlFor="socialDescription" className="font-medium break-words">Social Media Description</Label>
                 <Textarea
                   id="socialDescription"
                   value={formData.socialDescription || ''}
@@ -294,7 +294,7 @@ export function SeoStep() {
                   className="mt-1"
                   rows={2}
                 />
-                <div className="flex justify-end mt-1">
+                <div className="flex justify-end mt-1 min-w-0">
                   <p className="text-xs text-muted-foreground">
                     {(formData.socialDescription?.length || 0)}/120
                   </p>
@@ -302,7 +302,7 @@ export function SeoStep() {
               </div>
               
               <div>
-                <Label className="font-medium">Social Media Image</Label>
+                <Label className="font-medium break-words">Social Media Image</Label>
                 <div className="mt-2 border border-dashed rounded-lg p-4 text-center">
                   {formData.socialImageUrl ? (
                     <div className="relative">
@@ -311,13 +311,13 @@ export function SeoStep() {
                         alt="Social preview" 
                         className="w-full h-40 object-cover rounded-md"
                       />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity rounded-md">
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity rounded-md min-w-0">
                         <Button variant="secondary" size="sm">Change Image</Button>
                       </div>
                     </div>
                   ) : (
                     <div className="py-8">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground break-words">
                         Upload an image for social media shares (1200 × 630px recommended)
                       </p>
                       <Button type="button" variant="secondary" className="mt-2">
@@ -331,7 +331,7 @@ export function SeoStep() {
               <Alert variant="default" className="bg-muted/50">
                 <Info className="h-4 w-4" />
                 <AlertTitle>Social Media Preview</AlertTitle>
-                <AlertDescription className="text-sm">
+                <AlertDescription className="text-sm break-words">
                   When your course is shared on platforms like Facebook, Twitter, or LinkedIn, 
                   the social media title, description, and image will be displayed.
                 </AlertDescription>
@@ -342,7 +342,7 @@ export function SeoStep() {
           <Alert variant="default" className="border-amber-200 bg-amber-50 text-amber-800">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>SEO Tips</AlertTitle>
-            <AlertDescription className="text-sm">
+            <AlertDescription className="text-sm break-words">
               <ul className="list-disc pl-5 space-y-1 mt-2">
                 <li>Use your main keyword in your title, description, and URL</li>
                 <li>Make your meta description compelling and actionable</li>

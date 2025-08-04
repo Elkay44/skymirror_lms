@@ -146,7 +146,7 @@ export default function AchievementsPage() {
   // Add a loading state that shows until progress is loaded
   if (isLoading || progress === null) {
     return (
-      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
+      <div className="min-h-screen bg-gray-50 flex justify-center items-center min-w-0">
         <div className="animate-spin h-10 w-10 border-4 border-blue-600 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -156,36 +156,36 @@ export default function AchievementsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 min-w-0">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center break-words min-w-0">
               <Trophy className="mr-2 h-6 w-6 text-yellow-500" />
               Achievements
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 break-words">
               Track your accomplishments, rewards, and progress in your learning journey
             </p>
           </div>
         </div>
         
         {/* Status Overview Panel */}
-        <div className="bg-white rounded-lg shadow overflow-hidden mb-8">
+        <div className="bg-white rounded-lg shadow overflow-hidden mb-8 overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Current Status</h2>
+            <h2 className="text-lg font-medium text-gray-900 break-words">Current Status</h2>
           </div>
           <div className="px-6 py-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
               {/* Level & XP */}
               <div className="bg-blue-50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-blue-800">Current Level</h3>
+                <div className="flex items-center justify-between mb-2 min-w-0">
+                  <h3 className="text-sm font-medium text-blue-800 break-words">Current Level</h3>
                   <Zap className="h-5 w-5 text-blue-500" />
                 </div>
-                <div className="flex items-end">
-                  <span className="text-3xl font-bold text-blue-800">{progress?.level ?? 0}</span>
+                <div className="flex items-end min-w-0">
+                  <span className="text-3xl font-bold text-blue-800 break-words">{progress?.level ?? 0}</span>
                 </div>
                 <div className="mt-4">
-                  <div className="flex justify-between text-sm mb-1">
+                  <div className="flex justify-between text-sm mb-1 break-words min-w-0">
                     <span className="text-blue-700">{progress?.currentXP ?? 0} XP</span>
                     <span className="text-blue-700">{progress?.nextLevelXP ?? 100} XP</span>
                   </div>
@@ -203,53 +203,53 @@ export default function AchievementsPage() {
               
               {/* Financial Benefits */}
               <div className="bg-green-50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-green-800">Financial Benefits</h3>
+                <div className="flex items-center justify-between mb-2 min-w-0">
+                  <h3 className="text-sm font-medium text-green-800 break-words">Financial Benefits</h3>
                   <Gift className="h-5 w-5 text-green-500" />
                 </div>
-                <div className="flex items-end">
-                  <span className="text-3xl font-bold text-green-800">${progress?.totalScholarshipAmount ?? 0}</span>
+                <div className="flex items-end min-w-0">
+                  <span className="text-3xl font-bold text-green-800 break-words">${progress?.totalScholarshipAmount ?? 0}</span>
                 </div>
                 <div className="mt-4">
-                  <div className="flex items-center">
+                  <div className="flex items-center min-w-0">
                     <Percent className="h-4 w-4 text-green-600 mr-1" />
-                    <span className="text-sm text-green-700">{progress?.activeDiscounts ?? 0} Active Discounts</span>
+                    <span className="text-sm text-green-700 break-words">{progress?.activeDiscounts ?? 0} Active Discounts</span>
                   </div>
                 </div>
               </div>
               
               {/* Learning Progress */}
               <div className="bg-purple-50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-purple-800">Learning Progress</h3>
+                <div className="flex items-center justify-between mb-2 min-w-0">
+                  <h3 className="text-sm font-medium text-purple-800 break-words">Learning Progress</h3>
                   <BookOpen className="h-5 w-5 text-purple-500" />
                 </div>
-                <div className="flex items-end">
-                  <span className="text-3xl font-bold text-purple-800">{progress?.completedCourses ?? 0}</span>
+                <div className="flex items-end min-w-0">
+                  <span className="text-3xl font-bold text-purple-800 break-words">{progress?.completedCourses ?? 0}</span>
                   <span className="ml-1 text-purple-700 mb-1">Courses</span>
                 </div>
                 <div className="mt-4">
-                  <div className="flex items-center">
+                  <div className="flex items-center min-w-0">
                     <Check className="h-4 w-4 text-purple-600 mr-1" />
-                    <span className="text-sm text-purple-700">Completed with Excellence</span>
+                    <span className="text-sm text-purple-700 break-words">Completed with Excellence</span>
                   </div>
                 </div>
               </div>
               
               {/* Community Impact */}
               <div className="bg-orange-50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-orange-800">Community Impact</h3>
+                <div className="flex items-center justify-between mb-2 min-w-0">
+                  <h3 className="text-sm font-medium text-orange-800 break-words">Community Impact</h3>
                   <Users className="h-5 w-5 text-orange-500" />
                 </div>
-                <div className="flex items-end">
-                  <span className="text-3xl font-bold text-orange-800">{progress?.forumContributions ?? 0}</span>
+                <div className="flex items-end min-w-0">
+                  <span className="text-3xl font-bold text-orange-800 break-words">{progress?.forumContributions ?? 0}</span>
                   <span className="ml-1 text-orange-700 mb-1">Contributions</span>
                 </div>
                 <div className="mt-4">
-                  <div className="flex items-center">
+                  <div className="flex items-center min-w-0">
                     <Clock className="h-4 w-4 text-orange-600 mr-1" />
-                    <span className="text-sm text-orange-700">{progress?.mentorshipHours ?? 0} Mentorship Hours</span>
+                    <span className="text-sm text-orange-700 break-words">{progress?.mentorshipHours ?? 0} Mentorship Hours</span>
                   </div>
                 </div>
               </div>
@@ -258,9 +258,9 @@ export default function AchievementsPage() {
         </div>
         
         {/* Achievements Tabs */}
-        <div className="bg-white rounded-lg shadow mb-6">
+        <div className="bg-white rounded-lg shadow mb-6 overflow-hidden">
           <div className="border-b border-gray-200">
-            <nav className="-mb-px flex">
+            <nav className="-mb-px flex min-w-0">
               <button
                 onClick={() => setActiveTab('all')}
                 className={`${activeTab === 'all' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm flex items-center`}
@@ -301,21 +301,21 @@ export default function AchievementsPage() {
         </div>
         
         {/* Achievement Gallery */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-lg shadow overflow-hidden overflow-hidden">
           <div className="px-6 py-5 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">{activeTab === 'all' ? 'All Achievements' : `${activeTab.charAt(0).toUpperCase()}${activeTab.slice(1)} Achievements`}</h2>
+            <h2 className="text-lg font-medium text-gray-900 break-words">{activeTab === 'all' ? 'All Achievements' : `${activeTab.charAt(0).toUpperCase()}${activeTab.slice(1)} Achievements`}</h2>
           </div>
           
           {filteredAchievements.length > 0 ? (
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               {filteredAchievements.map(achievement => {
                 // Different card designs based on achievement type
                 if (achievement.category === 'financial') {
                   return (
                     <div key={achievement.id} className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-lg shadow-sm border border-green-200 overflow-hidden">
                       <div className="px-4 py-5 sm:p-6">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 bg-green-100 rounded-md p-3">
+                        <div className="flex items-center min-w-0">
+                          <div className="flex-shrink-0 bg-green-100 rounded-md p-3 min-w-0">
                             {achievement.type === 'scholarship' ? (
                               <Award className="h-6 w-6 text-green-600" />
                             ) : achievement.type === 'discount' ? (
@@ -324,10 +324,10 @@ export default function AchievementsPage() {
                               <Gift className="h-6 w-6 text-green-600" />
                             )}
                           </div>
-                          <div className="ml-5 w-0 flex-1">
-                            <dt className="text-sm font-medium text-gray-700 truncate">{achievement.title}</dt>
-                            <dd className="flex items-baseline">
-                              <div className="text-2xl font-semibold text-gray-900">
+                          <div className="ml-5 w-0 flex-1 min-w-0">
+                            <dt className="text-sm font-medium text-gray-700 truncate break-words">{achievement.title}</dt>
+                            <dd className="flex items-baseline min-w-0">
+                              <div className="text-2xl font-semibold text-gray-900 break-words">
                                 {achievement.type === 'scholarship' || achievement.type === 'referral' ? (
                                   `$${(achievement as FinancialAchievement).amount} ${(achievement as FinancialAchievement).currency}`
                                 ) : achievement.type === 'discount' ? (
@@ -338,7 +338,7 @@ export default function AchievementsPage() {
                           </div>
                         </div>
                         <div className="mt-4">
-                          <p className="text-sm text-gray-600">{achievement.description}</p>
+                          <p className="text-sm text-gray-600 break-words">{achievement.description}</p>
                           {achievement.category === 'financial' && (achievement as FinancialAchievement).validUntil && (
                             <p className="mt-2 text-xs text-gray-500">Valid until: {formatDate((achievement as FinancialAchievement).validUntil!)}</p>
                           )}
@@ -360,22 +360,22 @@ export default function AchievementsPage() {
                 
                 if (achievement.category === 'learning') {
                   return (
-                    <div key={achievement.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-                      <div className="p-4 flex items-center justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-medium text-gray-900">{achievement.title}</h3>
-                          <p className="mt-1 text-sm text-gray-600">{achievement.description}</p>
+                    <div key={achievement.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow overflow-hidden">
+                      <div className="p-4 flex items-center justify-between min-w-0">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-medium text-gray-900 break-words">{achievement.title}</h3>
+                          <p className="mt-1 text-sm text-gray-600 break-words">{achievement.description}</p>
                           {achievement.earnedAt && (
                             <p className="mt-2 text-xs text-gray-500">Earned on {formatDate(achievement.earnedAt)}</p>
                           )}
                         </div>
-                        <div className="ml-4 flex-shrink-0 h-16 w-16 relative">
+                        <div className="ml-4 flex-shrink-0 h-16 w-16 relative min-w-0">
                           {achievement.icon ? (
-                            <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center">
+                            <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center min-w-0">
                               <Trophy className="h-8 w-8 text-blue-500" />
                             </div>
                           ) : (
-                            <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center">
+                            <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center min-w-0">
                               <BookOpen className="h-8 w-8 text-blue-500" />
                             </div>
                           )}
@@ -387,35 +387,35 @@ export default function AchievementsPage() {
                 
                 // Default achievement card for other types
                 return (
-                  <div key={achievement.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                  <div key={achievement.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow overflow-hidden">
                     <div className="p-4">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0">
+                      <div className="flex items-center min-w-0">
+                        <div className="flex-shrink-0 min-w-0">
                           {achievement.category === 'community' ? (
-                            <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
+                            <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center min-w-0">
                               <Users className="h-6 w-6 text-orange-500" />
                             </div>
                           ) : achievement.category === 'career' ? (
-                            <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                            <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center min-w-0">
                               <Star className="h-6 w-6 text-purple-500" />
                             </div>
                           ) : (
-                            <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
+                            <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center min-w-0">
                               <Trophy className="h-6 w-6 text-gray-500" />
                             </div>
                           )}
                         </div>
                         <div className="ml-4">
-                          <h3 className="text-lg font-medium text-gray-900">{achievement.title}</h3>
-                          <p className="mt-1 text-sm text-gray-600">{achievement.description}</p>
+                          <h3 className="text-lg font-medium text-gray-900 break-words">{achievement.title}</h3>
+                          <p className="mt-1 text-sm text-gray-600 break-words">{achievement.description}</p>
                           {achievement.earnedAt && (
                             <p className="mt-2 text-xs text-gray-500">Earned on {formatDate(achievement.earnedAt)}</p>
                           )}
                           {achievement.type === 'certification' && achievement.category === 'career' && (
-                            <p className="mt-2 text-xs font-medium text-gray-700">Issued by: {(achievement as CareerAchievement).issuer}</p>
+                            <p className="mt-2 text-xs font-medium text-gray-700 break-words">Issued by: {(achievement as CareerAchievement).issuer}</p>
                           )}
                           {achievement.type === 'job' && achievement.category === 'career' && (
-                            <p className="mt-2 text-xs font-medium text-gray-700">Position: {(achievement as CareerAchievement).position} at {(achievement as CareerAchievement).company}</p>
+                            <p className="mt-2 text-xs font-medium text-gray-700 break-words">Position: {(achievement as CareerAchievement).position} at {(achievement as CareerAchievement).company}</p>
                           )}
                         </div>
                       </div>
@@ -427,8 +427,8 @@ export default function AchievementsPage() {
           ) : (
             <div className="p-6 text-center">
               <Trophy className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No achievements yet</h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <h3 className="mt-2 text-sm font-medium text-gray-900 break-words">No achievements yet</h3>
+              <p className="mt-1 text-sm text-gray-500 break-words">
                 Start learning and complete courses to earn achievements.
               </p>
             </div>

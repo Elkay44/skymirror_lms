@@ -236,14 +236,14 @@ export default function VideoPlayer({
       
       {/* Loading spinner */}
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 min-w-0">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
         </div>
       )}
       
       {/* Error message */}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 p-4">
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 p-4 min-w-0">
           <div className="text-white text-center">
             <svg className="mx-auto h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -265,7 +265,7 @@ export default function VideoPlayer({
         onClick={togglePlay}
       >
         <button 
-          className="h-16 w-16 rounded-full bg-black bg-opacity-50 flex items-center justify-center hover:bg-opacity-70 transition-all transform hover:scale-110"
+          className="h-16 w-16 rounded-full bg-black bg-opacity-50 flex items-center justify-center hover:bg-opacity-70 transition-all transform hover:scale-110 min-w-0"
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? (
@@ -286,7 +286,7 @@ export default function VideoPlayer({
         className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent px-4 py-2 transition-opacity duration-300 ${isPlaying && !showControls ? 'opacity-0' : 'opacity-100'}`}
       >
         {/* Progress bar */}
-        <div className="flex items-center mb-1">
+        <div className="flex items-center mb-1 min-w-0">
           <input
             type="range"
             min="0"
@@ -299,9 +299,9 @@ export default function VideoPlayer({
           />
         </div>
         
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between min-w-0">
           {/* Left controls */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 min-w-0">
             {/* Play/Pause button */}
             <button 
               onClick={togglePlay}
@@ -321,7 +321,7 @@ export default function VideoPlayer({
             </button>
             
             {/* Volume control */}
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1 min-w-0">
               <button 
                 onClick={toggleMute}
                 className="text-white hover:text-indigo-400 focus:outline-none"
@@ -364,7 +364,7 @@ export default function VideoPlayer({
           </div>
           
           {/* Right controls */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 min-w-0">
             {/* Playback speed */}
             <button 
               onClick={changePlaybackRate}

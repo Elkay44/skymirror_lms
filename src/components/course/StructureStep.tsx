@@ -22,11 +22,11 @@ function ArrayField({ field, label, placeholder, description }: ArrayFieldProps)
   return (
     <div className="space-y-2">
       <Label>{label}</Label>
-      {description && <p className="text-sm text-muted-foreground mb-2">{description}</p>}
+      {description && <p className="text-sm text-muted-foreground mb-2 break-words">{description}</p>}
       
       <div className="space-y-2">
         {items.map((item, index) => (
-          <div key={index} className="flex items-center gap-2">
+          <div key={index} className="flex items-center gap-2 min-w-0">
             <Input
               value={item}
               onChange={(e) => handleArrayFieldChange(field, index, e.target.value)}
@@ -58,14 +58,14 @@ function ArrayField({ field, label, placeholder, description }: ArrayFieldProps)
         </Button>
       </div>
       
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm text-red-500 break-words">{error}</p>}
     </div>
   );
 }
 
 export function StructureStep() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 lg:space-y-8">
       <ArrayField
         field="requirements"
         label="Requirements"

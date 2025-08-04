@@ -57,8 +57,8 @@ export default function AssessmentsPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Assessments</h1>
-      <table className="min-w-full bg-white rounded shadow">
+      <h1 className="text-2xl font-bold mb-4 break-words">Assessments</h1>
+      <table className="min-w-full bg-white rounded shadow overflow-hidden">
         <thead>
           <tr>
             <th className="py-2 px-4 border-b">Title</th>
@@ -74,7 +74,7 @@ export default function AssessmentsPage() {
               <td className="py-2 px-4 border-b">{a.dueDate ? new Date(a.dueDate).toLocaleDateString() : '-'}</td>
               <td className="py-2 px-4 border-b">{a.status}</td>
               <td className="py-2 px-4 border-b">
-                <button className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">Submit</button>
+                <button className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 break-words">Submit</button>
               </td>
             </tr>
           ))}

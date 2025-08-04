@@ -128,7 +128,7 @@ export default function InstructorProfilePage() {
 
   if (loading) {
     return (
-      <div className="p-8 flex justify-center items-center">
+      <div className="p-8 flex justify-center items-center min-w-0">
         <div className="animate-spin h-8 w-8 border-4 border-purple-600 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -138,7 +138,7 @@ export default function InstructorProfilePage() {
     return (
       <div className="p-8">
         <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-          <h2 className="text-red-800 font-medium">Profile Not Found</h2>
+          <h2 className="text-red-800 font-medium break-words">Profile Not Found</h2>
           <p className="text-red-600 mt-1">Unable to load your profile information. Please try again later.</p>
         </div>
       </div>
@@ -152,19 +152,19 @@ export default function InstructorProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-purple-600 to-indigo-700 px-6 py-12 text-white relative">
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="absolute top-4 right-4 bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors"
+              className="absolute top-4 right-4 bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors overflow-hidden flex-shrink-0"
               aria-label={isEditing ? "Cancel editing" : "Edit profile"}
             >
               {isEditing ? <Save className="h-5 w-5" /> : <Edit className="h-5 w-5" />}
             </button>
             
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="w-24 h-24 rounded-full overflow-hidden bg-white/20 flex-shrink-0 flex items-center justify-center">
+            <div className="flex flex-col md:flex-row items-center gap-4 lg:gap-6 min-w-0">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-white/20 flex-shrink-0 flex items-center justify-center min-w-0">
                 {userData.image ? (
                   <Image 
                     src={userData.image} 
@@ -179,14 +179,14 @@ export default function InstructorProfilePage() {
               </div>
               
               <div className="text-center md:text-left">
-                <h1 className="text-2xl md:text-3xl font-bold mb-1">{userData.name}</h1>
-                <div className="flex flex-wrap justify-center md:justify-start gap-3 text-sm">
-                  <div className="flex items-center">
+                <h1 className="text-2xl md:text-3xl font-bold mb-1 break-words">{userData.name}</h1>
+                <div className="flex flex-wrap justify-center md:justify-start gap-3 text-sm break-words min-w-0">
+                  <div className="flex items-center min-w-0">
                     <Mail className="h-4 w-4 mr-1" />
                     {userData.email}
                   </div>
                   {userData.location && (
-                    <div className="flex items-center">
+                    <div className="flex items-center min-w-0">
                       <Briefcase className="h-4 w-4 mr-1" />
                       {userData.location}
                     </div>
@@ -198,12 +198,12 @@ export default function InstructorProfilePage() {
           
           {/* Profile content */}
           {isEditing ? (
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Edit Your Profile</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="p-4 lg:p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 break-words">Edit Your Profile</h2>
+              <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1 break-words">Name</label>
                     <input
                       type="text"
                       id="name"
@@ -214,7 +214,7 @@ export default function InstructorProfilePage() {
                   </div>
                   
                   <div>
-                    <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                    <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1 break-words">Bio</label>
                     <textarea
                       id="bio"
                       value={bio}
@@ -225,7 +225,7 @@ export default function InstructorProfilePage() {
                   </div>
                   
                   <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1 break-words">Location</label>
                     <input
                       type="text"
                       id="location"
@@ -237,10 +237,10 @@ export default function InstructorProfilePage() {
                 </div>
                 
                 <div className="border-t border-gray-200 pt-4">
-                  <h3 className="text-lg font-medium text-gray-800 mb-3">Teaching Details</h3>
+                  <h3 className="text-lg font-medium text-gray-800 mb-3 break-words">Teaching Details</h3>
                   <div className="space-y-4">
                     <div>
-                      <label htmlFor="expertise" className="block text-sm font-medium text-gray-700 mb-1">Areas of Expertise</label>
+                      <label htmlFor="expertise" className="block text-sm font-medium text-gray-700 mb-1 break-words">Areas of Expertise</label>
                       <textarea
                         id="expertise"
                         value={expertise}
@@ -252,7 +252,7 @@ export default function InstructorProfilePage() {
                     </div>
                     
                     <div>
-                      <label htmlFor="education" className="block text-sm font-medium text-gray-700 mb-1">Education Background</label>
+                      <label htmlFor="education" className="block text-sm font-medium text-gray-700 mb-1 break-words">Education Background</label>
                       <textarea
                         id="education"
                         value={education}
@@ -264,7 +264,7 @@ export default function InstructorProfilePage() {
                     </div>
                     
                     <div>
-                      <label htmlFor="yearsOfExperience" className="block text-sm font-medium text-gray-700 mb-1">Years of Experience</label>
+                      <label htmlFor="yearsOfExperience" className="block text-sm font-medium text-gray-700 mb-1 break-words">Years of Experience</label>
                       <input
                         type="number"
                         id="yearsOfExperience"
@@ -276,7 +276,7 @@ export default function InstructorProfilePage() {
                     </div>
                     
                     <div>
-                      <label htmlFor="teachingPhilosophy" className="block text-sm font-medium text-gray-700 mb-1">Teaching Philosophy</label>
+                      <label htmlFor="teachingPhilosophy" className="block text-sm font-medium text-gray-700 mb-1 break-words">Teaching Philosophy</label>
                       <textarea
                         id="teachingPhilosophy"
                         value={teachingPhilosophy}
@@ -289,7 +289,7 @@ export default function InstructorProfilePage() {
                   </div>
                 </div>
                 
-                <div className="flex justify-end">
+                <div className="flex justify-end min-w-0">
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
@@ -307,10 +307,10 @@ export default function InstructorProfilePage() {
               </form>
             </div>
           ) : (
-            <div className="p-6">
+            <div className="p-4 lg:p-6">
               {/* Bio section */}
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center break-words min-w-0">
                   <UserCircle className="w-5 h-5 mr-2 text-purple-600" />
                   About Me
                 </h2>
@@ -320,9 +320,9 @@ export default function InstructorProfilePage() {
               </div>
               
               {/* Instructor Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-8">
                 <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                  <h3 className="font-medium text-purple-800 mb-3 flex items-center">
+                  <h3 className="font-medium text-purple-800 mb-3 flex items-center break-words min-w-0">
                     <Star className="w-4 h-4 mr-2" />
                     Areas of Expertise
                   </h3>
@@ -332,7 +332,7 @@ export default function InstructorProfilePage() {
                 </div>
                 
                 <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-                  <h3 className="font-medium text-indigo-800 mb-3 flex items-center">
+                  <h3 className="font-medium text-indigo-800 mb-3 flex items-center break-words min-w-0">
                     <GraduationCap className="w-4 h-4 mr-2" />
                     Education
                   </h3>
@@ -344,7 +344,7 @@ export default function InstructorProfilePage() {
               
               {/* Teaching Philosophy */}
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center break-words min-w-0">
                   <BookOpen className="w-5 h-5 mr-2 text-purple-600" />
                   Teaching Philosophy
                 </h2>
@@ -357,28 +357,28 @@ export default function InstructorProfilePage() {
               
               {/* Teaching Stats */}
               <div className="mt-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center break-words min-w-0">
                   <Layers className="w-5 h-5 mr-2 text-purple-600" />
                   Teaching Statistics
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                    <div className="text-2xl font-bold text-purple-600">{userData.courseCount || 0}</div>
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="text-2xl font-bold text-purple-600 break-words">{userData.courseCount || 0}</div>
                     <div className="text-xs text-gray-500">Courses Created</div>
                   </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                    <div className="text-2xl font-bold text-indigo-600">{userData.totalStudents || 0}</div>
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="text-2xl font-bold text-indigo-600 break-words">{userData.totalStudents || 0}</div>
                     <div className="text-xs text-gray-500">Total Students</div>
                   </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                    <div className="flex items-center">
-                      <span className="text-2xl font-bold text-yellow-500">{userData.averageRating?.toFixed(1) || '0.0'}</span>
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="flex items-center min-w-0">
+                      <span className="text-2xl font-bold text-yellow-500 break-words">{userData.averageRating?.toFixed(1) || '0.0'}</span>
                       <Star className="w-5 h-5 text-yellow-500 ml-1" fill="currentColor" />
                     </div>
                     <div className="text-xs text-gray-500">Average Rating</div>
                   </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                    <div className="text-2xl font-bold text-green-600">{userData.yearsOfExperience || 0}</div>
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="text-2xl font-bold text-green-600 break-words">{userData.yearsOfExperience || 0}</div>
                     <div className="text-xs text-gray-500">Years of Experience</div>
                   </div>
                 </div>

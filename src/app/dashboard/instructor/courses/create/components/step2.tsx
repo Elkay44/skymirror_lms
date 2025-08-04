@@ -80,12 +80,12 @@ export function Step2({ formData, onChange, onToggle }: Step2Props) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between min-w-0">
           <div>
             <Label>Free Course</Label>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 break-words">
               Set whether this course is free or paid
             </p>
           </div>
@@ -111,10 +111,10 @@ export function Step2({ formData, onChange, onToggle }: Step2Props) {
               />
             </div>
 
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center justify-between pt-2 min-w-0">
               <div>
                 <Label>Add Discount</Label>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 break-words">
                   Offer this course at a discounted price
                 </p>
               </div>

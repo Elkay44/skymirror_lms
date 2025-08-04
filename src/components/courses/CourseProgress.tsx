@@ -63,9 +63,9 @@ export default function CourseProgress({
   
   return (
     <div className={`bg-white rounded-lg shadow-sm p-4 ${className}`}>
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-medium text-gray-700">Your progress</h3>
-        <span className="text-sm font-semibold text-indigo-600">{progress}%</span>
+      <div className="flex items-center justify-between mb-2 min-w-0">
+        <h3 className="text-sm font-medium text-gray-700 break-words">Your progress</h3>
+        <span className="text-sm font-semibold text-indigo-600 break-words">{progress}%</span>
       </div>
       
       <div className="h-2 bg-gray-200 rounded-full mb-4 overflow-hidden">
@@ -80,8 +80,8 @@ export default function CourseProgress({
         />
       </div>
       
-      <div className="flex justify-between text-sm text-gray-500">
-        <span className="flex items-center">
+      <div className="flex justify-between text-sm text-gray-500 break-words min-w-0">
+        <span className="flex items-center min-w-0">
           <svg className="w-4 h-4 mr-1 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -91,14 +91,14 @@ export default function CourseProgress({
       </div>
       
       {estimatedHours !== undefined && (
-        <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-          <span className="text-xs text-gray-500 flex items-center">
+        <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center min-w-0">
+          <span className="text-xs text-gray-500 flex items-center min-w-0">
             <svg className="w-3.5 h-3.5 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             Est. {estimatedHours} {estimatedHours === 1 ? 'hour' : 'hours'} total
           </span>
-          <span className="text-xs font-medium text-indigo-600">{getRemainingTimeText()}</span>
+          <span className="text-xs font-medium text-indigo-600 break-words">{getRemainingTimeText()}</span>
         </div>
       )}
     </div>

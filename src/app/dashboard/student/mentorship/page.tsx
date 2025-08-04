@@ -161,13 +161,13 @@ export default function MentorshipPage() {
 
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Mentorship</h1>
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex items-center justify-between min-w-0">
+        <h1 className="text-2xl font-semibold break-words">Mentorship</h1>
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center p-8">
+        <div className="flex justify-center p-8 min-w-0">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       ) : (
@@ -199,14 +199,14 @@ export default function MentorshipPage() {
                 {filteredMentors.map((mentor) => (
                   <Card key={mentor.id}>
                     <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
+                      <div className="flex items-center justify-between min-w-0">
+                        <div className="flex items-center space-x-4 min-w-0">
                           <Avatar>
                             <AvatarImage src={mentor.image || undefined} alt={mentor.name} />
                             <AvatarFallback>{mentor.name.charAt(0)}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <h4 className="font-medium">{mentor.name}</h4>
+                            <h4 className="font-medium break-words">{mentor.name}</h4>
                           </div>
                         </div>
                       </div>
@@ -214,13 +214,13 @@ export default function MentorshipPage() {
                     <CardContent>
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-medium">About</h4>
+                          <h4 className="font-medium break-words">About</h4>
                           <p className="text-muted-foreground">{mentor.bio || 'No bio available'}</p>
                         </div>
                         {mentor.specialties && (
                           <div>
-                            <h4 className="font-medium">Specialties</h4>
-                            <div className="flex flex-wrap gap-2">
+                            <h4 className="font-medium break-words">Specialties</h4>
+                            <div className="flex flex-wrap gap-2 min-w-0">
                               {JSON.parse(mentor.specialties).map((specialty: string) => (
                                 <Badge key={specialty} variant="secondary">
                                   {specialty}
@@ -230,9 +230,9 @@ export default function MentorshipPage() {
                           </div>
                         )}
                         <div>
-                          <h4 className="font-medium">Rating</h4>
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1">
+                          <h4 className="font-medium break-words">Rating</h4>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="flex items-center gap-1 min-w-0">
                               {Array.from({ length: Math.floor(mentor.rating) }).map((_, i) => (
                                 <Star key={i} className="h-4 w-4 fill-yellow-400" />
                               ))}
@@ -261,7 +261,7 @@ export default function MentorshipPage() {
               {filteredMentors.length === 0 && (
                 <div className="col-span-full text-center py-12">
                   <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium">No mentors found</h3>
+                  <h3 className="text-lg font-medium break-words">No mentors found</h3>
                   <p className="text-muted-foreground mt-1">
                     {searchTerm ? 'Try a different search term' : 'No mentors available at the moment'}
                   </p>
@@ -274,13 +274,13 @@ export default function MentorshipPage() {
                 {(myMentors || []).map((mentor) => (
                   <Card key={mentor.id}>
                     <CardHeader>
-                      <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-4 min-w-0">
                         <Avatar className="h-12 w-12">
                           <AvatarImage src={mentor.mentor.image} alt={mentor.mentor.name} />
                           <AvatarFallback>{mentor.mentor.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <CardTitle className="text-lg">{mentor.mentor.name}</CardTitle>
+                          <CardTitle className="text-lg break-words">{mentor.mentor.name}</CardTitle>
                           <CardDescription>Expert Mentor</CardDescription>
                         </div>
                       </div>
@@ -308,15 +308,15 @@ export default function MentorshipPage() {
                   {requests.map((request) => (
                     <Card key={request.id}>
                       <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4">
+                        <div className="flex items-center justify-between min-w-0">
+                          <div className="flex items-center space-x-4 min-w-0">
                             <Avatar>
                               <AvatarImage src={request.mentor.image} alt={request.mentor.name} />
                               <AvatarFallback>{request.mentor.name.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div>
-                              <h4 className="font-medium">{request.mentor.name}</h4>
-                              <p className="text-sm text-muted-foreground">
+                              <h4 className="font-medium break-words">{request.mentor.name}</h4>
+                              <p className="text-sm text-muted-foreground break-words">
                                 Requested {typeof request.requestedDate === 'string' 
                                   ? format(new Date(request.requestedDate), 'MMM d, yyyy')
                                   : format(request.requestedDate, 'MMM d, yyyy')}
@@ -329,7 +329,7 @@ export default function MentorshipPage() {
                         </div>
                       </CardHeader>
                       <CardFooter className="border-t px-6 py-3">
-                        <div className="flex w-full items-center justify-between">
+                        <div className="flex w-full items-center justify-between min-w-0">
                           <Button variant="ghost" size="sm">
                             <MessageSquare className="h-4 w-4 mr-2" />
                             View Messages
@@ -357,7 +357,7 @@ export default function MentorshipPage() {
               ) : (
                 <div className="text-center py-12">
                   <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium">No requests yet</h3>
+                  <h3 className="text-lg font-medium break-words">No requests yet</h3>
                   <p className="text-muted-foreground mt-1">
                     Your mentorship requests will appear here
                   </p>
@@ -369,22 +369,22 @@ export default function MentorshipPage() {
       )}
       {/* Request Mentorship Dialog */}
       {selectedMentor && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-medium">Request Mentorship</h3>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 min-w-0">
+          <div className="w-full max-w-md bg-white rounded-lg shadow-xl p-6 overflow-hidden">
+            <div className="flex items-center justify-between mb-6 min-w-0">
+              <h3 className="text-lg font-medium break-words">Request Mentorship</h3>
               <X className="h-4 w-4 cursor-pointer" onClick={() => setSelectedMentor(null)} />
             </div>
             <div className="space-y-4">
               <div>
                 <Label>Mentor</Label>
-                <div className="flex items-center space-x-3">
-                  <Avatar className="h-8 w-8">
+                <div className="flex items-center space-x-3 min-w-0">
+                  <Avatar className="h-6 w-6 lg:h-8 lg:w-8">
                     <AvatarImage src={selectedMentor?.image || undefined} alt={selectedMentor?.name || 'Mentor'} />
                     <AvatarFallback>{selectedMentor?.name?.charAt(0) || 'M'}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{selectedMentor?.name || 'Mentor'}</p>
+                    <p className="font-medium break-words">{selectedMentor?.name || 'Mentor'}</p>
                   </div>
                 </div>
               </div>
@@ -396,7 +396,7 @@ export default function MentorshipPage() {
                   onChange={(e) => setRequestMessage(e.target.value)}
                 />
               </div>
-              <div className="flex justify-end">
+              <div className="flex justify-end min-w-0">
                 <Button variant="outline" onClick={() => setSelectedMentor(null)}>
                   Cancel
                 </Button>

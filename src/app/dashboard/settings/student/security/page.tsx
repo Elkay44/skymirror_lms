@@ -54,7 +54,7 @@ export default function StudentSecuritySettings() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center h-64 min-w-0">
         <div className="animate-spin h-8 w-8 border-4 border-blue-600 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -62,18 +62,18 @@ export default function StudentSecuritySettings() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-6 lg:space-y-8">
         {/* Password Management */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
           <div className="px-4 py-5 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900 flex items-center">
+            <h3 className="text-lg font-medium text-gray-900 flex items-center break-words min-w-0">
               <Key className="mr-2 h-5 w-5 text-blue-500" />
               Password Management
             </h3>
           </div>
           <div className="px-4 py-5 space-y-4">
             <div>
-              <label htmlFor="current-password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="current-password" className="block text-sm font-medium text-gray-700 break-words">
                 Current Password
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
@@ -82,12 +82,12 @@ export default function StudentSecuritySettings() {
                   id="current-password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-10 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
                   placeholder="Enter your current password"
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 px-3 flex items-center"
+                  className="absolute inset-y-0 right-0 px-3 flex items-center min-w-0"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -100,7 +100,7 @@ export default function StudentSecuritySettings() {
             </div>
             
             <div>
-              <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 break-words">
                 New Password
               </label>
               <div className="mt-1">
@@ -109,7 +109,7 @@ export default function StudentSecuritySettings() {
                   id="new-password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
                   placeholder="Enter new password"
                 />
               </div>
@@ -119,7 +119,7 @@ export default function StudentSecuritySettings() {
             </div>
             
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 break-words">
                 Confirm New Password
               </label>
               <div className="mt-1">
@@ -128,7 +128,7 @@ export default function StudentSecuritySettings() {
                   id="confirm-password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
                   placeholder="Confirm new password"
                 />
               </div>
@@ -137,20 +137,20 @@ export default function StudentSecuritySettings() {
         </div>
         
         {/* Additional Security Settings */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
           <div className="px-4 py-5 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900 flex items-center">
+            <h3 className="text-lg font-medium text-gray-900 flex items-center break-words min-w-0">
               <Lock className="mr-2 h-5 w-5 text-blue-500" />
               Additional Security
             </h3>
           </div>
           <div className="px-4 py-5 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-w-0">
               <div>
-                <label htmlFor="two-factor" className="text-sm font-medium text-gray-700">Two-Factor Authentication</label>
+                <label htmlFor="two-factor" className="text-sm font-medium text-gray-700 break-words">Two-Factor Authentication</label>
                 <p className="text-xs text-gray-500">Add an extra layer of security to your account</p>
               </div>
-              <div className="ml-4 flex-shrink-0">
+              <div className="ml-4 flex-shrink-0 min-w-0">
                 <button
                   type="button"
                   className={`${twoFactorEnabled ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -165,14 +165,14 @@ export default function StudentSecuritySettings() {
             </div>
             
             <div>
-              <label htmlFor="session-timeout" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="session-timeout" className="block text-sm font-medium text-gray-700 break-words">
                 Session Timeout (minutes)
               </label>
               <select
                 id="session-timeout"
                 value={sessionTimeout}
                 onChange={(e) => setSessionTimeout(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
               >
                 <option value="15">15 minutes</option>
                 <option value="30">30 minutes</option>
@@ -188,7 +188,7 @@ export default function StudentSecuritySettings() {
             <div className="pt-4">
               <button
                 type="button"
-                className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                className="text-sm font-medium text-blue-600 hover:text-blue-800 break-words"
                 onClick={() => toast.success('Security log viewed!')}
               >
                 View recent login activity
@@ -198,10 +198,10 @@ export default function StudentSecuritySettings() {
         </div>
 
         <div className="pt-5">
-          <div className="flex justify-end">
+          <div className="flex justify-end min-w-0">
             <button
               type="submit"
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 break-words min-w-0"
             >
               <Save className="h-4 w-4 mr-2" />
               Save Security Settings

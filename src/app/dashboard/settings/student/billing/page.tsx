@@ -312,20 +312,20 @@ export default function StudentBillingSettings() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center h-64 min-w-0">
         <div className="animate-spin h-8 w-8 border-4 border-blue-600 rounded-full border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-end mb-6">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-500">Need help?</span>
+    <div className="space-y-6 lg:space-y-8">
+      <div className="flex justify-end mb-6 min-w-0">
+        <div className="flex items-center space-x-2 min-w-0">
+          <span className="text-sm text-gray-500 break-words">Need help?</span>
           <Link 
             href="/dashboard/support" 
-            className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center"
+            className="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center break-words min-w-0"
           >
             Contact Support
             <ChevronRight className="h-4 w-4 ml-1" />
@@ -336,61 +336,61 @@ export default function StudentBillingSettings() {
       {/* Current Subscription */}
       <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+          <div className="flex items-center justify-between min-w-0">
+            <div className="flex items-center min-w-0">
+              <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 min-w-0">
                 <DollarSign className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-gray-900">Current Subscription</h3>
-                <p className="text-sm text-gray-500 mt-0.5">Manage your plan and billing preferences</p>
+                <h3 className="text-xl font-semibold text-gray-900 break-words">Current Subscription</h3>
+                <p className="text-sm text-gray-500 mt-0.5 break-words">Manage your plan and billing preferences</p>
               </div>
             </div>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 break-words min-w-0">
               <CheckCircle className="h-4 w-4 mr-1.5" />
               Active
             </span>
           </div>
           
-          <div className="mt-8 bg-white rounded-lg border border-blue-100 overflow-hidden">
+          <div className="mt-8 bg-white rounded-lg border border-blue-100 overflow-hidden overflow-hidden">
             <div className="px-6 py-5 bg-gradient-to-r from-blue-50 to-white border-b border-blue-100">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
-                  <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 uppercase">
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 uppercase break-words">
                     {subscription.interval}
                   </span>
-                  <h4 className="mt-1 text-lg font-semibold text-gray-900 capitalize">{subscription.plan} Plan</h4>
+                  <h4 className="mt-1 text-lg font-semibold text-gray-900 capitalize break-words">{subscription.plan} Plan</h4>
                 </div>
                 <div className="text-right">
-                  <span className="text-2xl font-bold text-gray-900">${subscription?.price ? subscription.price.toFixed(2) : '0.00'}</span>
-                  <span className="text-gray-500 text-sm">/{subscription.interval}</span>
+                  <span className="text-2xl font-bold text-gray-900 break-words">${subscription?.price ? subscription.price.toFixed(2) : '0.00'}</span>
+                  <span className="text-gray-500 text-sm break-words">/{subscription.interval}</span>
                 </div>
               </div>
             </div>
             
             <div className="px-6 py-4 divide-y divide-gray-100">
-              <div className="py-3 flex items-center justify-between">
-                <div className="flex items-center">
+              <div className="py-3 flex items-center justify-between min-w-0">
+                <div className="flex items-center min-w-0">
                   <Calendar className="h-5 w-5 text-gray-400 mr-3" />
-                  <span className="text-sm text-gray-700">Started on</span>
+                  <span className="text-sm text-gray-700 break-words">Started on</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900">{subscription.startDate}</span>
+                <span className="text-sm font-medium text-gray-900 break-words">{subscription.startDate}</span>
               </div>
               
-              <div className="py-3 flex items-center justify-between">
-                <div className="flex items-center">
+              <div className="py-3 flex items-center justify-between min-w-0">
+                <div className="flex items-center min-w-0">
                   <Clock className="h-5 w-5 text-gray-400 mr-3" />
-                  <span className="text-sm text-gray-700">Next billing date</span>
+                  <span className="text-sm text-gray-700 break-words">Next billing date</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900">{subscription.renewalDate}</span>
+                <span className="text-sm font-medium text-gray-900 break-words">{subscription.renewalDate}</span>
               </div>
               
-              <div className="py-3 flex items-center justify-between">
-                <div className="flex items-center">
+              <div className="py-3 flex items-center justify-between min-w-0">
+                <div className="flex items-center min-w-0">
                   <CreditCard className="h-5 w-5 text-gray-400 mr-3" />
-                  <span className="text-sm text-gray-700">Next billing amount</span>
+                  <span className="text-sm text-gray-700 break-words">Next billing amount</span>
                 </div>
-                <span className="text-sm font-medium text-gray-900">${subscription?.nextBillingAmount ? subscription.nextBillingAmount.toFixed(2) : '0.00'}</span>
+                <span className="text-sm font-medium text-gray-900 break-words">${subscription?.nextBillingAmount ? subscription.nextBillingAmount.toFixed(2) : '0.00'}</span>
               </div>
             </div>
           </div>
@@ -398,14 +398,14 @@ export default function StudentBillingSettings() {
       </div>
       
       {/* Available Plans */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Available Plans</h3>
-          <p className="mt-1 text-sm text-gray-500">Choose the plan that works best for you</p>
+          <h3 className="text-lg font-medium text-gray-900 break-words">Available Plans</h3>
+          <p className="mt-1 text-sm text-gray-500 break-words">Choose the plan that works best for you</p>
         </div>
         
         <div className="px-6 py-5">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
             {plans.map((plan) => (
               <div 
                 key={plan.id} 
@@ -415,28 +415,28 @@ export default function StudentBillingSettings() {
                 }`}
               >
                 {plan.recommended && (
-                  <div className="bg-blue-500 text-white px-4 py-1 text-center text-xs font-medium">
+                  <div className="bg-blue-500 text-white px-4 py-1 text-center text-xs font-medium break-words">
                     RECOMMENDED
                   </div>
                 )}
                 {plan.popular && (
-                  <div className="bg-green-500 text-white px-4 py-1 text-center text-xs font-medium">
+                  <div className="bg-green-500 text-white px-4 py-1 text-center text-xs font-medium break-words">
                     MOST POPULAR
                   </div>
                 )}
                 
                 <div className="px-5 py-5">
-                  <h4 className="text-lg font-medium text-gray-900">{plan.name}</h4>
-                  <div className="mt-2 flex items-baseline">
-                    <span className="text-2xl font-semibold text-gray-900">${plan?.price ? plan.price.toFixed(2) : '0.00'}</span>
-                    <span className="ml-1 text-gray-500 text-sm">/{plan.interval}</span>
+                  <h4 className="text-lg font-medium text-gray-900 break-words">{plan.name}</h4>
+                  <div className="mt-2 flex items-baseline min-w-0">
+                    <span className="text-2xl font-semibold text-gray-900 break-words">${plan?.price ? plan.price.toFixed(2) : '0.00'}</span>
+                    <span className="ml-1 text-gray-500 text-sm break-words">/{plan.interval}</span>
                   </div>
                   
                   <ul className="mt-4 space-y-2">
                     {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start">
-                        <CheckCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
-                        <span className="text-sm text-gray-600">{feature}</span>
+                      <li key={idx} className="flex items-start min-w-0">
+                        <CheckCircle className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0 min-w-0" />
+                        <span className="text-sm text-gray-600 break-words">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -466,16 +466,16 @@ export default function StudentBillingSettings() {
       </div>
       
       {/* Payment Methods */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-200">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between min-w-0">
             <div>
-              <h3 className="text-lg font-medium text-gray-900">Payment Methods</h3>
-              <p className="mt-1 text-sm text-gray-500">Manage your payment options</p>
+              <h3 className="text-lg font-medium text-gray-900 break-words">Payment Methods</h3>
+              <p className="mt-1 text-sm text-gray-500 break-words">Manage your payment options</p>
             </div>
             <button
               onClick={handleAddPaymentMethod}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 break-words min-w-0"
             >
               <PlusCircle className="mr-2 h-4 w-4 text-gray-500" />
               Add Payment Method
@@ -485,29 +485,29 @@ export default function StudentBillingSettings() {
         
         <div className="px-6 py-5 divide-y divide-gray-200">
           {paymentMethods.map((method) => (
-            <div key={method.id} className="py-4 flex flex-wrap md:flex-nowrap items-center justify-between">
-              <div className="flex items-center">
-                <div className="h-12 w-16 bg-gray-50 rounded-md border border-gray-200 flex items-center justify-center mr-4">
-                  {method.brand === 'Visa' && <span className="font-bold text-blue-700">VISA</span>}
-                  {method.brand === 'Mastercard' && <span className="font-bold text-red-600">MC</span>}
-                  {method.brand === 'Amex' && <span className="font-bold text-blue-500">AMEX</span>}
+            <div key={method.id} className="py-4 flex flex-wrap md:flex-nowrap items-center justify-between min-w-0">
+              <div className="flex items-center min-w-0">
+                <div className="h-12 w-16 bg-gray-50 rounded-md border border-gray-200 flex items-center justify-center mr-4 min-w-0">
+                  {method.brand === 'Visa' && <span className="font-bold text-blue-700 break-words">VISA</span>}
+                  {method.brand === 'Mastercard' && <span className="font-bold text-red-600 break-words">MC</span>}
+                  {method.brand === 'Amex' && <span className="font-bold text-blue-500 break-words">AMEX</span>}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{method.brand} •••• {method.last4}</p>
+                  <p className="text-sm font-medium text-gray-900 break-words">{method.brand} •••• {method.last4}</p>
                   <p className="text-xs text-gray-500">Expires {method.expMonth}/{method.expYear}</p>
                   <p className="text-xs text-gray-500">{method.cardholderName}</p>
                   {method.isDefault && (
-                    <span className="inline-flex items-center mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <span className="inline-flex items-center mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 break-words min-w-0">
                       Default
                     </span>
                   )}
                 </div>
               </div>
-              <div className="flex space-x-3 mt-3 md:mt-0">
+              <div className="flex space-x-3 mt-3 md:mt-0 min-w-0">
                 {!method.isDefault && (
                   <button
                     onClick={() => handleSetDefaultPaymentMethod(method.id)}
-                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center break-words min-w-0"
                   >
                     <CheckCircle className="mr-1 h-4 w-4" />
                     Set as default
@@ -515,7 +515,7 @@ export default function StudentBillingSettings() {
                 )}
                 <button
                   onClick={() => handleRemovePaymentMethod(method.id)}
-                  className="text-sm text-red-600 hover:text-red-800 flex items-center"
+                  className="text-sm text-red-600 hover:text-red-800 flex items-center break-words min-w-0"
                 >
                   <Trash2 className="mr-1 h-4 w-4" />
                   Remove
@@ -527,10 +527,10 @@ export default function StudentBillingSettings() {
       </div>
       
       {/* Billing History */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Billing History</h3>
-          <p className="mt-1 text-sm text-gray-500">View and download your previous invoices</p>
+          <h3 className="text-lg font-medium text-gray-900 break-words">Billing History</h3>
+          <p className="mt-1 text-sm text-gray-500 break-words">View and download your previous invoices</p>
         </div>
         
         <div className="px-6 py-5">
@@ -538,28 +538,28 @@ export default function StudentBillingSettings() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Receipt</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">Date</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">Description</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">Payment Method</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">Amount</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">Status</th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider break-words">Receipt</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {billingHistory.map((invoice) => (
                   <tr key={invoice.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{invoice.date}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{invoice.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{invoice.paymentMethod}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${invoice?.amount ? invoice.amount.toFixed(2) : '0.00'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 break-words">{invoice.date}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 break-words">{invoice.description}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 break-words">{invoice.paymentMethod}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 break-words">${invoice?.amount ? invoice.amount.toFixed(2) : '0.00'}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 capitalize">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 capitalize break-words min-w-0">
                         {invoice.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <a href={invoice.invoice_url} className="text-blue-600 hover:text-blue-900 inline-flex items-center">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium break-words">
+                      <a href={invoice.invoice_url} className="text-blue-600 hover:text-blue-900 inline-flex items-center min-w-0">
                         <Download className="h-4 w-4 mr-1" />
                         PDF
                       </a>

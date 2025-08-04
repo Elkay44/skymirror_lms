@@ -56,7 +56,7 @@ export default function CommitsPage() {
         description="Please wait while we load code commits"
         backHref="/dashboard/instructor/courses"
       >
-        <div className="flex items-center justify-center h-64">
+        <div className="flex items-center justify-center h-64 min-w-0">
           <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
         </div>
       </PageLayout>
@@ -87,10 +87,10 @@ export default function CommitsPage() {
       >
         <div className="text-center py-12">
           <GitCommit className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100 break-words">
             No commits yet
           </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 break-words">
             Student code commits will appear here once they start working on projects.
           </p>
         </div>
@@ -104,35 +104,35 @@ export default function CommitsPage() {
       description="Track and review student code submissions"
       backHref="/dashboard/instructor/courses"
       actions={
-        <div className="flex space-x-3">
-          <button className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <div className="flex space-x-3 min-w-0">
+          <button className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 break-words min-w-0">
             <Filter className="h-4 w-4 mr-2" />
             Filter
           </button>
-          <button className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <button className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 break-words min-w-0">
             <Download className="h-4 w-4 mr-2" />
             Export
           </button>
         </div>
       }
     >
-      <div className="p-6">
+      <div className="p-4 lg:p-6">
         {/* Search and Filters */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0 min-w-0">
           <div className="relative w-full sm:w-80">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
               <Search className="h-4 w-4 text-gray-400" />
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm break-words"
               placeholder="Search commits..."
             />
           </div>
           
-          <div className="flex items-center space-x-4 w-full sm:w-auto">
+          <div className="flex items-center space-x-4 w-full sm:w-auto min-w-0">
             <select
-              className="block w-full sm:w-40 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white"
+              className="block w-full sm:w-40 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white break-words"
               defaultValue="all-branches"
             >
               <option value="all-branches">All Branches</option>
@@ -143,7 +143,7 @@ export default function CommitsPage() {
             </select>
             
             <select
-              className="block w-full sm:w-32 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white"
+              className="block w-full sm:w-32 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md dark:bg-gray-700 dark:text-white break-words"
               defaultValue="7-days"
             >
               <option value="today">Today</option>
@@ -156,19 +156,19 @@ export default function CommitsPage() {
         </div>
 
         {/* Commits List */}
-        <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden overflow-hidden">
           <ul className="divide-y divide-gray-200 dark:divide-gray-700">
             {commits.map((commit) => (
               <li key={commit.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <div className="px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
+                <div className="px-4 py-3 lg:px-6 lg:py-4">
+                  <div className="flex items-center justify-between min-w-0">
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center min-w-0">
                         <User className="h-4 w-4 text-indigo-600 dark:text-indigo-300" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{commit.author}</p>
-                        <p className="text-sm text-gray-900 dark:text-white">{commit.message}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white break-words">{commit.author}</p>
+                        <p className="text-sm text-gray-900 dark:text-white break-words">{commit.message}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -176,16 +176,16 @@ export default function CommitsPage() {
                     </div>
                   </div>
                   
-                  <div className="mt-2 flex flex-wrap items-center text-xs text-gray-500 dark:text-gray-400 space-x-4">
-                    <div className="flex items-center">
+                  <div className="mt-2 flex flex-wrap items-center text-xs text-gray-500 dark:text-gray-400 space-x-4 min-w-0">
+                    <div className="flex items-center min-w-0">
                       <GitCommit className="h-3 w-3 mr-1" />
                       <span className="font-mono">{commit.id.substring(0, 7)}</span>
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-center min-w-0">
                       <GitBranch className="h-3 w-3 mr-1" />
                       <span>{commit.branch}</span>
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-center min-w-0">
                       <Code className="h-3 w-3 mr-1" />
                       <span>{commit.changes} files changed</span>
                     </div>
@@ -196,7 +196,7 @@ export default function CommitsPage() {
                       <span className="text-red-600 dark:text-red-400">-{commit.deletions}</span>
                     )}
                     {commit.pullRequest && (
-                      <div className="flex items-center">
+                      <div className="flex items-center min-w-0">
                         <GitPullRequest className="h-3 w-3 mr-1 text-purple-600 dark:text-purple-400" />
                         <a href="#" className="text-purple-600 dark:text-purple-400 hover:underline">
                           #{commit.pullRequest}
@@ -210,27 +210,27 @@ export default function CommitsPage() {
           </ul>
           
           {/* Pagination */}
-          <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700">
-            <div className="flex-1 flex justify-between sm:hidden">
-              <a href="#" className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+          <div className="bg-gray-50 dark:bg-gray-800 px-6 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 min-w-0">
+            <div className="flex-1 flex justify-between sm:hidden min-w-0">
+              <a href="#" className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 break-words min-w-0">
                 Previous
               </a>
-              <a href="#" className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+              <a href="#" className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 break-words min-w-0">
                 Next
               </a>
             </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between min-w-0">
               <div>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  Showing <span className="font-medium">1</span> to <span className="font-medium">5</span> of{' '}
-                  <span className="font-medium">24</span> commits
+                <p className="text-sm text-gray-700 dark:text-gray-300 break-words">
+                  Showing <span className="font-medium break-words">1</span> to <span className="font-medium break-words">5</span> of{' '}
+                  <span className="font-medium break-words">24</span> commits
                 </p>
               </div>
               <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px min-w-0" aria-label="Pagination">
                   <a
                     href="#"
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600"
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600 break-words min-w-0"
                   >
                     <span className="sr-only">Previous</span>
                     <span className="h-5 w-5">
@@ -242,25 +242,25 @@ export default function CommitsPage() {
                   <a
                     href="#"
                     aria-current="page"
-                    className="z-10 bg-indigo-50 dark:bg-indigo-900/50 border-indigo-500 text-indigo-600 dark:text-indigo-300 relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+                    className="z-10 bg-indigo-50 dark:bg-indigo-900/50 border-indigo-500 text-indigo-600 dark:text-indigo-300 relative inline-flex items-center px-4 py-2 border text-sm font-medium break-words min-w-0"
                   >
                     1
                   </a>
                   <a
                     href="#"
-                    className="bg-white dark:bg-gray-700 border-gray-300 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+                    className="bg-white dark:bg-gray-700 border-gray-300 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium break-words min-w-0"
                   >
                     2
                   </a>
                   <a
                     href="#"
-                    className="bg-white dark:bg-gray-700 border-gray-300 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+                    className="bg-white dark:bg-gray-700 border-gray-300 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium break-words min-w-0"
                   >
                     3
                   </a>
                   <a
                     href="#"
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600"
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600 break-words min-w-0"
                   >
                     <span className="sr-only">Next</span>
                     <span className="h-5 w-5">

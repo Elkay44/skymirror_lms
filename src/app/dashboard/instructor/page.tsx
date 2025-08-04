@@ -206,7 +206,7 @@ export default function InstructorDashboard(): JSX.Element {
   // Handle loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 min-w-0">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-t-blue-600 border-blue-200 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your dashboard...</p>
@@ -217,7 +217,7 @@ export default function InstructorDashboard(): JSX.Element {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 min-w-0">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-t-red-600 border-red-200 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">{error}</p>
@@ -273,48 +273,49 @@ export default function InstructorDashboard(): JSX.Element {
       {/* Hero Section with Welcome and Stats */}
       <div className="max-w-screen-xl mx-auto mb-8">
         <motion.div 
-          className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+          className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 overflow-hidden"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex flex-col md:flex-row md:items-center">
+          <div className="flex flex-col md:flex-row md:items-center min-w-0">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Welcome, {dashboardData.instructorName}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 break-words">Welcome, {dashboardData.instructorName}</h1>
               <p className="text-gray-600 mt-1">Here's what's happening with your courses today</p>
             </div>
           </div>
         </motion.div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="max-w-screen-xl mx-auto mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-4 lg:gap-6 mb-8">
           {/* Total Students */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <div className="bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Total Students</p>
-                  <h3 className="text-2xl font-bold text-gray-900">{dashboardData.overallStats.totalStudents || 0}</h3>
-                  <p className="text-sm text-gray-500 mt-1">Across all courses</p>
+            <div className="bg-white rounded-xl shadow-sm p-4 lg:p-6 transition-all duration-300 hover:shadow-md min-w-0 overflow-hidden">
+              <div className="flex justify-between items-start min-w-0">
+                <div className="min-w-0 flex-1 mr-3 min-w-0">
+                  <p className="text-sm font-medium text-gray-500 mb-1 break-words">Total Students</p>
+                  <h3 className="text-xl lg:text-2xl font-bold text-gray-900 break-words">{dashboardData.overallStats.totalStudents || 0}</h3>
+                  <p className="text-sm text-gray-500 mt-1 break-words">Across all courses</p>
                 </div>
-                <div className="p-2 rounded-full bg-blue-50 text-blue-600">
-                  <Users className="h-6 w-6" />
+                <div className="p-2 rounded-full bg-blue-50 text-blue-600 flex-shrink-0 min-w-0 flex-shrink-0">
+                  <Users className="h-5 w-5 lg:h-6 lg:w-6" />
                 </div>
               </div>
-              <div className="mt-3 flex items-center">
-                <span className="text-sm font-medium text-green-600 flex items-center">
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <div className="mt-3 flex items-center flex-wrap gap-1 min-w-0">
+                <span className="text-sm font-medium text-green-600 flex items-center break-words min-w-0">
+                  <svg className="w-4 h-4 mr-1 flex-shrink-0 min-w-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
                   </svg>
                   8.2%
                 </span>
-                <span className="text-xs text-gray-500 ml-2">from last month</span>
+                <span className="text-xs text-gray-500 break-words">from last month</span>
               </div>
             </div>
           </motion.div>
@@ -325,29 +326,29 @@ export default function InstructorDashboard(): JSX.Element {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className="bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">All Courses</p>
-                  <h3 className="text-2xl font-bold text-gray-900">{dashboardData.overallStats.totalCourses || 0}</h3>
-                  <div className="mt-1 flex flex-wrap gap-3 text-xs">
-                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">
+            <div className="bg-white rounded-xl shadow-sm p-4 lg:p-6 transition-all duration-300 hover:shadow-md min-w-0 overflow-hidden">
+              <div className="flex justify-between items-start min-w-0">
+                <div className="min-w-0 flex-1 mr-3 min-w-0">
+                  <p className="text-sm font-medium text-gray-500 mb-1 break-words">All Courses</p>
+                  <h3 className="text-xl lg:text-2xl font-bold text-gray-900 break-words">{dashboardData.overallStats.totalCourses || 0}</h3>
+                  <div className="mt-1 flex flex-wrap gap-1 lg:gap-2 text-xs min-w-0">
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full break-words">
                       {dashboardData.recentCourses.filter(course => course.status === 'PUBLISHED').length} Published
                     </span>
-                    <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full">
+                    <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full break-words">
                       {dashboardData.recentCourses.filter(course => course.status === 'DRAFT').length} Drafts
                     </span>
-                    <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full">
+                    <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full break-words">
                       {dashboardData.recentCourses.filter(course => course.status === 'ARCHIVED').length} Archived
                     </span>
                   </div>
                 </div>
-                <div className="p-2 rounded-full bg-indigo-50 text-indigo-600">
-                  <BookOpen className="h-6 w-6" />
+                <div className="p-2 rounded-full bg-indigo-50 text-indigo-600 flex-shrink-0 min-w-0 flex-shrink-0">
+                  <BookOpen className="h-5 w-5 lg:h-6 lg:w-6" />
                 </div>
               </div>
-              <div className="mt-3 flex items-center">
-                <span className="text-sm font-medium text-green-600 flex items-center">
+              <div className="mt-3 flex items-center min-w-0">
+                <span className="text-sm font-medium text-green-600 flex items-center break-words min-w-0">
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
                   </svg>
@@ -364,19 +365,19 @@ export default function InstructorDashboard(): JSX.Element {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <div className="bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-              <div className="flex justify-between items-start">
+            <div className="bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md overflow-hidden">
+              <div className="flex justify-between items-start min-w-0">
                 <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Total Revenue</p>
-                  <h3 className="text-2xl font-bold text-gray-900">${dashboardData.overallStats.totalRevenue?.toLocaleString() || '0'}</h3>
-                  <p className="text-sm text-gray-500 mt-1">All time earnings</p>
+                  <p className="text-sm font-medium text-gray-500 mb-1 break-words">Total Revenue</p>
+                  <h3 className="text-2xl font-bold text-gray-900 break-words">${dashboardData.overallStats.totalRevenue?.toLocaleString() || '0'}</h3>
+                  <p className="text-sm text-gray-500 mt-1 break-words">All time earnings</p>
                 </div>
-                <div className="p-2 rounded-full bg-green-50 text-green-600">
-                  <DollarSign className="h-6 w-6" />
+                <div className="p-2 rounded-full bg-green-50 text-green-600 flex-shrink-0">
+                  <DollarSign className="h-5 w-5 lg:h-6 lg:w-6" />
                 </div>
               </div>
-              <div className="mt-3 flex items-center">
-                <span className="text-sm font-medium text-green-600 flex items-center">
+              <div className="mt-3 flex items-center min-w-0">
+                <span className="text-sm font-medium text-green-600 flex items-center break-words min-w-0">
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
                   </svg>
@@ -393,19 +394,19 @@ export default function InstructorDashboard(): JSX.Element {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <div className="bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-              <div className="flex justify-between items-start">
+            <div className="bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md overflow-hidden">
+              <div className="flex justify-between items-start min-w-0">
                 <div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Average Rating</p>
-                  <h3 className="text-2xl font-bold text-gray-900">{dashboardData.overallStats.averageRating?.toFixed(1) || '0.0'}</h3>
-                  <p className="text-sm text-gray-500 mt-1">From all courses</p>
+                  <p className="text-sm font-medium text-gray-500 mb-1 break-words">Average Rating</p>
+                  <h3 className="text-2xl font-bold text-gray-900 break-words">{dashboardData.overallStats.averageRating?.toFixed(1) || '0.0'}</h3>
+                  <p className="text-sm text-gray-500 mt-1 break-words">From all courses</p>
                 </div>
-                <div className="p-2 rounded-full bg-yellow-50 text-yellow-600">
+                <div className="p-2 rounded-full bg-yellow-50 text-yellow-600 flex-shrink-0">
                   <Star className="h-6 w-6 fill-current" />
                 </div>
               </div>
-              <div className="mt-3 flex items-center">
-                <span className="text-sm font-medium text-green-600 flex items-center">
+              <div className="mt-3 flex items-center min-w-0">
+                <span className="text-sm font-medium text-green-600 flex items-center break-words min-w-0">
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
                   </svg>
@@ -419,21 +420,21 @@ export default function InstructorDashboard(): JSX.Element {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+      <div className="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 lg:gap-6 lg:gap-8">
         {/* Left Column (2/3 width) */}
-        <div className="lg:col-span-2 space-y-6 lg:space-y-8">
+        <div className="lg:col-span-2 space-y-4 lg:space-y-6 lg:space-y-6 lg:space-y-8">
           {/* Earnings Summary */}
           <motion.div 
-            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Earnings Summary</h2>
+            <div className="flex items-center justify-between mb-4 min-w-0">
+              <h2 className="text-lg font-semibold text-gray-900 break-words">Earnings Summary</h2>
               <div className="relative">
                 <select 
-                  className="appearance-none bg-gray-50 border border-gray-200 rounded-md pl-3 pr-8 py-1.5 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="appearance-none bg-gray-50 border border-gray-200 rounded-md pl-3 pr-8 py-1.5 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 break-words"
                   defaultValue="month"
                 >
                   <option value="week">This Week</option>
@@ -441,15 +442,15 @@ export default function InstructorDashboard(): JSX.Element {
                   <option value="quarter">This Quarter</option>
                   <option value="year">This Year</option>
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500 min-w-0">
                   <ChevronDown className="h-4 w-4" />
                 </div>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
               {/* Chart */}
-              <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center">
+              <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-center min-w-0">
                 {dashboardData.earningsData?.length ? (
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={dashboardData.earningsData}>
@@ -479,44 +480,44 @@ export default function InstructorDashboard(): JSX.Element {
               {/* Stats */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-blue-50 p-4 rounded-lg">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-blue-100 rounded-md">
+                  <div className="flex items-center min-w-0">
+                    <div className="p-2 bg-blue-100 rounded-md flex-shrink-0">
                       <TrendingUp className="h-5 w-5 text-blue-600" />
                     </div>
-                    <p className="text-sm text-blue-700 font-medium ml-2">Revenue</p>
+                    <p className="text-sm text-blue-700 font-medium ml-2 break-words">Revenue</p>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">${dashboardData.overallStats.totalRevenue?.toLocaleString() || '0'}</h3>
-                  <p className="text-sm text-blue-700 mt-1">+16.8% vs. last month</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-2 break-words">${dashboardData.overallStats.totalRevenue?.toLocaleString() || '0'}</h3>
+                  <p className="text-sm text-blue-700 mt-1 break-words">+16.8% vs. last month</p>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-green-100 rounded-md">
+                  <div className="flex items-center min-w-0">
+                    <div className="p-2 bg-green-100 rounded-md flex-shrink-0">
                       <Users className="h-5 w-5 text-green-600" />
                     </div>
-                    <p className="text-sm text-green-700 font-medium ml-2">New Enrollments</p>
+                    <p className="text-sm text-green-700 font-medium ml-2 break-words">New Enrollments</p>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{dashboardData.overallStats.newEnrollments || 0}</h3>
-                  <p className="text-sm text-green-700 mt-1">+8.3% vs. last month</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-2 break-words">{dashboardData.overallStats.newEnrollments || 0}</h3>
+                  <p className="text-sm text-green-700 mt-1 break-words">+8.3% vs. last month</p>
                 </div>
                 <div className="bg-purple-50 p-4 rounded-lg">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-purple-100 rounded-md">
+                  <div className="flex items-center min-w-0">
+                    <div className="p-2 bg-purple-100 rounded-md flex-shrink-0">
                       <Star className="h-5 w-5 text-purple-600" />
                     </div>
-                    <p className="text-sm text-purple-700 font-medium ml-2">Average Rating</p>
+                    <p className="text-sm text-purple-700 font-medium ml-2 break-words">Average Rating</p>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{dashboardData.overallStats.averageRating || 0}</h3>
-                  <p className="text-sm text-purple-700 mt-1">+12.4% vs. last month</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-2 break-words">{dashboardData.overallStats.averageRating || 0}</h3>
+                  <p className="text-sm text-purple-700 mt-1 break-words">+12.4% vs. last month</p>
                 </div>
                 <div className="bg-amber-50 p-4 rounded-lg">
-                  <div className="flex items-center">
-                    <div className="p-2 bg-amber-100 rounded-md">
+                  <div className="flex items-center min-w-0">
+                    <div className="p-2 bg-amber-100 rounded-md flex-shrink-0">
                       <Video className="h-5 w-5 text-amber-600" />
                     </div>
-                    <p className="text-sm text-amber-700 font-medium ml-2">Completion Rate</p>
+                    <p className="text-sm text-amber-700 font-medium ml-2 break-words">Completion Rate</p>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-2">{dashboardData.overallStats.completionRate || 0}%</h3>
-                  <p className="text-sm text-amber-700 mt-1">+4.6% vs. last month</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-2 break-words">{dashboardData.overallStats.completionRate || 0}%</h3>
+                  <p className="text-sm text-amber-700 mt-1 break-words">+4.6% vs. last month</p>
                 </div>
               </div>
             </div>
@@ -524,37 +525,37 @@ export default function InstructorDashboard(): JSX.Element {
           {/* Recent Courses - Only shown when there are courses */}
           {dashboardData.recentCourses.length > 0 && (
             <motion.div 
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Recent Courses</h2>
+              <div className="flex items-center justify-between mb-4 min-w-0">
+                <h2 className="text-lg font-semibold text-gray-900 break-words">Recent Courses</h2>
                 <Link 
                   href="/dashboard/instructor/courses" 
-                  className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                  className="text-sm font-medium text-indigo-600 hover:text-indigo-700 break-words"
                 >
                   View all
                 </Link>
               </div>
               <div className="divide-y divide-gray-100">
                 {dashboardData.recentCourses.slice(0, 3).map((course) => (
-                  <div key={course.id} className="flex items-center py-4 first:pt-0 last:pb-0">
-                    <div className="h-12 w-12 flex-shrink-0 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center mr-4">
+                  <div key={course.id} className="flex items-center py-4 first:pt-0 last:pb-0 min-w-0">
+                    <div className="h-12 w-12 flex-shrink-0 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center mr-4 min-w-0">
                       <BookOpen className="h-6 w-6 text-white" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-medium text-gray-900 truncate">{course.title}</h3>
-                      <div className="flex items-center mt-1">
+                    <div className="flex-1 min-w-0 min-w-0">
+                      <h3 className="text-base font-medium text-gray-900 truncate break-words">{course.title}</h3>
+                      <div className="flex items-center mt-1 min-w-0">
                         <Users className="h-3.5 w-3.5 text-gray-400 mr-1" />
-                        <p className="text-sm text-gray-500">{course.enrollmentCount || 0} students</p>
+                        <p className="text-sm text-gray-500 break-words">{course.enrollmentCount || 0} students</p>
                         {course.averageRating && (
                           <>
                             <span className="mx-2 text-gray-300">•</span>
-                            <div className="flex items-center">
+                            <div className="flex items-center min-w-0">
                               <Star className="h-3.5 w-3.5 text-yellow-400 fill-current mr-1" />
-                              <span className="text-sm text-gray-500">{course.averageRating}</span>
+                              <span className="text-sm text-gray-500 break-words">{course.averageRating}</span>
                             </div>
                           </>
                         )}
@@ -574,30 +575,30 @@ export default function InstructorDashboard(): JSX.Element {
           {/* Recent Activity - Only shown when there is activity */}
           {dashboardData.recentActivity.length > 0 && (
             <motion.div 
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+              <div className="flex items-center justify-between mb-4 min-w-0">
+                <h2 className="text-lg font-semibold text-gray-900 break-words">Recent Activity</h2>
                 <Link 
                   href="/dashboard/instructor/activity" 
-                  className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                  className="text-sm font-medium text-indigo-600 hover:text-indigo-700 break-words"
                 >
                   View all
                 </Link>
               </div>
               <div className="space-y-4">
                 {dashboardData.recentActivity.slice(0, 3).map((activity) => (
-                  <div key={activity.id} className="flex items-start p-3 bg-gray-50 rounded-lg">
+                  <div key={activity.id} className="flex items-start p-3 bg-gray-50 rounded-lg min-w-0">
                     <div className="mr-3">
-                      <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                      <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center min-w-0">
                         {renderActivityIcon(activity.activityType)}
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-800">{activity.description || `Activity on ${activity.courseTitle}`}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-800 break-words">{activity.description || `Activity on ${activity.courseTitle}`}</p>
                       <p className="text-xs text-gray-500 mt-1">{formatDate(activity.timestamp)}</p>
                     </div>
                   </div>
@@ -608,16 +609,16 @@ export default function InstructorDashboard(): JSX.Element {
         </div>
         
         {/* Right Column (1/3 width) */}
-        <div className="space-y-6 lg:space-y-8">
+        <div className="space-y-4 lg:space-y-6 lg:space-y-6 lg:space-y-8">
           {/* Project Analytics */}
           <motion.div 
-            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Project Analytics</h2>
+            <div className="flex items-center justify-between mb-4 min-w-0">
+              <h2 className="text-lg font-semibold text-gray-900 break-words">Project Analytics</h2>
               <PieChartIcon className="h-5 w-5 text-gray-400" />
             </div>
             
@@ -646,9 +647,9 @@ export default function InstructorDashboard(): JSX.Element {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-8">
+              <div className="flex flex-col items-center justify-center py-8 min-w-0">
                 <PieChartIcon className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                <p className="text-sm text-gray-500">No analytics data available</p>
+                <p className="text-sm text-gray-500 break-words">No analytics data available</p>
               </div>
             )}
             
@@ -656,35 +657,35 @@ export default function InstructorDashboard(): JSX.Element {
             <div className="space-y-2">
               {dashboardData.projectAnalytics?.labels?.length ? (
                 dashboardData.projectAnalytics?.labels?.map((label, index) => (
-                  <div key={`legend-${index}`} className="flex items-center justify-between">
-                    <div className="flex items-center">
+                  <div key={`legend-${index}`} className="flex items-center justify-between min-w-0">
+                    <div className="flex items-center min-w-0">
                       <div 
                         className="h-3 w-3 rounded-sm mr-2" 
                         style={{ backgroundColor: COLORS[index % COLORS.length] }}
                       ></div>
-                      <span className="text-sm text-gray-600">{label}</span>
+                      <span className="text-sm text-gray-600 break-words">{label}</span>
                     </div>
-                    <span className="text-sm font-medium">{dashboardData.projectAnalytics?.data?.[index] || 0}</span>
+                    <span className="text-sm font-medium break-words">{dashboardData.projectAnalytics?.data?.[index] || 0}</span>
                   </div>
                 )) || []
               ) : (
-                <p className="text-sm text-gray-500 text-center">No data to display</p>
+                <p className="text-sm text-gray-500 text-center break-words">No data to display</p>
               )}
             </div>
           </motion.div>
           {/* Upcoming Sessions - Only shown when there are sessions */}
           {dashboardData.upcomingSessions.length > 0 ? (
             <motion.div 
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Upcoming Sessions</h2>
+              <div className="flex items-center justify-between mb-4 min-w-0">
+                <h2 className="text-lg font-semibold text-gray-900 break-words">Upcoming Sessions</h2>
                 <Link 
                   href="/dashboard/instructor/sessions" 
-                  className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+                  className="text-sm font-medium text-indigo-600 hover:text-indigo-700 break-words"
                 >
                   View all
                 </Link>
@@ -692,13 +693,13 @@ export default function InstructorDashboard(): JSX.Element {
               <div className="space-y-3">
                 {dashboardData.upcomingSessions.slice(0, 3).map((session) => (
                   <div key={session.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <div className="flex items-center mb-2">
-                      <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
+                    <div className="flex items-center mb-2 min-w-0">
+                      <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3 min-w-0">
                         {renderSessionIcon(session.sessionType)}
                       </div>
-                      <h3 className="font-medium text-gray-900 truncate flex-1">{session.title}</h3>
+                      <h3 className="font-medium text-gray-900 truncate flex-1 break-words min-w-0">{session.title}</h3>
                     </div>
-                    <div className="flex items-center text-xs text-gray-500">
+                    <div className="flex items-center text-xs text-gray-500 min-w-0">
                       <Calendar className="h-3.5 w-3.5 mr-1" />
                       <span>{session.date}</span>
                       <span className="mx-1.5">•</span>
@@ -718,17 +719,17 @@ export default function InstructorDashboard(): JSX.Element {
             </motion.div>
           ) : (
             <motion.div 
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center"
+              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
               <Video className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-              <h3 className="text-sm font-medium text-gray-900">No upcoming sessions</h3>
-              <p className="mt-1 text-sm text-gray-500">Schedule a session to get started</p>
+              <h3 className="text-sm font-medium text-gray-900 break-words">No upcoming sessions</h3>
+              <p className="mt-1 text-sm text-gray-500 break-words">Schedule a session to get started</p>
               <Link
                 href="/dashboard/instructor/sessions/schedule"
-                className="mt-3 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
+                className="mt-3 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 break-words min-w-0"
               >
                 Schedule Session
               </Link>

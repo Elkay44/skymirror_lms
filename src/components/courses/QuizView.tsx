@@ -102,7 +102,7 @@ export default function QuizView({ quizId, onComplete }: QuizViewProps) {
 
   if (!quiz) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px] min-w-0">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
       </div>
     );
@@ -118,13 +118,13 @@ export default function QuizView({ quizId, onComplete }: QuizViewProps) {
 
   return (
     <div className="max-w-3xl mx-auto py-8">
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white shadow rounded-lg overflow-hidden overflow-hidden">
         {/* Quiz Header */}
         <div className="px-6 py-4 border-b">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">{quiz.title}</h2>
+          <div className="flex justify-between items-center min-w-0">
+            <h2 className="text-2xl font-bold text-gray-900 break-words">{quiz.title}</h2>
             {timeRemaining !== null && (
-              <div className="text-lg font-semibold text-gray-700">
+              <div className="text-lg font-semibold text-gray-700 break-words">
                 Time: {formatTime(timeRemaining)}
               </div>
             )}
@@ -138,7 +138,7 @@ export default function QuizView({ quizId, onComplete }: QuizViewProps) {
           // Results View
           <div className="px-6 py-8">
             <div className="text-center">
-              <div className="text-4xl font-bold mb-4">
+              <div className="text-4xl font-bold mb-4 break-words">
                 {score !== null && (
                   <span
                     className={
@@ -151,7 +151,7 @@ export default function QuizView({ quizId, onComplete }: QuizViewProps) {
                   </span>
                 )}
               </div>
-              <p className="text-lg text-gray-700 mb-6">
+              <p className="text-lg text-gray-700 mb-6 break-words">
                 {score !== null &&
                   (score >= quiz.passingScore
                     ? 'Congratulations! You passed the quiz.'
@@ -167,7 +167,7 @@ export default function QuizView({ quizId, onComplete }: QuizViewProps) {
           </div>
         ) : (
           // Quiz Questions View
-          <div className="px-6 py-4">
+          <div className="px-4 py-3 lg:px-6 lg:py-4">
             {/* Progress Bar */}
             <div className="mb-6">
               <div className="h-2 bg-gray-200 rounded-full">
@@ -180,15 +180,15 @@ export default function QuizView({ quizId, onComplete }: QuizViewProps) {
                   }}
                 ></div>
               </div>
-              <p className="mt-2 text-sm text-gray-600 text-right">
+              <p className="mt-2 text-sm text-gray-600 text-right break-words">
                 Question {currentQuestion + 1} of {quiz.questions.length}
               </p>
             </div>
 
             {/* Question */}
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-4 break-words">
                   {currentQuestionData.content}
                 </h3>
 
@@ -197,7 +197,7 @@ export default function QuizView({ quizId, onComplete }: QuizViewProps) {
                     {currentQuestionData.options?.map((option, index) => (
                       <label
                         key={index}
-                        className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                        className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer min-w-0"
                       >
                         <input
                           type="radio"
@@ -220,7 +220,7 @@ export default function QuizView({ quizId, onComplete }: QuizViewProps) {
                     {['True', 'False'].map((option) => (
                       <label
                         key={option}
-                        className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                        className="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer min-w-0"
                       >
                         <input
                           type="radio"
@@ -257,11 +257,11 @@ export default function QuizView({ quizId, onComplete }: QuizViewProps) {
               </div>
 
               {/* Navigation Buttons */}
-              <div className="flex justify-between pt-4">
+              <div className="flex justify-between pt-4 min-w-0">
                 <button
                   onClick={() => setCurrentQuestion((prev) => prev - 1)}
                   disabled={currentQuestion === 0}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed break-words"
                 >
                   Previous
                 </button>
@@ -270,14 +270,14 @@ export default function QuizView({ quizId, onComplete }: QuizViewProps) {
                   <button
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed break-words"
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
                   </button>
                 ) : (
                   <button
                     onClick={() => setCurrentQuestion((prev) => prev + 1)}
-                    className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+                    className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 break-words"
                   >
                     Next
                   </button>

@@ -83,19 +83,19 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
               <rect width="404" height="384" fill="url(#settings-pattern)" />
             </svg>
           </div>
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between">
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between min-w-0">
             <div>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl">
+              <h1 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl break-words">
                 Settings
               </h1>
-              <p className="mt-2 text-xl text-white opacity-80">
+              <p className="mt-2 text-xl text-white opacity-80 break-words">
                 Customize your {userRole.toLowerCase()} experience
               </p>
             </div>
             <div className="mt-4 md:mt-0">
               <Link 
                 href="/dashboard" 
-                className="inline-flex items-center px-4 py-2 bg-white text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-blue-600 transition-all shadow-md"
+                className="inline-flex items-center px-4 py-2 bg-white text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-blue-600 transition-all shadow-md break-words min-w-0 overflow-hidden"
               >
                 <Home className="mr-2 h-5 w-5" />
                 Back to Dashboard
@@ -105,7 +105,7 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
         </div>
       </div>
 
-      <div className="lg:grid lg:grid-cols-12 lg:gap-8">
+      <div className="lg:grid lg:grid-cols-12 lg:gap-6 lg:gap-8">
         {/* Left sidebar - desktop only */}
         <div className="hidden lg:block lg:col-span-3">
           <div className="sticky top-8">
@@ -181,9 +181,9 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
 
         {/* Mobile tabs - visible on small screens only */}
         <div className="block lg:hidden mb-6 overflow-x-auto">
-          <div className="bg-white shadow-sm rounded-xl overflow-hidden">
+          <div className="bg-white shadow-sm rounded-xl overflow-hidden overflow-hidden">
             <div className="px-3 py-3 border-b border-gray-200">
-              <nav className="flex space-x-4">
+              <nav className="flex space-x-4 min-w-0">
                 {filteredTabs.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = pathname === tab.href;
@@ -209,16 +209,16 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
 
         {/* Main content */}
         <div className="lg:col-span-9">
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden overflow-hidden">
             {/* Section header */}
             <div className={`px-6 py-5 border-b border-${roleColor}-100 bg-gradient-to-r from-${roleColor}-50 to-white`}>
               {filteredTabs.map((tab) => {
                 if (pathname === tab.href) {
                   const Icon = tab.icon;
                   return (
-                    <div key={tab.name} className="flex items-center">
+                    <div key={tab.name} className="flex items-center min-w-0">
                       <Icon className={`mr-3 h-6 w-6 text-${roleColor}-600`} />
-                      <h2 className="text-xl font-semibold text-gray-900">{tab.name} Settings</h2>
+                      <h2 className="text-xl font-semibold text-gray-900 break-words">{tab.name} Settings</h2>
                     </div>
                   );
                 }
@@ -226,7 +226,7 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
               })}
             </div>
             {/* Content */}
-            <div className="px-6 py-6 space-y-6">{children}</div>
+            <div className="px-6 py-6 space-y-4 lg:space-y-6">{children}</div>
           </div>
         </div>
       </div>

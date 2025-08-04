@@ -170,9 +170,9 @@ export default function LearningGoalsPage() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8 min-w-0">
         <div>
-          <h1 className="text-2xl font-bold">My Learning Goals</h1>
+          <h1 className="text-2xl font-bold break-words">My Learning Goals</h1>
           <p className="text-gray-600">Set and track your learning objectives</p>
         </div>
         <Button onClick={() => setIsDialogOpen(true)}>
@@ -180,7 +180,7 @@ export default function LearningGoalsPage() {
         </Button>
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-4 lg:gap-6">
         {goals.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
@@ -194,19 +194,19 @@ export default function LearningGoalsPage() {
           goals.map((goal) => (
             <Card key={goal.id} className="overflow-hidden">
               <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start min-w-0">
                   <div>
-                    <CardTitle className="text-lg">{goal.title}</CardTitle>
+                    <CardTitle className="text-lg break-words">{goal.title}</CardTitle>
                     {goal.description && (
                       <CardDescription className="mt-1">{goal.description}</CardDescription>
                     )}
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-2 min-w-0">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => handleEdit(goal)}
-                      className="h-8 w-8"
+                      className="h-6 w-6 lg:h-8 lg:w-8"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -223,14 +223,14 @@ export default function LearningGoalsPage() {
               </CardHeader>
               <CardContent className="pb-4">
                 <div className="mb-2">
-                  <div className="flex justify-between text-sm text-gray-500 mb-1">
+                  <div className="flex justify-between text-sm text-gray-500 mb-1 break-words min-w-0">
                     <span>Progress</span>
                     <span>{goal.progress}%</span>
                   </div>
                   <Progress value={goal.progress} className="h-2" />
                 </div>
                 {goal.deadline && (
-                  <div className="text-sm text-gray-500 flex items-center">
+                  <div className="text-sm text-gray-500 flex items-center break-words min-w-0">
                     <CalendarIcon className="h-4 w-4 mr-2" />
                     Due: {format(new Date(goal.deadline), 'MMM d, yyyy')}
                   </div>
@@ -260,7 +260,7 @@ export default function LearningGoalsPage() {
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="title" className="block text-sm font-medium mb-1">
+              <label htmlFor="title" className="block text-sm font-medium mb-1 break-words">
                 Title <span className="text-red-500">*</span>
               </label>
               <Input
@@ -273,7 +273,7 @@ export default function LearningGoalsPage() {
             </div>
             
             <div>
-              <label htmlFor="description" className="block text-sm font-medium mb-1">
+              <label htmlFor="description" className="block text-sm font-medium mb-1 break-words">
                 Description
               </label>
               <Textarea
@@ -287,7 +287,7 @@ export default function LearningGoalsPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Deadline</label>
+                <label className="block text-sm font-medium mb-1 break-words">Deadline</label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -309,7 +309,7 @@ export default function LearningGoalsPage() {
               </div>
               
               <div>
-                <label htmlFor="progress" className="block text-sm font-medium mb-1">
+                <label htmlFor="progress" className="block text-sm font-medium mb-1 break-words">
                   Progress: {progress}%
                 </label>
                 <Input

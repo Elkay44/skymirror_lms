@@ -126,11 +126,11 @@ export default function RequestMentorshipPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Mentorship</h1>
+      <h1 className="text-2xl font-bold mb-4 break-words">Mentorship</h1>
 
       {/* Section: My Mentors */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-2">Your Mentors</h2>
+        <h2 className="text-lg font-semibold mb-2 break-words">Your Mentors</h2>
         {loading ? (
           <div>Loading mentors...</div>
         ) : myMentors.length === 0 ? (
@@ -138,10 +138,10 @@ export default function RequestMentorshipPage() {
         ) : (
           <ul className="space-y-2">
             {myMentors.map((mentor) => (
-              <li key={mentor.userId} className="bg-gray-50 p-4 rounded shadow flex items-center">
+              <li key={mentor.userId} className="bg-gray-50 p-4 rounded shadow flex items-center min-w-0">
                 {mentor.image && <img src={mentor.image} alt={mentor.name} className="w-10 h-10 rounded-full mr-4" />}
-                <div className="flex-1">
-                  <div className="font-semibold">{mentor.name}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold break-words">{mentor.name}</div>
                   <div className="text-xs text-gray-500">{mentor.email}</div>
                   {mentor.specialties && mentor.specialties.length > 0 && (
                     <div className="text-xs text-gray-400">Specialties: {mentor.specialties.join(', ')}</div>
@@ -151,7 +151,7 @@ export default function RequestMentorshipPage() {
                   )}
                 </div>
                 <button
-                  className="ml-4 px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                  className="ml-4 px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 break-words"
                   onClick={() => setSelectedMentorProfile(mentor)}
                   type="button"
                 >
@@ -162,8 +162,8 @@ export default function RequestMentorshipPage() {
 
             {/* Mentor Profile Modal */}
             {selectedMentorProfile && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full relative">
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 min-w-0">
+                <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full relative overflow-hidden">
                   <button
                     className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
                     onClick={() => setSelectedMentorProfile(null)}
@@ -174,7 +174,7 @@ export default function RequestMentorshipPage() {
                     <img src={selectedMentorProfile.image} alt={selectedMentorProfile.name} className="w-16 h-16 rounded-full mx-auto mb-3" />
                   )}
                   <div className="text-center">
-                    <div className="font-bold text-lg mb-1">{selectedMentorProfile.name}</div>
+                    <div className="font-bold text-lg mb-1 break-words">{selectedMentorProfile.name}</div>
                     <div className="text-xs text-gray-500 mb-1">{selectedMentorProfile.email}</div>
                     {selectedMentorProfile.specialties && selectedMentorProfile.specialties.length > 0 && (
                       <div className="text-xs text-gray-400 mb-1">Specialties: {selectedMentorProfile.specialties.join(', ')}</div>
@@ -191,16 +191,16 @@ export default function RequestMentorshipPage() {
       </div>
 
       {/* Section: Request Mentorship */}
-      <form className="bg-white rounded shadow p-4 mb-8 max-w-lg" onSubmit={handleSubmit}>
-        <h2 className="text-lg font-semibold mb-2">Request a Mentor</h2>
-        <label className="block mb-2 font-semibold">Select a Mentor</label>
+      <form className="bg-white rounded shadow p-4 mb-8 max-w-lg overflow-hidden" onSubmit={handleSubmit}>
+        <h2 className="text-lg font-semibold mb-2 break-words">Request a Mentor</h2>
+        <label className="block mb-2 font-semibold break-words">Select a Mentor</label>
         <div className="mb-4">
           {mentors.length === 0 ? (
             <div className="text-gray-500">No available mentors right now.</div>
           ) : (
             <ul className="divide-y divide-gray-100">
               {mentors.map((mentor) => (
-                <li key={mentor.id} className="flex items-center py-2">
+                <li key={mentor.id} className="flex items-center py-2 min-w-0">
                   <input
                     type="radio"
                     id={`mentor-${mentor.userId}`}
@@ -211,14 +211,14 @@ export default function RequestMentorshipPage() {
                     disabled={submitting}
                     className="mr-2"
                   />
-                  <label htmlFor={`mentor-${mentor.userId}`} className="flex-1 cursor-pointer">
+                  <label htmlFor={`mentor-${mentor.userId}`} className="flex-1 cursor-pointer min-w-0">
                     {mentor.name} {mentor.specialties && mentor.specialties.length > 0 && (
                       <span className="text-xs text-gray-400 ml-1">({mentor.specialties.join(', ')})</span>
                     )}
                   </label>
                   <button
                     type="button"
-                    className="ml-2 text-blue-500 hover:text-blue-700 text-sm px-2 py-1"
+                    className="ml-2 text-blue-500 hover:text-blue-700 text-sm px-2 py-1 break-words"
                     onClick={() => setSelectedMentorProfile(mentor)}
                   >
                     ℹ️
@@ -228,7 +228,7 @@ export default function RequestMentorshipPage() {
             </ul>
           )}
         </div>
-        <label className="block mb-2 font-semibold">Why do you want a mentor?</label>
+        <label className="block mb-2 font-semibold break-words">Why do you want a mentor?</label>
         <textarea
           className="border rounded w-full p-2 mb-4"
           rows={3}
@@ -249,7 +249,7 @@ export default function RequestMentorshipPage() {
 
       {/* Section: Mentorship Requests */}
       <div>
-        <h2 className="text-lg font-semibold mb-2">Your Mentorship Requests</h2>
+        <h2 className="text-lg font-semibold mb-2 break-words">Your Mentorship Requests</h2>
         {loading ? (
           <div>Loading requests...</div>
         ) : error ? (
@@ -259,7 +259,7 @@ export default function RequestMentorshipPage() {
         ) : (
           <ul className="space-y-2">
             {requests.map(req => (
-              <li key={req.id} className="bg-gray-50 p-4 rounded shadow flex justify-between items-center">
+              <li key={req.id} className="bg-gray-50 p-4 rounded shadow flex justify-between items-center min-w-0">
                 <span>Mentor: {req.mentor}</span>
                 <span className="text-xs text-gray-500">{req.status}</span>
               </li>

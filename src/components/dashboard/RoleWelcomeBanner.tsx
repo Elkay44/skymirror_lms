@@ -83,17 +83,17 @@ export default function RoleWelcomeBanner() {
 
   return (
     <div className={`w-full px-6 py-4 mb-6 ${config.bgColor} border-b ${config.borderColor} rounded-lg`}>
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center min-w-0">
         <div className="mb-4 md:mb-0">
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-xl font-semibold text-gray-900 break-words">
             Welcome back, {session.user.name || 'User'}!
           </h1>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-600 mt-1 break-words">
             {config.description}
           </p>
         </div>
         
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 min-w-0">
           <Link 
             href={config.primaryAction.href}
             className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors ${config.primaryColor}`}

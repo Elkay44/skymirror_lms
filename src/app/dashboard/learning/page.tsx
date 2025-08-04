@@ -64,28 +64,28 @@ export default function LearningPage() {
   const recommended = (courses || []).filter(course => course.enrolled);
 
   return (
-    <div className="p-8 space-y-8">
-      <h1 className="text-2xl font-bold mb-2">Welcome to Your Learning Hub</h1>
+    <div className="p-8 space-y-6 lg:space-y-8">
+      <h1 className="text-2xl font-bold mb-2 break-words">Welcome to Your Learning Hub</h1>
       <p className="mb-6 text-gray-700">Track your learning progress, pick up where you left off, and discover new courses tailored for you.</p>
       <section>
-        <h2 className="text-xl font-semibold mb-4">Recommended Courses</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <h2 className="text-xl font-semibold mb-4 break-words">Recommended Courses</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {recommended.length === 0 && <div className="col-span-3 text-gray-500">No courses in progress. Explore courses to get started!</div>}
           {recommended.map(course => (
-            <div key={course.id} className="bg-white rounded-lg shadow p-4">
-              <div className="font-semibold mb-1">{course.title}</div>
+            <div key={course.id} className="bg-white rounded-lg shadow p-4 overflow-hidden">
+              <div className="font-semibold mb-1 break-words">{course.title}</div>
               {/* Progress bar is not available from /api/courses, you may enhance this by fetching lesson progress per course */}
               <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
                 <div className="bg-blue-600 h-2.5 rounded-full" style={{width: `60%`}}></div>
               </div>
               <div className="text-xs text-gray-500">Lessons: {course.lessonsCount}</div>
-              <Link href={`/dashboard/courses/${course.id}`} className="text-blue-600 text-sm mt-2 inline-block">Continue Learning</Link>
+              <Link href={`/dashboard/courses/${course.id}`} className="text-blue-600 text-sm mt-2 inline-block break-words">Continue Learning</Link>
             </div>
           ))}
         </div>
       </section>
       <section>
-        <h2 className="text-xl font-semibold mb-4 mt-8">Your Progress Summary</h2>
+        <h2 className="text-xl font-semibold mb-4 mt-8 break-words">Your Progress Summary</h2>
         <ul className="list-disc ml-6 text-gray-700">
           <li>Courses completed: {progress?.completedCourses ?? 0}</li>
           <li>Quizzes attempted: {progress?.quizzesAttempted ?? 0}</li>

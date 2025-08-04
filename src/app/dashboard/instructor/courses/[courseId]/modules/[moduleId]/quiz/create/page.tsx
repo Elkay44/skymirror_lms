@@ -97,8 +97,8 @@ export default function CreateQuizPage() {
 
   return (
     <div className="max-w-5xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
+      <div className="flex items-center justify-between mb-6 min-w-0">
+        <div className="flex items-center min-w-0">
           <Button
             variant="ghost"
             size="icon"
@@ -107,7 +107,7 @@ export default function CreateQuizPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-semibold">Create New Quiz</h1>
+          <h1 className="text-2xl font-semibold break-words">Create New Quiz</h1>
         </div>
       </div>
 
@@ -120,12 +120,12 @@ export default function CreateQuizPage() {
         <TabsContent value="general">
           <Card>
             <CardHeader className="border-b">
-              <div className="flex items-center">
+              <div className="flex items-center min-w-0">
                 <ListChecks className="mr-2 h-5 w-5 text-blue-500" />
-                <h3 className="text-lg font-medium">Quiz Details</h3>
+                <h3 className="text-lg font-medium break-words">Quiz Details</h3>
               </div>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="pt-6 space-y-4 lg:space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
                 <Input
@@ -172,13 +172,13 @@ export default function CreateQuizPage() {
         <TabsContent value="settings">
           <Card>
             <CardHeader className="border-b">
-              <div className="flex items-center">
+              <div className="flex items-center min-w-0">
                 <HelpCircle className="mr-2 h-5 w-5 text-blue-500" />
-                <h3 className="text-lg font-medium">Quiz Settings</h3>
+                <h3 className="text-lg font-medium break-words">Quiz Settings</h3>
               </div>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="grid gap-6 sm:grid-cols-2">
+              <div className="grid gap-4 lg:gap-6 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="timeLimit">Time Limit (minutes)</Label>
                   <Input
@@ -190,7 +190,7 @@ export default function CreateQuizPage() {
                     onChange={handleNumberChange}
                     className="max-w-[200px]"
                   />
-                  <p className="text-sm text-muted-foreground">Set 0 for no time limit</p>
+                  <p className="text-sm text-muted-foreground break-words">Set 0 for no time limit</p>
                 </div>
 
                 <div className="space-y-2">
@@ -218,12 +218,12 @@ export default function CreateQuizPage() {
                     onChange={handleNumberChange}
                     className="max-w-[200px]"
                   />
-                  <p className="text-sm text-muted-foreground">Set 0 for unlimited attempts</p>
+                  <p className="text-sm text-muted-foreground break-words">Set 0 for unlimited attempts</p>
                 </div>
 
                 <div className="space-y-4 sm:pt-4">
                   {/* Randomize Questions field commented out - not in current Prisma schema
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between min-w-0">
                     <Label htmlFor="randomizeQuestions" className="cursor-pointer">Randomize Questions</Label>
                     <Switch
                       id="randomizeQuestions"
@@ -233,7 +233,7 @@ export default function CreateQuizPage() {
                   </div>
                   */}
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between min-w-0">
                     <Label htmlFor="showCorrectAnswers" className="cursor-pointer">Show Correct Answers After Submission</Label>
                     <Switch
                       id="showCorrectAnswers"
@@ -242,7 +242,7 @@ export default function CreateQuizPage() {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between min-w-0">
                     <Label htmlFor="isPublished" className="cursor-pointer">Publish Immediately</Label>
                     <Switch
                       id="isPublished"
@@ -265,7 +265,7 @@ export default function CreateQuizPage() {
         </AlertDescription>
       </Alert>
 
-      <div className="flex justify-end mt-6 space-x-4">
+      <div className="flex justify-end mt-6 space-x-4 min-w-0">
         <Button
           variant="outline"
           onClick={() => router.back()}
@@ -276,7 +276,7 @@ export default function CreateQuizPage() {
           type="submit"
           onClick={handleSubmit}
           disabled={isLoading}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 min-w-0"
         >
           {isLoading ? 'Creating...' : 'Create Quiz'}
           {isLoading && <span className="animate-spin">⏳</span>}

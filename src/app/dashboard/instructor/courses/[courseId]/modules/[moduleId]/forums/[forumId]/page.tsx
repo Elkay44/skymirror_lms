@@ -91,7 +91,7 @@ export default function ModuleForumPostsPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[600px]">
+      <div className="flex flex-col items-center justify-center min-h-[600px] min-w-0">
         <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
         <p className="text-muted-foreground">Loading forum posts...</p>
       </div>
@@ -100,7 +100,7 @@ export default function ModuleForumPostsPage() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[600px]">
+      <div className="flex flex-col items-center justify-center min-h-[600px] min-w-0">
         <p className="text-destructive mb-4">{error}</p>
         <Button onClick={() => router.back()} variant="outline" size="sm">
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -112,7 +112,7 @@ export default function ModuleForumPostsPage() {
 
   if (!forum) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[600px]">
+      <div className="flex flex-col items-center justify-center min-h-[600px] min-w-0">
         <p className="text-muted-foreground mb-4">Forum not found</p>
         <Button onClick={() => router.back()} variant="outline" size="sm">
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -124,7 +124,7 @@ export default function ModuleForumPostsPage() {
 
   return (
     <div className="container py-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 min-w-0">
         <div>
           <Button 
             variant="outline" 
@@ -134,7 +134,7 @@ export default function ModuleForumPostsPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Forums
           </Button>
-          <h1 className="text-3xl font-bold mt-4">{forum.title}</h1>
+          <h1 className="text-3xl font-bold mt-4 break-words">{forum.title}</h1>
           <p className="text-muted-foreground mt-1">{forum.description}</p>
         </div>
         <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/forums/${forumId}/posts/create`)}>
@@ -146,9 +146,9 @@ export default function ModuleForumPostsPage() {
       <Separator className="my-6" />
 
       {posts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 bg-muted/20 rounded-lg">
+        <div className="flex flex-col items-center justify-center py-12 bg-muted/20 rounded-lg min-w-0">
           <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-xl font-medium mb-2">No posts yet</h3>
+          <h3 className="text-xl font-medium mb-2 break-words">No posts yet</h3>
           <p className="text-muted-foreground mb-6">Be the first to start a discussion in this forum</p>
           <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/forums/${forumId}/posts/create`)}>
             <Plus className="mr-2 h-4 w-4" />
@@ -164,9 +164,9 @@ export default function ModuleForumPostsPage() {
             >
               <Card className="transition-all hover:border-primary hover:shadow-md">
                 <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start min-w-0">
                     <div>
-                      <CardTitle className="flex items-center">
+                      <CardTitle className="flex items-center min-w-0">
                         {post.isPinned && (
                           <PinIcon className="h-4 w-4 text-primary mr-2" />
                         )}
@@ -183,23 +183,23 @@ export default function ModuleForumPostsPage() {
                     {post.content.replace(/<[^>]*>?/gm, '')}
                   </div>
                 </CardContent>
-                <CardFooter className="pt-0 text-sm text-muted-foreground flex justify-between">
-                  <div className="flex items-center">
+                <CardFooter className="pt-0 text-sm text-muted-foreground flex justify-between break-words min-w-0">
+                  <div className="flex items-center min-w-0">
                     <p>By {post.author?.name || "Unknown"}</p>
                     <span className="mx-2">•</span>
                     <Clock className="h-3 w-3 mr-1" />
                     {format(new Date(post.createdAt), "MMM d, yyyy")}
                   </div>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center">
+                  <div className="flex items-center space-x-4 min-w-0">
+                    <div className="flex items-center min-w-0">
                       <MessageSquare className="h-4 w-4 mr-1" />
                       {post._count?.comments || 0}
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-center min-w-0">
                       <ThumbsUp className="h-4 w-4 mr-1" />
                       {post._count?.likes || 0}
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-center min-w-0">
                       <Eye className="h-4 w-4 mr-1" />
                       {post.viewCount || 0}
                     </div>

@@ -3,15 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { updateLesson } from '@/lib/api/lessons';
 import { 
   ArrowLeft, 
   Edit, 
   Trash2, 
-  Play, 
-  Clock, 
-  BookOpen,
   Save,
-  X
+  X,
+  PlayCircle,
+  FileText
 } from 'lucide-react';
 
 interface Lesson {
@@ -48,6 +48,7 @@ export default function LessonPage() {
   const [editForm, setEditForm] = useState({
     title: '',
     description: '',
+    content: '',
     duration: 0,
     videoUrl: ''
   });
@@ -78,6 +79,7 @@ export default function LessonPage() {
         setEditForm({
           title: data.data.title,
           description: data.data.description || '',
+          content: data.data.content || '',
           duration: data.data.duration || 0,
           videoUrl: data.data.videoUrl || ''
         });
@@ -89,50 +91,6 @@ export default function LessonPage() {
       setError('Failed to load lesson');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    if (lesson) {
-      setEditForm({
-        title: lesson.title,
-        description: lesson.description || '',
-        duration: lesson.duration || 0,
-        videoUrl: lesson.videoUrl || ''
-      });
-    }
-  };
-
-  const handleSave = async () => {
-    try {
-      const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify(editForm)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update lesson');
-      }
-
-      const data = await response.json();
-      if (data.success) {
-        await fetchLesson(); // Refresh lesson data
-        setIsEditing(false);
-      } else {
-        setError(data.error || 'Failed to update lesson');
-      }
-    } catch (error) {
-      console.error('Error updating lesson:', error);
-      setError('Failed to update lesson');
     }
   };
 
@@ -166,7 +124,7 @@ export default function LessonPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 min-w-0">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
       </div>
     );
@@ -174,9 +132,9 @@ export default function LessonPage() {
 
   if (error || !lesson) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 min-w-0">
         <div className="text-center">
-          <div className="text-red-500 text-lg mb-4">{error || 'Lesson not found'}</div>
+          <div className="text-red-500 text-lg mb-4 break-words">{error || 'Lesson not found'}</div>
           <Link 
             href={`/dashboard/instructor/courses/${courseId}/modules`}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
@@ -189,223 +147,311 @@ export default function LessonPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+    <div className="min-h-screen bg-gray-50">
+      {/* Simple Header */}
+      <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Link 
-                href={`/dashboard/instructor/courses/${courseId}/modules`}
-                className="flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <ArrowLeft className="h-5 w-5 mr-2" />
-                Back to Modules
-              </Link>
-              <div className="text-gray-300 dark:text-gray-600">|</div>
+          <div className="py-4">
+            <button
+              onClick={() => router.push(`/dashboard/instructor/courses/${lesson.module.courseId}/modules/${lesson.module.id}`)}
+              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-3 break-words min-w-0"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back to {lesson.module.title}
+            </button>
+            
+            <div className="flex items-center justify-between min-w-0">
               <div>
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {isEditing ? 'Edit Lesson' : lesson.title}
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {lesson.module.title}
-                </p>
-              </div>
-            </div>
-
-            {lesson.canEdit && (
-              <div className="flex items-center space-x-2">
-                {isEditing ? (
-                  <>
-                    <button
-                      onClick={handleSave}
-                      className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      Save
-                    </button>
-                    <button
-                      onClick={handleCancelEdit}
-                      className="flex items-center px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={handleEdit}
-                      className="flex items-center px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={handleDelete}
-                      className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </button>
-                  </>
+                <h1 className="text-2xl font-bold text-gray-900 break-words">{lesson.title}</h1>
+                {lesson.description && (
+                  <p className="text-gray-600 mt-1">{lesson.description}</p>
                 )}
               </div>
-            )}
+              
+              {lesson.canEdit && (
+                <div className="flex gap-2 min-w-0">
+                  <button
+                    onClick={() => setIsEditing(!isEditing)}
+                    className={`inline-flex items-center px-3 py-2 rounded text-sm font-medium ${
+                      isEditing
+                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    {isEditing ? (
+                      <>
+                        <X className="h-4 w-4 mr-1" />
+                        Cancel
+                      </>
+                    ) : (
+                      <>
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </>
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={handleDelete}
+                    className="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 rounded text-sm font-medium hover:bg-red-100 break-words min-w-0"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="p-6">
-                {isEditing ? (
-                  <div className="space-y-6">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
+          {/* Main Content Area */}
+          <div className="lg:col-span-3 min-w-0 overflow-hidden">
+            {isEditing ? (
+              /* Edit Form */
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className="border-b border-gray-200 px-6 py-4">
+                  <div className="flex items-center justify-between min-w-0">
+                    <h2 className="text-lg font-medium text-gray-900 break-words">Edit Lesson</h2>
+                    <div className="flex gap-2 min-w-0">
+                      <button
+                        onClick={async () => {
+                          try {
+                            await updateLesson(courseId as string, moduleId as string, lessonId as string, editForm);
+                            setIsEditing(false);
+                            // Refresh the lesson data
+                            await fetchLesson();
+                          } catch (error) {
+                            console.error('Failed to update lesson:', error);
+                            setError('Failed to save lesson. Please try again.');
+                          }
+                        }}
+                        className="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 break-words min-w-0"
+                      >
+                        <Save className="h-4 w-4 mr-1" />
+                        Save
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsEditing(false);
+                          setEditForm({
+                            title: lesson?.title || '',
+                            description: lesson?.description || '',
+                            content: lesson?.content || '',
+                            duration: lesson?.duration || 0,
+                            videoUrl: lesson?.videoUrl || ''
+                          });
+                        }}
+                        className="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded text-sm font-medium hover:bg-gray-200 break-words min-w-0"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="p-6 space-y-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1 break-words">
                         Title
                       </label>
                       <input
                         type="text"
                         value={editForm.title}
                         onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter lesson title"
                       />
                     </div>
-
+                    
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Description
+                      <label className="block text-sm font-medium text-gray-700 mb-1 break-words">
+                        Duration (minutes)
                       </label>
-                      <textarea
-                        value={editForm.description}
-                        onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                        rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                      <input
+                        type="number"
+                        value={editForm.duration}
+                        onChange={(e) => setEditForm({ ...editForm, duration: parseInt(e.target.value) || 0 })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="30"
                       />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Duration (minutes)
-                        </label>
-                        <input
-                          type="number"
-                          value={editForm.duration}
-                          onChange={(e) => setEditForm({ ...editForm, duration: parseInt(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Video URL
-                        </label>
-                        <input
-                          type="url"
-                          value={editForm.videoUrl}
-                          onChange={(e) => setEditForm({ ...editForm, videoUrl: e.target.value })}
-                          placeholder="https://..."
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                        />
-                      </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="space-y-6">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                        {lesson.title}
-                      </h2>
-                      {lesson.description && (
-                        <p className="text-gray-600 dark:text-gray-300">
-                          {lesson.description}
-                        </p>
-                      )}
-                    </div>
 
-                    {lesson.videoUrl && (
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                          Video Content
-                        </h3>
-                        <div className="aspect-video bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                          <div className="text-center">
-                            <Play className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                            <p className="text-gray-500 dark:text-gray-400">
-                              Video: {lesson.videoUrl}
-                            </p>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 break-words">
+                      Description
+                    </label>
+                    <textarea
+                      value={editForm.description}
+                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      placeholder="Brief description of the lesson"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 break-words">
+                      Video URL (Optional)
+                    </label>
+                    <input
+                      type="url"
+                      value={editForm.videoUrl}
+                      onChange={(e) => setEditForm({ ...editForm, videoUrl: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="https://youtube.com/watch?v=..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 break-words">
+                      Content
+                    </label>
+                    <textarea
+                      value={editForm.content}
+                      onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
+                      rows={20}
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y text-sm leading-relaxed overflow-hidden break-words"
+                      placeholder="Enter the lesson content here..."
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* View Mode */
+              <div className="space-y-4 lg:space-y-6">
+                {/* Video Section */}
+                {lesson?.videoUrl && (
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-200">
+                      <h3 className="text-lg font-medium text-gray-900 break-words">Video</h3>
+                    </div>
+                    <div className="p-4 lg:p-6">
+                      <div className="aspect-video bg-gray-100 rounded flex items-center justify-center border border-gray-300 min-w-0">
+                        <div className="text-center max-w-full px-4">
+                          <PlayCircle className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600 mb-2 break-words">Video URL:</p>
+                          <div className="max-w-full overflow-hidden">
+                            <a 
+                              href={lesson.videoUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 text-sm break-words inline-block max-w-full"
+                              title={lesson.videoUrl}
+                            >
+                              {lesson.videoUrl.length > 60 ? `${lesson.videoUrl.substring(0, 60)}...` : lesson.videoUrl}
+                            </a>
                           </div>
                         </div>
-                      </div>
-                    )}
-
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                        Lesson Content
-                      </h3>
-                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                        <p className="text-gray-600 dark:text-gray-300">
-                          {lesson.content || 'No content available yet. Edit this lesson to add content.'}
-                        </p>
                       </div>
                     </div>
                   </div>
                 )}
+
+                {/* Content Section */}
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <h3 className="text-lg font-medium text-gray-900 break-words">Content</h3>
+                  </div>
+                  <div className="p-4 lg:p-6">
+                    {lesson?.content ? (
+                      <div className="w-full overflow-hidden">
+                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                          <div className="text-gray-800 whitespace-pre-wrap leading-relaxed text-sm break-words overflow-wrap-anywhere max-w-full">
+                            {lesson.content}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <FileText className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                        <p className="text-gray-500 text-sm mb-3 break-words">No content available yet.</p>
+                        {lesson?.canEdit && (
+                          <button
+                            onClick={() => setIsEditing(true)}
+                            className="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 break-words min-w-0"
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Add Content
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+          {/* Simple Sidebar */}
+          <div className="space-y-4 min-w-0">
             {/* Lesson Info */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Lesson Information
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center text-sm">
-                  <Clock className="h-4 w-4 text-gray-400 mr-2" />
-                  <span className="text-gray-600 dark:text-gray-300">
-                    {lesson.duration ? `${lesson.duration} minutes` : 'Duration not set'}
-                  </span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <BookOpen className="h-4 w-4 text-gray-400 mr-2" />
-                  <span className="text-gray-600 dark:text-gray-300">
-                    Order: {lesson.order}
-                  </span>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 overflow-hidden">
+              <h3 className="text-sm font-medium text-gray-900 mb-3 break-words">Lesson Info</h3>
+              <div className="space-y-2 text-sm text-gray-600 break-words">
+                <div className="break-words">Duration: {lesson?.duration ? `${lesson.duration} min` : 'Not set'}</div>
+                <div className="break-words">Position: #{lesson?.order}</div>
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  <span>Status:</span>
+                  {lesson?.isPublished ? (
+                    <span className="text-green-600 font-medium break-words">Published</span>
+                  ) : (
+                    <span className="text-amber-600 font-medium break-words">Draft</span>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Navigation */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Navigation
-              </h3>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 overflow-hidden">
+              <h3 className="text-sm font-medium text-gray-900 mb-3 break-words">Navigation</h3>
               <div className="space-y-2">
-                {lesson.previousLesson && (
+                {lesson?.previousLesson ? (
                   <Link
                     href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lessons/${lesson.previousLesson}`}
-                    className="block w-full px-3 py-2 text-left text-sm bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg text-gray-700 dark:text-gray-300"
+                    className="block text-sm text-blue-600 hover:text-blue-800 break-words"
                   >
                     ← Previous Lesson
                   </Link>
+                ) : (
+                  <span className="block text-sm text-gray-400 break-words">← Previous Lesson</span>
                 )}
-                {lesson.nextLesson && (
+                
+                {lesson?.nextLesson ? (
                   <Link
                     href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lessons/${lesson.nextLesson}`}
-                    className="block w-full px-3 py-2 text-left text-sm bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg text-gray-700 dark:text-gray-300"
+                    className="block text-sm text-blue-600 hover:text-blue-800 break-words"
                   >
                     Next Lesson →
                   </Link>
+                ) : (
+                  <span className="block text-sm text-gray-400 break-words">Next Lesson →</span>
                 )}
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 overflow-hidden">
+              <h3 className="text-sm font-medium text-gray-900 mb-3 break-words">Quick Links</h3>
+              <div className="space-y-2">
+                <Link
+                  href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}`}
+                  className="block text-sm text-blue-600 hover:text-blue-800 break-words"
+                >
+                  Back to Module
+                </Link>
+                <Link
+                  href={`/dashboard/instructor/courses/${courseId}`}
+                  className="block text-sm text-blue-600 hover:text-blue-800 break-words"
+                >
+                  Course Overview
+                </Link>
               </div>
             </div>
           </div>

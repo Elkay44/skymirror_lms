@@ -42,36 +42,36 @@ export default function ForumCard({
       className={`rounded-xl border border-gray-200 bg-white hover:shadow-md overflow-hidden transition-all duration-200 ${className} cursor-pointer`}
       onClick={onClick}
     >
-      <div className="p-6">
-        <div className="flex items-start justify-between">
+      <div className="p-4 lg:p-6">
+        <div className="flex items-start justify-between min-w-0">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 break-words">{title}</h3>
             {description && (
-              <p className="mt-1 text-sm text-gray-600">{description}</p>
+              <p className="mt-1 text-sm text-gray-600 break-words">{description}</p>
             )}
           </div>
           {isGlobal && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 break-words min-w-0">
               Global
             </span>
           )}
         </div>
         
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center text-sm text-gray-600">
+        <div className="mt-4 flex items-center justify-between min-w-0">
+          <div className="flex items-center space-x-4 min-w-0">
+            <div className="flex items-center text-sm text-gray-600 break-words min-w-0">
               <MessageSquare className="h-4 w-4 mr-1 text-gray-400" />
               {postsCount} {postsCount === 1 ? 'Post' : 'Posts'}
             </div>
             
-            <div className="flex items-center text-sm text-gray-600">
+            <div className="flex items-center text-sm text-gray-600 break-words min-w-0">
               <Users className="h-4 w-4 mr-1 text-gray-400" />
               {isGlobal ? 'All Students' : 'Course Students'}
             </div>
           </div>
           
           {lastPostAt && (
-            <div className="flex items-center text-xs text-gray-500">
+            <div className="flex items-center text-xs text-gray-500 min-w-0">
               <Clock className="h-3 w-3 mr-1" />
               <span>Last post: {formattedDate} by {lastPostAuthor || 'Anonymous'}</span>
             </div>
@@ -82,7 +82,7 @@ export default function ForumCard({
       <div className="px-6 py-3 bg-gray-50 border-t border-gray-200">
         <Link
           href={`/courses/${courseId}/forums/${id}`}
-          className="block w-full text-center py-2 px-4 rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+          className="block w-full text-center py-2 px-4 rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors break-words"
         >
           View Forum
         </Link>

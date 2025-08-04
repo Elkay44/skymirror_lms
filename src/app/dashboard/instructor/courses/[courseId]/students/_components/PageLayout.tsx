@@ -25,14 +25,14 @@ export function PageLayout({ children, title, description, backHref, actions }: 
           </Link>
         </Button>
       </div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 min-w-0">
         <div>
-          <h1 className="text-3xl font-bold">{title}</h1>
+          <h1 className="text-3xl font-bold break-words">{title}</h1>
           {description && <p className="text-gray-500 mt-2">{description}</p>}
         </div>
         {actions && <div>{actions}</div>}
       </div>
-      <Card className="p-6">{children}</Card>
+      <Card className="p-4 lg:p-6">{children}</Card>
     </div>
   );
 }

@@ -185,12 +185,12 @@ export default function ProjectDetail() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-red-50 border-l-4 border-red-400 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
+          <div className="flex min-w-0">
+            <div className="flex-shrink-0 min-w-0">
               <AlertCircle className="h-5 w-5 text-red-400" />
             </div>
             <div className="ml-3">
-              <p className="text-sm text-red-700">{error}</p>
+              <p className="text-sm text-red-700 break-words">{error}</p>
             </div>
           </div>
         </div>
@@ -202,12 +202,12 @@ export default function ProjectDetail() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
-          <h3 className="text-lg font-medium text-gray-900">Project not found</h3>
-          <p className="mt-1 text-sm text-gray-500">The requested project could not be found.</p>
+          <h3 className="text-lg font-medium text-gray-900 break-words">Project not found</h3>
+          <p className="mt-1 text-sm text-gray-500 break-words">The requested project could not be found.</p>
           <div className="mt-6">
             <Link
               href="/dashboard/student/projects"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 break-words min-w-0"
             >
               <ArrowLeft className="-ml-1 mr-2 h-5 w-5" />
               Back to Projects
@@ -223,41 +223,41 @@ export default function ProjectDetail() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
-        <div className="flex items-center">
+        <div className="flex items-center min-w-0">
           <Link
             href="/dashboard/student/projects"
             className="text-indigo-600 hover:text-indigo-900"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h1 className="ml-2 text-2xl font-bold text-gray-900">{project.title}</h1>
+          <h1 className="ml-2 text-2xl font-bold text-gray-900 break-words">{project.title}</h1>
         </div>
         {project.course && (
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500 break-words">
             Part of: {project.course.title}
           </p>
         )}
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg overflow-hidden">
             <div className="px-4 py-5 sm:px-6">
-              <h2 className="text-lg font-medium text-gray-900">Project Details</h2>
+              <h2 className="text-lg font-medium text-gray-900 break-words">Project Details</h2>
             </div>
             <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
               <dl className="sm:divide-y sm:divide-gray-200">
                 <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Description</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                  <dt className="text-sm font-medium text-gray-500 break-words">Description</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 break-words">
                     {project.description || 'No description provided.'}
                   </dd>
                 </div>
                 
                 {project.instructions && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">Instructions</dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 whitespace-pre-line">
+                    <dt className="text-sm font-medium text-gray-500 break-words">Instructions</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 whitespace-pre-line break-words">
                       {project.instructions}
                     </dd>
                   </div>
@@ -265,29 +265,29 @@ export default function ProjectDetail() {
                 
                 {project.dueDate && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">Due Date</dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    <dt className="text-sm font-medium text-gray-500 break-words">Due Date</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 break-words">
                       {new Date(project.dueDate).toLocaleDateString()}
                     </dd>
                   </div>
                 )}
                 
                 <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Points</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                  <dt className="text-sm font-medium text-gray-500 break-words">Points</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 break-words">
                     {project.pointsValue} points
                   </dd>
                 </div>
                 
                 {project.skills && project.skills.length > 0 && (
                   <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">Skills</dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      <div className="flex flex-wrap gap-2">
+                    <dt className="text-sm font-medium text-gray-500 break-words">Skills</dt>
+                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 break-words">
+                      <div className="flex flex-wrap gap-2 min-w-0">
                         {project.skills.map((skill) => (
                           <span
                             key={skill}
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 break-words min-w-0"
                           >
                             {skill}
                           </span>
@@ -300,19 +300,19 @@ export default function ProjectDetail() {
             </div>
           </div>
           
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg overflow-hidden">
             <div className="px-4 py-5 sm:px-6">
-              <h2 className="text-lg font-medium text-gray-900">Submit Your Work</h2>
+              <h2 className="text-lg font-medium text-gray-900 break-words">Submit Your Work</h2>
             </div>
             <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
               {submissionSuccess && (
                 <div className="mb-4 rounded-md bg-green-50 p-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
+                  <div className="flex min-w-0">
+                    <div className="flex-shrink-0 min-w-0">
                       <CheckCircle className="h-5 w-5 text-green-400" />
                     </div>
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-green-800">
+                      <p className="text-sm font-medium text-green-800 break-words">
                         Your submission has been received!
                       </p>
                     </div>
@@ -322,12 +322,12 @@ export default function ProjectDetail() {
               
               {submissionError && (
                 <div className="mb-4 rounded-md bg-red-50 p-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
+                  <div className="flex min-w-0">
+                    <div className="flex-shrink-0 min-w-0">
                       <AlertCircle className="h-5 w-5 text-red-400" />
                     </div>
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-red-800">
+                      <p className="text-sm font-medium text-red-800 break-words">
                         {submissionError}
                       </p>
                     </div>
@@ -335,9 +335,9 @@ export default function ProjectDetail() {
                 </div>
               )}
               
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Submission Type
                   </label>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -351,7 +351,7 @@ export default function ProjectDetail() {
                       }`}
                     >
                       <Github className="h-8 w-8 text-gray-700" />
-                      <span className="mt-2 block text-sm font-medium text-gray-900">
+                      <span className="mt-2 block text-sm font-medium text-gray-900 break-words">
                         GitHub Repository
                       </span>
                     </button>
@@ -366,7 +366,7 @@ export default function ProjectDetail() {
                       }`}
                     >
                       <FileText className="h-8 w-8 text-gray-700" />
-                      <span className="mt-2 block text-sm font-medium text-gray-900">
+                      <span className="mt-2 block text-sm font-medium text-gray-900 break-words">
                         Text Submission
                       </span>
                     </button>
@@ -381,7 +381,7 @@ export default function ProjectDetail() {
                       }`}
                     >
                       <Upload className="h-8 w-8 text-gray-700" />
-                      <span className="mt-2 block text-sm font-medium text-gray-900">
+                      <span className="mt-2 block text-sm font-medium text-gray-900 break-words">
                         File Upload
                       </span>
                     </button>
@@ -390,14 +390,14 @@ export default function ProjectDetail() {
                 
                 {submissionType === 'repository' && (
                   <div>
-                    <label htmlFor="repository-url" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="repository-url" className="block text-sm font-medium text-gray-700 break-words">
                       GitHub Repository URL
                     </label>
                     <div className="mt-1">
                       <input
                         type="url"
                         id="repository-url"
-                        className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                        className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md break-words"
                         placeholder="https://github.com/username/repository"
                         value={submissionUrl}
                         onChange={(e) => setSubmissionUrl(e.target.value)}
@@ -409,14 +409,14 @@ export default function ProjectDetail() {
                 
                 {submissionType === 'text' && (
                   <div>
-                    <label htmlFor="submission-text" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="submission-text" className="block text-sm font-medium text-gray-700 break-words">
                       Your Submission
                     </label>
                     <div className="mt-1">
                       <textarea
                         id="submission-text"
                         rows={8}
-                        className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md"
+                        className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md break-words"
                         placeholder="Paste your submission text here..."
                         value={submissionText}
                         onChange={(e) => setSubmissionText(e.target.value)}
@@ -428,20 +428,20 @@ export default function ProjectDetail() {
                 
                 {submissionType === 'file' && (
                   <div>
-                    <div className="flex justify-between items-center">
-                      <label className="block text-sm font-medium text-gray-700">
+                    <div className="flex justify-between items-center min-w-0">
+                      <label className="block text-sm font-medium text-gray-700 break-words">
                         Upload Files
                       </label>
                       <span className="text-xs text-gray-500">
                         {files.length} file{files.length !== 1 ? 's' : ''} selected
                       </span>
                     </div>
-                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md min-w-0">
                       <div className="space-y-1 text-center">
-                        <div className="flex text-sm text-gray-600">
+                        <div className="flex text-sm text-gray-600 break-words min-w-0">
                           <label
                             htmlFor="file-upload"
-                            className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                            className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 break-words overflow-hidden"
                           >
                             <span>Upload files</span>
                             <input
@@ -465,10 +465,10 @@ export default function ProjectDetail() {
                     {files.length > 0 && (
                       <div className="mt-2 space-y-2">
                         {files.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                            <div className="flex items-center">
+                          <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md min-w-0 flex-shrink-0">
+                            <div className="flex items-center min-w-0">
                               <FileText className="h-5 w-5 text-gray-400" />
-                              <span className="ml-2 text-sm font-medium text-gray-900 truncate max-w-xs">
+                              <span className="ml-2 text-sm font-medium text-gray-900 truncate max-w-xs break-words">
                                 {file.name}
                               </span>
                             </div>
@@ -490,11 +490,11 @@ export default function ProjectDetail() {
                   </div>
                 )}
                 
-                <div className="flex justify-end">
+                <div className="flex justify-end min-w-0">
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed break-words min-w-0"
                   >
                     {isSubmitting ? (
                       <>
@@ -514,22 +514,22 @@ export default function ProjectDetail() {
           </div>
         </div>
         
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg overflow-hidden">
             <div className="px-4 py-5 sm:px-6">
-              <h2 className="text-lg font-medium text-gray-900">Submission Status</h2>
+              <h2 className="text-lg font-medium text-gray-900 break-words">Submission Status</h2>
             </div>
             <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
               <dl className="sm:divide-y sm:divide-gray-200">
                 <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Status</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                  <dt className="text-sm font-medium text-gray-500 break-words">Status</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 break-words">
                     {latestSubmission ? (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 break-words min-w-0">
                         Submitted
                       </span>
                     ) : (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 break-words min-w-0">
                         Not Submitted
                       </span>
                     )}
@@ -539,25 +539,25 @@ export default function ProjectDetail() {
                 {latestSubmission && (
                   <>
                     <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                      <dt className="text-sm font-medium text-gray-500">Submitted On</dt>
-                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      <dt className="text-sm font-medium text-gray-500 break-words">Submitted On</dt>
+                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 break-words">
                         {new Date(latestSubmission.submittedAt).toLocaleString()}
                       </dd>
                     </div>
                     
                     {latestSubmission.status === 'graded' && (
                       <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-sm font-medium text-gray-500">Grade</dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                          <span className="font-medium">{latestSubmission.grade}%</span>
+                        <dt className="text-sm font-medium text-gray-500 break-words">Grade</dt>
+                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 break-words">
+                          <span className="font-medium break-words">{latestSubmission.grade}%</span>
                         </dd>
                       </div>
                     )}
                     
                     {latestSubmission.feedback && (
                       <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                        <dt className="text-sm font-medium text-gray-500">Feedback</dt>
-                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 whitespace-pre-line">
+                        <dt className="text-sm font-medium text-gray-500 break-words">Feedback</dt>
+                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 whitespace-pre-line break-words">
                           {latestSubmission.feedback}
                         </dd>
                       </div>
@@ -568,26 +568,26 @@ export default function ProjectDetail() {
             </div>
           </div>
           
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg overflow-hidden">
             <div className="px-4 py-5 sm:px-6">
-              <h2 className="text-lg font-medium text-gray-900">Submission History</h2>
+              <h2 className="text-lg font-medium text-gray-900 break-words">Submission History</h2>
             </div>
             <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
               {submissions.length > 0 ? (
                 <ul className="divide-y divide-gray-200">
                   {submissions.map((submission) => (
                     <li key={submission.id} className="py-4 px-6">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between min-w-0">
                         <div>
-                          <p className="text-sm font-medium text-indigo-600 truncate">
+                          <p className="text-sm font-medium text-indigo-600 truncate break-words">
                             {new Date(submission.submittedAt).toLocaleString()}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-500 break-words">
                             {submission.status === 'submitted' && 'Pending review'}
                             {submission.status === 'graded' && `Graded: ${submission.grade}%`}
                           </p>
                         </div>
-                        <div className="ml-2 flex-shrink-0 flex">
+                        <div className="ml-2 flex-shrink-0 flex min-w-0">
                           {submission.status === 'graded' ? (
                             <CheckCircle className="h-5 w-5 text-green-500" />
                           ) : (
@@ -599,7 +599,7 @@ export default function ProjectDetail() {
                   ))}
                 </ul>
               ) : (
-                <div className="px-6 py-4 text-center text-sm text-gray-500">
+                <div className="px-6 py-4 text-center text-sm text-gray-500 break-words">
                   No submissions yet
                 </div>
               )}

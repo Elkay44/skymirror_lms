@@ -74,10 +74,10 @@ export function PricingStep() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 lg:space-y-8">
       <div>
-        <h2 className="text-xl font-semibold">Course Pricing & Marketing</h2>
-        <p className="text-muted-foreground text-sm">
+        <h2 className="text-xl font-semibold break-words">Course Pricing & Marketing</h2>
+        <p className="text-muted-foreground text-sm break-words">
           Set your course pricing strategy and marketing options
         </p>
       </div>
@@ -88,16 +88,16 @@ export function PricingStep() {
           <TabsTrigger value="advanced">Advanced Options</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="regular" className="space-y-6 pt-4">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
+        <TabsContent value="regular" className="space-y-4 lg:space-y-6 pt-4">
+          <div className="flex items-center justify-between p-4 border rounded-lg min-w-0">
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <Gift className="h-4 w-4 text-muted-foreground" />
-                <Label htmlFor="isFree" className="text-base font-medium cursor-pointer">
+                <Label htmlFor="isFree" className="text-base font-medium cursor-pointer break-words">
                   Free Course
                 </Label>
               </div>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-muted-foreground mt-1 break-words">
                 Make this course available for free to all students
               </p>
             </div>
@@ -113,7 +113,7 @@ export function PricingStep() {
               <Card>
                 <CardContent className="p-6 space-y-4">
                   <div>
-                    <Label htmlFor="price" className="text-base font-medium mb-2 flex items-center gap-1">
+                    <Label htmlFor="price" className="text-base font-medium mb-2 flex items-center gap-1 break-words min-w-0">
                       <DollarSign className="h-4 w-4" /> Regular Price
                     </Label>
                     <div className="relative">
@@ -129,21 +129,21 @@ export function PricingStep() {
                         placeholder="29.99"
                       />
                     </div>
-                    {errors.price && <p className="text-sm text-destructive mt-1">{errors.price}</p>}
+                    {errors.price && <p className="text-sm text-destructive mt-1 break-words">{errors.price}</p>}
                     <p className="text-xs text-muted-foreground mt-1">
                       Set a price between $0 and $999.99
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center justify-between p-4 border rounded-lg min-w-0">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         <Tag className="h-4 w-4 text-muted-foreground" />
-                        <Label htmlFor="hasDiscount" className="text-base font-medium cursor-pointer">
+                        <Label htmlFor="hasDiscount" className="text-base font-medium cursor-pointer break-words">
                           Discounted Price
                         </Label>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-sm text-muted-foreground mt-1 break-words">
                         Offer your course at a discounted rate
                       </p>
                     </div>
@@ -158,7 +158,7 @@ export function PricingStep() {
                   {formData.hasDiscount && (
                     <div className="space-y-4 pt-2 pl-4 border-l-2 border-primary/20">
                       <div>
-                        <Label htmlFor="discountedPrice" className="text-base font-medium mb-2">
+                        <Label htmlFor="discountedPrice" className="text-base font-medium mb-2 break-words">
                           Sale Price
                         </Label>
                         <div className="relative">
@@ -176,15 +176,15 @@ export function PricingStep() {
                           />
                         </div>
                         {errors.discountedPrice && (
-                          <p className="text-sm text-destructive mt-1">{errors.discountedPrice}</p>
+                          <p className="text-sm text-destructive mt-1 break-words">{errors.discountedPrice}</p>
                         )}
                         
                         {formData.price > 0 && formData.discountedPrice > 0 && (
-                          <div className="flex items-center gap-2 mt-2">
+                          <div className="flex items-center gap-2 mt-2 min-w-0">
                             <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
                               {calculateDiscount()}% OFF
                             </Badge>
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-sm text-muted-foreground break-words">
                               You're offering a {calculateDiscount()}% discount
                             </span>
                           </div>
@@ -192,7 +192,7 @@ export function PricingStep() {
                       </div>
 
                       <div>
-                        <Label className="text-base font-medium mb-2 flex items-center gap-1">
+                        <Label className="text-base font-medium mb-2 flex items-center gap-1 break-words min-w-0">
                           <Clock className="h-4 w-4" /> Sale End Date (Optional)
                         </Label>
                         <DatePicker
@@ -211,7 +211,7 @@ export function PricingStep() {
               <Alert variant="default" className="bg-muted/50">
                 <Info className="h-4 w-4" />
                 <AlertTitle>Pricing Tips</AlertTitle>
-                <AlertDescription className="text-sm">
+                <AlertDescription className="text-sm break-words">
                   <ul className="list-disc pl-5 space-y-1 mt-2">
                     <li>Higher-priced courses often signal higher quality</li>
                     <li>Consider the value you're providing to students</li>
@@ -223,23 +223,23 @@ export function PricingStep() {
           )}
         </TabsContent>
         
-        <TabsContent value="advanced" className="space-y-6 pt-4">
+        <TabsContent value="advanced" className="space-y-4 lg:space-y-6 pt-4">
           <Card>
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-6 space-y-4 lg:space-y-6">
               <div className="space-y-2">
-                <Label className="text-base font-medium">Enrollment Limit</Label>
+                <Label className="text-base font-medium break-words">Enrollment Limit</Label>
                 <RadioGroup 
                   value={formData.hasEnrollmentLimit ? 'limited' : 'unlimited'}
                   onValueChange={handleEnrollmentLimit}
                   className="grid gap-2"
                 >
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 min-w-0">
                     <RadioGroupItem value="unlimited" id="unlimited" />
                     <Label htmlFor="unlimited" className="cursor-pointer">
                       Unlimited enrollments
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 min-w-0">
                     <RadioGroupItem value="limited" id="limited" />
                     <Label htmlFor="limited" className="cursor-pointer">
                       Limit enrollments
@@ -268,19 +268,19 @@ export function PricingStep() {
               <Separator />
               
               <div className="space-y-2">
-                <Label className="text-base font-medium">Course Access Duration</Label>
+                <Label className="text-base font-medium break-words">Course Access Duration</Label>
                 <RadioGroup 
                   value={formData.hasAccessLimit ? 'limited' : 'lifetime'} 
                   onValueChange={(value) => handleChange('hasAccessLimit', value === 'limited')}
                   className="grid gap-2"
                 >
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 min-w-0">
                     <RadioGroupItem value="lifetime" id="lifetime" />
                     <Label htmlFor="lifetime" className="cursor-pointer">
                       Lifetime access
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 min-w-0">
                     <RadioGroupItem value="limited" id="limited-access" />
                     <Label htmlFor="limited-access" className="cursor-pointer">
                       Limited access period
@@ -289,7 +289,7 @@ export function PricingStep() {
                 </RadioGroup>
                 
                 {formData.hasAccessLimit && (
-                  <div className="pt-2 pl-6 flex items-center gap-2">
+                  <div className="pt-2 pl-6 flex items-center gap-2 min-w-0">
                     <div className="w-24">
                       <Input
                         type="number"
@@ -319,13 +319,13 @@ export function PricingStep() {
               <Separator />
               
               <div className="space-y-2">
-                <Label className="text-base font-medium">Bundle Options</Label>
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                <Label className="text-base font-medium break-words">Bundle Options</Label>
+                <div className="flex items-center justify-between p-4 border rounded-lg min-w-0">
                   <div>
-                    <Label htmlFor="availableInBundles" className="font-medium cursor-pointer">
+                    <Label htmlFor="availableInBundles" className="font-medium cursor-pointer break-words">
                       Available in Course Bundles
                     </Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground break-words">
                       Allow this course to be included in bundle offerings
                     </p>
                   </div>
@@ -340,13 +340,13 @@ export function PricingStep() {
               <Separator />
               
               <div className="space-y-2">
-                <Label className="text-base font-medium">Course Certificates</Label>
-                <div className="flex items-center justify-between p-4 border rounded-lg">
+                <Label className="text-base font-medium break-words">Course Certificates</Label>
+                <div className="flex items-center justify-between p-4 border rounded-lg min-w-0">
                   <div>
-                    <Label htmlFor="offersCertificate" className="font-medium cursor-pointer">
+                    <Label htmlFor="offersCertificate" className="font-medium cursor-pointer break-words">
                       Completion Certificate
                     </Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground break-words">
                       Offer a certificate to students who complete the course
                     </p>
                   </div>

@@ -92,7 +92,7 @@ export default function CreatePostPage() {
 
   return (
     <div className="container py-6">
-      <div className="flex items-center mb-6">
+      <div className="flex items-center mb-6 min-w-0">
         <Button
           variant="outline"
           size="sm"
@@ -102,12 +102,12 @@ export default function CreatePostPage() {
           <Pin className="mr-2 h-4 w-4" />
           Back to Forum
         </Button>
-        <h1 className="text-2xl font-bold">Create New Post</h1>
+        <h1 className="text-2xl font-bold break-words">Create New Post</h1>
       </div>
 
       <Separator className="my-4" />
 
-      <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+      <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6 max-w-4xl">
         <div className="space-y-2">
           <Label htmlFor="title">Post Title</Label>
           <Input
@@ -135,8 +135,8 @@ export default function CreatePostPage() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <div className="flex items-center space-x-2">
+        <div className="flex flex-col gap-4 sm:flex-row min-w-0">
+          <div className="flex items-center space-x-2 min-w-0">
             <Checkbox 
               id="isPinned" 
               checked={isPinned} 
@@ -146,7 +146,7 @@ export default function CreatePostPage() {
             <Label htmlFor="isPinned">Pin this post (appears at the top)</Label>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 min-w-0">
             <Checkbox 
               id="isLocked" 
               checked={isLocked} 
@@ -157,7 +157,7 @@ export default function CreatePostPage() {
           </div>
         </div>
 
-        <div className="pt-4 flex justify-end space-x-4">
+        <div className="pt-4 flex justify-end space-x-4 min-w-0">
           <Button
             type="button"
             variant="outline"

@@ -149,10 +149,10 @@ export default function AssessmentDashboard({ courseId }: AssessmentDashboardPro
   
   if (filteredSubmissions.length === 0) {
     return (
-      <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
         <div className="text-center">
           <FileText className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-gray-900">No submissions to review</h3>
+          <h3 className="text-lg font-medium text-gray-900 break-words">No submissions to review</h3>
           <p className="mt-1 text-gray-500">
             {filter === 'pending' 
               ? 'There are no pending submissions to review at this time.'
@@ -166,12 +166,12 @@ export default function AssessmentDashboard({ courseId }: AssessmentDashboardPro
   }
   
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+    <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
       <div className="p-4 border-b border-gray-200">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold text-gray-900">Project Submissions</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2 min-w-0">
+          <h2 className="text-lg font-semibold text-gray-900 break-words">Project Submissions</h2>
           
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 min-w-0">
             <button
               onClick={() => setFilter('all')}
               className={`px-3 py-1.5 text-sm rounded-md transition-colors ${filter === 'all' 
@@ -204,8 +204,8 @@ export default function AssessmentDashboard({ courseId }: AssessmentDashboardPro
         {filteredSubmissions.map((submission) => (
           <li key={submission.id} className="hover:bg-gray-50 transition-colors">
             <div className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-3">
+              <div className="flex items-start justify-between min-w-0">
+                <div className="flex items-start space-x-3 min-w-0">
                   {submission.student.image ? (
                     <img 
                       src={submission.student.image} 
@@ -213,20 +213,20 @@ export default function AssessmentDashboard({ courseId }: AssessmentDashboardPro
                       className="h-10 w-10 rounded-full object-cover border border-gray-200"
                     />
                   ) : (
-                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <span className="text-blue-800 font-medium">
+                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center min-w-0">
+                      <span className="text-blue-800 font-medium break-words">
                         {submission.student.name.charAt(0)}
                       </span>
                     </div>
                   )}
                   
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">{submission.student.name}</h3>
-                    <p className="text-sm text-gray-500">{submission.project.course.title}</p>
+                    <h3 className="text-sm font-medium text-gray-900 break-words">{submission.student.name}</h3>
+                    <p className="text-sm text-gray-500 break-words">{submission.project.course.title}</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 min-w-0">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig[submission.status].color}`}>
                     {statusConfig[submission.status].icon}
                     <span className="ml-1">{submission.status.replace('_', ' ')}</span>
@@ -243,7 +243,7 @@ export default function AssessmentDashboard({ courseId }: AssessmentDashboardPro
               </div>
               
               <div className="mt-2">
-                <h4 className="text-sm font-medium text-gray-900">{submission.project.title}</h4>
+                <h4 className="text-sm font-medium text-gray-900 break-words">{submission.project.title}</h4>
                 <p className="text-xs text-gray-500 mt-1">
                   Submitted: {new Date(submission.submittedAt).toLocaleString()}
                 </p>
@@ -263,7 +263,7 @@ export default function AssessmentDashboard({ courseId }: AssessmentDashboardPro
                         href={submission.submissionUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+                        className="flex items-center text-sm text-blue-600 hover:text-blue-800 break-words min-w-0"
                       >
                         <FileText className="h-4 w-4 mr-1.5" />
                         View Submission
@@ -275,7 +275,7 @@ export default function AssessmentDashboard({ courseId }: AssessmentDashboardPro
                         href={submission.repositoryUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+                        className="flex items-center text-sm text-blue-600 hover:text-blue-800 break-words min-w-0"
                       >
                         <Eye className="h-4 w-4 mr-1.5" />
                         View Repository
@@ -284,9 +284,9 @@ export default function AssessmentDashboard({ courseId }: AssessmentDashboardPro
                   </div>
                   
                   {submission.status === 'APPROVED' && submission.grade && (
-                    <div className="mt-3 flex items-center">
+                    <div className="mt-3 flex items-center min-w-0">
                       <Award className="h-5 w-5 text-green-500 mr-1.5" />
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-gray-900 break-words">
                         Grade: {submission.grade}%
                       </span>
                     </div>
@@ -294,20 +294,20 @@ export default function AssessmentDashboard({ courseId }: AssessmentDashboardPro
                   
                   {submission.feedback && (
                     <div className="mt-3">
-                      <h5 className="text-sm font-medium text-gray-900 flex items-center">
+                      <h5 className="text-sm font-medium text-gray-900 flex items-center break-words min-w-0">
                         <MessageSquare className="h-4 w-4 mr-1.5" />
                         Feedback
                       </h5>
-                      <p className="mt-1 text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                      <p className="mt-1 text-sm text-gray-600 bg-gray-50 p-3 rounded-md break-words">
                         {submission.feedback}
                       </p>
                     </div>
                   )}
                   
-                  <div className="mt-4 flex justify-end">
+                  <div className="mt-4 flex justify-end min-w-0">
                     <button
                       onClick={() => handleReviewSubmission(submission.id)}
-                      className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                      className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors break-words"
                     >
                       {['SUBMITTED', 'REVIEWING'].includes(submission.status) 
                         ? 'Review Submission' 

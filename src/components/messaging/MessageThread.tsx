@@ -130,14 +130,14 @@ export default function MessageThread({
   };
   
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div className="flex flex-col h-full bg-gray-50 min-w-0">
       {/* Thread header */}
-      <div className="px-6 py-4 border-b border-gray-200 bg-white shadow-sm flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-gray-200 bg-white shadow-sm flex items-center justify-between min-w-0">
         <div>
-          <h2 className="text-lg font-medium text-gray-900">
+          <h2 className="text-lg font-medium text-gray-900 break-words">
             {isGroupChat ? courseName : recipientName}
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 break-words">
             {isGroupChat ? 'Course group chat' : recipientRole.charAt(0) + recipientRole.slice(1).toLowerCase()}
           </p>
         </div>
@@ -152,10 +152,10 @@ export default function MessageThread({
       </div>
       
       {/* Message thread */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-8">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6 lg:space-y-8 min-w-0">
         {Object.keys(groupedMessages).map(date => (
           <div key={date} className="space-y-4">
-            <div className="flex justify-center">
+            <div className="flex justify-center min-w-0">
               <div className="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">
                 {date}
               </div>
@@ -170,9 +170,9 @@ export default function MessageThread({
                   key={message.id} 
                   className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className="flex max-w-md">
+                  <div className="flex max-w-md min-w-0">
                     {!isCurrentUser && (
-                      <div className="flex-shrink-0 mr-3">
+                      <div className="flex-shrink-0 mr-3 min-w-0">
                         {message.senderAvatar ? (
                           <img 
                             className="h-8 w-8 rounded-full" 
@@ -181,7 +181,7 @@ export default function MessageThread({
                           />
                         ) : (
                           <div className={`h-8 w-8 rounded-full flex items-center justify-center ${roleStyles.bgDark}`}>
-                            <span className="text-xs font-medium text-white">
+                            <span className="text-xs font-medium text-white break-words">
                               {message.senderName.charAt(0)}
                             </span>
                           </div>
@@ -191,7 +191,7 @@ export default function MessageThread({
                     
                     <div>
                       {!isCurrentUser && (
-                        <div className="flex items-center">
+                        <div className="flex items-center min-w-0">
                           <p className={`text-xs font-medium ${roleStyles.color}`}>
                             {message.senderName}
                           </p>
@@ -204,14 +204,14 @@ export default function MessageThread({
                       <div 
                         className={`mt-1 px-4 py-2 rounded-lg ${isCurrentUser ? 'bg-blue-500 text-white' : roleStyles.bgLight + ' text-gray-900'}`}
                       >
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                         
                         {message.attachments && message.attachments.length > 0 && (
                           <div className="mt-2 space-y-2">
                             {message.attachments.map(attachment => (
-                              <div key={attachment.id} className="flex items-center rounded-md overflow-hidden border border-gray-200 bg-white">
+                              <div key={attachment.id} className="flex items-center rounded-md overflow-hidden border border-gray-200 bg-white min-w-0">
                                 {attachment.type === 'image' && attachment.thumbnailUrl ? (
-                                  <div className="h-12 w-12 bg-gray-100 flex-shrink-0">
+                                  <div className="h-12 w-12 bg-gray-100 flex-shrink-0 min-w-0">
                                     <img 
                                       src={attachment.thumbnailUrl} 
                                       alt={attachment.name} 
@@ -219,13 +219,13 @@ export default function MessageThread({
                                     />
                                   </div>
                                 ) : (
-                                  <div className="h-12 w-12 bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                  <div className="h-12 w-12 bg-gray-100 flex items-center justify-center flex-shrink-0 min-w-0">
                                     {getAttachmentIcon(attachment.type)}
                                   </div>
                                 )}
                                 
-                                <div className="px-3 py-2 flex-1 min-w-0">
-                                  <p className="text-xs font-medium text-gray-900 truncate">{attachment.name}</p>
+                                <div className="px-3 py-2 flex-1 min-w-0 min-w-0">
+                                  <p className="text-xs font-medium text-gray-900 truncate break-words">{attachment.name}</p>
                                   <p className="text-xs text-gray-500">{attachment.size}</p>
                                 </div>
                                 
@@ -244,7 +244,7 @@ export default function MessageThread({
                       </div>
                       
                       {isCurrentUser && (
-                        <div className="flex justify-end mt-1">
+                        <div className="flex justify-end mt-1 min-w-0">
                           <span className="text-xs text-gray-400">
                             {formatMessageTime(message.timestamp)}
                             {message.isRead && (
@@ -266,12 +266,12 @@ export default function MessageThread({
       {/* Attachment previews */}
       {attachments.length > 0 && (
         <div className="bg-white px-4 py-3 border-t border-gray-200">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 min-w-0">
             {attachments.map((file, index) => (
-              <div key={index} className="flex items-center bg-gray-100 rounded-md px-3 py-2 max-w-xs">
+              <div key={index} className="flex items-center bg-gray-100 rounded-md px-3 py-2 max-w-xs min-w-0">
                 {getFileIcon(file)}
-                <div className="ml-2 flex-1 min-w-0">
-                  <p className="text-xs font-medium text-gray-900 truncate">{file.name}</p>
+                <div className="ml-2 flex-1 min-w-0 min-w-0">
+                  <p className="text-xs font-medium text-gray-900 truncate break-words">{file.name}</p>
                   <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
                 </div>
                 <button 
@@ -290,10 +290,10 @@ export default function MessageThread({
       
       {/* Message input */}
       <div className="bg-white border-t border-gray-200 px-4 py-3">
-        <form onSubmit={handleSendMessage} className="flex items-end">
-          <div className="flex-1 mr-3">
+        <form onSubmit={handleSendMessage} className="flex items-end min-w-0">
+          <div className="flex-1 mr-3 min-w-0">
             <textarea
-              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
               placeholder="Type your message..."
               rows={1}
               value={newMessage}
@@ -307,7 +307,7 @@ export default function MessageThread({
             />
           </div>
           
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 min-w-0">
             <div>
               <input
                 id="file-upload"
@@ -318,7 +318,7 @@ export default function MessageThread({
               />
               <label
                 htmlFor="file-upload"
-                className="cursor-pointer p-2 rounded-full hover:bg-gray-100 flex items-center justify-center"
+                className="cursor-pointer p-2 rounded-full hover:bg-gray-100 flex items-center justify-center min-w-0 flex-shrink-0"
               >
                 <Paperclip className="h-5 w-5 text-gray-500" />
               </label>
@@ -326,7 +326,7 @@ export default function MessageThread({
             
             <button
               type="submit"
-              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed break-words min-w-0"
               disabled={newMessage.trim() === '' && attachments.length === 0}
             >
               <Send className="h-4 w-4 mr-1" />

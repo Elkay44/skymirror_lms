@@ -172,7 +172,7 @@ export default function ScheduleSessionPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center h-64">
+        <div className="flex justify-center items-center h-64 min-w-0">
           <div className="animate-spin h-12 w-12 border-4 border-teal-600 rounded-full border-t-transparent"></div>
         </div>
       </div>
@@ -197,13 +197,13 @@ export default function ScheduleSessionPage() {
       <div className="mb-6">
         <button 
           onClick={() => router.back()} 
-          className="inline-flex items-center text-sm text-teal-600 hover:text-teal-800 mb-4"
+          className="inline-flex items-center text-sm text-teal-600 hover:text-teal-800 mb-4 break-words min-w-0"
         >
           <ChevronLeft className="mr-1 h-4 w-4" />
           Back
         </button>
         
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center break-words min-w-0">
           <Calendar className="mr-2 h-7 w-7 text-teal-600" />
           Schedule a Mentorship Session
         </h1>
@@ -212,25 +212,25 @@ export default function ScheduleSessionPage() {
         </p>
       </div>
       
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-        <div className="p-6">
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
+        <div className="p-4 lg:p-6">
           <form onSubmit={handleSubmit}>
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               {/* Mentee Selection */}
               <div>
-                <label htmlFor="mentee" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="mentee" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                   Select Mentee <span className="text-red-500">*</span>
                 </label>
                 {mentees.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {mentees.map((mentee) => (
                       <div 
                         key={mentee.id}
                         onClick={() => setSelectedMentee(mentee.id)}
                         className={`cursor-pointer border rounded-lg p-4 transition-colors ${selectedMentee === mentee.id ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'}`}
                       >
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center mr-3">
+                        <div className="flex items-center min-w-0">
+                          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center mr-3 min-w-0">
                             {mentee.avatar ? (
                               <img src={mentee.avatar} alt={mentee.name} className="h-10 w-10 rounded-full" />
                             ) : (
@@ -238,7 +238,7 @@ export default function ScheduleSessionPage() {
                             )}
                           </div>
                           <div>
-                            <h3 className="text-sm font-medium text-gray-900">{mentee.name}</h3>
+                            <h3 className="text-sm font-medium text-gray-900 break-words">{mentee.name}</h3>
                             <p className="text-xs text-gray-500">{mentee.email}</p>
                           </div>
                           {selectedMentee === mentee.id && (
@@ -251,7 +251,7 @@ export default function ScheduleSessionPage() {
                 ) : (
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
                     <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-1">No Mentees Found</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-1 break-words">No Mentees Found</h3>
                     <p className="text-gray-500 max-w-md mx-auto">
                       You don't have any mentees assigned yet. Please contact an administrator to assign mentees to you.
                     </p>
@@ -261,7 +261,7 @@ export default function ScheduleSessionPage() {
               
               {/* Session Type */}
               <div>
-                <label htmlFor="sessionType" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="sessionType" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                   Session Type <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -271,19 +271,19 @@ export default function ScheduleSessionPage() {
                       onClick={() => setSessionType(type.id)}
                       className={`cursor-pointer border rounded-lg p-4 transition-colors ${sessionType === type.id ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-teal-300'}`}
                     >
-                      <div className="flex items-start">
-                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center mr-3">
+                      <div className="flex items-start min-w-0">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center mr-3 min-w-0">
                           {getSessionTypeIcon(type.icon)}
                         </div>
                         <div>
-                          <div className="flex items-center">
-                            <h3 className="text-sm font-medium text-gray-900">{type.name}</h3>
+                          <div className="flex items-center min-w-0">
+                            <h3 className="text-sm font-medium text-gray-900 break-words">{type.name}</h3>
                             {sessionType === type.id && (
                               <Check className="ml-2 h-4 w-4 text-teal-600" />
                             )}
                           </div>
                           <p className="text-xs text-gray-500 mt-1">{type.description}</p>
-                          <p className="text-xs font-medium text-teal-600 mt-1">{type.duration} minutes</p>
+                          <p className="text-xs font-medium text-teal-600 mt-1 break-words">{type.duration} minutes</p>
                         </div>
                       </div>
                     </div>
@@ -292,13 +292,13 @@ export default function ScheduleSessionPage() {
               </div>
               
               {/* Date and Time */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                 <div>
-                  <label htmlFor="sessionDate" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="sessionDate" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Date <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
                       <Calendar className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
@@ -306,7 +306,7 @@ export default function ScheduleSessionPage() {
                       id="sessionDate"
                       value={sessionDate}
                       onChange={(e) => setSessionDate(e.target.value)}
-                      className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md break-words"
                       min={new Date().toISOString().split('T')[0]}
                       required
                     />
@@ -314,11 +314,11 @@ export default function ScheduleSessionPage() {
                 </div>
                 
                 <div>
-                  <label htmlFor="sessionTime" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="sessionTime" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                     Time <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
                       <Clock className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
@@ -326,7 +326,7 @@ export default function ScheduleSessionPage() {
                       id="sessionTime"
                       value={sessionTime}
                       onChange={(e) => setSessionTime(e.target.value)}
-                      className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                      className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md break-words"
                       required
                     />
                   </div>
@@ -335,7 +335,7 @@ export default function ScheduleSessionPage() {
               
               {/* Session Topic */}
               <div>
-                <label htmlFor="sessionTopic" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="sessionTopic" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                   Session Topic <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -344,14 +344,14 @@ export default function ScheduleSessionPage() {
                   value={sessionTopic}
                   onChange={(e) => setSessionTopic(e.target.value)}
                   placeholder="E.g., Career Planning Discussion, Project Review, etc."
-                  className="focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                  className="focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md break-words"
                   required
                 />
               </div>
               
               {/* Session Notes */}
               <div>
-                <label htmlFor="sessionNotes" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="sessionNotes" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                   Session Notes (Optional)
                 </label>
                 <div className="relative">
@@ -364,17 +364,17 @@ export default function ScheduleSessionPage() {
                     onChange={(e) => setSessionNotes(e.target.value)}
                     rows={4}
                     placeholder="Add any additional information, agenda items, or preparation notes for the session..."
-                    className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                    className="pl-10 focus:ring-teal-500 focus:border-teal-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md break-words"
                   />
                 </div>
               </div>
               
               {/* Submit Button */}
-              <div className="flex justify-end">
+              <div className="flex justify-end min-w-0">
                 <button
                   type="submit"
                   disabled={isSubmitting || !selectedMentee || !sessionDate || !sessionTime || !sessionType || !sessionTopic}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed break-words min-w-0"
                 >
                   {isSubmitting ? (
                     <>

@@ -88,12 +88,12 @@ export default function ForumPost({
   };
   
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 overflow-hidden">
       {/* Post Header */}
       <div className="px-6 py-4 border-b border-gray-200">
-        <div className="flex justify-between items-start">
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0">
+        <div className="flex justify-between items-start min-w-0">
+          <div className="flex items-start space-x-3 min-w-0">
+            <div className="flex-shrink-0 min-w-0">
               {authorImage ? (
                 <Image 
                   src={authorImage} 
@@ -103,16 +103,16 @@ export default function ForumPost({
                   className="rounded-full"
                 />
               ) : (
-                <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <span className="text-indigo-600 font-medium">
+                <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center min-w-0">
+                  <span className="text-indigo-600 font-medium break-words">
                     {authorName.charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-              <div className="flex items-center text-sm text-gray-500">
+              <h3 className="text-lg font-semibold text-gray-900 break-words">{title}</h3>
+              <div className="flex items-center text-sm text-gray-500 break-words min-w-0">
                 <span>{authorName}</span>
                 <span className="mx-1">•</span>
                 <span>{formattedDate} at {formattedTime}</span>
@@ -120,14 +120,14 @@ export default function ForumPost({
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 min-w-0">
             {isPinned && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 break-words min-w-0">
                 Pinned
               </span>
             )}
             {isLocked && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 break-words min-w-0">
                 Locked
               </span>
             )}
@@ -141,7 +141,7 @@ export default function ForumPost({
               </button>
               
               {showDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200 overflow-hidden">
                   <div className="py-1">
                     {isAuthor && (
                       <button
@@ -149,7 +149,7 @@ export default function ForumPost({
                           setIsEditing(true);
                           setShowDropdown(false);
                         }}
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left break-words min-w-0"
                       >
                         <Edit className="h-4 w-4 mr-2" />
                         Edit Post
@@ -161,7 +161,7 @@ export default function ForumPost({
                           if (onDelete) onDelete();
                           setShowDropdown(false);
                         }}
-                        className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
+                        className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left break-words min-w-0"
                       >
                         <Trash className="h-4 w-4 mr-2" />
                         Delete Post
@@ -173,7 +173,7 @@ export default function ForumPost({
                           if (onReport) onReport();
                           setShowDropdown(false);
                         }}
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left break-words min-w-0"
                       >
                         <Flag className="h-4 w-4 mr-2" />
                         Report Post
@@ -188,7 +188,7 @@ export default function ForumPost({
       </div>
       
       {/* Post Content */}
-      <div className="px-6 py-4">
+      <div className="px-4 py-3 lg:px-6 lg:py-4">
         {isEditing ? (
           <div>
             <textarea
@@ -197,16 +197,16 @@ export default function ForumPost({
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
               rows={6}
             />
-            <div className="flex justify-end mt-3 space-x-2">
+            <div className="flex justify-end mt-3 space-x-2 min-w-0">
               <button
                 onClick={() => setIsEditing(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 break-words overflow-hidden"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmitEdit}
-                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700"
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 break-words"
               >
                 Save Changes
               </button>
@@ -218,11 +218,11 @@ export default function ForumPost({
       </div>
       
       {/* Post Footer */}
-      <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
-        <div className="flex items-center space-x-6">
+      <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between items-center min-w-0">
+        <div className="flex items-center space-x-6 min-w-0">
           <button 
             onClick={onLike}
-            className="flex items-center text-sm text-gray-500 hover:text-indigo-600"
+            className="flex items-center text-sm text-gray-500 hover:text-indigo-600 break-words min-w-0"
           >
             <ThumbsUp className="h-4 w-4 mr-1" />
             {likes} {likes === 1 ? 'Like' : 'Likes'}
@@ -230,13 +230,13 @@ export default function ForumPost({
           
           <button 
             onClick={() => setShowComments(!showComments)}
-            className="flex items-center text-sm text-gray-500 hover:text-indigo-600"
+            className="flex items-center text-sm text-gray-500 hover:text-indigo-600 break-words min-w-0"
           >
             <MessageSquare className="h-4 w-4 mr-1" />
             {comments.length} {comments.length === 1 ? 'Comment' : 'Comments'}
           </button>
           
-          <div className="flex items-center text-sm text-gray-500">
+          <div className="flex items-center text-sm text-gray-500 break-words min-w-0">
             <Clock className="h-4 w-4 mr-1" />
             {viewCount} {viewCount === 1 ? 'View' : 'Views'}
           </div>
@@ -244,7 +244,7 @@ export default function ForumPost({
         
         <Link
           href={`/courses/${courseId}/forums/${forumId}/posts/${id}`}
-          className="text-sm text-indigo-600 hover:text-indigo-500"
+          className="text-sm text-indigo-600 hover:text-indigo-500 break-words"
         >
           View Full Post
         </Link>
@@ -263,8 +263,8 @@ export default function ForumPost({
           {/* Comment Form */}
           {!isLocked && session?.user && (
             <div className="p-4 border-t border-gray-200">
-              <div className="flex space-x-3">
-                <div className="flex-shrink-0">
+              <div className="flex space-x-3 min-w-0">
+                <div className="flex-shrink-0 min-w-0">
                   {session.user.image ? (
                     <Image 
                       src={session.user.image} 
@@ -274,26 +274,26 @@ export default function ForumPost({
                       className="rounded-full"
                     />
                   ) : (
-                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                      <span className="text-indigo-600 font-medium">
+                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center min-w-0">
+                      <span className="text-indigo-600 font-medium break-words">
                         {(session.user.name || session.user.email)?.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <textarea
                     value={replyContent}
                     onChange={(e) => setReplyContent(e.target.value)}
                     placeholder="Write a comment..."
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 flex-shrink-0"
                     rows={3}
                   />
-                  <div className="mt-2 flex justify-end">
+                  <div className="mt-2 flex justify-end min-w-0">
                     <button
                       onClick={handleSubmitReply}
                       disabled={!replyContent.trim()}
-                      className="px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed"
+                      className="px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed break-words"
                     >
                       Post Comment
                     </button>
@@ -305,7 +305,7 @@ export default function ForumPost({
           
           {isLocked && (
             <div className="p-4 bg-yellow-50 text-center">
-              <p className="text-sm text-yellow-800">
+              <p className="text-sm text-yellow-800 break-words">
                 This post is locked. New comments are not allowed.
               </p>
             </div>

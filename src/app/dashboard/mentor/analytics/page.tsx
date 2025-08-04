@@ -207,7 +207,7 @@ export default function MenteeAnalyticsPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center h-64">
+        <div className="flex justify-center items-center h-64 min-w-0">
           <div className="animate-spin h-12 w-12 border-4 border-teal-600 rounded-full border-t-transparent"></div>
         </div>
       </div>
@@ -217,9 +217,9 @@ export default function MenteeAnalyticsPage() {
   if (!analyticsData) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+        <div className="bg-white rounded-lg shadow-sm p-6 text-center overflow-hidden">
           <BarChart2 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">Analytics Not Available</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-1 break-words">Analytics Not Available</h3>
           <p className="text-gray-500 max-w-md mx-auto">
             We couldn't load the analytics data at this time. Please try again later.
           </p>
@@ -230,9 +230,9 @@ export default function MenteeAnalyticsPage() {
   
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 min-w-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center break-words min-w-0">
             <BarChart2 className="mr-2 h-6 w-6 text-teal-600" />
             Mentee Analytics
           </h1>
@@ -241,8 +241,8 @@ export default function MenteeAnalyticsPage() {
           </p>
         </div>
         
-        <div className="mt-4 md:mt-0 flex items-center space-x-2">
-          <div className="flex items-center border border-gray-300 rounded-md shadow-sm">
+        <div className="mt-4 md:mt-0 flex items-center space-x-2 min-w-0">
+          <div className="flex items-center border border-gray-300 rounded-md shadow-sm min-w-0">
             <button
               onClick={() => setTimeframe('WEEK')}
               className={`px-3 py-1.5 text-sm font-medium ${timeframe === 'WEEK' ? 'bg-teal-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'} rounded-l-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500`}
@@ -263,7 +263,7 @@ export default function MenteeAnalyticsPage() {
             </button>
           </div>
           
-          <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+          <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0">
             <Download className="-ml-0.5 mr-1.5 h-4 w-4" />
             Export
           </button>
@@ -271,24 +271,24 @@ export default function MenteeAnalyticsPage() {
       </div>
       
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 overflow-hidden">
+          <div className="flex items-center min-w-0">
+            <div className="flex-shrink-0 h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center min-w-0">
               <Users className="h-6 w-6 text-teal-600" />
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-medium text-gray-900">{analyticsData.totalMentees}</h3>
-              <p className="text-sm text-gray-500">Total Mentees</p>
+              <h3 className="text-lg font-medium text-gray-900 break-words">{analyticsData.totalMentees}</h3>
+              <p className="text-sm text-gray-500 break-words">Total Mentees</p>
             </div>
           </div>
-          <div className="mt-4 flex items-center justify-between">
+          <div className="mt-4 flex items-center justify-between min-w-0">
             <div>
-              <span className="text-sm font-medium text-gray-700">{analyticsData.activeMentees} active</span>
-              <span className="text-sm text-gray-500 ml-1">({Math.round((analyticsData.activeMentees / analyticsData.totalMentees) * 100)}%)</span>
+              <span className="text-sm font-medium text-gray-700 break-words">{analyticsData.activeMentees} active</span>
+              <span className="text-sm text-gray-500 ml-1 break-words">({Math.round((analyticsData.activeMentees / analyticsData.totalMentees) * 100)}%)</span>
             </div>
-            <div className="flex items-center">
-              <span className="text-sm text-green-600 font-medium flex items-center">
+            <div className="flex items-center min-w-0">
+              <span className="text-sm text-green-600 font-medium flex items-center break-words min-w-0">
                 <TrendingUp className="h-4 w-4 mr-1" />
                 Active
               </span>
@@ -296,14 +296,14 @@ export default function MenteeAnalyticsPage() {
           </div>
         </div>
         
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 overflow-hidden">
+          <div className="flex items-center min-w-0">
+            <div className="flex-shrink-0 h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center min-w-0">
               <BookOpen className="h-6 w-6 text-teal-600" />
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-medium text-gray-900">{analyticsData.courseCompletionRate}%</h3>
-              <p className="text-sm text-gray-500">Course Completion Rate</p>
+              <h3 className="text-lg font-medium text-gray-900 break-words">{analyticsData.courseCompletionRate}%</h3>
+              <p className="text-sm text-gray-500 break-words">Course Completion Rate</p>
             </div>
           </div>
           <div className="mt-4 h-2 bg-gray-200 rounded-full">
@@ -314,47 +314,47 @@ export default function MenteeAnalyticsPage() {
           </div>
         </div>
         
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 overflow-hidden">
+          <div className="flex items-center min-w-0">
+            <div className="flex-shrink-0 h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center min-w-0">
               <Calendar className="h-6 w-6 text-teal-600" />
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-medium text-gray-900">{analyticsData.totalSessionsCompleted}</h3>
-              <p className="text-sm text-gray-500">Sessions Completed</p>
+              <h3 className="text-lg font-medium text-gray-900 break-words">{analyticsData.totalSessionsCompleted}</h3>
+              <p className="text-sm text-gray-500 break-words">Sessions Completed</p>
             </div>
           </div>
-          <div className="mt-4 flex items-center justify-between">
+          <div className="mt-4 flex items-center justify-between min-w-0">
             <div>
-              <span className="text-sm font-medium text-gray-700">{analyticsData.averageSessionsPerMentee} avg per mentee</span>
+              <span className="text-sm font-medium text-gray-700 break-words">{analyticsData.averageSessionsPerMentee} avg per mentee</span>
             </div>
-            <div className="flex items-center">
-              <span className="text-sm text-teal-600 font-medium">{analyticsData.upcomingSessions} upcoming</span>
+            <div className="flex items-center min-w-0">
+              <span className="text-sm text-teal-600 font-medium break-words">{analyticsData.upcomingSessions} upcoming</span>
             </div>
           </div>
         </div>
         
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0 h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 overflow-hidden">
+          <div className="flex items-center min-w-0">
+            <div className="flex-shrink-0 h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center min-w-0">
               <Award className="h-6 w-6 text-teal-600" />
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-medium text-gray-900">{analyticsData.menteeProgress.onTrack + analyticsData.menteeProgress.completing}</h3>
-              <p className="text-sm text-gray-500">On Track or Better</p>
+              <h3 className="text-lg font-medium text-gray-900 break-words">{analyticsData.menteeProgress.onTrack + analyticsData.menteeProgress.completing}</h3>
+              <p className="text-sm text-gray-500 break-words">On Track or Better</p>
             </div>
           </div>
-          <div className="mt-4 flex items-center">
-            <div className="flex-1">
-              <div className="flex h-2 overflow-hidden bg-gray-200 rounded-full">
+          <div className="mt-4 flex items-center min-w-0">
+            <div className="flex-1 min-w-0">
+              <div className="flex h-2 overflow-hidden bg-gray-200 rounded-full min-w-0">
                 <div className="h-2 bg-green-500" style={{ width: `${(analyticsData.menteeProgress.completing / analyticsData.totalMentees) * 100}%` }}></div>
                 <div className="h-2 bg-blue-500" style={{ width: `${(analyticsData.menteeProgress.onTrack / analyticsData.totalMentees) * 100}%` }}></div>
                 <div className="h-2 bg-yellow-500" style={{ width: `${(analyticsData.menteeProgress.needsAttention / analyticsData.totalMentees) * 100}%` }}></div>
                 <div className="h-2 bg-red-500" style={{ width: `${(analyticsData.menteeProgress.inactive / analyticsData.totalMentees) * 100}%` }}></div>
               </div>
             </div>
-            <div className="ml-3 flex items-center">
-              <span className="text-sm text-gray-700 font-medium">
+            <div className="ml-3 flex items-center min-w-0">
+              <span className="text-sm text-gray-700 font-medium break-words">
                 {Math.round(((analyticsData.menteeProgress.onTrack + analyticsData.menteeProgress.completing) / analyticsData.totalMentees) * 100)}%
               </span>
             </div>
@@ -363,27 +363,27 @@ export default function MenteeAnalyticsPage() {
       </div>
       
       {/* Progress Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-6">
+        <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900 flex items-center">
+            <h2 className="text-lg font-medium text-gray-900 flex items-center break-words min-w-0">
               <BarChart className="mr-2 h-5 w-5 text-teal-600" />
               Weekly Mentee Activity
             </h2>
           </div>
-          <div className="p-6">
+          <div className="p-4 lg:p-6">
             {/* In a real application, this would be a chart component */}
-            <div className="h-64 flex items-end justify-between space-x-2">
+            <div className="h-64 flex items-end justify-between space-x-2 min-w-0">
               {analyticsData.menteeActivityByDay.map((day) => {
                 const heightPercentage = (day.count / Math.max(...analyticsData.menteeActivityByDay.map(d => d.count))) * 100;
                 return (
-                  <div key={day.day} className="flex flex-col items-center flex-1">
+                  <div key={day.day} className="flex flex-col items-center flex-1 min-w-0">
                     <div 
                       className="w-full bg-teal-500 rounded-t-md" 
                       style={{ height: `${heightPercentage}%` }}
                     ></div>
                     <div className="mt-2 text-xs text-gray-500">{day.day.substring(0, 3)}</div>
-                    <div className="text-xs font-medium text-gray-700">{day.count}</div>
+                    <div className="text-xs font-medium text-gray-700 break-words">{day.count}</div>
                   </div>
                 );
               })}
@@ -391,21 +391,21 @@ export default function MenteeAnalyticsPage() {
           </div>
         </div>
         
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900 flex items-center">
+            <h2 className="text-lg font-medium text-gray-900 flex items-center break-words min-w-0">
               <PieChart className="mr-2 h-5 w-5 text-teal-600" />
               Mentees by Career Path
             </h2>
           </div>
-          <div className="p-6">
+          <div className="p-4 lg:p-6">
             {/* In a real application, this would be a pie chart component */}
             <div className="space-y-4">
               {analyticsData.menteesByCareerPath.map((path) => (
                 <div key={path.path}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-gray-700">{path.path}</span>
-                    <span className="text-sm font-medium text-gray-900">{path.count}</span>
+                  <div className="flex items-center justify-between mb-1 min-w-0">
+                    <span className="text-sm text-gray-700 break-words">{path.path}</span>
+                    <span className="text-sm font-medium text-gray-900 break-words">{path.count}</span>
                   </div>
                   <div className="h-2 bg-gray-200 rounded-full">
                     <div 
@@ -421,17 +421,17 @@ export default function MenteeAnalyticsPage() {
       </div>
       
       {/* Mentee Performance Table */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden mb-6">
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <h2 className="text-lg font-medium text-gray-900 flex items-center">
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden mb-6 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between min-w-0">
+          <h2 className="text-lg font-medium text-gray-900 flex items-center break-words min-w-0">
             <User className="mr-2 h-5 w-5 text-teal-600" />
             Mentee Performance
           </h2>
           
           <div className="relative inline-block">
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0">
               <Filter className="h-5 w-5 text-gray-400 mr-1.5" />
-              <select className="focus:ring-teal-500 focus:border-teal-500 shadow-sm sm:text-sm border-gray-300 rounded-md">
+              <select className="focus:ring-teal-500 focus:border-teal-500 shadow-sm sm:text-sm border-gray-300 rounded-md break-words">
                 <option>All Mentees</option>
                 <option>Active Mentees</option>
                 <option>Needs Attention</option>
@@ -445,22 +445,22 @@ export default function MenteeAnalyticsPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">
                   Mentee
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">
                   Courses
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">
                   Last Active
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">
                   Avg. Grade
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">
                   Sessions
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider break-words">
                   Progress
                 </th>
               </tr>
@@ -469,8 +469,8 @@ export default function MenteeAnalyticsPage() {
               {analyticsData.menteePerformanceData.map((mentee) => (
                 <tr key={mentee.menteeId} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
+                    <div className="flex items-center min-w-0">
+                      <div className="flex-shrink-0 h-10 w-10 min-w-0">
                         {mentee.menteeAvatar ? (
                           <img
                             className="h-10 w-10 rounded-full"
@@ -478,42 +478,42 @@ export default function MenteeAnalyticsPage() {
                             alt={mentee.menteeName}
                           />
                         ) : (
-                          <div className="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
+                          <div className="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-600 min-w-0">
                             {mentee.menteeName.charAt(0)}
                           </div>
                         )}
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 break-words">
                           {mentee.menteeName}
                         </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{mentee.coursesCompleted} completed</div>
-                    <div className="text-sm text-gray-500">{mentee.activeCourses} active</div>
+                    <div className="text-sm text-gray-900 break-words">{mentee.coursesCompleted} completed</div>
+                    <div className="text-sm text-gray-500 break-words">{mentee.activeCourses} active</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{formatDate(mentee.lastActive)}</div>
+                    <div className="text-sm text-gray-900 break-words">{formatDate(mentee.lastActive)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    <span className="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 break-words min-w-0">
                       {mentee.averageGrade}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 break-words">
                     {mentee.totalSessions}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-1 h-2 bg-gray-200 rounded-full mr-2 w-24">
+                    <div className="flex items-center min-w-0">
+                      <div className="flex-1 h-2 bg-gray-200 rounded-full mr-2 w-24 min-w-0">
                         <div 
                           className={`h-2 ${getProgressColorClass(mentee.progress)} rounded-full`} 
                           style={{ width: `${mentee.progress}%` }}
                         ></div>
                       </div>
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-gray-900 break-words">
                         {mentee.progress}%
                       </div>
                     </div>
@@ -526,20 +526,20 @@ export default function MenteeAnalyticsPage() {
       </div>
       
       {/* Popular Courses */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900 flex items-center">
+          <h2 className="text-lg font-medium text-gray-900 flex items-center break-words min-w-0">
             <BookOpen className="mr-2 h-5 w-5 text-teal-600" />
             Most Popular Courses Among Mentees
           </h2>
         </div>
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           <div className="space-y-4">
             {analyticsData.mostPopularCourses.map((course) => (
               <div key={course.course}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-gray-700">{course.course}</span>
-                  <span className="text-sm font-medium text-gray-900">{course.enrolledMentees} mentees</span>
+                <div className="flex items-center justify-between mb-1 min-w-0">
+                  <span className="text-sm text-gray-700 break-words">{course.course}</span>
+                  <span className="text-sm font-medium text-gray-900 break-words">{course.enrolledMentees} mentees</span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full">
                   <div 

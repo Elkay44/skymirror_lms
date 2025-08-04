@@ -102,7 +102,7 @@ export async function GET(
         id: lesson.id,
         title: lesson.title,
         description: lesson.description,
-        content: '', // TODO: Add content field to Lesson model
+        content: lesson.content || '',
         videoUrl: lesson.videoUrl,
         duration: lesson.duration || 0,
         order: lesson.order,
@@ -184,6 +184,7 @@ export async function PATCH(
       data: {
         ...(body.title && { title: body.title }),
         ...(body.description !== undefined && { description: body.description }),
+        ...(body.content !== undefined && { content: body.content }),
         ...(body.duration !== undefined && { duration: body.duration }),
         ...(body.videoUrl !== undefined && { videoUrl: body.videoUrl }),
         ...(body.order !== undefined && { order: body.order })
@@ -197,6 +198,7 @@ export async function PATCH(
         id: updatedLesson.id,
         title: updatedLesson.title,
         description: updatedLesson.description,
+        content: updatedLesson.content,
         duration: updatedLesson.duration,
         videoUrl: updatedLesson.videoUrl,
         order: updatedLesson.order,

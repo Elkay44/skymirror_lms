@@ -121,7 +121,7 @@ export default function MentorSettings() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center h-64 min-w-0">
         <div className="animate-spin h-8 w-8 border-4 border-teal-600 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -131,10 +131,10 @@ export default function MentorSettings() {
     <div>
 
       
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
         <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 break-words">
               Full Name
             </label>
             <input
@@ -142,13 +142,13 @@ export default function MentorSettings() {
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm break-words"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 break-words">
               Email Address
             </label>
             <input
@@ -156,13 +156,13 @@ export default function MentorSettings() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm break-words"
               required
             />
           </div>
 
           <div className="sm:col-span-2">
-            <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="bio" className="block text-sm font-medium text-gray-700 break-words">
               Bio
             </label>
             <textarea
@@ -170,13 +170,13 @@ export default function MentorSettings() {
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={3}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm break-words"
               placeholder="Tell mentees about your professional experience and background"
             />
           </div>
 
           <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700 break-words">
               Location
             </label>
             <input
@@ -184,13 +184,13 @@ export default function MentorSettings() {
               id="location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm break-words"
               placeholder="City, Country"
             />
           </div>
 
           <div>
-            <label htmlFor="profile-image" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="profile-image" className="block text-sm font-medium text-gray-700 break-words">
               Profile Image URL
             </label>
             <input
@@ -198,20 +198,20 @@ export default function MentorSettings() {
               id="profile-image"
               value={image || ''}
               onChange={(e) => setImage(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm break-words"
               placeholder="https://example.com/image.jpg"
             />
           </div>
         </div>
 
         <div className="pt-5">
-          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center break-words min-w-0">
             <UserCircle className="mr-2 h-5 w-5 text-teal-500" />
             Mentorship Profile
           </h3>
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="specialties" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="specialties" className="block text-sm font-medium text-gray-700 break-words">
                 Areas of Specialization
               </label>
               <input
@@ -222,13 +222,13 @@ export default function MentorSettings() {
                   ...mentorDetails,
                   specialties: e.target.value
                 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm break-words"
                 placeholder="e.g. Career Guidance, Technical Leadership"
               />
             </div>
 
             <div>
-              <label htmlFor="years-experience" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="years-experience" className="block text-sm font-medium text-gray-700 break-words">
                 Years of Industry Experience
               </label>
               <input
@@ -239,14 +239,14 @@ export default function MentorSettings() {
                   ...mentorDetails,
                   yearsOfExperience: e.target.value
                 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm break-words"
                 min="0"
                 placeholder="e.g. 10"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label htmlFor="mentorship-philosophy" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="mentorship-philosophy" className="block text-sm font-medium text-gray-700 break-words">
                 Mentorship Philosophy
               </label>
               <textarea
@@ -257,13 +257,13 @@ export default function MentorSettings() {
                   mentorshipPhilosophy: e.target.value
                 })}
                 rows={3}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm break-words"
                 placeholder="Share your approach to mentorship and what mentees can expect"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label htmlFor="credentials" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="credentials" className="block text-sm font-medium text-gray-700 break-words">
                 Credentials & Relevant Experience
               </label>
               <textarea
@@ -274,7 +274,7 @@ export default function MentorSettings() {
                   credentials: e.target.value
                 })}
                 rows={3}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm break-words"
                 placeholder="List your relevant credentials, positions, and achievements"
               />
             </div>
@@ -282,17 +282,17 @@ export default function MentorSettings() {
         </div>
 
         <div className="pt-5">
-          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+          <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center break-words min-w-0">
             <Calendar className="mr-2 h-5 w-5 text-teal-500" />
             Session Preferences
           </h3>
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="hourly-rate" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="hourly-rate" className="block text-sm font-medium text-gray-700 break-words">
                 Hourly Rate (USD)
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
                   <DollarSign className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
@@ -303,7 +303,7 @@ export default function MentorSettings() {
                     ...mentorDetails,
                     hourlyRate: e.target.value
                   })}
-                  className="pl-10 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                  className="pl-10 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm break-words"
                   placeholder="e.g. 75"
                   min="0"
                   step="1"
@@ -312,7 +312,7 @@ export default function MentorSettings() {
             </div>
 
             <div>
-              <label htmlFor="availability-preference" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="availability-preference" className="block text-sm font-medium text-gray-700 break-words">
                 Availability Preference
               </label>
               <select
@@ -322,7 +322,7 @@ export default function MentorSettings() {
                   ...mentorDetails,
                   availabilityPreference: e.target.value
                 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm break-words"
               >
                 <option value="weekdays">Weekdays Only</option>
                 <option value="weekends">Weekends Only</option>
@@ -333,11 +333,11 @@ export default function MentorSettings() {
             </div>
 
             <div>
-              <label htmlFor="session-duration" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="session-duration" className="block text-sm font-medium text-gray-700 break-words">
                 Preferred Session Duration (minutes)
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
                   <Clock className="h-5 w-5 text-gray-400" />
                 </div>
                 <select
@@ -347,7 +347,7 @@ export default function MentorSettings() {
                     ...mentorDetails,
                     sessionDuration: e.target.value
                   })}
-                  className="pl-10 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                  className="pl-10 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm break-words"
                 >
                   <option value="30">30 minutes</option>
                   <option value="45">45 minutes</option>
@@ -361,10 +361,10 @@ export default function MentorSettings() {
         </div>
 
         <div className="pt-5">
-          <div className="flex justify-end">
+          <div className="flex justify-end min-w-0">
             <button
               type="submit"
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
             >
               <Save className="h-4 w-4 mr-2" />
               Save Settings

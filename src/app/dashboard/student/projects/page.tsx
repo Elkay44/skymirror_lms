@@ -131,8 +131,8 @@ export default function StudentProjects() {
   if (loading) {
     return (
       <div className="p-6 max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <h1 className="text-2xl font-bold mb-2 md:mb-0">My Projects</h1>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 min-w-0">
+          <h1 className="text-2xl font-bold mb-2 md:mb-0 break-words">My Projects</h1>
           
           {/* Course filter */}
           <div className="w-full md:w-auto">
@@ -153,10 +153,10 @@ export default function StudentProjects() {
         
         {selectedCourseId && (
           <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800">
-            <h2 className="font-semibold mb-1">
+            <h2 className="font-semibold mb-1 break-words">
               {courses[selectedCourseId]?.title}
             </h2>
-            <p className="text-sm">
+            <p className="text-sm break-words">
               Viewing {courses[selectedCourseId]?.projects.length} projects for this course.
               <button 
                 onClick={() => setSelectedCourseId('')}
@@ -180,8 +180,8 @@ export default function StudentProjects() {
   if (error) {
     return (
       <div className="p-6 max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <h1 className="text-2xl font-bold mb-2 md:mb-0">My Projects</h1>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 min-w-0">
+          <h1 className="text-2xl font-bold mb-2 md:mb-0 break-words">My Projects</h1>
           
           {/* Course filter */}
           <div className="w-full md:w-auto">
@@ -202,10 +202,10 @@ export default function StudentProjects() {
         
         {selectedCourseId && (
           <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800">
-            <h2 className="font-semibold mb-1">
+            <h2 className="font-semibold mb-1 break-words">
               {courses[selectedCourseId]?.title}
             </h2>
-            <p className="text-sm">
+            <p className="text-sm break-words">
               Viewing {courses[selectedCourseId]?.projects.length} projects for this course.
               <button 
                 onClick={() => setSelectedCourseId('')}
@@ -220,7 +220,7 @@ export default function StudentProjects() {
           <p>Error: {error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+            className="mt-2 text-sm text-red-600 hover:text-red-800 underline break-words"
           >
             Try Again
           </button>
@@ -231,18 +231,18 @@ export default function StudentProjects() {
   
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="text-2xl font-bold mb-2 sm:mb-0">My Projects</h1>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-500">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 min-w-0">
+        <h1 className="text-2xl font-bold mb-2 sm:mb-0 break-words">My Projects</h1>
+        <div className="flex items-center space-x-2 min-w-0">
+          <span className="text-sm text-gray-500 break-words">
             Total Projects: {projects.length}
           </span>
           <span className="h-4 w-px bg-gray-300"></span>
-          <span className="text-sm text-blue-600">
+          <span className="text-sm text-blue-600 break-words">
             Active: {activeProjects.length}
           </span>
           <span className="h-4 w-px bg-gray-300"></span>
-          <span className="text-sm text-green-600">
+          <span className="text-sm text-green-600 break-words">
             Completed: {completedProjects.length}
           </span>
         </div>
@@ -250,7 +250,7 @@ export default function StudentProjects() {
       
       {/* Active Projects Section */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-4 flex items-center">
+        <h2 className="text-lg font-semibold mb-4 flex items-center break-words min-w-0">
           <Code2 className="h-5 w-5 mr-2 text-blue-600" />
           Active Projects
         </h2>
@@ -259,10 +259,10 @@ export default function StudentProjects() {
           <div className="bg-gray-50 border border-gray-100 rounded-lg p-6 text-center">
             <HelpCircle className="h-10 w-10 mx-auto mb-3 text-gray-400" />
             <p className="text-gray-600 mb-2">No active projects found</p>
-            <p className="text-sm text-gray-500 mb-4">Start exploring courses to find projects to work on</p>
+            <p className="text-sm text-gray-500 mb-4 break-words">Start exploring courses to find projects to work on</p>
             <Link 
               href="/courses" 
-              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
+              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium break-words min-w-0"
             >
               Browse Courses
               <ChevronRight className="h-4 w-4 ml-1" />
@@ -283,11 +283,11 @@ export default function StudentProjects() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
+                  className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden"
                 >
                   <div className="p-5">
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900 flex-grow">{project.title}</h3>
+                    <div className="flex justify-between items-start mb-3 min-w-0">
+                      <h3 className="text-lg font-semibold text-gray-900 flex-grow break-words min-w-0">{project.title}</h3>
                       {latestSubmission && (
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig[latestSubmission.status].color}`}>
                           {latestSubmission.status.replace('_', ' ')}
@@ -295,19 +295,19 @@ export default function StudentProjects() {
                       )}
                     </div>
                     
-                    <div className="mb-3 text-sm text-gray-500">
-                      <p className="flex items-center mb-1">
+                    <div className="mb-3 text-sm text-gray-500 break-words">
+                      <p className="flex items-center mb-1 min-w-0">
                         <FileCheck className="h-4 w-4 mr-1.5" />
                         Course: {project.course?.title || 'Unknown Course'}
                       </p>
                       {project.dueDate && (
-                        <p className="flex items-center mb-1">
+                        <p className="flex items-center mb-1 min-w-0">
                           <Calendar className="h-4 w-4 mr-1.5" />
                           Due: {new Date(project.dueDate).toLocaleDateString()}
                         </p>
                       )}
                       {project.isRequiredForCertification && (
-                        <p className="flex items-center text-amber-600">
+                        <p className="flex items-center text-amber-600 min-w-0">
                           <Award className="h-4 w-4 mr-1.5" />
                           Required for certification
                         </p>
@@ -320,7 +320,7 @@ export default function StudentProjects() {
                     
                     {project.skills && project.skills.length > 0 && (
                       <div className="mb-4">
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1.5 min-w-0">
                           {project.skills.map((skill: string, i: number) => (
                             <span 
                               key={i} 
@@ -333,19 +333,19 @@ export default function StudentProjects() {
                       </div>
                     )}
                     
-                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                      <div className="flex space-x-1">
+                    <div className="flex justify-between items-center pt-2 border-t border-gray-100 min-w-0">
+                      <div className="flex space-x-1 min-w-0">
                         {latestSubmission ? (
                           <Link 
                             href={`/courses/${project.courseId}/projects/${project.id}`}
-                            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                            className="text-sm text-blue-600 hover:text-blue-800 font-medium break-words"
                           >
                             View Details
                           </Link>
                         ) : (
                           <Link 
                             href={`/courses/${project.courseId}/projects/${project.id}`}
-                            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                            className="text-sm text-blue-600 hover:text-blue-800 font-medium break-words"
                           >
                             Start Project
                           </Link>
@@ -362,7 +362,7 @@ export default function StudentProjects() {
       
       {/* Completed Projects Section */}
       <section>
-        <h2 className="text-lg font-semibold mb-4 flex items-center">
+        <h2 className="text-lg font-semibold mb-4 flex items-center break-words min-w-0">
           <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
           Completed Projects
         </h2>
@@ -371,7 +371,7 @@ export default function StudentProjects() {
           <div className="bg-gray-50 border border-gray-100 rounded-lg p-6 text-center">
             <Award className="h-10 w-10 mx-auto mb-3 text-gray-400" />
             <p className="text-gray-600 mb-2">No completed projects yet</p>
-            <p className="text-sm text-gray-500">As you complete projects, they will appear here</p>
+            <p className="text-sm text-gray-500 break-words">As you complete projects, they will appear here</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -386,29 +386,29 @@ export default function StudentProjects() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
+                  className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden"
                 >
                   <div className="p-5">
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-lg font-semibold text-gray-900 flex-grow">{project.title}</h3>
-                      <span className="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                    <div className="flex justify-between items-start mb-3 min-w-0">
+                      <h3 className="text-lg font-semibold text-gray-900 flex-grow break-words min-w-0">{project.title}</h3>
+                      <span className="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full text-xs font-medium break-words">
                         APPROVED
                       </span>
                     </div>
                     
-                    <div className="mb-3 text-sm text-gray-500">
-                      <p className="flex items-center mb-1">
+                    <div className="mb-3 text-sm text-gray-500 break-words">
+                      <p className="flex items-center mb-1 min-w-0">
                         <FileCheck className="h-4 w-4 mr-1.5" />
                         Course: {project.course?.title || 'Unknown Course'}
                       </p>
                       {approvedSubmission?.grade && (
-                        <p className="flex items-center mb-1 text-green-600 font-medium">
+                        <p className="flex items-center mb-1 text-green-600 font-medium break-words min-w-0">
                           <Award className="h-4 w-4 mr-1.5" />
                           Grade: {approvedSubmission.grade}%
                         </p>
                       )}
                       {approvedSubmission?.reviewedAt && (
-                        <p className="flex items-center mb-1">
+                        <p className="flex items-center mb-1 min-w-0">
                           <Calendar className="h-4 w-4 mr-1.5" />
                           Completed: {new Date(approvedSubmission.reviewedAt).toLocaleDateString()}
                         </p>
@@ -421,7 +421,7 @@ export default function StudentProjects() {
                     
                     {project.skills && project.skills.length > 0 && (
                       <div className="mb-4">
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1.5 min-w-0">
                           {project.skills.map((skill: string, i: number) => (
                             <span 
                               key={i} 
@@ -434,17 +434,17 @@ export default function StudentProjects() {
                       </div>
                     )}
                     
-                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                    <div className="flex justify-between items-center pt-2 border-t border-gray-100 min-w-0">
                       <Link 
                         href={`/dashboard/student/projects/submissions/${approvedSubmission?.id}`}
-                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                        className="text-sm text-blue-600 hover:text-blue-800 font-medium break-words"
                       >
                         View Submission
                       </Link>
                       
                       <Link 
                         href={`/dashboard/student/portfolio?project=${project.id}`}
-                        className="text-sm bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md font-medium transition-colors"
+                        className="text-sm bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-md font-medium transition-colors break-words"
                       >
                         Add to Portfolio
                       </Link>

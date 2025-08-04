@@ -58,8 +58,8 @@ const formatDate = (dateString: string): string => {
 
 // Loading component
 const LoadingState = () => (
-  <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-    <div className="flex flex-col items-center">
+  <div className="flex items-center justify-center min-h-[calc(100vh-200px)] min-w-0">
+    <div className="flex flex-col items-center min-w-0">
       <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
       <p className="text-gray-600">Loading course details...</p>
     </div>
@@ -68,23 +68,23 @@ const LoadingState = () => (
 
 // Error component
 const ErrorState = ({ error, onRetry }: { error: string; onRetry: () => void }) => (
-  <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center p-4">
+  <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center p-4 min-w-0">
     <AlertTriangle className="h-12 w-12 text-red-500 mb-4" />
-    <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Course</h2>
+    <h2 className="text-xl font-semibold text-gray-900 mb-2 break-words">Error Loading Course</h2>
     <p className="text-gray-600 mb-6">
       {error || 'Failed to load course data. Please try again.'}
     </p>
-    <div className="flex gap-3">
+    <div className="flex gap-3 min-w-0">
       <button
         onClick={onRetry}
-        className="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors flex items-center gap-2"
+        className="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors flex items-center gap-2 min-w-0"
       >
         <RefreshCw className="h-4 w-4" />
         Retry
       </button>
       <Link 
         href="/dashboard/instructor/courses"
-        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center gap-2"
+        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center gap-2 min-w-0"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Courses
@@ -103,7 +103,7 @@ const CourseHeader = ({
   isPublishing: boolean; 
   onPublishToggle: () => void 
 }) => (
-  <div className="bg-white rounded-xl shadow-sm border overflow-hidden mb-8">
+  <div className="bg-white rounded-xl shadow-sm border overflow-hidden mb-8 overflow-hidden">
     <div className="relative h-64 w-full">
       {course.imageUrl ? (
         <Image
@@ -115,11 +115,11 @@ const CourseHeader = ({
           priority
         />
       ) : (
-        <div className="h-full w-full bg-gradient-to-r from-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="h-full w-full bg-gradient-to-r from-blue-50 to-indigo-50 flex items-center justify-center min-w-0">
           <BookOpen className="h-12 w-12 text-blue-400" />
         </div>
       )}
-      <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-800 flex items-center gap-2">
+      <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium text-gray-800 flex items-center gap-2 break-words min-w-0 overflow-hidden">
         {course.isPublished ? (
           <>
             <div className="h-2 w-2 rounded-full bg-green-500"></div>
@@ -132,7 +132,7 @@ const CourseHeader = ({
           </>
         )}
         {course.isPrivate && (
-          <div className="flex items-center gap-1 text-xs bg-gray-100 px-2 py-0.5 rounded-full">
+          <div className="flex items-center gap-1 text-xs bg-gray-100 px-2 py-0.5 rounded-full min-w-0">
             <Lock className="h-3 w-3" />
             <span>Private</span>
           </div>
@@ -151,38 +151,38 @@ const CourseHeader = ({
       </div>
     </div>
 
-    <div className="p-6">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6">
+    <div className="p-4 lg:p-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-6 min-w-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{course.title || 'Untitled Course'}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2 break-words">{course.title || 'Untitled Course'}</h1>
           {course.shortDescription && (
-            <p className="text-gray-600 text-lg mb-4">{course.shortDescription}</p>
+            <p className="text-gray-600 text-lg mb-4 break-words">{course.shortDescription}</p>
           )}
           
-          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4 break-words min-w-0">
             {typeof course.enrollmentCount !== 'undefined' && (
-              <div className="flex items-center gap-1">
-                <Users className="h-4 w-4 flex-shrink-0" />
+              <div className="flex items-center gap-1 min-w-0">
+                <Users className="h-4 w-4 flex-shrink-0 min-w-0" />
                 <div>
-                  <span className="font-medium text-gray-900">{course.enrollmentCount}</span>
+                  <span className="font-medium text-gray-900 break-words">{course.enrollmentCount}</span>
                   <span className="ml-1">students</span>
                 </div>
               </div>
             )}
             {typeof course.completionRate !== 'undefined' && (
-              <div className="flex items-center gap-1">
-                <BarChart2 className="h-4 w-4 flex-shrink-0" />
+              <div className="flex items-center gap-1 min-w-0">
+                <BarChart2 className="h-4 w-4 flex-shrink-0 min-w-0" />
                 <div>
-                  <span className="font-medium text-gray-900">{course.completionRate}%</span>
+                  <span className="font-medium text-gray-900 break-words">{course.completionRate}%</span>
                   <span className="ml-1">completion</span>
                 </div>
               </div>
             )}
             {typeof course.averageRating !== 'undefined' && (
-              <div className="flex items-center gap-1">
-                <MessageSquare className="h-4 w-4 flex-shrink-0" />
+              <div className="flex items-center gap-1 min-w-0">
+                <MessageSquare className="h-4 w-4 flex-shrink-0 min-w-0" />
                 <div>
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-gray-900 break-words">
                     {typeof course.averageRating === 'number' ? course.averageRating.toFixed(1) : '0.0'}
                   </span>
                   <span className="ml-1">/5.0 rating</span>
@@ -190,11 +190,11 @@ const CourseHeader = ({
               </div>
             )}
             {course.updatedAt && (
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4 flex-shrink-0" />
+              <div className="flex items-center gap-1 min-w-0">
+                <Clock className="h-4 w-4 flex-shrink-0 min-w-0" />
                 <div>
                   <span>Updated </span>
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-gray-900 break-words">
                     {formatDate(course.updatedAt)}
                   </span>
                 </div>
@@ -203,7 +203,7 @@ const CourseHeader = ({
           </div>
           
           {course.instructor && (
-            <div className="flex items-center gap-3 mt-4">
+            <div className="flex items-center gap-3 mt-4 min-w-0">
               <div className="relative h-10 w-10 rounded-full bg-gray-100 overflow-hidden">
                 {course.instructor.image ? (
                   <Image
@@ -213,14 +213,14 @@ const CourseHeader = ({
                     className="object-cover"
                   />
                 ) : (
-                  <div className="h-full w-full flex items-center justify-center bg-blue-100 text-blue-600">
+                  <div className="h-full w-full flex items-center justify-center bg-blue-100 text-blue-600 min-w-0">
                     <UserIcon className="h-5 w-5" />
                   </div>
                 )}
               </div>
               <div>
-                <p className="text-sm text-gray-500">Instructor</p>
-                <p className="font-medium text-gray-900">
+                <p className="text-sm text-gray-500 break-words">Instructor</p>
+                <p className="font-medium text-gray-900 break-words">
                   {course.instructor.name || course.instructor.email?.split('@')[0] || 'Unknown'}
                 </p>
               </div>
@@ -228,25 +228,25 @@ const CourseHeader = ({
           )}
         </div>
         
-        <div className="bg-gray-50 p-4 rounded-lg w-full md:w-64 flex-shrink-0">
-          <h3 className="font-medium text-gray-900 mb-3">Course Stats</h3>
+        <div className="bg-gray-50 p-4 rounded-lg w-full md:w-64 flex-shrink-0 min-w-0">
+          <h3 className="font-medium text-gray-900 mb-3 break-words">Course Stats</h3>
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Modules</span>
-              <span className="font-medium">{course.modules || 0}</span>
+            <div className="flex justify-between items-center min-w-0">
+              <span className="text-sm text-gray-600 break-words">Modules</span>
+              <span className="font-medium break-words">{course.modules || 0}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Lessons</span>
-              <span className="font-medium">{course.lessons || 0}</span>
+            <div className="flex justify-between items-center min-w-0">
+              <span className="text-sm text-gray-600 break-words">Lessons</span>
+              <span className="font-medium break-words">{course.lessons || 0}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Projects</span>
-              <span className="font-medium">{course.projects || 0}</span>
+            <div className="flex justify-between items-center min-w-0">
+              <span className="text-sm text-gray-600 break-words">Projects</span>
+              <span className="font-medium break-words">{course.projects || 0}</span>
             </div>
             <div className="pt-2 border-t border-gray-200">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Total Students</span>
-                <span className="font-medium">{course.enrollmentCount || 0}</span>
+              <div className="flex justify-between items-center min-w-0">
+                <span className="text-sm font-medium break-words">Total Students</span>
+                <span className="font-medium break-words">{course.enrollmentCount || 0}</span>
               </div>
             </div>
           </div>
@@ -281,7 +281,7 @@ const CourseHeader = ({
             
             <Link 
               href={`/dashboard/instructor/courses/${course.id}/edit`}
-              className="mt-2 w-full px-4 py-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+              className="mt-2 w-full px-4 py-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors flex items-center justify-center gap-2 text-sm font-medium break-words min-w-0"
             >
               <Edit className="h-4 w-4" />
               Edit Course
@@ -290,7 +290,7 @@ const CourseHeader = ({
             <Link 
               href={`/courses/${course.id}`}
               target="_blank"
-              className="mt-2 w-full px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+              className="mt-2 w-full px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 text-sm font-medium break-words min-w-0"
             >
               <Eye className="h-4 w-4" />
               View Live
@@ -311,7 +311,7 @@ const TabNavigation = ({
   onTabChange: (tab: TabType) => void 
 }) => (
   <div className="border-b border-gray-200 mb-6">
-    <nav className="-mb-px flex space-x-8">
+    <nav className="-mb-px flex space-x-8 min-w-0">
       {[
         { id: 'overview', label: 'Overview', icon: BookOpen },
         { id: 'modules', label: 'Modules & Lessons', icon: BookMarked },
@@ -340,10 +340,10 @@ const TabNavigation = ({
 
 // Overview tab component
 const OverviewTab = ({ course }: { course: Course }) => (
-  <div className="space-y-8">
+  <div className="space-y-6 lg:space-y-8">
     {course.description && (
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-3">Description</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-3 break-words">Description</h3>
         <div className="prose max-w-none text-gray-700">
           {course.description}
         </div>
@@ -352,13 +352,13 @@ const OverviewTab = ({ course }: { course: Course }) => (
 
     {course.learningOutcomes?.length > 0 && (
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-3">
+        <h3 className="text-lg font-medium text-gray-900 mb-3 break-words">
           What You'll Learn
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {course.learningOutcomes.map((outcome, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+            <div key={i} className="flex items-start gap-3 min-w-0">
+              <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0 min-w-0" />
               <span className="text-gray-700">{outcome}</span>
             </div>
           ))}
@@ -368,13 +368,13 @@ const OverviewTab = ({ course }: { course: Course }) => (
 
     {course.requirements?.length > 0 && (
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-3">
+        <h3 className="text-lg font-medium text-gray-900 mb-3 break-words">
           Requirements
         </h3>
         <ul className="space-y-2">
           {course.requirements.map((req, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <Check className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+            <li key={i} className="flex items-start gap-2 min-w-0">
+              <Check className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0 min-w-0" />
               <span className="text-gray-700">{req}</span>
             </li>
           ))}
@@ -384,14 +384,14 @@ const OverviewTab = ({ course }: { course: Course }) => (
 
     {course.targetAudience?.length > 0 && (
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-3">
+        <h3 className="text-lg font-medium text-gray-900 mb-3 break-words">
           Who This Course Is For
         </h3>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 min-w-0">
           {course.targetAudience.map((audience, i) => (
             <span
               key={i}
-              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 break-words min-w-0"
             >
               {audience}
             </span>
@@ -410,16 +410,16 @@ const ModulesTab = ({ modules, expandedModules, onToggleModule }: {
 }) => (
   <div className="space-y-4">
     {modules.length > 0 ? (
-      <div className="space-y-6">
+      <div className="space-y-4 lg:space-y-6">
         {modules.map((module) => (
           <div key={module.id} className="border rounded-lg overflow-hidden">
             <button
               onClick={() => onToggleModule(module.id)}
-              className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 flex justify-between items-center text-left"
+              className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 flex justify-between items-center text-left min-w-0"
             >
               <div>
-                <h3 className="font-medium text-gray-900">{module.title}</h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <h3 className="font-medium text-gray-900 break-words">{module.title}</h3>
+                <p className="text-sm text-gray-500 mt-1 break-words">
                   {module.lessons.length} {module.lessons.length === 1 ? 'lesson' : 'lessons'}
                   {module.projects.length > 0 && ` • ${module.projects.length} projects`}
                 </p>
@@ -448,16 +448,16 @@ const ModulesTab = ({ modules, expandedModules, onToggleModule }: {
                     <div className="space-y-4">
                       {module.lessons.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-2">Lessons</h4>
+                          <h4 className="text-sm font-medium text-gray-500 mb-2 break-words">Lessons</h4>
                           <ul className="space-y-2">
                             {module.lessons.map((lesson) => (
-                              <li key={lesson.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                                <div className="flex items-center gap-3">
-                                  <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                              <li key={lesson.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded min-w-0 flex-shrink-0">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 min-w-0">
                                     <FileText className="h-4 w-4" />
                                   </div>
                                   <div>
-                                    <p className="text-sm font-medium text-gray-900">{lesson.title}</p>
+                                    <p className="text-sm font-medium text-gray-900 break-words">{lesson.title}</p>
                                     {lesson.description && (
                                       <p className="text-xs text-gray-500 mt-1">{lesson.description}</p>
                                     )}
@@ -474,16 +474,16 @@ const ModulesTab = ({ modules, expandedModules, onToggleModule }: {
                       
                       {module.projects.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-medium text-gray-500 mb-2">Projects</h4>
+                          <h4 className="text-sm font-medium text-gray-500 mb-2 break-words">Projects</h4>
                           <ul className="space-y-2">
                             {module.projects.map((project) => (
-                              <li key={project.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                                <div className="flex items-center gap-3">
-                                  <div className="h-8 w-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+                              <li key={project.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded min-w-0 flex-shrink-0">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="h-8 w-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 min-w-0">
                                     <FileQuestion className="h-4 w-4" />
                                   </div>
                                   <div>
-                                    <p className="text-sm font-medium text-gray-900">
+                                    <p className="text-sm font-medium text-gray-900 break-words">
                                       {project.title}
                                       {project.isRequiredForCertification && (
                                         <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
@@ -515,12 +515,12 @@ const ModulesTab = ({ modules, expandedModules, onToggleModule }: {
     ) : (
       <div className="text-center py-12 bg-gray-50 rounded-lg">
         <BookOpenCheck className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No modules yet</h3>
-        <p className="mt-1 text-sm text-gray-500">Get started by adding your first module.</p>
+        <h3 className="mt-2 text-sm font-medium text-gray-900 break-words">No modules yet</h3>
+        <p className="mt-1 text-sm text-gray-500 break-words">Get started by adding your first module.</p>
         <div className="mt-6">
           <Link
             href={`/dashboard/instructor/courses/${modules[0]?.id || 'new'}/modules/new`}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 break-words min-w-0"
           >
             <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
             New Module
@@ -533,20 +533,20 @@ const ModulesTab = ({ modules, expandedModules, onToggleModule }: {
 
 // Students tab component
 const StudentsTab = () => (
-  <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+  <div className="bg-white shadow overflow-hidden sm:rounded-lg overflow-hidden">
     <div className="px-4 py-5 sm:p-6">
-      <h3 className="text-lg font-medium text-gray-900">Students</h3>
-      <p className="mt-1 text-sm text-gray-500">
+      <h3 className="text-lg font-medium text-gray-900 break-words">Students</h3>
+      <p className="mt-1 text-sm text-gray-500 break-words">
         View and manage students enrolled in this course.
       </p>
       <div className="mt-6">
         <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
+          <div className="flex min-w-0">
+            <div className="flex-shrink-0 min-w-0">
               <Info className="h-5 w-5 text-blue-400" />
             </div>
             <div className="ml-3">
-              <p className="text-sm text-blue-700">
+              <p className="text-sm text-blue-700 break-words">
                 Student management is coming soon. This feature will allow you to view and manage all students enrolled in your course.
               </p>
             </div>
@@ -559,20 +559,20 @@ const StudentsTab = () => (
 
 // Analytics tab component
 const AnalyticsTab = () => (
-  <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+  <div className="bg-white shadow overflow-hidden sm:rounded-lg overflow-hidden">
     <div className="px-4 py-5 sm:p-6">
-      <h3 className="text-lg font-medium text-gray-900">Analytics</h3>
-      <p className="mt-1 text-sm text-gray-500">
+      <h3 className="text-lg font-medium text-gray-900 break-words">Analytics</h3>
+      <p className="mt-1 text-sm text-gray-500 break-words">
         View detailed analytics about your course performance.
       </p>
       <div className="mt-6">
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
+          <div className="flex min-w-0">
+            <div className="flex-shrink-0 min-w-0">
               <AlertCircle className="h-5 w-5 text-yellow-400" />
             </div>
             <div className="ml-3">
-              <p className="text-sm text-yellow-700">
+              <p className="text-sm text-yellow-700 break-words">
                 Analytics dashboard is coming soon. This will provide you with insights into student engagement, completion rates, and more.
               </p>
             </div>
@@ -703,9 +703,9 @@ export default function CourseDetailPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Header with actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 min-w-0">
         <div>
-          <div className="flex items-center gap-3 mb-1">
+          <div className="flex items-center gap-3 mb-1 min-w-0">
             <Link 
               href="/dashboard/instructor/courses" 
               className="text-gray-500 hover:text-gray-700 transition-colors"
@@ -713,10 +713,10 @@ export default function CourseDetailPage() {
             >
               <ArrowLeft className="h-5 w-5" />
             </Link>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Course Details</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 break-words">Course Details</h1>
           </div>
-          <p className="text-gray-600 text-sm sm:text-base">
-            Manage and view details for <span className="font-medium">{course.title}</span>
+          <p className="text-gray-600 text-sm sm:text-base break-words">
+            Manage and view details for <span className="font-medium break-words">{course.title}</span>
           </p>
         </div>
       </div>

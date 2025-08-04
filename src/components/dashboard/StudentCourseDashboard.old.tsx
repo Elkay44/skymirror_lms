@@ -12,9 +12,9 @@ export default function StudentCourseDashboard() {
   return (
     <div className="bg-slate-50 min-h-screen">
       <div className="container py-8">
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm p-6 overflow-hidden">
           <div className="text-center">
-            <h1 className="text-2xl font-semibold text-gray-900 mb-4">This component is deprecated</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 mb-4 break-words">This component is deprecated</h1>
             <p className="text-gray-600 mb-4">Please use the main StudentCourseDashboard component instead.</p>
             <Button onClick={() => router.push('/dashboard/student/courses')}>
               Go to Courses

@@ -147,7 +147,7 @@ export default function MenteeDetailPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center h-64">
+        <div className="flex justify-center items-center h-64 min-w-0">
           <div className="animate-spin h-12 w-12 border-4 border-teal-600 rounded-full border-t-transparent"></div>
         </div>
       </div>
@@ -157,16 +157,16 @@ export default function MenteeDetailPage() {
   if (!mentee) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-          <div className="flex flex-col items-center">
+        <div className="bg-white rounded-lg shadow-sm p-6 text-center overflow-hidden">
+          <div className="flex flex-col items-center min-w-0">
             <User className="h-16 w-16 text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-1">Mentee Not Found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-1 break-words">Mentee Not Found</h3>
             <p className="text-gray-500 max-w-md mx-auto mb-6">
               The mentee you are looking for does not exist or you don't have access to view their profile.
             </p>
             <Link
               href="/dashboard/mentor/mentees"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Mentees
@@ -190,15 +190,15 @@ export default function MenteeDetailPage() {
       <div className="mb-6">
         <button
           onClick={() => router.back()}
-          className="flex items-center text-teal-600 hover:text-teal-800 mb-4"
+          className="flex items-center text-teal-600 hover:text-teal-800 mb-4 min-w-0"
         >
           <ChevronLeft className="h-5 w-5 mr-1" />
           Back to Mentees
         </button>
         
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden overflow-hidden">
           <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0">
               <div className="h-20 w-20 rounded-full bg-gray-200 overflow-hidden mr-6">
                 {mentee.avatar ? (
                   <Image
@@ -209,17 +209,17 @@ export default function MenteeDetailPage() {
                     className="object-cover h-full w-full"
                   />
                 ) : (
-                  <div className="h-full w-full bg-teal-100 flex items-center justify-center">
+                  <div className="h-full w-full bg-teal-100 flex items-center justify-center min-w-0">
                     <User className="h-10 w-10 text-teal-600" />
                   </div>
                 )}
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{mentee.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-900 break-words">{mentee.name}</h1>
                 <p className="text-gray-600">{mentee.email}</p>
-                <div className="mt-2 flex items-center">
+                <div className="mt-2 flex items-center min-w-0">
                   <BookOpen className="h-4 w-4 text-teal-600 mr-1" />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 break-words">
                     {mentee.learningPath || 'No learning path selected'}
                   </span>
                 </div>
@@ -229,7 +229,7 @@ export default function MenteeDetailPage() {
           
           {/* Tabs */}
           <div className="border-b border-gray-200">
-            <nav className="flex -mb-px">
+            <nav className="flex -mb-px min-w-0">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -248,7 +248,7 @@ export default function MenteeDetailPage() {
           </div>
           
           {/* Tab Content */}
-          <div className="p-6">
+          <div className="p-4 lg:p-6">
             {activeTab === 'courses' && (
               <CourseProgressSection courses={mentee.enrolledCourses} />
             )}

@@ -176,34 +176,34 @@ export default function RepositoryIntegration({
   }
   
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-      <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-        <h3 className="text-lg font-semibold flex items-center">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden overflow-hidden">
+      <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex justify-between items-center min-w-0">
+        <h3 className="text-lg font-semibold flex items-center break-words min-w-0">
           <Github className="h-5 w-5 mr-2 text-gray-700" />
           Repository Integration
         </h3>
         
         {connected && (
-          <span className="bg-green-100 text-green-800 text-xs px-2.5 py-1 rounded-full flex items-center">
+          <span className="bg-green-100 text-green-800 text-xs px-2.5 py-1 rounded-full flex items-center min-w-0">
             <CheckCircle className="h-3.5 w-3.5 mr-1" />
             Connected
           </span>
         )}
       </div>
       
-      <div className="p-6">
+      <div className="p-4 lg:p-6">
         {authStatus === 'unauthenticated' ? (
           <div className="text-center p-4">
             <div className="bg-blue-50 rounded-lg p-6 mb-6">
-              <h4 className="text-blue-800 font-medium mb-2">Connect Your Code Repository</h4>
-              <p className="text-blue-700 text-sm mb-4">
+              <h4 className="text-blue-800 font-medium mb-2 break-words">Connect Your Code Repository</h4>
+              <p className="text-blue-700 text-sm mb-4 break-words">
                 Link your GitHub or GitLab account to submit projects directly from your repositories.
               </p>
               
-              <div className="flex justify-center space-x-4">
+              <div className="flex justify-center space-x-4 min-w-0">
                 <button
                   onClick={() => { setProvider('github'); authenticateProvider(); }}
-                  className="flex items-center px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors"
+                  className="flex items-center px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors min-w-0"
                 >
                   <Github className="h-5 w-5 mr-2" />
                   Connect GitHub
@@ -211,7 +211,7 @@ export default function RepositoryIntegration({
                 
                 <button
                   onClick={() => { setProvider('gitlab'); authenticateProvider(); }}
-                  className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+                  className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors min-w-0"
                 >
                   <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M22.65 14.39L12 22.13 1.35 14.39a.84.84 0 0 1-.3-.94l1.22-3.78 2.44-7.51A.42.42 0 0 1 4.82 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.49h8.1l2.44-7.51A.42.42 0 0 1 18.6 2a.43.43 0 0 1 .58 0 .42.42 0 0 1 .11.18l2.44 7.51L23 13.45a.84.84 0 0 1-.35.94z"></path>
@@ -221,17 +221,17 @@ export default function RepositoryIntegration({
               </div>
             </div>
             
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-600 text-sm break-words">
               Connecting your repository allows instructors to review your code more effectively 
               and enables automated testing and deployment features.
             </p>
           </div>
         ) : connected ? (
           <div>
-            <div className="flex items-start mb-6">
-              <div className="flex-1">
-                <div className="flex items-center mb-1">
-                  <h4 className="font-medium text-gray-900">
+            <div className="flex items-start mb-6 min-w-0">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center mb-1 min-w-0">
+                  <h4 className="font-medium text-gray-900 break-words">
                     {selectedRepo.split('/').slice(-2).join('/')}
                   </h4>
                 </div>
@@ -239,7 +239,7 @@ export default function RepositoryIntegration({
                   href={selectedRepo} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-blue-600 text-sm hover:underline flex items-center"
+                  className="text-blue-600 text-sm hover:underline flex items-center break-words min-w-0"
                 >
                   {selectedRepo}
                   <svg className="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -247,10 +247,10 @@ export default function RepositoryIntegration({
                   </svg>
                 </a>
                 
-                <div className="mt-4 flex space-x-2">
+                <div className="mt-4 flex space-x-2 min-w-0">
                   <button
                     onClick={() => { setShowRepoList(true); fetchRepositories(); }}
-                    className="text-sm px-3 py-1.5 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center"
+                    className="text-sm px-3 py-1.5 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center break-words min-w-0"
                   >
                     <RefreshCcw className="h-3.5 w-3.5 mr-1.5" />
                     Change Repository
@@ -258,7 +258,7 @@ export default function RepositoryIntegration({
                   
                   <button
                     onClick={disconnectRepository}
-                    className="text-sm px-3 py-1.5 border border-red-300 rounded-md text-red-700 hover:bg-red-50 flex items-center"
+                    className="text-sm px-3 py-1.5 border border-red-300 rounded-md text-red-700 hover:bg-red-50 flex items-center break-words min-w-0"
                     disabled={loading}
                   >
                     <XCircle className="h-3.5 w-3.5 mr-1.5" />
@@ -267,10 +267,10 @@ export default function RepositoryIntegration({
                 </div>
               </div>
               
-              <div className="flex-shrink-0 bg-gray-100 p-4 rounded-lg">
-                <div className="flex flex-col items-center text-center">
+              <div className="flex-shrink-0 bg-gray-100 p-4 rounded-lg min-w-0">
+                <div className="flex flex-col items-center text-center min-w-0">
                   <GitPullRequest className="h-6 w-6 text-indigo-600 mb-2" />
-                  <h5 className="font-medium text-gray-900 text-sm">Submit via Pull Requests</h5>
+                  <h5 className="font-medium text-gray-900 text-sm break-words">Submit via Pull Requests</h5>
                   <p className="text-gray-600 text-xs mt-1">
                     Create a PR to automatically submit your project
                   </p>
@@ -278,13 +278,13 @@ export default function RepositoryIntegration({
               </div>
             </div>
             
-            <div className="mt-4 bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
-              <div className="flex">
-                <div className="flex-shrink-0">
+            <div className="mt-4 bg-blue-50 rounded-lg p-4 text-sm text-blue-800 break-words">
+              <div className="flex min-w-0">
+                <div className="flex-shrink-0 min-w-0">
                   <AlertCircle className="h-5 w-5 text-blue-600" />
                 </div>
                 <div className="ml-3">
-                  <h4 className="font-medium">Automatic Submissions</h4>
+                  <h4 className="font-medium break-words">Automatic Submissions</h4>
                   <p className="mt-1 text-blue-700">
                     When you push to the main branch or create a pull request, your project will be 
                     automatically submitted for review. Make sure your code is complete before pushing.
@@ -295,9 +295,9 @@ export default function RepositoryIntegration({
           </div>
         ) : showRepoList ? (
           <div>
-            <div className="flex items-center mb-4">
-              <div className="relative flex-1 mr-4">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div className="flex items-center mb-4 min-w-0">
+              <div className="relative flex-1 mr-4 min-w-0">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
                   <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
@@ -311,11 +311,11 @@ export default function RepositoryIntegration({
                 />
               </div>
               
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 min-w-0">
                 <select
                   value={provider}
                   onChange={(e) => setProvider(e.target.value as 'github' | 'gitlab')}
-                  className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                  className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md break-words"
                   disabled={loading}
                 >
                   <option value="github">GitHub</option>
@@ -325,7 +325,7 @@ export default function RepositoryIntegration({
               
               <button
                 onClick={fetchRepositories}
-                className="ml-2 flex-shrink-0 px-3 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                className="ml-2 flex-shrink-0 px-3 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 min-w-0"
                 disabled={loading}
               >
                 <RefreshCcw className="h-5 w-5" />
@@ -333,7 +333,7 @@ export default function RepositoryIntegration({
             </div>
             
             {error && (
-              <div className="mb-4 bg-red-50 text-red-800 p-3 rounded-md text-sm">
+              <div className="mb-4 bg-red-50 text-red-800 p-3 rounded-md text-sm break-words">
                 {error}
               </div>
             )}
@@ -357,10 +357,10 @@ export default function RepositoryIntegration({
                         className={`p-3 cursor-pointer hover:bg-gray-50 ${selectedRepo === repo.html_url ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}
                         onClick={() => setSelectedRepo(repo.html_url)}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
+                        <div className="flex items-center justify-between min-w-0">
+                          <div className="flex items-center min-w-0">
                             <Github className="h-5 w-5 text-gray-700 mr-2" />
-                            <span className="font-medium text-gray-900">{repo.name}</span>
+                            <span className="font-medium text-gray-900 break-words">{repo.name}</span>
                             
                             {repo.visibility === 'private' && (
                               <span className="ml-2 text-xs bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full">
@@ -369,14 +369,14 @@ export default function RepositoryIntegration({
                             )}
                           </div>
                           
-                          <div className="flex items-center text-sm text-gray-500">
+                          <div className="flex items-center text-sm text-gray-500 break-words min-w-0">
                             {repo.language && (
-                              <span className="flex items-center mr-3">
+                              <span className="flex items-center mr-3 min-w-0">
                                 <Code className="h-4 w-4 mr-1" />
                                 {repo.language}
                               </span>
                             )}
-                            <span className="flex items-center">
+                            <span className="flex items-center min-w-0">
                               <GitBranch className="h-4 w-4 mr-1" />
                               {repo.default_branch}
                             </span>
@@ -384,7 +384,7 @@ export default function RepositoryIntegration({
                         </div>
                         
                         {repo.description && (
-                          <p className="mt-1 text-sm text-gray-600">{repo.description}</p>
+                          <p className="mt-1 text-sm text-gray-600 break-words">{repo.description}</p>
                         )}
                         
                         <p className="mt-1 text-xs text-gray-500">
@@ -401,7 +401,7 @@ export default function RepositoryIntegration({
               </div>
             )}
             
-            <div className="mt-6 flex justify-end space-x-3">
+            <div className="mt-6 flex justify-end space-x-3 min-w-0">
               <button
                 onClick={() => setShowRepoList(false)}
                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50"
@@ -422,8 +422,8 @@ export default function RepositoryIntegration({
           <div className="text-center">
             <div className="bg-blue-50 rounded-lg p-6 mb-6">
               <Github className="h-10 w-10 text-blue-600 mx-auto mb-4" />
-              <h4 className="text-blue-800 font-medium mb-2">Connect Your Code Repository</h4>
-              <p className="text-blue-700 text-sm mb-4">
+              <h4 className="text-blue-800 font-medium mb-2 break-words">Connect Your Code Repository</h4>
+              <p className="text-blue-700 text-sm mb-4 break-words">
                 Link your GitHub or GitLab repository to this project for easier submissions and code reviews.
               </p>
               
@@ -435,7 +435,7 @@ export default function RepositoryIntegration({
               </button>
             </div>
             
-            <p className="text-gray-600 text-sm">
+            <p className="text-gray-600 text-sm break-words">
               Connecting your repository allows instructors to review your code more effectively 
               and enables automated testing and deployment features.
             </p>

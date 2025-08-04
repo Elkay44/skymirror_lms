@@ -80,7 +80,7 @@ export function BlockItem({ block, onEdit, onDelete, isReordering = false, isSav
       className={`group relative border-l-4 border rounded-lg overflow-hidden hover:shadow-md transition-all duration-200 ${blockColors[block.type]}`}
     >
       <div className={`${blockBackgrounds[block.type]}/10 px-4 py-3 flex items-center justify-between`}>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 min-w-0">
           {isReordering && dragHandleProps && (
             <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing p-1">
               <GripVertical className="h-5 w-5 text-muted-foreground" />
@@ -89,14 +89,14 @@ export function BlockItem({ block, onEdit, onDelete, isReordering = false, isSav
           <div className={`h-8 w-8 flex items-center justify-center rounded-full ${blockBackgrounds[block.type]}`}>
             {blockIcons[block.type]}
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">
+          <div className="flex flex-col min-w-0">
+            <span className="text-sm font-medium break-words">
               {getBlockTitle(block)}
             </span>
             
             {/* Block specific details */}
             {block.type === 'project' && (
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2 mt-1 min-w-0">
                 {projectStatus && (
                   <TooltipProvider>
                     <Tooltip>
@@ -116,7 +116,7 @@ export function BlockItem({ block, onEdit, onDelete, isReordering = false, isSav
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
                           <Calendar className="h-3 w-3" />
                           <span>{new Date((block as any).dueDate).toLocaleDateString()}</span>
                         </div>
@@ -132,7 +132,7 @@ export function BlockItem({ block, onEdit, onDelete, isReordering = false, isSav
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
                           <ExternalLink className="h-3 w-3" />
                           <span>Template</span>
                         </div>
@@ -148,7 +148,7 @@ export function BlockItem({ block, onEdit, onDelete, isReordering = false, isSav
           </div>
         </div>
         
-        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity min-w-0">
           <Button 
             variant="ghost" 
             size="sm" 
@@ -174,7 +174,7 @@ export function BlockItem({ block, onEdit, onDelete, isReordering = false, isSav
       
       {/* Display description for projects if available */}
       {block.type === 'project' && (block as any).description && (
-        <div className="px-4 py-2 text-sm text-muted-foreground border-t bg-background">
+        <div className="px-4 py-2 text-sm text-muted-foreground border-t bg-background break-words">
           {(block as any).description.substring(0, 100)}{(block as any).description.length > 100 ? '...' : ''}
         </div>
       )}

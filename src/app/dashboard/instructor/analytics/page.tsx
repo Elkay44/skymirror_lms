@@ -77,11 +77,11 @@ interface AnalyticsData {
 const CustomTooltip = ({ active, payload }: TooltipProps<any, string>) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-2 rounded shadow">
+      <div className="bg-white p-2 rounded shadow overflow-hidden flex-shrink-0">
             {payload?.map((item: any, index: number) => (
-              <div key={index} className="flex items-center gap-2">
+              <div key={index} className="flex items-center gap-2 min-w-0">
                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="font-medium">{item.name}:</span>
+                <span className="font-medium break-words">{item.name}:</span>
                 <span>{item.value}</span>
               </div>
             ))}
@@ -190,8 +190,8 @@ export default function InstructorAnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="space-y-4 lg:space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           {[...Array(4)].map((_, i) => (
             <Card key={i}>
               <CardContent className="animate-pulse">
@@ -210,25 +210,25 @@ export default function InstructorAnalyticsPage() {
 
   if (error) {
     return (
-      <div className="space-y-6 p-6">
+      <div className="space-y-4 lg:space-y-6 p-6">
         <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
-          <div className="flex">
-            <div className="flex-shrink-0">
+          <div className="flex min-w-0">
+            <div className="flex-shrink-0 min-w-0">
               <svg className="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
+              <h3 className="text-sm font-medium text-red-800 break-words">
                 Error loading analytics data
               </h3>
-              <div className="mt-2 text-sm text-red-700">
+              <div className="mt-2 text-sm text-red-700 break-words">
                 <p>{error}</p>
               </div>
               <div className="mt-4">
                 <button
                   onClick={() => window.location.reload()}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 break-words min-w-0"
                 >
                   Retry
                 </button>
@@ -246,69 +246,69 @@ export default function InstructorAnalyticsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Metrics Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-w-0">
               <div>
-                <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-                <CardDescription className="text-2xl font-bold">
+                <CardTitle className="text-sm font-medium break-words">Total Students</CardTitle>
+                <CardDescription className="text-2xl font-bold break-words">
                   {analyticsData.metrics.totalStudents.toLocaleString()}
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <Users className="w-4 h-4" />
-                <span className="text-sm text-green-500">+12%</span>
+                <span className="text-sm text-green-500 break-words">+12%</span>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-w-0">
               <div>
-                <CardTitle className="text-sm font-medium">Course Completion</CardTitle>
-                <CardDescription className="text-2xl font-bold">
+                <CardTitle className="text-sm font-medium break-words">Course Completion</CardTitle>
+                <CardDescription className="text-2xl font-bold break-words">
                   {analyticsData.metrics.courseCompletion.toLocaleString()}%
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <CheckCircle className="w-4 h-4" />
-                <span className="text-sm text-green-500">+3%</span>
+                <span className="text-sm text-green-500 break-words">+3%</span>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-w-0">
               <div>
-                <CardTitle className="text-sm font-medium">Average Engagement</CardTitle>
-                <CardDescription className="text-2xl font-bold">
+                <CardTitle className="text-sm font-medium break-words">Average Engagement</CardTitle>
+                <CardDescription className="text-2xl font-bold break-words">
                   {analyticsData.metrics.averageEngagement.toLocaleString()}%
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <Star className="w-4 h-4" />
-                <span className="text-sm text-green-500">+5%</span>
+                <span className="text-sm text-green-500 break-words">+5%</span>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-w-0">
               <div>
-                <CardTitle className="text-sm font-medium">Assignments Submitted</CardTitle>
-                <CardDescription className="text-2xl font-bold">
+                <CardTitle className="text-sm font-medium break-words">Assignments Submitted</CardTitle>
+                <CardDescription className="text-2xl font-bold break-words">
                   {analyticsData.metrics.assignmentsSubmitted.toLocaleString()}
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <FileText className="w-4 h-4" />
-                <span className="text-sm text-green-500">+8%</span>
+                <span className="text-sm text-green-500 break-words">+8%</span>
               </div>
             </div>
           </CardContent>
@@ -316,7 +316,7 @@ export default function InstructorAnalyticsPage() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         {/* Course Performance Chart */}
         <Card className="h-[400px]">
           <CardHeader>
@@ -389,14 +389,14 @@ export default function InstructorAnalyticsPage() {
       {/* Course Statistics */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 min-w-0">
             <div>
               <CardTitle>Course Statistics</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-muted-foreground mt-1 break-words">
                 Track performance and engagement across your courses
               </p>
             </div>
-            <div className="flex items-center space-x-2 w-full md:w-auto">
+            <div className="flex items-center space-x-2 w-full md:w-auto min-w-0">
               <Label htmlFor="course-filter" className="whitespace-nowrap">Filter by Course</Label>
               <Select>
                 <SelectTrigger id="course-filter" className="w-full md:w-[200px]">
@@ -416,19 +416,19 @@ export default function InstructorAnalyticsPage() {
         </CardHeader>
         <CardContent>
           {analyticsData?.metrics?.courses?.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {analyticsData.metrics.courses.map((course: any) => (
                 <Card key={course.id} className="p-4 hover:shadow-md transition-shadow">
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-medium text-sm truncate">{course.title}</h3>
+                    <div className="flex items-center justify-between min-w-0">
+                      <h3 className="font-medium text-sm truncate break-words">{course.title}</h3>
                       <div className="h-2 w-2 rounded-full bg-green-500"></div>
                     </div>
                     
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center justify-between text-sm break-words min-w-0">
                         <span className="text-muted-foreground">Progress</span>
-                        <span className="font-medium">{course.completionRate || 0}%</span>
+                        <span className="font-medium break-words">{course.completionRate || 0}%</span>
                       </div>
                       <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
                         <div 
@@ -438,12 +438,12 @@ export default function InstructorAnalyticsPage() {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-2 pt-2 text-sm">
-                      <div className="flex items-center space-x-1">
+                    <div className="grid grid-cols-2 gap-2 pt-2 text-sm break-words">
+                      <div className="flex items-center space-x-1 min-w-0">
                         <Users className="h-4 w-4 text-muted-foreground" />
                         <span>{course.enrollmentCount || 0} students</span>
                       </div>
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center space-x-1 min-w-0">
                         <FileText className="h-4 w-4 text-muted-foreground" />
                         <span>{course.assignmentCount || 0} assignments</span>
                       </div>
@@ -453,10 +453,10 @@ export default function InstructorAnalyticsPage() {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="flex flex-col items-center justify-center py-12 text-center min-w-0">
               <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-1">No published courses found</h3>
-              <p className="text-muted-foreground text-sm max-w-md">
+              <h3 className="text-lg font-medium mb-1 break-words">No published courses found</h3>
+              <p className="text-muted-foreground text-sm max-w-md break-words">
                 You don't have any published courses yet. Publish your courses to see analytics and track student progress.
               </p>
             </div>

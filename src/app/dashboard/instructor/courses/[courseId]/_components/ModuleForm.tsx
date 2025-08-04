@@ -207,14 +207,14 @@ export function ModuleForm({
     const renderPrerequisiteChips = () => {
       const prerequisites = form.watch('prerequisites') || [];
       return (
-        <div className="flex flex-wrap gap-2 mt-2">
+        <div className="flex flex-wrap gap-2 mt-2 min-w-0">
           {prerequisites.map((moduleId: string) => {
             const module = modules.find((m) => m.id === moduleId);
             if (!module) return null;
             return (
               <div
                 key={moduleId}
-                className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-muted"
+                className="inline-flex items-center gap-2 px-3 py-1 text-sm rounded-full bg-muted break-words min-w-0 flex-shrink-0"
               >
                 {module.title}
                 <button
@@ -253,7 +253,7 @@ export function ModuleForm({
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={handleFormSubmit} className="space-y-6">
+          <form onSubmit={handleFormSubmit} className="space-y-4 lg:space-y-6">
             <div className="space-y-4">
               <FormField
                 control={form.control}
@@ -344,7 +344,7 @@ export function ModuleForm({
                       {learningObjectiveFields.map((field: any, index: number) => {
                         const fieldName = `learningObjectives.${index}` as const;
                         return (
-                          <div key={field.id} className="flex items-center gap-2">
+                          <div key={field.id} className="flex items-center gap-2 min-w-0">
                             <Input
                               {...form.register(fieldName)}
                               placeholder="Enter learning objective"
@@ -360,7 +360,7 @@ export function ModuleForm({
                           </div>
                         );
                       })}
-                      <div className="flex space-x-2">
+                      <div className="flex space-x-2 min-w-0">
                         <Input
                           placeholder="Add a learning objective"
                           value={newObjective}
@@ -422,14 +422,14 @@ export function ModuleForm({
                       </Select>
                       
                       {/* Render selected prerequisites */}
-                      <div className="flex flex-wrap gap-2 mt-2">
+                      <div className="flex flex-wrap gap-2 mt-2 min-w-0">
                         {prerequisiteFields.map((field, index) => {
                           // Get the prerequisite ID from the form field
                           // Get the prerequisite value at the current index
                           const prereqId = form.getValues(`prerequisites.${index as number}`);
                           const prereqModule = modules.find(m => m.id === prereqId);
                           return prereqModule ? (
-                            <div key={field.id} className="flex items-center gap-1 bg-muted rounded-md px-2 py-1">
+                            <div key={field.id} className="flex items-center gap-1 bg-muted rounded-md px-2 py-1 min-w-0">
                               <span>{prereqModule.title}</span>
                               <Button
                               type="button"
@@ -466,7 +466,7 @@ export function ModuleForm({
               </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? (
-                  <span className="flex items-center">
+                  <span className="flex items-center min-w-0">
                     <svg
                       className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                       xmlns="http://www.w3.org/2000/svg"

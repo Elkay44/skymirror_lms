@@ -84,14 +84,14 @@ export function MultipleChoiceQuestion({
   const sortedOptions = [...options].sort((a, b) => a.position - b.position);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-medium text-gray-900">{questionText}</h3>
-        <span className="text-sm text-gray-500">{points} {points === 1 ? 'point' : 'points'}</span>
+    <div className="bg-white rounded-xl shadow-sm p-6 mb-6 overflow-hidden">
+      <div className="flex justify-between items-start mb-4 min-w-0">
+        <h3 className="text-lg font-medium text-gray-900 break-words">{questionText}</h3>
+        <span className="text-sm text-gray-500 break-words">{points} {points === 1 ? 'point' : 'points'}</span>
       </div>
       
       {isMultiSelect && (
-        <p className="text-sm text-gray-500 mb-4">Select all that apply</p>
+        <p className="text-sm text-gray-500 mb-4 break-words">Select all that apply</p>
       )}
       
       <div className="space-y-3">
@@ -107,7 +107,7 @@ export function MultipleChoiceQuestion({
               className={`w-full text-left flex items-center p-3 rounded-lg border ${isReview ? 'cursor-default' : 'cursor-pointer'} ${isOptionSelected ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 hover:bg-gray-50'} ${isOptionCorrect ? 'border-green-300 bg-green-50' : ''} ${isOptionIncorrect ? 'border-red-300 bg-red-50' : ''}`}
               disabled={isReview}
             >
-              <div className="flex-shrink-0 mr-3">
+              <div className="flex-shrink-0 mr-3 min-w-0">
                 {isReview ? (
                   isOptionCorrect ? (
                     <CheckCircle className="h-5 w-5 text-green-500" />
@@ -134,7 +134,7 @@ export function MultipleChoiceQuestion({
                   </div>
                 )}
               </div>
-              <span className="text-sm font-medium text-gray-900">{option.optionText}</span>
+              <span className="text-sm font-medium text-gray-900 break-words">{option.optionText}</span>
             </button>
           );
         })}
@@ -142,8 +142,8 @@ export function MultipleChoiceQuestion({
       
       {isReview && explanation && (
         <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <span className="font-medium">Explanation:</span> {explanation}
+          <p className="text-sm text-blue-800 break-words">
+            <span className="font-medium break-words">Explanation:</span> {explanation}
           </p>
         </div>
       )}
@@ -203,10 +203,10 @@ export function TrueFalseQuestion({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-medium text-gray-900">{questionText}</h3>
-        <span className="text-sm text-gray-500">{points} {points === 1 ? 'point' : 'points'}</span>
+    <div className="bg-white rounded-xl shadow-sm p-6 mb-6 overflow-hidden">
+      <div className="flex justify-between items-start mb-4 min-w-0">
+        <h3 className="text-lg font-medium text-gray-900 break-words">{questionText}</h3>
+        <span className="text-sm text-gray-500 break-words">{points} {points === 1 ? 'point' : 'points'}</span>
       </div>
       
       <div className="grid grid-cols-2 gap-4">
@@ -219,7 +219,7 @@ export function TrueFalseQuestion({
           }`}
           disabled={isReview}
         >
-          <span className="text-lg font-medium">True</span>
+          <span className="text-lg font-medium break-words">True</span>
         </button>
         
         <button
@@ -231,14 +231,14 @@ export function TrueFalseQuestion({
           }`}
           disabled={isReview}
         >
-          <span className="text-lg font-medium">False</span>
+          <span className="text-lg font-medium break-words">False</span>
         </button>
       </div>
       
       {isReview && explanation && (
         <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <span className="font-medium">Explanation:</span> {explanation}
+          <p className="text-sm text-blue-800 break-words">
+            <span className="font-medium break-words">Explanation:</span> {explanation}
           </p>
         </div>
       )}
@@ -301,10 +301,10 @@ export function FillBlankQuestion({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-medium text-gray-900" dangerouslySetInnerHTML={{ __html: formattedQuestion }}></h3>
-        <span className="text-sm text-gray-500">{points} {points === 1 ? 'point' : 'points'}</span>
+    <div className="bg-white rounded-xl shadow-sm p-6 mb-6 overflow-hidden">
+      <div className="flex justify-between items-start mb-4 min-w-0">
+        <h3 className="text-lg font-medium text-gray-900 break-words" dangerouslySetInnerHTML={{ __html: formattedQuestion }}></h3>
+        <span className="text-sm text-gray-500 break-words">{points} {points === 1 ? 'point' : 'points'}</span>
       </div>
       
       <div className="mt-4">
@@ -322,8 +322,8 @@ export function FillBlankQuestion({
       
       {isReview && (
         <div className="mt-4">
-          <p className="text-sm font-medium text-gray-700">Correct Answer(s):</p>
-          <ul className="mt-1 list-disc pl-5 text-sm text-gray-600">
+          <p className="text-sm font-medium text-gray-700 break-words">Correct Answer(s):</p>
+          <ul className="mt-1 list-disc pl-5 text-sm text-gray-600 break-words">
             {correctAnswers.map((answer, index) => (
               <li key={index}>{answer}</li>
             ))}
@@ -333,8 +333,8 @@ export function FillBlankQuestion({
       
       {isReview && explanation && (
         <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <span className="font-medium">Explanation:</span> {explanation}
+          <p className="text-sm text-blue-800 break-words">
+            <span className="font-medium break-words">Explanation:</span> {explanation}
           </p>
         </div>
       )}
@@ -394,10 +394,10 @@ export function ShortAnswerQuestion({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-medium text-gray-900">{questionText}</h3>
-        <span className="text-sm text-gray-500">{points} {points === 1 ? 'point' : 'points'}</span>
+    <div className="bg-white rounded-xl shadow-sm p-6 mb-6 overflow-hidden">
+      <div className="flex justify-between items-start mb-4 min-w-0">
+        <h3 className="text-lg font-medium text-gray-900 break-words">{questionText}</h3>
+        <span className="text-sm text-gray-500 break-words">{points} {points === 1 ? 'point' : 'points'}</span>
       </div>
       
       <div className="mt-4">
@@ -415,17 +415,17 @@ export function ShortAnswerQuestion({
       
       {isReview && correctAnswers.length > 0 && (
         <div className="mt-4">
-          <p className="text-sm font-medium text-gray-700">Sample Answer:</p>
+          <p className="text-sm font-medium text-gray-700 break-words">Sample Answer:</p>
           <div className="mt-1 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-            <p className="text-sm text-gray-600">{correctAnswers[0]}</p>
+            <p className="text-sm text-gray-600 break-words">{correctAnswers[0]}</p>
           </div>
         </div>
       )}
       
       {isReview && explanation && (
         <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <span className="font-medium">Explanation:</span> {explanation}
+          <p className="text-sm text-blue-800 break-words">
+            <span className="font-medium break-words">Explanation:</span> {explanation}
           </p>
         </div>
       )}
@@ -521,16 +521,16 @@ export function MatchingQuestion({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-medium text-gray-900">{questionText}</h3>
-        <span className="text-sm text-gray-500">{points} {points === 1 ? 'point' : 'points'}</span>
+    <div className="bg-white rounded-xl shadow-sm p-6 mb-6 overflow-hidden">
+      <div className="flex justify-between items-start mb-4 min-w-0">
+        <h3 className="text-lg font-medium text-gray-900 break-words">{questionText}</h3>
+        <span className="text-sm text-gray-500 break-words">{points} {points === 1 ? 'point' : 'points'}</span>
       </div>
       
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
         {/* Left column - Items */}
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Items</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-3 break-words">Items</h4>
           <div className="space-y-2">
             {items.map(item => {
               const match = getMatchForItem(item.id);
@@ -547,9 +547,9 @@ export function MatchingQuestion({
                   } ${isReview ? 'cursor-default' : 'cursor-pointer hover:bg-gray-50'}`}
                   disabled={isReview}
                 >
-                  <span className="text-sm font-medium">{item.text}</span>
+                  <span className="text-sm font-medium break-words">{item.text}</span>
                   {match && (
-                    <span className="text-sm bg-gray-100 px-2 py-1 rounded">{match.text}</span>
+                    <span className="text-sm bg-gray-100 px-2 py-1 rounded break-words">{match.text}</span>
                   )}
                 </button>
               );
@@ -559,7 +559,7 @@ export function MatchingQuestion({
         
         {/* Right column - Matches */}
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Matches</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-3 break-words">Matches</h4>
           <div className="space-y-2">
             {matches.map(match => (
               <button
@@ -570,7 +570,7 @@ export function MatchingQuestion({
                 } ${selectedItem ? 'bg-gray-50' : ''}`}
                 disabled={isReview}
               >
-                <span className="text-sm">{match.text}</span>
+                <span className="text-sm break-words">{match.text}</span>
               </button>
             ))}
           </div>
@@ -579,24 +579,24 @@ export function MatchingQuestion({
       
       {selectedItem && (
         <div className="mt-4 p-3 bg-indigo-50 border border-indigo-100 rounded-lg">
-          <p className="text-sm text-indigo-800">
-            <span className="font-medium">Selected Item:</span> {items.find(i => i.id === selectedItem)?.text}
+          <p className="text-sm text-indigo-800 break-words">
+            <span className="font-medium break-words">Selected Item:</span> {items.find(i => i.id === selectedItem)?.text}
             <br />
-            <span className="font-medium">Now select a match from the right column.</span>
+            <span className="font-medium break-words">Now select a match from the right column.</span>
           </p>
         </div>
       )}
       
       {isReview && (
         <div className="mt-6">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Correct Pairs:</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2 break-words">Correct Pairs:</h4>
           <div className="space-y-1">
             {correctPairs ? correctPairs.map((pair, index) => {
               const item = items.find(i => i.id === pair.itemId);
               const match = matches.find(m => m.id === pair.matchId);
               if (!item || !match) return null;
               return (
-                <div key={index} className="flex items-center space-x-2">
+                <div key={index} className="flex items-center space-x-2 min-w-0">
                   <CheckCircle className="w-4 h-4 text-green-500" />
                   <span>{item.text} → {match.text}</span>
                 </div>
@@ -608,8 +608,8 @@ export function MatchingQuestion({
       
       {isReview && explanation && (
         <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <span className="font-medium">Explanation:</span> {explanation}
+          <p className="text-sm text-blue-800 break-words">
+            <span className="font-medium break-words">Explanation:</span> {explanation}
           </p>
         </div>
       )}

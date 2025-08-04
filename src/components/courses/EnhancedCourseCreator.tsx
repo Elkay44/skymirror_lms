@@ -212,7 +212,7 @@ export function EnhancedCourseCreator() {
     switch (currentStep) {
       case 0: // Basic Info
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6">
             <div>
               <Label htmlFor="title">Course Title</Label>
               <Input
@@ -262,12 +262,12 @@ export function EnhancedCourseCreator() {
         );
       case 1: // Content
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6">
             <div>
               <Label>Learning Outcomes</Label>
               <div className="space-y-2 mt-2">
                 {formData.learningOutcomes.map((outcome, index) => (
-                  <div key={index} className="flex gap-2">
+                  <div key={index} className="flex gap-2 min-w-0">
                     <Input
                       value={outcome}
                       onChange={(e) => handleArrayChange('learningOutcomes', index, e.target.value)}
@@ -300,7 +300,7 @@ export function EnhancedCourseCreator() {
         );
       case 2: // Media
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6">
             <div>
               <Label>Course Image</Label>
               <div className="mt-2">
@@ -311,8 +311,8 @@ export function EnhancedCourseCreator() {
                       alt="Course preview"
                       className="w-full h-48 object-cover rounded-md"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <label className="cursor-pointer bg-white text-black px-4 py-2 rounded-md">
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity min-w-0">
+                      <label className="cursor-pointer bg-white text-black px-4 py-2 rounded-md overflow-hidden">
                         Change Image
                         <input
                           type="file"
@@ -324,15 +324,15 @@ export function EnhancedCourseCreator() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md">
+                  <div className="flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md min-w-0">
                     <div className="space-y-1 text-center">
-                      <div className="flex justify-center">
+                      <div className="flex justify-center min-w-0">
                         <Upload className="h-12 w-12 text-muted-foreground" />
                       </div>
-                      <div className="flex text-sm text-muted-foreground">
+                      <div className="flex text-sm text-muted-foreground break-words min-w-0">
                         <label
                           htmlFor="file-upload"
-                          className="relative cursor-pointer rounded-md font-medium text-primary hover:text-primary/90 focus-within:outline-none"
+                          className="relative cursor-pointer rounded-md font-medium text-primary hover:text-primary/90 focus-within:outline-none break-words"
                         >
                           <span>Upload a file</span>
                           <input
@@ -358,8 +358,8 @@ export function EnhancedCourseCreator() {
         );
       case 3: // Pricing
         return (
-          <div className="space-y-6">
-            <div className="flex items-center space-x-2">
+          <div className="space-y-4 lg:space-y-6">
+            <div className="flex items-center space-x-2 min-w-0">
               <Switch
                 id="isFree"
                 checked={formData.isFree}
@@ -388,11 +388,11 @@ export function EnhancedCourseCreator() {
         );
       case 4: // Settings
         return (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="space-y-4 lg:space-y-6">
+            <div className="flex items-center justify-between min-w-0">
               <div>
-                <h3 className="font-medium">Publish Course</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-medium break-words">Publish Course</h3>
+                <p className="text-sm text-muted-foreground break-words">
                   Make your course visible to students
                 </p>
               </div>
@@ -401,10 +401,10 @@ export function EnhancedCourseCreator() {
                 onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPublished: checked }))}
               />
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-w-0">
               <div>
-                <h3 className="font-medium">Private Course</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-medium break-words">Private Course</h3>
+                <p className="text-sm text-muted-foreground break-words">
                   Only enrolled students can access
                 </p>
               </div>
@@ -423,7 +423,7 @@ export function EnhancedCourseCreator() {
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Create a New Course</h1>
+        <h1 className="text-3xl font-bold mb-2 break-words">Create a New Course</h1>
         <p className="text-muted-foreground">
           Follow the steps to create an engaging learning experience for your students
         </p>
@@ -431,9 +431,9 @@ export function EnhancedCourseCreator() {
 
       {/* Progress Steps */}
       <div className="mb-8">
-        <div className="flex justify-between mb-2">
+        <div className="flex justify-between mb-2 min-w-0">
           {STEPS.map((step, index) => (
-            <div key={step.id} className="flex flex-col items-center flex-1">
+            <div key={step.id} className="flex flex-col items-center flex-1 min-w-0">
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
                   index <= currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted'
@@ -441,7 +441,7 @@ export function EnhancedCourseCreator() {
               >
                 {index + 1}
               </div>
-              <span className="text-sm text-center">{step.label}</span>
+              <span className="text-sm text-center break-words">{step.label}</span>
             </div>
           ))}
         </div>
@@ -465,7 +465,7 @@ export function EnhancedCourseCreator() {
           </CardContent>
         </Card>
 
-        <div className="mt-6 flex justify-between">
+        <div className="mt-6 flex justify-between min-w-0">
           <Button
             type="button"
             variant="outline"

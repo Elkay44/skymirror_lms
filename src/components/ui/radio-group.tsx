@@ -43,7 +43,7 @@ const RadioGroupItem = React.forwardRef<HTMLDivElement, RadioGroupItemProps>(
     
     return (
       <div 
-        className="flex items-center space-x-2">
+        className="flex items-center space-x-2 min-w-0">
         <div 
           ref={ref}
           className={cn(

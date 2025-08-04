@@ -153,22 +153,22 @@ export function CourseBuilder() {
   })();
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-gray-50">
+    <div className="flex h-[calc(100vh-64px)] bg-gray-50 min-w-0">
       {/* Left sidebar - Course outline */}
-      <div className="w-1/3 border-r bg-white overflow-hidden flex flex-col">
+      <div className="w-1/3 border-r bg-white overflow-hidden flex flex-col min-w-0">
         <div className="p-4 border-b">
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="text-xl font-bold border-0 shadow-none p-0 mb-2 focus-visible:ring-0"
+            className="text-xl font-bold border-0 shadow-none p-0 mb-2 focus-visible:ring-0 break-words"
             placeholder="Course Title"
           />
-          <div className="flex items-center text-sm text-gray-500">
+          <div className="flex items-center text-sm text-gray-500 break-words min-w-0">
             <span>{modules.length} modules • {modules.reduce((acc, mod) => acc + mod.contents.length, 0)} items • {totalDuration} min</span>
           </div>
         </div>
         
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-w-0">
           <div className="p-4 space-y-4">
             {modules.map((module) => (
               <ModuleCard
@@ -204,7 +204,7 @@ export function CourseBuilder() {
       </div>
       
       {/* Main content area - Content editor */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-6 min-w-0">
         {activeContent ? (
           <ContentEditor 
             module={modules.find(m => m.id === activeModuleId)!}
@@ -213,11 +213,11 @@ export function CourseBuilder() {
             onDelete={() => deleteContent(activeModuleId!, activeContentId!)}
           />
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-500">
+          <div className="h-full flex items-center justify-center text-gray-500 min-w-0">
             <div className="text-center max-w-md">
               <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-medium mb-1">No content selected</h3>
-              <p className="text-sm">Select an item from the course outline or create a new one to get started.</p>
+              <h3 className="text-lg font-medium mb-1 break-words">No content selected</h3>
+              <p className="text-sm break-words">Select an item from the course outline or create a new one to get started.</p>
             </div>
           </div>
         )}
@@ -284,7 +284,7 @@ const ModuleCard = ({
         }`}
         onClick={onModuleClick}
       >
-        <div className="flex items-center flex-1">
+        <div className="flex items-center flex-1 min-w-0">
           <button
             className="p-1 mr-2 text-gray-400 hover:text-gray-600"
             onClick={(e) => {
@@ -306,19 +306,19 @@ const ModuleCard = ({
               onBlur={handleTitleBlur}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="h-8 text-sm px-2 py-1"
+              className="h-8 text-sm px-2 py-1 break-words"
               onClick={(e) => e.stopPropagation()}
             />
           ) : (
             <h3 
-              className="font-medium text-sm flex-1 text-left"
+              className="font-medium text-sm flex-1 text-left break-words min-w-0"
               onDoubleClick={() => setIsEditing(true)}
             >
               {module.title}
             </h3>
           )}
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 min-w-0">
           <span className="text-xs text-gray-500">
             {module.contents.length} {module.contents.length === 1 ? 'item' : 'items'}
           </span>
@@ -417,13 +417,13 @@ const ContentItem = ({
       }`}
       onClick={onClick}
     >
-      <div className="flex items-center flex-1">
+      <div className="flex items-center flex-1 min-w-0">
         <div className="mr-2">
           {contentIcons[content.type] || contentIcons.text}
         </div>
         <span className="truncate">{content.title}</span>
       </div>
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 min-w-0">
         {content.duration ? (
           <span className="text-xs text-gray-500 whitespace-nowrap">
             {content.duration} min
@@ -484,22 +484,22 @@ const ContentEditor = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex items-center justify-between min-w-0">
         <div>
-          <h2 className="text-2xl font-bold">
+          <h2 className="text-2xl font-bold break-words">
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-2xl font-bold border-0 shadow-none p-0 focus-visible:ring-0"
+              className="text-2xl font-bold border-0 shadow-none p-0 focus-visible:ring-0 break-words"
               placeholder="Content Title"
             />
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 mt-1 break-words">
             Module: {module.title} • {content.type.charAt(0).toUpperCase() + content.type.slice(1)}
           </p>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 min-w-0">
           <Button variant="outline" size="sm">
             <Eye className="h-4 w-4 mr-2" /> Preview
           </Button>
@@ -509,8 +509,8 @@ const ContentEditor = ({
         </div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+        <div className="lg:col-span-2 space-y-4 lg:space-y-6">
           <div>
             <Label>Description</Label>
             <Textarea
@@ -521,8 +521,8 @@ const ContentEditor = ({
             />
           </div>
           
-          <div className="bg-white p-4 rounded-lg border">
-            <h3 className="font-medium mb-4">Content</h3>
+          <div className="bg-white p-4 rounded-lg border overflow-hidden">
+            <h3 className="font-medium mb-4 break-words">Content</h3>
             {content.type === 'video' && (
               <div className="space-y-4">
                 <div>
@@ -572,14 +572,14 @@ const ContentEditor = ({
           </div>
         </div>
         
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Content Settings</CardTitle>
+              <CardTitle className="text-sm font-medium break-words">Content Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between min-w-0">
                   <Label htmlFor="content-visible">Visible to students</Label>
                   <Switch
                     id="content-visible"
@@ -598,9 +598,9 @@ const ContentEditor = ({
               
               <div className="space-y-2">
                 <Label>Content Type</Label>
-                <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-md">
+                <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-md min-w-0 flex-shrink-0">
                   {contentIcons[content.type]}
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium break-words">
                     {content.type.charAt(0).toUpperCase() + content.type.slice(1)}
                   </span>
                 </div>
@@ -608,7 +608,7 @@ const ContentEditor = ({
               
               <div>
                 <Label>Completion Time</Label>
-                <div className="mt-1 flex rounded-md shadow-sm">
+                <div className="mt-1 flex rounded-md shadow-sm min-w-0">
                   <Input
                     type="number"
                     value={content.duration || ''}
@@ -618,7 +618,7 @@ const ContentEditor = ({
                     min="0"
                     className="rounded-r-none"
                   />
-                  <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                  <span className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 text-sm break-words min-w-0">
                     minutes
                   </span>
                 </div>
@@ -639,18 +639,18 @@ const ContentEditor = ({
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Prerequisites</CardTitle>
+              <CardTitle className="text-sm font-medium break-words">Prerequisites</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <p className="text-sm text-gray-500 mb-2">
+                <p className="text-sm text-gray-500 mb-2 break-words">
                   Select modules or content that students must complete before accessing this content.
                 </p>
                 <div className="space-y-2">
                   {module.contents
                     .filter(c => c.id !== content.id)
                     .map(item => (
-                      <div key={item.id} className="flex items-center space-x-2">
+                      <div key={item.id} className="flex items-center space-x-2 min-w-0">
                         <input
                           type="checkbox"
                           id={`prereq-${item.id}`}
@@ -673,7 +673,7 @@ const ContentEditor = ({
                         />
                         <label 
                           htmlFor={`prereq-${item.id}`} 
-                          className="text-sm text-gray-700 flex items-center"
+                          className="text-sm text-gray-700 flex items-center break-words min-w-0"
                         >
                           {item.title}
                         </label>

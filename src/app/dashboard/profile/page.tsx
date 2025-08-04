@@ -41,10 +41,10 @@ export default function ProfilePage() {
   }, [session, status, router]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 min-w-0">
       <div className="text-center">
         <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto" />
-        <h2 className="mt-4 text-xl font-semibold text-gray-700">Loading your profile...</h2>
+        <h2 className="mt-4 text-xl font-semibold text-gray-700 break-words">Loading your profile...</h2>
         <p className="mt-2 text-gray-500">Please wait while we personalize your experience</p>
       </div>
     </div>

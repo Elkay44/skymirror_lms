@@ -56,25 +56,25 @@ export default function LearningAnalyticsPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Learning Analytics</h1>
+      <h1 className="text-2xl font-bold mb-4 break-words">Learning Analytics</h1>
       <div className="mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="bg-blue-100 rounded p-4 text-center">
-            <div className="text-lg font-semibold">Courses Completed</div>
-            <div className="text-2xl font-bold">{completedCourses}</div>
+            <div className="text-lg font-semibold break-words">Courses Completed</div>
+            <div className="text-2xl font-bold break-words">{completedCourses}</div>
           </div>
           <div className="bg-green-100 rounded p-4 text-center">
-            <div className="text-lg font-semibold">Quizzes Attempted</div>
-            <div className="text-2xl font-bold">{quizzesAttempted}</div>
+            <div className="text-lg font-semibold break-words">Quizzes Attempted</div>
+            <div className="text-2xl font-bold break-words">{quizzesAttempted}</div>
           </div>
           <div className="bg-yellow-100 rounded p-4 text-center">
-            <div className="text-lg font-semibold">Average Score</div>
-            <div className="text-2xl font-bold">{averageScore}%</div>
+            <div className="text-lg font-semibold break-words">Average Score</div>
+            <div className="text-2xl font-bold break-words">{averageScore}%</div>
           </div>
         </div>
       </div>
-      <div className="bg-white rounded shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">Quiz Scores</h2>
+      <div className="bg-white rounded shadow p-6 overflow-hidden">
+        <h2 className="text-lg font-semibold mb-4 break-words">Quiz Scores</h2>
         <div style={{ width: '100%', height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={quizScores} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>

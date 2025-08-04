@@ -74,8 +74,8 @@ export async function createLesson(courseId: string, moduleId: string, data: Cre
 }
 
 // Update a lesson
-export async function updateLesson(courseId: string, lessonId: string, data: UpdateLessonRequest): Promise<Lesson> {
-  const response = await fetch(`/api/courses/${courseId}/lessons/${lessonId}`, {
+export async function updateLesson(courseId: string, moduleId: string, lessonId: string, data: UpdateLessonRequest): Promise<Lesson> {
+  const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -88,7 +88,8 @@ export async function updateLesson(courseId: string, lessonId: string, data: Upd
     throw new Error(error.error || 'Failed to update lesson');
   }
 
-  return await response.json();
+  const result = await response.json();
+  return result.data || result;
 }
 
 // Delete a lesson

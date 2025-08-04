@@ -39,10 +39,10 @@ export function CourseHeader({ course, onPublishToggle, isPublishing }: CourseHe
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-700 to-purple-800" />
         )}
         
-        <div className="relative z-10 h-full flex flex-col justify-center p-8 text-white">
+        <div className="relative z-10 h-full flex flex-col justify-center p-8 text-white min-w-0">
           <div className="max-w-4xl mx-auto w-full">
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-3 mb-4 min-w-0">
+              <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium flex items-center gap-1 break-words min-w-0 overflow-hidden">
                 {course.isPublished ? (
                   <>
                     <span className="w-2 h-2 rounded-full bg-green-400"></span>
@@ -66,14 +66,14 @@ export function CourseHeader({ course, onPublishToggle, isPublishing }: CourseHe
                 {course.difficulty.charAt(0) + course.difficulty.slice(1).toLowerCase()}
               </span>
               
-              <span className="px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-sm font-medium flex items-center gap-1">
+              <span className="px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-sm font-medium flex items-center gap-1 break-words min-w-0 overflow-hidden">
                 <Clock className="w-4 h-4" />
                 Updated {new Date(course.updatedAt).toLocaleDateString()}
               </span>
             </div>
             
             <motion.h1 
-              className="text-4xl md:text-5xl font-bold mb-4 leading-tight"
+              className="text-4xl md:text-5xl font-bold mb-4 leading-tight break-words"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
@@ -82,7 +82,7 @@ export function CourseHeader({ course, onPublishToggle, isPublishing }: CourseHe
             </motion.h1>
             
             <motion.p 
-              className="text-lg md:text-xl text-indigo-100 max-w-3xl mb-8"
+              className="text-lg md:text-xl text-indigo-100 max-w-3xl mb-8 break-words"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -90,7 +90,7 @@ export function CourseHeader({ course, onPublishToggle, isPublishing }: CourseHe
               {course.shortDescription}
             </motion.p>
             
-            <div className="flex flex-wrap items-center gap-4 mt-8 ml-auto">
+            <div className="flex flex-wrap items-center gap-4 mt-8 ml-auto min-w-0">
               {/* Edit button - Always available, separate from publish action */}
               <motion.div
                 whileHover={{ scale: 1.02 }}
@@ -98,7 +98,7 @@ export function CourseHeader({ course, onPublishToggle, isPublishing }: CourseHe
               >
                 <Link 
                   href={`/dashboard/instructor/courses/${course.id}/edit`}
-                  className="px-6 py-3 rounded-xl font-medium flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all duration-300"
+                  className="px-6 py-3 rounded-xl font-medium flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all duration-300 break-words min-w-0"
                 >
                   <Edit className="w-4 h-4" />
                   Edit Course

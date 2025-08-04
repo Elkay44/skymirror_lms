@@ -89,7 +89,7 @@ export function Toaster() {
   if (toasts.length <= 0) return null
 
   return (
-    <div className="fixed bottom-0 right-0 z-50 flex flex-col p-4 space-y-2 max-w-xs w-full sm:max-w-sm">
+    <div className="fixed bottom-0 right-0 z-50 flex flex-col p-4 space-y-2 max-w-xs w-full sm:max-w-sm min-w-0">
       {toasts.map((toast) => (
         <div
           key={toast.id}
@@ -101,10 +101,10 @@ export function Toaster() {
             toast.type === "destructive" ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400" : ""
           )}
         >
-          <div className="flex-1">
-            <div className="font-medium">{toast.title}</div>
+          <div className="flex-1 min-w-0">
+            <div className="font-medium break-words">{toast.title}</div>
             {toast.description && (
-              <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-sm text-gray-500 dark:text-gray-400 break-words">
                 {toast.description}
               </div>
             )}
@@ -115,14 +115,14 @@ export function Toaster() {
                 toast.action?.onClick()
                 dismiss(toast.id)
               }}
-              className="ml-4 text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+              className="ml-4 text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 break-words"
             >
               {toast.action.label}
             </button>
           )}
           <button
             onClick={() => dismiss(toast.id)}
-            className="absolute top-2 right-2 p-1 rounded-full text-gray-400 hover:text-gray-500"
+            className="absolute top-2 right-2 p-1 rounded-full text-gray-400 hover:text-gray-500 flex-shrink-0"
           >
             <span className="sr-only">Close</span>
             <svg

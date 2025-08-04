@@ -27,7 +27,7 @@ export function UserMenu({ user }: UserMenuProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
-          <Avatar className="h-8 w-8">
+          <Avatar className="h-6 w-6 lg:h-8 lg:w-8">
             {user?.image ? (
               <AvatarImage src={user.image} alt={user.name || ''} />
             ) : (
@@ -37,8 +37,8 @@ export function UserMenu({ user }: UserMenuProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 p-2">
-        <div className="flex flex-col space-y-1 p-2">
-          <p className="text-sm font-medium leading-none">{user?.name || 'User'}</p>
+        <div className="flex flex-col space-y-1 p-2 min-w-0">
+          <p className="text-sm font-medium leading-none break-words">{user?.name || 'User'}</p>
           <p className="text-xs leading-none text-muted-foreground">
             {user?.email || 'No email'}
           </p>

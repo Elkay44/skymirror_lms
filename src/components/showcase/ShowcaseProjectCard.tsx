@@ -53,7 +53,7 @@ export default function ShowcaseProjectCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 flex flex-col h-full"
+      className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 flex flex-col h-full min-w-0 overflow-hidden"
     >
       <div className="relative h-48 bg-gray-200">
         {project.imageUrl ? (
@@ -64,20 +64,20 @@ export default function ShowcaseProjectCard({
             className="object-cover"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-blue-50">
-            <div className="text-blue-500 text-2xl font-bold">{project.title.substring(0, 2).toUpperCase()}</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-blue-50 min-w-0">
+            <div className="text-blue-500 text-2xl font-bold break-words">{project.title.substring(0, 2).toUpperCase()}</div>
           </div>
         )}
         
         {project.featured && (
-          <div className="absolute top-2 left-2 bg-yellow-400 text-white px-2 py-1 rounded-md text-xs font-semibold flex items-center">
+          <div className="absolute top-2 left-2 bg-yellow-400 text-white px-2 py-1 rounded-md text-xs font-semibold flex items-center break-words min-w-0 flex-shrink-0">
             <Star className="h-3 w-3 mr-1" />
             Featured
           </div>
         )}
         
         {isAdmin && (
-          <div className="absolute top-2 right-2 flex space-x-1">
+          <div className="absolute top-2 right-2 flex space-x-1 min-w-0">
             {onToggleFeatured && (
               <button
                 onClick={onToggleFeatured}
@@ -109,23 +109,23 @@ export default function ShowcaseProjectCard({
           </div>
         )}
         
-        <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded flex items-center">
+        <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded flex items-center min-w-0">
           <Eye className="h-3 w-3 mr-1" />
           {project.viewCount.toLocaleString()}
         </div>
       </div>
       
-      <div className="p-5 flex-grow">
-        <div className="flex items-start justify-between">
-          <h3 className="text-lg font-semibold mb-2 text-gray-900">{project.title}</h3>
+      <div className="p-5 flex-grow min-w-0">
+        <div className="flex items-start justify-between min-w-0">
+          <h3 className="text-lg font-semibold mb-2 text-gray-900 break-words">{project.title}</h3>
         </div>
         
-        <p className="text-gray-600 text-sm mb-4">
+        <p className="text-gray-600 text-sm mb-4 break-words">
           {truncateDescription(project.description)}
         </p>
         
-        <div className="flex items-center mb-4">
-          <div className="flex-shrink-0 mr-2">
+        <div className="flex items-center mb-4 min-w-0">
+          <div className="flex-shrink-0 mr-2 min-w-0">
             {project.studentImage ? (
               <Image 
                 src={project.studentImage} 
@@ -135,12 +135,12 @@ export default function ShowcaseProjectCard({
                 className="rounded-full"
               />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 text-xs font-medium">
+              <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 text-xs font-medium break-words min-w-0">
                 {project.studentName.charAt(0)}
               </div>
             )}
           </div>
-          <div className="text-sm">
+          <div className="text-sm break-words">
             <span className="text-gray-500">By </span>
             <Link href={`/portfolio/${project.studentId}`} className="text-blue-600 hover:text-blue-800">
               {project.studentName}
@@ -148,7 +148,7 @@ export default function ShowcaseProjectCard({
           </div>
         </div>
         
-        <div className="flex flex-wrap gap-1 mb-4">
+        <div className="flex flex-wrap gap-1 mb-4 min-w-0">
           {project.tags.slice(0, 3).map(tag => (
             <span key={tag} className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
               {tag}
@@ -162,18 +162,18 @@ export default function ShowcaseProjectCard({
         </div>
       </div>
       
-      <div className="border-t border-gray-200 bg-gray-50 p-4 flex justify-between items-center">
+      <div className="border-t border-gray-200 bg-gray-50 p-4 flex justify-between items-center min-w-0">
         <div className="text-xs text-gray-500">
           {new Date(project.showcasedAt).toLocaleDateString()}
         </div>
         
-        <div className="flex space-x-3">
+        <div className="flex space-x-3 min-w-0">
           {project.demoUrl && (
             <a 
               href={project.demoUrl}
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+              className="text-sm text-blue-600 hover:text-blue-800 flex items-center break-words min-w-0"
             >
               Demo
               <ExternalLink className="h-3 w-3 ml-1" />
@@ -185,7 +185,7 @@ export default function ShowcaseProjectCard({
               href={project.repositoryUrl}
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-sm text-gray-700 hover:text-gray-900 flex items-center"
+              className="text-sm text-gray-700 hover:text-gray-900 flex items-center break-words min-w-0"
             >
               <Github className="h-4 w-4 mr-1" />
               Code
@@ -194,7 +194,7 @@ export default function ShowcaseProjectCard({
           
           <Link 
             href={`/showcase/${project.id}`}
-            className="text-sm text-gray-700 hover:text-gray-900 flex items-center"
+            className="text-sm text-gray-700 hover:text-gray-900 flex items-center break-words min-w-0"
           >
             Details
             <ExternalLink className="h-3 w-3 ml-1" />

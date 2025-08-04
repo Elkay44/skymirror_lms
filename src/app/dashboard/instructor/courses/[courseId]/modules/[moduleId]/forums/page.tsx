@@ -108,7 +108,7 @@ export default function ModuleForumsPage({ params: paramsPromise }: ModuleForums
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-64 min-w-0">
         <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
       </div>
     );
@@ -117,13 +117,13 @@ export default function ModuleForumsPage({ params: paramsPromise }: ModuleForums
   if (error) {
     return (
       <div className="rounded-md bg-red-50 p-4">
-        <div className="flex">
-          <div className="flex-shrink-0">
+        <div className="flex min-w-0">
+          <div className="flex-shrink-0 min-w-0">
             <AlertTriangle className="h-5 w-5 text-red-400" aria-hidden="true" />
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error loading forums</h3>
-            <div className="mt-2 text-sm text-red-700">
+            <h3 className="text-sm font-medium text-red-800 break-words">Error loading forums</h3>
+            <div className="mt-2 text-sm text-red-700 break-words">
               <p>{error}</p>
             </div>
           </div>
@@ -133,9 +133,9 @@ export default function ModuleForumsPage({ params: paramsPromise }: ModuleForums
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Module Forums</h1>
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex items-center justify-between min-w-0">
+        <h1 className="text-2xl font-bold tracking-tight break-words">Module Forums</h1>
         <Button onClick={() => setIsCreateModalOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           New Forum
@@ -147,8 +147,8 @@ export default function ModuleForumsPage({ params: paramsPromise }: ModuleForums
           <CardContent className="pt-6">
             <div className="text-center">
               <MessageSquare className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No forums</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by creating a new forum.</p>
+              <h3 className="mt-2 text-sm font-medium text-gray-900 break-words">No forums</h3>
+              <p className="mt-1 text-sm text-gray-500 break-words">Get started by creating a new forum.</p>
               <div className="mt-6">
                 <Button onClick={() => setIsCreateModalOpen(true)}>
                   <Plus className="mr-2 h-4 w-4" />
@@ -159,7 +159,7 @@ export default function ModuleForumsPage({ params: paramsPromise }: ModuleForums
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 lg:gap-6 md:grid-cols-2 lg:grid-cols-3">
           {forums.map((forum) => (
             <Card 
               key={forum.id} 
@@ -167,8 +167,8 @@ export default function ModuleForumsPage({ params: paramsPromise }: ModuleForums
               onClick={() => navigateToForum(forum.id)}
             >
               <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{forum.title}</CardTitle>
+                <div className="flex items-center justify-between min-w-0">
+                  <CardTitle className="text-lg break-words">{forum.title}</CardTitle>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     forum.isActive 
                       ? 'bg-green-100 text-green-800' 
@@ -184,8 +184,8 @@ export default function ModuleForumsPage({ params: paramsPromise }: ModuleForums
                 )}
               </CardHeader>
               <CardContent>
-                <div className="flex items-center text-sm text-gray-500">
-                  <MessageSquare className="mr-1.5 h-4 w-4 flex-shrink-0" />
+                <div className="flex items-center text-sm text-gray-500 break-words min-w-0">
+                  <MessageSquare className="mr-1.5 h-4 w-4 flex-shrink-0 min-w-0" />
                   <span>{forum._count.posts} posts</span>
                 </div>
               </CardContent>

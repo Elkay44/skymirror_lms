@@ -102,7 +102,7 @@ function Calendar({ selected, onSelect, className }: CalendarProps) {
   
   return (
     <div className={cn("p-3", className)}>
-      <div className="text-center font-medium py-2">{monthName}</div>
+      <div className="text-center font-medium py-2 break-words">{monthName}</div>
       <div className="grid grid-cols-7 gap-1">
         {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map(day => (
           <div key={day} className="text-center text-xs text-muted-foreground">

@@ -55,11 +55,11 @@ export function Step4({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 lg:space-y-8">
       {/* Course Image */}
       <div>
         <Label>Course Image</Label>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-500 mb-4 break-words">
           Upload a high-quality image that represents your course
         </p>
         
@@ -75,7 +75,7 @@ export function Step4({
               type="button"
               variant="destructive"
               size="icon"
-              className="absolute top-2 right-2 rounded-full h-8 w-8"
+              className="absolute top-2 right-2 rounded-full h-8 w-8 flex-shrink-0"
               onClick={removeImage}
             >
               <X className="h-4 w-4" />
@@ -89,14 +89,14 @@ export function Step4({
             }`}
           >
             <input {...getInputProps()} />
-            <div className="flex flex-col items-center justify-center space-y-2">
+            <div className="flex flex-col items-center justify-center space-y-2 min-w-0">
               <Upload className="h-10 w-10 text-gray-400" />
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 break-words">
                 {isDragActive ? (
                   <p>Drop the image here</p>
                 ) : (
                   <>
-                    <p className="font-medium">Drag and drop an image here</p>
+                    <p className="font-medium break-words">Drag and drop an image here</p>
                     <p className="text-xs">or click to browse files</p>
                   </>
                 )}
@@ -111,10 +111,10 @@ export function Step4({
 
       {/* Publish Settings */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between min-w-0">
           <div>
             <Label>Publish Course</Label>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 break-words">
               Make this course available to students
             </p>
           </div>
@@ -124,10 +124,10 @@ export function Step4({
           />
         </div>
 
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center justify-between pt-2 min-w-0">
           <div>
             <Label>Make Course Private</Label>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 break-words">
               Only students with a direct link can access this course
             </p>
           </div>

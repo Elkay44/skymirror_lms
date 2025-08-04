@@ -193,7 +193,7 @@ export default function ProjectPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 min-w-0">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
       </div>
     );
@@ -201,9 +201,9 @@ export default function ProjectPage() {
 
   if (error || !project) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 min-w-0">
         <div className="text-center">
-          <div className="text-red-500 text-lg mb-4">{error || 'Project not found'}</div>
+          <div className="text-red-500 text-lg mb-4 break-words">{error || 'Project not found'}</div>
           <Link 
             href={`/dashboard/instructor/courses/${courseId}/modules`}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
@@ -220,40 +220,40 @@ export default function ProjectPage() {
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-between h-16 min-w-0">
+            <div className="flex items-center space-x-4 min-w-0">
               <Link 
                 href={`/dashboard/instructor/courses/${courseId}/modules`}
-                className="flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                className="flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 min-w-0"
               >
                 <ArrowLeft className="h-5 w-5 mr-2" />
                 Back to Modules
               </Link>
               <div className="text-gray-300 dark:text-gray-600">|</div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-white break-words">
                   {isEditing ? 'Edit Project' : project.title}
                 </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-gray-500 dark:text-gray-400 break-words">
                   {project.module.title}
                 </p>
               </div>
             </div>
 
             {project.canEdit && (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 min-w-0">
                 {isEditing ? (
                   <>
                     <button
                       onClick={handleSave}
-                      className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                      className="flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 min-w-0"
                     >
                       <Save className="h-4 w-4 mr-2" />
                       Save
                     </button>
                     <button
                       onClick={handleCancelEdit}
-                      className="flex items-center px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                      className="flex items-center px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 min-w-0"
                     >
                       <X className="h-4 w-4 mr-2" />
                       Cancel
@@ -263,14 +263,14 @@ export default function ProjectPage() {
                   <>
                     <button
                       onClick={handleEdit}
-                      className="flex items-center px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                      className="flex items-center px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 min-w-0"
                     >
                       <Edit className="h-4 w-4 mr-2" />
                       Edit
                     </button>
                     <button
                       onClick={handleDelete}
-                      className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                      className="flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 min-w-0"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete
@@ -285,15 +285,15 @@ export default function ProjectPage() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="p-4 lg:p-6">
                 {isEditing ? (
-                  <div className="space-y-6">
+                  <div className="space-y-4 lg:space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 break-words">
                         Title
                       </label>
                       <input
@@ -305,7 +305,7 @@ export default function ProjectPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 break-words">
                         Description
                       </label>
                       <textarea
@@ -317,7 +317,7 @@ export default function ProjectPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 break-words">
                         Requirements
                       </label>
                       <textarea
@@ -330,7 +330,7 @@ export default function ProjectPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 break-words">
                         Repository URL
                       </label>
                       <input
@@ -344,7 +344,7 @@ export default function ProjectPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 break-words">
                           Due Date
                         </label>
                         <input
@@ -356,7 +356,7 @@ export default function ProjectPage() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 break-words">
                           Max Points
                         </label>
                         <input
@@ -369,23 +369,23 @@ export default function ProjectPage() {
                     </div>
 
                     <div>
-                      <label className="flex items-center">
+                      <label className="flex items-center min-w-0">
                         <input
                           type="checkbox"
                           checked={editForm.allowLateSubmissions}
                           onChange={(e) => setEditForm({ ...editForm, allowLateSubmissions: e.target.checked })}
                           className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                         />
-                        <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                        <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 break-words">
                           Allow late submissions
                         </span>
                       </label>
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-4 lg:space-y-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 break-words">
                         {project.title}
                       </h2>
                       {project.description && (
@@ -397,7 +397,7 @@ export default function ProjectPage() {
 
                     {project.requirements && (
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 break-words">
                           Requirements
                         </h3>
                         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
@@ -410,7 +410,7 @@ export default function ProjectPage() {
 
                     {project.repositoryUrl && (
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 break-words">
                           Repository
                         </h3>
                         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
@@ -418,7 +418,7 @@ export default function ProjectPage() {
                             href={project.repositoryUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
+                            className="flex items-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 min-w-0"
                           >
                             <GitBranch className="h-4 w-4 mr-2" />
                             {project.repositoryUrl}
@@ -433,22 +433,22 @@ export default function ProjectPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6">
             {/* Project Info */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 overflow-hidden">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 break-words">
                 Project Details
               </h3>
               <div className="space-y-3">
                 {project.dueDate && (
-                  <div className="flex items-center text-sm">
+                  <div className="flex items-center text-sm break-words min-w-0">
                     <Calendar className="h-4 w-4 text-gray-400 mr-2" />
                     <div>
                       <span className="text-gray-600 dark:text-gray-300">
                         Due: {formatDate(project.dueDate)}
                       </span>
                       {isOverdue(project.dueDate) && (
-                        <div className="flex items-center text-red-500 mt-1">
+                        <div className="flex items-center text-red-500 mt-1 min-w-0">
                           <AlertCircle className="h-3 w-3 mr-1" />
                           <span className="text-xs">Overdue</span>
                         </div>
@@ -456,20 +456,20 @@ export default function ProjectPage() {
                     </div>
                   </div>
                 )}
-                <div className="flex items-center text-sm">
+                <div className="flex items-center text-sm break-words min-w-0">
                   <Code className="h-4 w-4 text-gray-400 mr-2" />
                   <span className="text-gray-600 dark:text-gray-300">
                     Max Points: {project.maxPoints || 'Not set'}
                   </span>
                 </div>
-                <div className="flex items-center text-sm">
+                <div className="flex items-center text-sm break-words min-w-0">
                   <Users className="h-4 w-4 text-gray-400 mr-2" />
                   <span className="text-gray-600 dark:text-gray-300">
                     Submissions: {project.submissionCount || 0}
                   </span>
                 </div>
                 {project.allowLateSubmissions && (
-                  <div className="flex items-center text-sm">
+                  <div className="flex items-center text-sm break-words min-w-0">
                     <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                     <span className="text-gray-600 dark:text-gray-300">
                       Late submissions allowed
@@ -480,20 +480,20 @@ export default function ProjectPage() {
             </div>
 
             {/* Actions */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 overflow-hidden">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 break-words">
                 Actions
               </h3>
               <div className="space-y-2">
                 <Link
                   href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/projects/${projectId}/submissions`}
-                  className="block w-full px-3 py-2 text-center text-sm bg-indigo-50 dark:bg-indigo-900 hover:bg-indigo-100 dark:hover:bg-indigo-800 rounded-lg text-indigo-700 dark:text-indigo-300"
+                  className="block w-full px-3 py-2 text-center text-sm bg-indigo-50 dark:bg-indigo-900 hover:bg-indigo-100 dark:hover:bg-indigo-800 rounded-lg text-indigo-700 dark:text-indigo-300 break-words"
                 >
                   View Submissions
                 </Link>
                 <Link
                   href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/projects/${projectId}/grade`}
-                  className="block w-full px-3 py-2 text-center text-sm bg-green-50 dark:bg-green-900 hover:bg-green-100 dark:hover:bg-green-800 rounded-lg text-green-700 dark:text-green-300"
+                  className="block w-full px-3 py-2 text-center text-sm bg-green-50 dark:bg-green-900 hover:bg-green-100 dark:hover:bg-green-800 rounded-lg text-green-700 dark:text-green-300 break-words"
                 >
                   Grade Submissions
                 </Link>
@@ -502,7 +502,7 @@ export default function ProjectPage() {
                     href={project.repositoryUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full px-3 py-2 text-center text-sm bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg text-gray-700 dark:text-gray-300"
+                    className="block w-full px-3 py-2 text-center text-sm bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg text-gray-700 dark:text-gray-300 break-words"
                   >
                     View Repository
                   </a>

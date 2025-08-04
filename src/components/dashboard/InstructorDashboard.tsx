@@ -76,7 +76,7 @@ export default function InstructorDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex items-center justify-center min-h-[60vh] min-w-0">
         <div className="text-center space-y-4">
           <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
           <p className="text-muted-foreground">Loading dashboard...</p>
@@ -103,10 +103,10 @@ export default function InstructorDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Instructor Dashboard</h1>
+      <div className="flex items-center justify-between min-w-0">
+        <h1 className="text-2xl font-bold break-words">Instructor Dashboard</h1>
         <Button onClick={() => router.push('/dashboard/instructor/courses/create')}>
           <Plus className="mr-2 h-4 w-4" />
           Create Course
@@ -116,42 +116,42 @@ export default function InstructorDashboard() {
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 min-w-0">
+            <CardTitle className="text-sm font-medium break-words">Total Students</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats.totalStudents.toLocaleString()}</div>
+            <div className="text-2xl font-bold break-words">{dashboardStats.totalStudents.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">Across all courses</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 min-w-0">
+            <CardTitle className="text-sm font-medium break-words">Revenue</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${dashboardStats.totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold break-words">${dashboardStats.totalRevenue.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">Total earnings</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Courses</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 min-w-0">
+            <CardTitle className="text-sm font-medium break-words">Courses</CardTitle>
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats.totalCourses}</div>
+            <div className="text-2xl font-bold break-words">{dashboardStats.totalCourses}</div>
             <p className="text-xs text-muted-foreground">Published courses</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Rating</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 min-w-0">
+            <CardTitle className="text-sm font-medium break-words">Avg. Rating</CardTitle>
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardStats.averageRating || 'N/A'}</div>
+            <div className="text-2xl font-bold break-words">{dashboardStats.averageRating || 'N/A'}</div>
             <p className="text-xs text-muted-foreground">Course ratings</p>
           </CardContent>
         </Card>
@@ -172,7 +172,7 @@ export default function InstructorDashboard() {
                 <CardTitle>Revenue Overview</CardTitle>
               </CardHeader>
               <CardContent className="pl-2">
-                <div className="h-[300px] flex items-center justify-center">
+                <div className="h-[300px] flex items-center justify-center min-w-0">
                   <LineChart className="h-8 w-8 text-muted-foreground" />
                   <span className="text-muted-foreground ml-2">Revenue chart will appear here</span>
                 </div>
@@ -185,19 +185,19 @@ export default function InstructorDashboard() {
               <CardContent>
                 <div className="space-y-4">
                   {courses.slice(0, 3).map((course) => (
-                    <div key={course.id} className="flex items-center">
+                    <div key={course.id} className="flex items-center min-w-0">
                       <div className="space-y-1">
-                        <p className="text-sm font-medium leading-none">{course.title}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm font-medium leading-none break-words">{course.title}</p>
+                        <p className="text-sm text-muted-foreground break-words">
                           {course.studentCount || 0} students
                         </p>
                       </div>
-                      <div className="ml-auto font-medium">
+                      <div className="ml-auto font-medium break-words">
                         {course.rating ? `${course.rating}★` : 'No rating'}
                       </div>
                     </div>
                   )) || (
-                    <p className="text-sm text-muted-foreground">No courses yet</p>
+                    <p className="text-sm text-muted-foreground break-words">No courses yet</p>
                   )}
                 </div>
               </CardContent>
@@ -210,25 +210,25 @@ export default function InstructorDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">Activity tracking coming soon...</p>
+                <p className="text-sm text-muted-foreground break-words">Activity tracking coming soon...</p>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="courses">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 lg:gap-6 md:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => (
               <CourseCard key={course.id} course={course} />
             ))}
             <div 
-              className="border-2 border-dashed rounded-lg flex items-center justify-center min-h-[300px] hover:border-primary transition-colors cursor-pointer"
+              className="border-2 border-dashed rounded-lg flex items-center justify-center min-h-[300px] hover:border-primary transition-colors cursor-pointer min-w-0"
               onClick={() => router.push('/dashboard/instructor/courses/create')}
             >
               <div className="text-center p-6">
                 <Plus className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <h3 className="font-medium">Create New Course</h3>
-                <p className="text-sm text-muted-foreground mt-1">Start building your next course</p>
+                <h3 className="font-medium break-words">Create New Course</h3>
+                <p className="text-sm text-muted-foreground mt-1 break-words">Start building your next course</p>
               </div>
             </div>
           </div>

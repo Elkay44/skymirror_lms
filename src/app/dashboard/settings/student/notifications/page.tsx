@@ -45,7 +45,7 @@ export default function StudentNotificationsSettings() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center h-64 min-w-0">
         <div className="animate-spin h-8 w-8 border-4 border-blue-600 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -55,17 +55,17 @@ export default function StudentNotificationsSettings() {
     <div>
 
       
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
         <div className="space-y-4">
           <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="text-sm font-medium text-blue-800 mb-3">Delivery Methods</h3>
+            <h3 className="text-sm font-medium text-blue-800 mb-3 break-words">Delivery Methods</h3>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
-                  <label htmlFor="email-notifications" className="text-sm font-medium text-gray-700">Email Notifications</label>
+                  <label htmlFor="email-notifications" className="text-sm font-medium text-gray-700 break-words">Email Notifications</label>
                   <p className="text-xs text-gray-500">Receive notifications to your email address</p>
                 </div>
-                <div className="ml-4 flex-shrink-0">
+                <div className="ml-4 flex-shrink-0 min-w-0">
                   <button
                     type="button"
                     className={`${notificationSettings.emailNotifications ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -79,12 +79,12 @@ export default function StudentNotificationsSettings() {
                 </div>
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
-                  <label htmlFor="push-notifications" className="text-sm font-medium text-gray-700">Push Notifications</label>
+                  <label htmlFor="push-notifications" className="text-sm font-medium text-gray-700 break-words">Push Notifications</label>
                   <p className="text-xs text-gray-500">Receive notifications in your browser</p>
                 </div>
-                <div className="ml-4 flex-shrink-0">
+                <div className="ml-4 flex-shrink-0 min-w-0">
                   <button
                     type="button"
                     className={`${notificationSettings.pushNotifications ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -100,15 +100,15 @@ export default function StudentNotificationsSettings() {
             </div>
           </div>
           
-          <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-            <h3 className="text-sm font-medium text-gray-700 p-4 border-b border-gray-200">Notification Types</h3>
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <h3 className="text-sm font-medium text-gray-700 p-4 border-b border-gray-200 break-words">Notification Types</h3>
             <div className="divide-y divide-gray-200">
-              <div className="flex items-center justify-between p-4">
+              <div className="flex items-center justify-between p-4 min-w-0">
                 <div>
-                  <label htmlFor="course-updates" className="text-sm font-medium text-gray-700">Course Updates</label>
+                  <label htmlFor="course-updates" className="text-sm font-medium text-gray-700 break-words">Course Updates</label>
                   <p className="text-xs text-gray-500">New lessons, materials, and announcements</p>
                 </div>
-                <div className="ml-4 flex-shrink-0">
+                <div className="ml-4 flex-shrink-0 min-w-0">
                   <button
                     type="button"
                     className={`${notificationSettings.courseUpdates ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -122,12 +122,12 @@ export default function StudentNotificationsSettings() {
                 </div>
               </div>
               
-              <div className="flex items-center justify-between p-4">
+              <div className="flex items-center justify-between p-4 min-w-0">
                 <div>
-                  <label htmlFor="forum-replies" className="text-sm font-medium text-gray-700">Forum Replies</label>
+                  <label htmlFor="forum-replies" className="text-sm font-medium text-gray-700 break-words">Forum Replies</label>
                   <p className="text-xs text-gray-500">Responses to your forum posts and mentions</p>
                 </div>
-                <div className="ml-4 flex-shrink-0">
+                <div className="ml-4 flex-shrink-0 min-w-0">
                   <button
                     type="button"
                     className={`${notificationSettings.forumReplies ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -141,12 +141,12 @@ export default function StudentNotificationsSettings() {
                 </div>
               </div>
               
-              <div className="flex items-center justify-between p-4">
+              <div className="flex items-center justify-between p-4 min-w-0">
                 <div>
-                  <label htmlFor="upcoming-deadlines" className="text-sm font-medium text-gray-700">Upcoming Deadlines</label>
+                  <label htmlFor="upcoming-deadlines" className="text-sm font-medium text-gray-700 break-words">Upcoming Deadlines</label>
                   <p className="text-xs text-gray-500">Reminders about assignments and quiz deadlines</p>
                 </div>
-                <div className="ml-4 flex-shrink-0">
+                <div className="ml-4 flex-shrink-0 min-w-0">
                   <button
                     type="button"
                     className={`${notificationSettings.upcomingDeadlines ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -160,12 +160,12 @@ export default function StudentNotificationsSettings() {
                 </div>
               </div>
               
-              <div className="flex items-center justify-between p-4">
+              <div className="flex items-center justify-between p-4 min-w-0">
                 <div>
-                  <label htmlFor="mentor-messages" className="text-sm font-medium text-gray-700">Mentor Messages</label>
+                  <label htmlFor="mentor-messages" className="text-sm font-medium text-gray-700 break-words">Mentor Messages</label>
                   <p className="text-xs text-gray-500">Messages from your mentors</p>
                 </div>
-                <div className="ml-4 flex-shrink-0">
+                <div className="ml-4 flex-shrink-0 min-w-0">
                   <button
                     type="button"
                     className={`${notificationSettings.mentorMessages ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -179,12 +179,12 @@ export default function StudentNotificationsSettings() {
                 </div>
               </div>
               
-              <div className="flex items-center justify-between p-4">
+              <div className="flex items-center justify-between p-4 min-w-0">
                 <div>
-                  <label htmlFor="weekly-digest" className="text-sm font-medium text-gray-700">Weekly Digest</label>
+                  <label htmlFor="weekly-digest" className="text-sm font-medium text-gray-700 break-words">Weekly Digest</label>
                   <p className="text-xs text-gray-500">Weekly summary of your learning progress</p>
                 </div>
-                <div className="ml-4 flex-shrink-0">
+                <div className="ml-4 flex-shrink-0 min-w-0">
                   <button
                     type="button"
                     className={`${notificationSettings.weeklyDigest ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -198,12 +198,12 @@ export default function StudentNotificationsSettings() {
                 </div>
               </div>
               
-              <div className="flex items-center justify-between p-4">
+              <div className="flex items-center justify-between p-4 min-w-0">
                 <div>
-                  <label htmlFor="marketing-emails" className="text-sm font-medium text-gray-700">Marketing Emails</label>
+                  <label htmlFor="marketing-emails" className="text-sm font-medium text-gray-700 break-words">Marketing Emails</label>
                   <p className="text-xs text-gray-500">Promotions, new courses, and platform updates</p>
                 </div>
-                <div className="ml-4 flex-shrink-0">
+                <div className="ml-4 flex-shrink-0 min-w-0">
                   <button
                     type="button"
                     className={`${notificationSettings.marketingEmails ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
@@ -221,10 +221,10 @@ export default function StudentNotificationsSettings() {
         </div>
 
         <div className="pt-5">
-          <div className="flex justify-end">
+          <div className="flex justify-end min-w-0">
             <button
               type="submit"
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 break-words min-w-0"
             >
               <Save className="h-4 w-4 mr-2" />
               Save Settings

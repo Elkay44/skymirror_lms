@@ -37,7 +37,7 @@ export function FormNavigation({ isEditMode }: FormNavigationProps = {}) {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6 border-t">
+    <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6 border-t min-w-0">
       <div className="space-x-2">
         {!isFirstStep && (
           <Button
@@ -62,7 +62,7 @@ export function FormNavigation({ isEditMode }: FormNavigationProps = {}) {
         )}
       </div>
       
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 min-w-0">
         <Button
           type="button"
           variant="outline"

@@ -11,11 +11,11 @@ interface Step3Props {
 
 export function Step3({ formData, onChange, onToggle }: Step3Props) {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex items-center justify-between min-w-0">
         <div>
           <Label>Free Course</Label>
-          <p className="text-sm text-gray-500">Check this if the course is free</p>
+          <p className="text-sm text-gray-500 break-words">Check this if the course is free</p>
         </div>
         <Switch
           checked={formData.isFree}
@@ -28,8 +28,8 @@ export function Step3({ formData, onChange, onToggle }: Step3Props) {
           <div>
             <Label htmlFor="price">Price (USD) *</Label>
             <div className="relative mt-1 rounded-md shadow-sm">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span className="text-gray-500 sm:text-sm">$</span>
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
+                <span className="text-gray-500 sm:text-sm break-words">$</span>
               </div>
               <Input
                 type="number"
@@ -46,10 +46,10 @@ export function Step3({ formData, onChange, onToggle }: Step3Props) {
           </div>
 
           <div className="border-t border-gray-200 pt-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-w-0">
               <div>
                 <Label>Discount</Label>
-                <p className="text-sm text-gray-500">Offer this course at a discounted price</p>
+                <p className="text-sm text-gray-500 break-words">Offer this course at a discounted price</p>
               </div>
               <Switch
                 checked={formData.hasDiscount}
@@ -61,8 +61,8 @@ export function Step3({ formData, onChange, onToggle }: Step3Props) {
               <div className="mt-4">
                 <Label htmlFor="discountedPrice">Discounted Price (USD) *</Label>
                 <div className="relative mt-1 rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 sm:text-sm">$</span>
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
+                    <span className="text-gray-500 sm:text-sm break-words">$</span>
                   </div>
                   <Input
                     type="number"
@@ -77,7 +77,7 @@ export function Step3({ formData, onChange, onToggle }: Step3Props) {
                   />
                 </div>
                 {formData.discountedPrice >= formData.price && (
-                  <p className="mt-1 text-sm text-red-600">
+                  <p className="mt-1 text-sm text-red-600 break-words">
                     Discounted price must be lower than the original price
                   </p>
                 )}

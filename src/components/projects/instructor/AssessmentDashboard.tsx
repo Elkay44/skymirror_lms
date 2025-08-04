@@ -145,14 +145,14 @@ export default function AssessmentDashboard() {
   };
   
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Student Submissions</h2>
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col md:flex-row justify-between gap-4 mb-6 min-w-0">
+        <h2 className="text-2xl font-bold text-gray-900 break-words">Student Submissions</h2>
         
         <Button 
           onClick={fetchSubmissions} 
           variant="outline"
-          className="flex items-center gap-2 self-end"
+          className="flex items-center gap-2 self-end min-w-0"
         >
           <RefreshCw className="h-4 w-4" />
           Refresh
@@ -160,13 +160,13 @@ export default function AssessmentDashboard() {
       </div>
       
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6 min-w-0 overflow-hidden">
+        <div className="flex items-center gap-2 min-w-0">
           <Filter className="h-4 w-4 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">Filters:</span>
+          <span className="text-sm font-medium text-gray-700 break-words">Filters:</span>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-w-0">
           <div>
             <Select
               value={courseFilter}
@@ -219,7 +219,7 @@ export default function AssessmentDashboard() {
       </div>
       
       {loading ? (
-        <div className="flex justify-center py-12">
+        <div className="flex justify-center py-12 min-w-0">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
         </div>
       ) : filteredSubmissions.length > 0 ? (
@@ -230,34 +230,34 @@ export default function AssessmentDashboard() {
               className="hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => handleViewSubmission(submission.id)}
             >
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row justify-between gap-4">
-                  <div className="flex items-center gap-4">
+              <CardContent className="p-4 lg:p-6">
+                <div className="flex flex-col md:flex-row justify-between gap-4 min-w-0">
+                  <div className="flex items-center gap-4 min-w-0">
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={submission.student.image || ''} alt={submission.student.name} />
                       <AvatarFallback>{submission.student.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     
                     <div>
-                      <h3 className="font-medium text-gray-900">{submission.student.name}</h3>
-                      <p className="text-sm text-gray-600">{submission.student.email}</p>
+                      <h3 className="font-medium text-gray-900 break-words">{submission.student.name}</h3>
+                      <p className="text-sm text-gray-600 break-words">{submission.student.email}</p>
                     </div>
                   </div>
                   
-                  <div className="flex flex-col">
-                    <h4 className="font-medium text-gray-900">{submission.project.title}</h4>
-                    <p className="text-sm text-gray-600">{submission.project.course.title}</p>
+                  <div className="flex flex-col min-w-0">
+                    <h4 className="font-medium text-gray-900 break-words">{submission.project.title}</h4>
+                    <p className="text-sm text-gray-600 break-words">{submission.project.course.title}</p>
                   </div>
                   
-                  <div className="flex flex-col items-end">
-                    <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-end min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
                       <Badge className={`${statusColors[submission.status] || 'bg-gray-100 text-gray-800'} flex items-center gap-1`}>
                         {getStatusIcon(submission.status)}
                         {submission.status.replace(/_/g, ' ')}
                       </Badge>
                     </div>
                     
-                    <div className="mt-2 flex items-center justify-end gap-2">
+                    <div className="mt-2 flex items-center justify-end gap-2 min-w-0">
                       <p className="text-xs text-gray-500">
                         Submitted on {format(new Date(submission.submittedAt), 'MMM d, yyyy')}
                       </p>
@@ -270,11 +270,11 @@ export default function AssessmentDashboard() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center overflow-hidden">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 min-w-0">
             <FileCheck className="h-8 w-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No submissions found</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2 break-words">No submissions found</h3>
           <p className="text-gray-600 max-w-md mx-auto">
             {searchQuery || courseFilter !== 'all' || statusFilter !== 'all' 
               ? 'No submissions match your current filters. Try adjusting your search criteria.' 

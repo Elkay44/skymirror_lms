@@ -52,10 +52,10 @@ export default function QuizCard({
       className={`rounded-xl border ${cardStyle} overflow-hidden transition-all duration-200 ${className}`}
     >
       <div className="p-5">
-        <div className="flex justify-between items-start">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <div className="flex justify-between items-start min-w-0">
+          <h3 className="text-lg font-semibold text-gray-900 break-words">{title}</h3>
           {isPassed && (
-            <span className="flex items-center text-sm font-medium text-green-600">
+            <span className="flex items-center text-sm font-medium text-green-600 break-words min-w-0">
               <CheckCircle className="h-4 w-4 mr-1" />
               Passed
             </span>
@@ -63,28 +63,28 @@ export default function QuizCard({
         </div>
         
         {description && (
-          <p className="mt-2 text-sm text-gray-600">{description}</p>
+          <p className="mt-2 text-sm text-gray-600 break-words">{description}</p>
         )}
         
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-gray-600 break-words min-w-0">
             <FileText className="h-4 w-4 mr-1 text-gray-400" />
             {questionCount} {questionCount === 1 ? 'Question' : 'Questions'}
           </div>
           
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-gray-600 break-words min-w-0">
             <Award className="h-4 w-4 mr-1 text-gray-400" />
             Pass: {passingScore}%
           </div>
           
           {timeLimit && (
-            <div className="flex items-center text-sm text-gray-600">
+            <div className="flex items-center text-sm text-gray-600 break-words min-w-0">
               <Clock className="h-4 w-4 mr-1 text-gray-400" />
               {timeLimit} {timeLimit === 1 ? 'Minute' : 'Minutes'}
             </div>
           )}
           
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-gray-600 break-words min-w-0">
             <span className="text-gray-400 mr-1">{attempts}/{maxAttempts === 0 ? '∞' : maxAttempts}</span>
             Attempts
           </div>
@@ -92,9 +92,9 @@ export default function QuizCard({
         
         {bestScore !== undefined && bestScore !== null && (
           <div className="mt-4">
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-medium text-gray-700">Best Score</span>
-              <span className="text-xs font-medium text-gray-700">{bestScore}%</span>
+            <div className="flex justify-between items-center mb-1 min-w-0">
+              <span className="text-xs font-medium text-gray-700 break-words">Best Score</span>
+              <span className="text-xs font-medium text-gray-700 break-words">{bestScore}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 

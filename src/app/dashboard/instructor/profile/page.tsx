@@ -92,18 +92,18 @@ export default function InstructorProfilePage() {
   return (
     <div className="max-w-3xl mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Instructor Profile</h1>
+        <h1 className="text-2xl font-bold text-gray-900 break-words">Instructor Profile</h1>
         <p className="text-gray-600 mt-1">
           Complete your instructor profile to start creating courses.
         </p>
       </div>
       
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+      <div className="bg-white shadow-sm rounded-lg border border-gray-200 p-6 overflow-hidden">
         <form onSubmit={handleSubmit}>
-          <div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6">
             {/* Expertise */}
             <div>
-              <label htmlFor="expertise" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="expertise" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                 Areas of Expertise <span className="text-red-500">*</span>
               </label>
               <input
@@ -123,7 +123,7 @@ export default function InstructorProfilePage() {
             
             {/* Years of Experience */}
             <div>
-              <label htmlFor="yearsOfExperience" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="yearsOfExperience" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                 Years of Experience
               </label>
               <input
@@ -139,7 +139,7 @@ export default function InstructorProfilePage() {
             
             {/* Education */}
             <div>
-              <label htmlFor="education" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="education" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                 Education Background
               </label>
               <input
@@ -155,7 +155,7 @@ export default function InstructorProfilePage() {
             
             {/* Teaching Philosophy */}
             <div>
-              <label htmlFor="teachingPhilosophy" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="teachingPhilosophy" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                 Teaching Philosophy
               </label>
               <textarea
@@ -171,7 +171,7 @@ export default function InstructorProfilePage() {
             
             {/* Bio */}
             <div>
-              <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1 break-words">
                 Short Bio
               </label>
               <textarea
@@ -185,11 +185,11 @@ export default function InstructorProfilePage() {
               />
             </div>
             
-            <div className="flex justify-end">
+            <div className="flex justify-end min-w-0">
               <button
                 type="submit"
                 disabled={isSaving}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed break-words"
               >
                 {isSaving ? 'Saving...' : 'Save Profile'}
               </button>

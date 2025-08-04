@@ -158,7 +158,7 @@ export default function ModulePageView() {
   if (isLoading) {
     return (
       <PageLayout title="Loading Module Page" backHref={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}`}>
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-screen min-w-0">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </PageLayout>
@@ -168,15 +168,15 @@ export default function ModulePageView() {
   if (!page) {
     return (
       <PageLayout title="Page Not Found" backHref={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}`}>
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           <div className="mb-4">
             <Button variant="ghost" onClick={() => router.back()} className="mb-4">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
           </div>
-          <div className="flex flex-col items-center justify-center py-12">
-            <h2 className="text-xl font-semibold mb-2">Page Not Found</h2>
+          <div className="flex flex-col items-center justify-center py-12 min-w-0">
+            <h2 className="text-xl font-semibold mb-2 break-words">Page Not Found</h2>
             <p className="text-muted-foreground mb-4">
               The page you are looking for doesn't exist or you don't have permission to access it.
             </p>
@@ -191,14 +191,14 @@ export default function ModulePageView() {
 
   return (
     <PageLayout title={page?.title || 'Module Page'} backHref={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}`}>
-      <div className="p-6">
-        <div className="mb-4 flex items-center justify-between">
+      <div className="p-4 lg:p-6">
+        <div className="mb-4 flex items-center justify-between min-w-0">
           <Button variant="ghost" onClick={() => router.back()} className="mb-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Module
           </Button>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 min-w-0">
             {isEditing ? (
               <>
                 <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving}>
@@ -228,7 +228,7 @@ export default function ModulePageView() {
             {isEditing ? (
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Title</label>
+                  <label className="text-sm font-medium mb-1 block break-words">Title</label>
                   <Input 
                     value={title} 
                     onChange={(e) => setTitle(e.target.value)}
@@ -237,7 +237,7 @@ export default function ModulePageView() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Description</label>
+                  <label className="text-sm font-medium mb-1 block break-words">Description</label>
                   <Textarea 
                     value={description} 
                     onChange={(e) => setDescription(e.target.value)}
@@ -249,7 +249,7 @@ export default function ModulePageView() {
               </div>
             ) : (
               <div>
-                <h1 className="text-2xl font-bold mb-2">{page.title}</h1>
+                <h1 className="text-2xl font-bold mb-2 break-words">{page.title}</h1>
                 {page.description && (
                   <p className="text-muted-foreground mb-2">{page.description}</p>
                 )}
@@ -259,9 +259,9 @@ export default function ModulePageView() {
         </Card>
 
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Content Blocks</h2>
-            <div className="flex gap-2">
+          <div className="flex items-center justify-between mb-4 min-w-0">
+            <h2 className="text-xl font-semibold break-words">Content Blocks</h2>
+            <div className="flex gap-2 min-w-0">
               <Button onClick={() => handleAddBlock('text')} variant="outline" size="sm">
                 Add Text
               </Button>
@@ -279,7 +279,7 @@ export default function ModulePageView() {
 
           {blocks.length === 0 ? (
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4 lg:p-6">
                 <div className="text-center py-8">
                   <p className="text-muted-foreground mb-4">No content blocks yet</p>
                   <Button onClick={() => handleAddBlock()}>

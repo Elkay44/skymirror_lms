@@ -157,8 +157,8 @@ export default function PostDetailPage() {
 
   if (loading) {
     return (
-      <div className="container py-6 space-y-6">
-        <div className="flex items-center gap-4">
+      <div className="container py-6 space-y-4 lg:space-y-6">
+        <div className="flex items-center gap-4 min-w-0">
           <Button variant="outline" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
@@ -174,7 +174,7 @@ export default function PostDetailPage() {
   
   if (error || !post) {
     return (
-      <div className="container py-6 flex flex-col items-center justify-center min-h-[600px]">
+      <div className="container py-6 flex flex-col items-center justify-center min-h-[600px] min-w-0">
         <p className="text-destructive mb-4">{error || "Post not found"}</p>
         <Button onClick={() => router.back()} variant="outline" size="sm">
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -197,17 +197,17 @@ export default function PostDetailPage() {
           Back to Forum
         </Button>
         
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold">{post.title}</h1>
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold break-words">{post.title}</h1>
+          <div className="flex items-center gap-2 min-w-0">
             {post.isPinned && (
-              <Badge variant="outline" className="flex items-center gap-1">
+              <Badge variant="outline" className="flex items-center gap-1 min-w-0">
                 <Pin className="h-3 w-3" />
                 Pinned
               </Badge>
             )}
             {post.isLocked && (
-              <Badge variant="outline" className="flex items-center gap-1">
+              <Badge variant="outline" className="flex items-center gap-1 min-w-0">
                 <Lock className="h-3 w-3" />
                 Locked
               </Badge>
@@ -217,14 +217,14 @@ export default function PostDetailPage() {
       </div>
 
       <Card>
-        <CardHeader className="flex flex-row items-center gap-4 pb-2">
+        <CardHeader className="flex flex-row items-center gap-4 pb-2 min-w-0">
           <Avatar>
             <AvatarImage src={post.author.image || ""} alt={post.author.name || "User"} />
             <AvatarFallback>{post.author.name?.[0] || "U"}</AvatarFallback>
           </Avatar>
           <div>
-            <h2 className="font-medium">{post.author.name}</h2>
-            <div className="flex items-center text-sm text-muted-foreground">
+            <h2 className="font-medium break-words">{post.author.name}</h2>
+            <div className="flex items-center text-sm text-muted-foreground break-words min-w-0">
               <Clock className="h-3 w-3 mr-1" />
               {format(new Date(post.createdAt), "MMM d, yyyy 'at' h:mm a")}
             </div>
@@ -235,13 +235,13 @@ export default function PostDetailPage() {
           <div className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
         </CardContent>
         
-        <CardFooter className="flex justify-between border-t pt-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center">
+        <CardFooter className="flex justify-between border-t pt-4 text-sm text-muted-foreground break-words min-w-0">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="flex items-center min-w-0">
               <ThumbsUp className="h-4 w-4 mr-1" />
               {post._count.likes} likes
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0">
               <MessageSquare className="h-4 w-4 mr-1" />
               {post._count.comments} comments
             </div>
@@ -255,7 +255,7 @@ export default function PostDetailPage() {
       <Separator className="my-8" />
       
       <div>
-        <h2 className="text-xl font-bold mb-6">Comments ({comments.length})</h2>
+        <h2 className="text-xl font-bold mb-6 break-words">Comments ({comments.length})</h2>
         
         {!post.isLocked && (
           <form onSubmit={handleSubmitComment} className="mb-8">
@@ -266,7 +266,7 @@ export default function PostDetailPage() {
               disabled={commentLoading}
               className="mb-2 min-h-[100px]"
             />
-            <div className="flex justify-end">
+            <div className="flex justify-end min-w-0">
               <Button type="submit" disabled={commentLoading}>
                 {commentLoading ? "Posting..." : "Post Comment"}
               </Button>
@@ -275,7 +275,7 @@ export default function PostDetailPage() {
         )}
         
         {post.isLocked && (
-          <div className="bg-muted p-4 rounded-md mb-8 flex items-center justify-center">
+          <div className="bg-muted p-4 rounded-md mb-8 flex items-center justify-center min-w-0">
             <Lock className="h-4 w-4 mr-2" />
             <p>This post is locked. New comments cannot be added.</p>
           </div>
@@ -290,14 +290,14 @@ export default function PostDetailPage() {
           <div className="space-y-4">
             {comments.map((comment) => (
               <Card key={comment.id}>
-                <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                  <Avatar className="h-8 w-8">
+                <CardHeader className="flex flex-row items-center gap-4 pb-2 min-w-0">
+                  <Avatar className="h-6 w-6 lg:h-8 lg:w-8">
                     <AvatarImage src={comment.author.image || ""} alt={comment.author.name || "User"} />
                     <AvatarFallback>{comment.author.name?.[0] || "U"}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-medium text-sm">{comment.author.name}</h3>
-                    <div className="flex items-center text-xs text-muted-foreground">
+                    <h3 className="font-medium text-sm break-words">{comment.author.name}</h3>
+                    <div className="flex items-center text-xs text-muted-foreground min-w-0">
                       <Clock className="h-3 w-3 mr-1" />
                       {format(new Date(comment.createdAt), "MMM d, yyyy 'at' h:mm a")}
                     </div>
@@ -307,7 +307,7 @@ export default function PostDetailPage() {
                   <p>{comment.content}</p>
                 </CardContent>
                 <CardFooter className="pt-0 text-xs text-muted-foreground">
-                  <div className="flex items-center">
+                  <div className="flex items-center min-w-0">
                     <ThumbsUp className="h-3 w-3 mr-1" />
                     {comment.likes || 0} likes
                   </div>

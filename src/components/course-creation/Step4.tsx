@@ -17,20 +17,20 @@ export function Step4({
   onRemoveArrayFieldItem,
 }: Step4Props) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 lg:space-y-8">
       <div>
-        <h3 className="text-lg font-medium mb-4">Requirements</h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <h3 className="text-lg font-medium mb-4 break-words">Requirements</h3>
+        <p className="text-sm text-gray-500 mb-4 break-words">
           What are the requirements or prerequisites for taking this course?
         </p>
         <div className="space-y-3">
           {formData.requirements.map((requirement, index) => (
-            <div key={index} className="flex items-center space-x-2">
+            <div key={index} className="flex items-center space-x-2 min-w-0">
               <Input
                 value={requirement}
                 onChange={(e) => onArrayFieldChange('requirements', index, e.target.value)}
                 placeholder={`Requirement ${index + 1}`}
-                className="flex-1"
+                className="flex-1 min-w-0"
                 required={index === 0}
               />
               {formData.requirements.length > 1 && (
@@ -59,18 +59,18 @@ export function Step4({
       </div>
 
       <div>
-        <h3 className="text-lg font-medium mb-4">What Students Will Learn</h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <h3 className="text-lg font-medium mb-4 break-words">What Students Will Learn</h3>
+        <p className="text-sm text-gray-500 mb-4 break-words">
           Add the key learning outcomes for your course
         </p>
         <div className="space-y-3">
           {formData.learningOutcomes.map((outcome, index) => (
-            <div key={index} className="flex items-center space-x-2">
+            <div key={index} className="flex items-center space-x-2 min-w-0">
               <Input
                 value={outcome}
                 onChange={(e) => onArrayFieldChange('learningOutcomes', index, e.target.value)}
                 placeholder={`Learning outcome ${index + 1}`}
-                className="flex-1"
+                className="flex-1 min-w-0"
                 required={index === 0}
               />
               {formData.learningOutcomes.length > 1 && (

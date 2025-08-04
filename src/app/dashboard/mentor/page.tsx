@@ -265,8 +265,8 @@ export default function MentorDashboard() {
   if (isLoading) {
     return (
       <div className="p-8">
-        <div className="animate-pulse flex space-x-4">
-          <div className="flex-1 space-y-6 py-1">
+        <div className="animate-pulse flex space-x-4 min-w-0">
+          <div className="flex-1 space-y-4 lg:space-y-6 py-1 min-w-0">
             <div className="h-4 bg-gray-200 rounded w-3/4"></div>
             <div className="space-y-3">
               <div className="grid grid-cols-3 gap-4">
@@ -289,55 +289,55 @@ export default function MentorDashboard() {
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-8">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 lg:space-y-8">
       {/* Hero Section with Mentor Welcome and Quick Stats */}
       <section className="bg-gradient-to-r from-teal-600 to-emerald-700 rounded-2xl p-6 text-white">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col md:flex-row justify-between items-center"
+          className="flex flex-col md:flex-row justify-between items-center min-w-0"
         >
           <div className="mb-4 md:mb-0">
-            <h1 className="text-3xl font-bold mb-2">Welcome back, {dashboardData.mentorName}!</h1>
+            <h1 className="text-3xl font-bold mb-2 break-words">Welcome back, {dashboardData.mentorName}!</h1>
             <p className="text-teal-100">
               You have {dashboardData.upcomingSessions.length} upcoming mentoring sessions.
             </p>
           </div>
           
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center px-4 py-2 bg-white bg-opacity-10 rounded-lg">
-              <div className="text-2xl font-bold">{dashboardData.overallStats.activeMentees}</div>
+            <div className="text-center px-4 py-2 bg-white bg-opacity-10 rounded-lg overflow-hidden">
+              <div className="text-2xl font-bold break-words">{dashboardData.overallStats.activeMentees}</div>
               <p className="text-xs">Active Mentees</p>
             </div>
-            <div className="text-center px-4 py-2 bg-white bg-opacity-10 rounded-lg">
-              <div className="text-2xl font-bold">{dashboardData.overallStats.sessionCompletedThisMonth}</div>
+            <div className="text-center px-4 py-2 bg-white bg-opacity-10 rounded-lg overflow-hidden">
+              <div className="text-2xl font-bold break-words">{dashboardData.overallStats.sessionCompletedThisMonth}</div>
               <p className="text-xs">Sessions This Month</p>
             </div>
-            <div className="text-center px-4 py-2 bg-white bg-opacity-10 rounded-lg">
-              <div className="text-2xl font-bold">{dashboardData.overallStats.averageMenteeRating}</div>
+            <div className="text-center px-4 py-2 bg-white bg-opacity-10 rounded-lg overflow-hidden">
+              <div className="text-2xl font-bold break-words">{dashboardData.overallStats.averageMenteeRating}</div>
               <p className="text-xs">Avg. Rating</p>
             </div>
           </div>
         </motion.div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Left Column */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 lg:space-y-6">
           {/* Mentee Overview Section */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-white rounded-xl shadow-sm p-6"
+            className="bg-white rounded-xl shadow-sm p-6 overflow-hidden"
           >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+            <div className="flex justify-between items-center mb-4 min-w-0">
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center break-words min-w-0">
                 <Users className="h-5 w-5 mr-2 text-teal-600" />
                 Your Mentees
               </h2>
-              <Link href="/dashboard/mentor/mentees" className="text-teal-600 hover:text-teal-700 text-sm font-medium">
+              <Link href="/dashboard/mentor/mentees" className="text-teal-600 hover:text-teal-700 text-sm font-medium break-words">
                 View All
               </Link>
             </div>
@@ -349,9 +349,9 @@ export default function MentorDashboard() {
                   href={`/dashboard/mentor/mentees/${mentee.id}`}
                   className="block border border-gray-100 rounded-lg p-4 hover:shadow-md transition-shadow"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center">
-                      <div className="h-12 w-12 rounded-full overflow-hidden mr-4 bg-gray-200 flex-shrink-0">
+                  <div className="flex items-start justify-between min-w-0">
+                    <div className="flex items-center min-w-0">
+                      <div className="h-12 w-12 rounded-full overflow-hidden mr-4 bg-gray-200 flex-shrink-0 min-w-0">
                         {mentee.imageUrl ? (
                           <Image 
                             src={mentee.imageUrl} 
@@ -365,8 +365,8 @@ export default function MentorDashboard() {
                         )}
                       </div>
                       <div>
-                        <h3 className="font-medium text-gray-900">{mentee.name}</h3>
-                        <p className="text-sm text-gray-500">Goal: {mentee.careerGoal}</p>
+                        <h3 className="font-medium text-gray-900 break-words">{mentee.name}</h3>
+                        <p className="text-sm text-gray-500 break-words">Goal: {mentee.careerGoal}</p>
                       </div>
                     </div>
                     
@@ -378,7 +378,7 @@ export default function MentorDashboard() {
                           <span>No upcoming sessions</span>
                         )}
                       </div>
-                      <div className="flex items-center justify-end">
+                      <div className="flex items-center justify-end min-w-0">
                         <span className="text-xs text-gray-500 mr-2">
                           {mentee.progressPercentage}%
                         </span>
@@ -392,12 +392,12 @@ export default function MentorDashboard() {
                     </div>
                   </div>
                   
-                  <div className="mt-3 flex items-center justify-between text-xs">
-                    <div className="flex items-center text-gray-500">
+                  <div className="mt-3 flex items-center justify-between text-xs min-w-0">
+                    <div className="flex items-center text-gray-500 min-w-0">
                       <Target className="h-3 w-3 mr-1" />
                       <span>{mentee.activeMilestones} active milestones</span>
                     </div>
-                    <div className="flex items-center text-gray-500">
+                    <div className="flex items-center text-gray-500 min-w-0">
                       <CheckCircle className="h-3 w-3 mr-1" />
                       <span>{mentee.completedMilestones} completed</span>
                     </div>
@@ -409,7 +409,7 @@ export default function MentorDashboard() {
                 href="/mentor/mentees/add" 
                 className="block text-center py-3 bg-gray-50 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
               >
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center min-w-0">
                   <Plus className="h-4 w-4 mr-2" />
                   <span>Add New Mentee</span>
                 </div>
@@ -422,14 +422,14 @@ export default function MentorDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-white rounded-xl shadow-sm p-6"
+            className="bg-white rounded-xl shadow-sm p-6 overflow-hidden"
           >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+            <div className="flex justify-between items-center mb-4 min-w-0">
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center break-words min-w-0">
                 <Calendar className="h-5 w-5 mr-2 text-purple-600" />
                 Upcoming Sessions
               </h2>
-              <Link href="/mentor/calendar" className="text-purple-600 hover:text-purple-700 text-sm font-medium">
+              <Link href="/mentor/calendar" className="text-purple-600 hover:text-purple-700 text-sm font-medium break-words">
                 Full Calendar
               </Link>
             </div>
@@ -438,9 +438,9 @@ export default function MentorDashboard() {
               <div className="space-y-4">
                 {dashboardData.upcomingSessions.map((session) => (
                   <div key={session.id} className="border border-gray-100 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full overflow-hidden mr-3 bg-gray-200 flex-shrink-0">
+                    <div className="flex items-start justify-between min-w-0">
+                      <div className="flex items-center min-w-0">
+                        <div className="h-10 w-10 rounded-full overflow-hidden mr-3 bg-gray-200 flex-shrink-0 min-w-0">
                           {session.menteeImage ? (
                             <Image 
                               src={session.menteeImage} 
@@ -454,24 +454,24 @@ export default function MentorDashboard() {
                           )}
                         </div>
                         <div>
-                          <h3 className="font-medium text-gray-900">{session.menteeName}</h3>
-                          <p className="text-sm text-gray-500">{session.topic}</p>
+                          <h3 className="font-medium text-gray-900 break-words">{session.menteeName}</h3>
+                          <p className="text-sm text-gray-500 break-words">{session.topic}</p>
                         </div>
                       </div>
                       
                       <div className="text-right">
-                        <div className="text-sm font-medium text-gray-900">{session.date}</div>
+                        <div className="text-sm font-medium text-gray-900 break-words">{session.date}</div>
                         <div className="text-xs text-gray-500">{session.time}</div>
                       </div>
                     </div>
                     
                     {session.notes && (
-                      <div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                        <span className="font-medium">Notes:</span> {session.notes}
+                      <div className="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded flex-shrink-0">
+                        <span className="font-medium break-words">Notes:</span> {session.notes}
                       </div>
                     )}
                     
-                    <div className="mt-3 flex justify-between items-center">
+                    <div className="mt-3 flex justify-between items-center min-w-0">
                       <span className={`text-xs px-2 py-1 rounded-full ${
                         session.type === 'ONE_ON_ONE' ? 'bg-blue-100 text-blue-800' :
                         session.type === 'CAREER_PLANNING' ? 'bg-purple-100 text-purple-800' :
@@ -480,7 +480,7 @@ export default function MentorDashboard() {
                       }`}>
                         {session.type.replace(/_/g, ' ')}
                       </span>
-                      <div className="flex space-x-2">
+                      <div className="flex space-x-2 min-w-0">
                         <Link href={`/mentor/sessions/${session.id}/edit`} className="text-gray-500 hover:text-teal-600">
                           <Edit3 className="h-4 w-4" />
                         </Link>
@@ -511,7 +511,7 @@ export default function MentorDashboard() {
         </div>
 
         {/* Right Column */}
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           {/* Stats Summary */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
@@ -519,32 +519,32 @@ export default function MentorDashboard() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="grid grid-cols-2 gap-4"
           >
-            <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-              <div className="rounded-full bg-teal-100 w-10 h-10 flex items-center justify-center mx-auto mb-3">
+            <div className="bg-white rounded-xl shadow-sm p-4 text-center overflow-hidden">
+              <div className="rounded-full bg-teal-100 w-10 h-10 flex items-center justify-center mx-auto mb-3 min-w-0">
                 <Clock className="h-5 w-5 text-teal-600" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-800">{dashboardData.overallStats.totalHoursThisMonth}</h3>
+              <h3 className="text-2xl font-bold text-gray-800 break-words">{dashboardData.overallStats.totalHoursThisMonth}</h3>
               <p className="text-xs text-gray-500 mt-1">Hours This Month</p>
             </div>
-            <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-              <div className="rounded-full bg-amber-100 w-10 h-10 flex items-center justify-center mx-auto mb-3">
+            <div className="bg-white rounded-xl shadow-sm p-4 text-center overflow-hidden">
+              <div className="rounded-full bg-amber-100 w-10 h-10 flex items-center justify-center mx-auto mb-3 min-w-0">
                 <Star className="h-5 w-5 text-amber-600" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-800">{dashboardData.overallStats.averageMenteeRating}</h3>
+              <h3 className="text-2xl font-bold text-gray-800 break-words">{dashboardData.overallStats.averageMenteeRating}</h3>
               <p className="text-xs text-gray-500 mt-1">Average Rating</p>
             </div>
-            <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-              <div className="rounded-full bg-purple-100 w-10 h-10 flex items-center justify-center mx-auto mb-3">
+            <div className="bg-white rounded-xl shadow-sm p-4 text-center overflow-hidden">
+              <div className="rounded-full bg-purple-100 w-10 h-10 flex items-center justify-center mx-auto mb-3 min-w-0">
                 <Users className="h-5 w-5 text-purple-600" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-800">{dashboardData.overallStats.totalMentees}</h3>
+              <h3 className="text-2xl font-bold text-gray-800 break-words">{dashboardData.overallStats.totalMentees}</h3>
               <p className="text-xs text-gray-500 mt-1">Total Mentees</p>
             </div>
-            <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-              <div className="rounded-full bg-green-100 w-10 h-10 flex items-center justify-center mx-auto mb-3">
+            <div className="bg-white rounded-xl shadow-sm p-4 text-center overflow-hidden">
+              <div className="rounded-full bg-green-100 w-10 h-10 flex items-center justify-center mx-auto mb-3 min-w-0">
                 <ArrowUpRight className="h-5 w-5 text-green-600" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-800">{dashboardData.overallStats.menteeRetentionRate}%</h3>
+              <h3 className="text-2xl font-bold text-gray-800 break-words">{dashboardData.overallStats.menteeRetentionRate}%</h3>
               <p className="text-xs text-gray-500 mt-1">Retention Rate</p>
             </div>
           </motion.section>
@@ -554,14 +554,14 @@ export default function MentorDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="bg-white rounded-xl shadow-sm p-6"
+            className="bg-white rounded-xl shadow-sm p-6 overflow-hidden"
           >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+            <div className="flex justify-between items-center mb-4 min-w-0">
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center break-words min-w-0">
                 <Target className="h-5 w-5 mr-2 text-blue-600" />
                 Career Paths
               </h2>
-              <Link href="/mentor/career-paths" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              <Link href="/mentor/career-paths" className="text-blue-600 hover:text-blue-700 text-sm font-medium break-words">
                 Manage
               </Link>
             </div>
@@ -569,16 +569,16 @@ export default function MentorDashboard() {
             <div className="space-y-3">
               {dashboardData.careerPaths.map((path) => (
                 <div key={path.id} className="border border-gray-100 rounded-lg p-3 hover:shadow-sm transition-shadow">
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start min-w-0">
                     <div>
-                      <h3 className="font-medium text-gray-900">{path.title}</h3>
+                      <h3 className="font-medium text-gray-900 break-words">{path.title}</h3>
                       <p className="text-xs text-gray-500 mt-1">{path.description}</p>
                     </div>
                     <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
                       {path.menteeCount} mentees
                     </span>
                   </div>
-                  <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+                  <div className="mt-2 flex items-center justify-between text-xs text-gray-500 min-w-0">
                     <span>{path.milestoneCount} milestones</span>
                     <span>{path.averageCompletionRate}% avg. completion</span>
                   </div>
@@ -592,14 +592,14 @@ export default function MentorDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="bg-white rounded-xl shadow-sm p-6"
+            className="bg-white rounded-xl shadow-sm p-6 overflow-hidden"
           >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+            <div className="flex justify-between items-center mb-4 min-w-0">
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center break-words min-w-0">
                 <FileText className="h-5 w-5 mr-2 text-indigo-600" />
                 Resource Library
               </h2>
-              <Link href="/mentor/resources" className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+              <Link href="/mentor/resources" className="text-indigo-600 hover:text-indigo-700 text-sm font-medium break-words">
                 Add Resources
               </Link>
             </div>
@@ -613,9 +613,9 @@ export default function MentorDashboard() {
                   rel="noopener noreferrer"
                   className="block border border-gray-100 rounded-lg p-3 hover:shadow-sm transition-shadow"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center">
-                      <div className="rounded-full bg-gray-100 w-8 h-8 flex items-center justify-center mr-3">
+                  <div className="flex items-start justify-between min-w-0">
+                    <div className="flex items-center min-w-0">
+                      <div className="rounded-full bg-gray-100 w-8 h-8 flex items-center justify-center mr-3 min-w-0">
                         {resource.type === 'ARTICLE' && <FileText className="h-4 w-4 text-gray-600" />}
                         {resource.type === 'VIDEO' && <Video className="h-4 w-4 text-gray-600" />}
                         {resource.type === 'EBOOK' && <BookOpen className="h-4 w-4 text-gray-600" />}
@@ -623,7 +623,7 @@ export default function MentorDashboard() {
                         {resource.type === 'TEMPLATE' && <Copy className="h-4 w-4 text-gray-600" />}
                       </div>
                       <div>
-                        <h3 className="font-medium text-gray-900 text-sm">{resource.title}</h3>
+                        <h3 className="font-medium text-gray-900 text-sm break-words">{resource.title}</h3>
                         <span className="text-xs text-gray-500">{resource.type}</span>
                       </div>
                     </div>
@@ -633,7 +633,7 @@ export default function MentorDashboard() {
                   </div>
                   
                   {resource.tags.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
+                    <div className="mt-2 flex flex-wrap gap-1 min-w-0">
                       {resource.tags.map((tag, index) => (
                         <span 
                           key={index} 

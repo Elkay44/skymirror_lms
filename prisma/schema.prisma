@@ -207,6 +207,7 @@ model Lesson {
   id               String       @id @default(cuid())
   title            String
   description      String?
+  content          String?      // Lesson content/body text
   videoUrl         String?
   duration         Int?         // in minutes
   order            Int          @default(0)

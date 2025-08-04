@@ -274,10 +274,10 @@ export function ModuleDiscussions({ courseId, moduleId }: ModuleDiscussionsProps
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex justify-between items-center min-w-0">
         <div>
-          <h2 className="text-2xl font-bold">Module Discussions</h2>
+          <h2 className="text-2xl font-bold break-words">Module Discussions</h2>
           <p className="text-muted-foreground">
             Engage with students and address questions related to this module.
           </p>
@@ -306,11 +306,11 @@ export function ModuleDiscussions({ courseId, moduleId }: ModuleDiscussionsProps
         </TabsList>
 
         <TabsContent value={activeTab}>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 lg:gap-6">
             {/* Discussions list */}
             <div className="md:col-span-2 space-y-2 max-h-[700px] overflow-auto pr-2">
               {isLoading && !activeDiscussion ? (
-                <div className="flex justify-center py-8">
+                <div className="flex justify-center py-8 min-w-0">
                   <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
                 </div>
               ) : filteredDiscussions.length > 0 ? (
@@ -321,22 +321,22 @@ export function ModuleDiscussions({ courseId, moduleId }: ModuleDiscussionsProps
                     onClick={() => handleViewDiscussion(discussion)}
                   >
                     <CardHeader className="py-3">
-                      <div className="flex justify-between">
-                        <div className="flex items-center space-x-2">
-                          <Avatar className="h-6 w-6">
+                      <div className="flex justify-between min-w-0">
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <Avatar className="h-5 w-5 lg:h-6 lg:w-6">
                             <AvatarImage src={discussion.authorImage || ''} />
                             <AvatarFallback>{discussion.authorName.charAt(0)}</AvatarFallback>
                           </Avatar>
-                          <span className="text-sm">{discussion.authorName}</span>
+                          <span className="text-sm break-words">{discussion.authorName}</span>
                         </div>
-                        <div className="flex space-x-1">
+                        <div className="flex space-x-1 min-w-0">
                           {discussion.isPinned && <Pin size={14} className="text-amber-500" />}
                           {discussion.isResolved && <CheckCircle size={14} className="text-emerald-500" />}
                         </div>
                       </div>
                       <div className="mt-1">
-                        <h3 className="text-base font-medium">{discussion.title}</h3>
-                        <div className="flex items-center mt-1 text-sm text-muted-foreground">
+                        <h3 className="text-base font-medium break-words">{discussion.title}</h3>
+                        <div className="flex items-center mt-1 text-sm text-muted-foreground break-words min-w-0">
                           <MessageCircle size={14} className="mr-1" />
                           <span>{discussion.commentCount}</span>
                           <span className="mx-2">•</span>
@@ -368,9 +368,9 @@ export function ModuleDiscussions({ courseId, moduleId }: ModuleDiscussionsProps
               {activeDiscussion ? (
                 <Card>
                   <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start min-w-0">
                       <div>
-                        <div className="flex items-center space-x-2 mb-2">
+                        <div className="flex items-center space-x-2 mb-2 min-w-0">
                           {activeDiscussion.isPinned && (
                             <Badge variant="secondary" className="text-amber-500 border-amber-200 bg-amber-50">
                               <Pin size={12} className="mr-1" /> Pinned
@@ -386,7 +386,7 @@ export function ModuleDiscussions({ courseId, moduleId }: ModuleDiscussionsProps
                             </Badge>
                           )}
                         </div>
-                        <h2 className="text-xl font-semibold">{activeDiscussion.title}</h2>
+                        <h2 className="text-xl font-semibold break-words">{activeDiscussion.title}</h2>
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -411,46 +411,46 @@ export function ModuleDiscussions({ courseId, moduleId }: ModuleDiscussionsProps
                     <div className="space-y-5">
                       {/* Original post */}
                       <div className="p-4 bg-muted/30 rounded-md">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Avatar className="h-8 w-8">
+                        <div className="flex items-center space-x-2 mb-2 min-w-0">
+                          <Avatar className="h-6 w-6 lg:h-8 lg:w-8">
                             <AvatarImage src={activeDiscussion.authorImage || ''} />
                             <AvatarFallback>{activeDiscussion.authorName.charAt(0)}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="font-medium">{activeDiscussion.authorName}</div>
+                            <div className="font-medium break-words">{activeDiscussion.authorName}</div>
                             <div className="text-xs text-muted-foreground">
                               {format(new Date(activeDiscussion.createdAt), 'MMM d, yyyy • h:mm a')}
                             </div>
                           </div>
                         </div>
-                        <div className="mt-2 text-sm prose prose-sm max-w-none">
+                        <div className="mt-2 text-sm prose prose-sm max-w-none break-words">
                           {activeDiscussion.content}
                         </div>
                       </div>
 
                       {/* Comments */}
                       <div className="space-y-5">
-                        <h3 className="font-medium text-sm text-muted-foreground">
+                        <h3 className="font-medium text-sm text-muted-foreground break-words">
                           {comments.length} {comments.length === 1 ? 'Response' : 'Responses'}
                         </h3>
                         
                         {isLoading ? (
-                          <div className="flex justify-center py-6">
+                          <div className="flex justify-center py-6 min-w-0">
                             <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
                           </div>
                         ) : (
                           <div className="space-y-5">
                             {comments.map((comment) => (
-                              <div key={comment.id} className="flex gap-4">
+                              <div key={comment.id} className="flex gap-4 min-w-0">
                                 <Avatar className="h-8 w-8 mt-0.5">
                                   <AvatarImage src={comment.authorImage || ''} />
                                   <AvatarFallback>{comment.authorName.charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                <div className="flex-1">
+                                <div className="flex-1 min-w-0">
                                   <div className="bg-muted/30 p-3 rounded-md">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center gap-2">
-                                        <span className="font-medium">{comment.authorName}</span>
+                                    <div className="flex items-center justify-between min-w-0">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <span className="font-medium break-words">{comment.authorName}</span>
                                         {comment.isInstructorResponse && (
                                           <Badge variant="secondary" className="text-primary">Instructor</Badge>
                                         )}
@@ -459,16 +459,16 @@ export function ModuleDiscussions({ courseId, moduleId }: ModuleDiscussionsProps
                                         {format(new Date(comment.createdAt), 'MMM d • h:mm a')}
                                       </span>
                                     </div>
-                                    <div className="mt-2 text-sm">
+                                    <div className="mt-2 text-sm break-words">
                                       {comment.content}
                                     </div>
                                   </div>
-                                  <div className="flex items-center mt-1 space-x-4 text-xs">
-                                    <button className="flex items-center text-muted-foreground hover:text-foreground">
+                                  <div className="flex items-center mt-1 space-x-4 text-xs min-w-0">
+                                    <button className="flex items-center text-muted-foreground hover:text-foreground min-w-0">
                                       <Heart size={14} className="mr-1" />
                                       <span>{comment.likes}</span>
                                     </button>
-                                    <button className="flex items-center text-muted-foreground hover:text-foreground">
+                                    <button className="flex items-center text-muted-foreground hover:text-foreground min-w-0">
                                       <Reply size={14} className="mr-1" />
                                       <span>Reply</span>
                                     </button>
@@ -482,11 +482,11 @@ export function ModuleDiscussions({ courseId, moduleId }: ModuleDiscussionsProps
                     </div>
                   </CardContent>
                   <CardFooter className="border-t pt-4">
-                    <div className="flex space-x-2 w-full">
-                      <Avatar className="h-8 w-8">
+                    <div className="flex space-x-2 w-full min-w-0">
+                      <Avatar className="h-6 w-6 lg:h-8 lg:w-8">
                         <AvatarFallback>PW</AvatarFallback>
                       </Avatar>
-                      <div className="flex-1 flex">
+                      <div className="flex-1 flex min-w-0">
                         <Input 
                           placeholder="Add your response..."
                           value={newComment}
@@ -505,7 +505,7 @@ export function ModuleDiscussions({ courseId, moduleId }: ModuleDiscussionsProps
                   </CardFooter>
                 </Card>
               ) : (
-                <div className="flex flex-col justify-center items-center h-[400px] border border-dashed rounded-lg">
+                <div className="flex flex-col justify-center items-center h-[400px] border border-dashed rounded-lg min-w-0">
                   <MessageCircle className="h-12 w-12 text-muted-foreground mb-4" />
                   <p className="text-muted-foreground mb-2">Select a discussion to view</p>
                   <p className="text-xs text-muted-foreground max-w-md text-center">

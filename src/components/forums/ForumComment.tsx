@@ -74,9 +74,9 @@ export function ForumComment({
   
   return (
     <div className={`p-4 ${indentClass}`}>
-      <div className="flex items-start space-x-3">
+      <div className="flex items-start space-x-3 min-w-0">
         {/* Author Avatar */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 min-w-0">
           {authorImage ? (
             <Image 
               src={authorImage} 
@@ -86,8 +86,8 @@ export function ForumComment({
               className="rounded-full"
             />
           ) : (
-            <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-              <span className="text-indigo-600 font-medium">
+            <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center min-w-0">
+              <span className="text-indigo-600 font-medium break-words">
                 {authorName.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -95,10 +95,10 @@ export function ForumComment({
         </div>
         
         {/* Comment Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
+        <div className="flex-1 min-w-0 min-w-0">
+          <div className="flex items-center justify-between min-w-0">
             <div>
-              <h4 className="text-sm font-medium text-gray-900">{authorName}</h4>
+              <h4 className="text-sm font-medium text-gray-900 break-words">{authorName}</h4>
               <p className="text-xs text-gray-500">{formattedDate}</p>
             </div>
             
@@ -111,7 +111,7 @@ export function ForumComment({
               </button>
               
               {showDropdown && (
-                <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg z-10 border border-gray-200 overflow-hidden">
                   <div className="py-1">
                     {isAuthor && (
                       <button
@@ -119,7 +119,7 @@ export function ForumComment({
                           setIsEditing(true);
                           setShowDropdown(false);
                         }}
-                        className="flex items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-100 w-full text-left"
+                        className="flex items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-100 w-full text-left min-w-0"
                       >
                         <Edit className="h-3 w-3 mr-2" />
                         Edit Comment
@@ -131,7 +131,7 @@ export function ForumComment({
                           if (onDelete) onDelete();
                           setShowDropdown(false);
                         }}
-                        className="flex items-center px-4 py-2 text-xs text-red-600 hover:bg-gray-100 w-full text-left"
+                        className="flex items-center px-4 py-2 text-xs text-red-600 hover:bg-gray-100 w-full text-left min-w-0"
                       >
                         <Trash className="h-3 w-3 mr-2" />
                         Delete Comment
@@ -143,7 +143,7 @@ export function ForumComment({
                           if (onReport) onReport();
                           setShowDropdown(false);
                         }}
-                        className="flex items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-100 w-full text-left"
+                        className="flex items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-100 w-full text-left min-w-0"
                       >
                         <Flag className="h-3 w-3 mr-2" />
                         Report Comment
@@ -160,35 +160,35 @@ export function ForumComment({
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 break-words flex-shrink-0"
                 rows={3}
               />
-              <div className="flex justify-end mt-2 space-x-2">
+              <div className="flex justify-end mt-2 space-x-2 min-w-0">
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 break-words overflow-hidden"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSubmitEdit}
-                  className="px-3 py-1 text-xs font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700"
+                  className="px-3 py-1 text-xs font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 break-words"
                 >
                   Save
                 </button>
               </div>
             </div>
           ) : (
-            <div className="mt-1 text-sm text-gray-700">
+            <div className="mt-1 text-sm text-gray-700 break-words">
               {content}
             </div>
           )}
           
           {/* Comment Actions */}
-          <div className="mt-2 flex items-center space-x-4">
+          <div className="mt-2 flex items-center space-x-4 min-w-0">
             <button 
               onClick={onLike}
-              className="flex items-center text-xs text-gray-500 hover:text-indigo-600"
+              className="flex items-center text-xs text-gray-500 hover:text-indigo-600 min-w-0"
             >
               <ThumbsUp className="h-3 w-3 mr-1" />
               {likes} {likes === 1 ? 'Like' : 'Likes'}
@@ -197,7 +197,7 @@ export function ForumComment({
             {currentDepth < maxDepth && (
               <button 
                 onClick={() => setIsReplying(!isReplying)}
-                className="flex items-center text-xs text-gray-500 hover:text-indigo-600"
+                className="flex items-center text-xs text-gray-500 hover:text-indigo-600 min-w-0"
               >
                 <Reply className="h-3 w-3 mr-1" />
                 Reply
@@ -208,8 +208,8 @@ export function ForumComment({
           {/* Reply Form */}
           {isReplying && session?.user && (
             <div className="mt-3 pl-6">
-              <div className="flex space-x-3">
-                <div className="flex-shrink-0">
+              <div className="flex space-x-3 min-w-0">
+                <div className="flex-shrink-0 min-w-0">
                   {session.user.image ? (
                     <Image 
                       src={session.user.image} 
@@ -219,32 +219,32 @@ export function ForumComment({
                       className="rounded-full"
                     />
                   ) : (
-                    <div className="h-6 w-6 rounded-full bg-indigo-100 flex items-center justify-center">
-                      <span className="text-indigo-600 font-medium text-xs">
+                    <div className="h-6 w-6 rounded-full bg-indigo-100 flex items-center justify-center min-w-0">
+                      <span className="text-indigo-600 font-medium text-xs break-words">
                         {(session.user.name || session.user.email)?.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <textarea
                     value={replyContent}
                     onChange={(e) => setReplyContent(e.target.value)}
                     placeholder="Write a reply..."
-                    className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 break-words flex-shrink-0"
                     rows={2}
                   />
-                  <div className="mt-2 flex justify-end">
+                  <div className="mt-2 flex justify-end min-w-0">
                     <button
                       onClick={() => setIsReplying(false)}
-                      className="px-3 py-1 mr-2 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                      className="px-3 py-1 mr-2 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 break-words overflow-hidden"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSubmitReply}
                       disabled={!replyContent.trim()}
-                      className="px-3 py-1 text-xs font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed"
+                      className="px-3 py-1 text-xs font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed break-words"
                     >
                       Reply
                     </button>

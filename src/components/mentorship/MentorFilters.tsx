@@ -69,16 +69,16 @@ export default function MentorFilters({ filters, onFilterChange, availableSpecia
                           filters.availability.length > 0;
   
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="bg-white rounded-lg shadow overflow-hidden overflow-hidden">
       {/* Search bar */}
       <div className="p-4">
         <div className="relative rounded-md shadow-sm">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none min-w-0">
             <Search className="h-5 w-5 text-gray-400" />
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
             placeholder="Search mentors by name, specialty, or expertise"
             value={filters.searchQuery}
             onChange={handleSearchChange}
@@ -90,14 +90,14 @@ export default function MentorFilters({ filters, onFilterChange, availableSpecia
       <div className="px-4 py-3 border-t border-gray-200 lg:hidden">
         <button
           type="button"
-          className="flex w-full justify-between items-center text-sm font-medium text-gray-700"
+          className="flex w-full justify-between items-center text-sm font-medium text-gray-700 break-words min-w-0"
           onClick={() => setShowFilters(!showFilters)}
         >
-          <span className="flex items-center">
+          <span className="flex items-center min-w-0">
             <Filter className="mr-2 h-4 w-4" />
             Filters
             {hasActiveFilters && (
-              <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium rounded-full px-2 py-0.5">
+              <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium rounded-full px-2 py-0.5 break-words">
                 Active
               </span>
             )}
@@ -112,10 +112,10 @@ export default function MentorFilters({ filters, onFilterChange, availableSpecia
       
       {/* Filter options */}
       <div className={`px-4 py-4 border-t border-gray-200 ${showFilters ? 'block' : 'hidden lg:block'}`}>
-        <h3 className="text-sm font-medium text-gray-700 mb-3">Specialties</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-3 break-words">Specialties</h3>
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {availableSpecialties.map((specialty) => (
-            <div key={specialty} className="flex items-center">
+            <div key={specialty} className="flex items-center min-w-0">
               <input
                 id={`specialty-${specialty}`}
                 type="checkbox"
@@ -123,7 +123,7 @@ export default function MentorFilters({ filters, onFilterChange, availableSpecia
                 checked={filters.specialties.includes(specialty)}
                 onChange={() => handleSpecialtyChange(specialty)}
               />
-              <label htmlFor={`specialty-${specialty}`} className="ml-3 text-sm text-gray-700">
+              <label htmlFor={`specialty-${specialty}`} className="ml-3 text-sm text-gray-700 break-words">
                 {specialty}
               </label>
             </div>
@@ -131,8 +131,8 @@ export default function MentorFilters({ filters, onFilterChange, availableSpecia
         </div>
         
         <div className="mt-6">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Minimum Rating</h3>
-          <div className="flex items-center space-x-2">
+          <h3 className="text-sm font-medium text-gray-700 mb-3 break-words">Minimum Rating</h3>
+          <div className="flex items-center space-x-2 min-w-0">
             {[0, 1, 2, 3, 4, 5].map((rating) => (
               <button
                 key={rating}
@@ -146,10 +146,10 @@ export default function MentorFilters({ filters, onFilterChange, availableSpecia
         </div>
         
         <div className="mt-6">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Availability</h3>
+          <h3 className="text-sm font-medium text-gray-700 mb-3 break-words">Availability</h3>
           <div className="space-y-2">
             {['Available now', 'Weekdays', 'Weekends', 'Evenings'].map((availability) => (
-              <div key={availability} className="flex items-center">
+              <div key={availability} className="flex items-center min-w-0">
                 <input
                   id={`availability-${availability}`}
                   type="checkbox"
@@ -157,7 +157,7 @@ export default function MentorFilters({ filters, onFilterChange, availableSpecia
                   checked={filters.availability.includes(availability)}
                   onChange={() => handleAvailabilityChange(availability)}
                 />
-                <label htmlFor={`availability-${availability}`} className="ml-3 text-sm text-gray-700">
+                <label htmlFor={`availability-${availability}`} className="ml-3 text-sm text-gray-700 break-words">
                   {availability}
                 </label>
               </div>
@@ -171,7 +171,7 @@ export default function MentorFilters({ filters, onFilterChange, availableSpecia
           <div className="mt-6 pt-6 border-t border-gray-200">
             <button
               type="button"
-              className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-500"
+              className="flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 break-words min-w-0"
               onClick={clearAllFilters}
             >
               <X className="mr-1.5 h-4 w-4" />

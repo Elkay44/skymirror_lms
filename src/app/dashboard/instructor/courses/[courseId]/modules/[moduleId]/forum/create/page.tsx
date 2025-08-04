@@ -121,8 +121,8 @@ export default function CreateForumPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
+      <div className="flex items-center justify-between mb-6 min-w-0">
+        <div className="flex items-center min-w-0">
           <Button
             variant="ghost"
             size="icon"
@@ -131,19 +131,19 @@ export default function CreateForumPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-semibold">Create Discussion Forum</h1>
+          <h1 className="text-2xl font-semibold break-words">Create Discussion Forum</h1>
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 lg:space-y-6">
         <Card>
           <CardHeader className="border-b">
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0">
               <MessageCircle className="mr-2 h-5 w-5 text-blue-500" />
-              <h3 className="text-lg font-medium">Forum Details</h3>
+              <h3 className="text-lg font-medium break-words">Forum Details</h3>
             </div>
           </CardHeader>
-          <CardContent className="pt-6 space-y-6">
+          <CardContent className="pt-6 space-y-4 lg:space-y-6">
             <div className="space-y-2">
               <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
               <Input
@@ -167,17 +167,17 @@ export default function CreateForumPage() {
                 rows={3}
                 className="max-w-2xl"
               />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground break-words">
                 Describe the purpose of this forum and guidelines for participation
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label className="flex items-center gap-2">
+              <Label className="flex items-center gap-2 min-w-0">
                 <Tag size={16} />
                 Forum Tags
               </Label>
-              <div className="flex gap-2 items-center">
+              <div className="flex gap-2 items-center min-w-0">
                 <Input
                   placeholder="Add tags (press Enter)"
                   value={forumData.currentTag}
@@ -200,12 +200,12 @@ export default function CreateForumPage() {
                 </Button>
               </div>
               
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-2 min-w-0">
                 {forumData.tags.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No tags added yet</p>
+                  <p className="text-sm text-muted-foreground break-words">No tags added yet</p>
                 ) : (
                   forumData.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline" className="flex items-center gap-1 px-2 py-1">
+                    <Badge key={index} variant="outline" className="flex items-center gap-1 px-2 py-1 min-w-0">
                       {tag}
                       <Button 
                         type="button" 
@@ -226,17 +226,17 @@ export default function CreateForumPage() {
 
         <Card>
           <CardHeader className="border-b">
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0">
               <Settings className="mr-2 h-5 w-5 text-purple-500" />
-              <h3 className="text-lg font-medium">Forum Settings</h3>
+              <h3 className="text-lg font-medium break-words">Forum Settings</h3>
             </div>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
+            <div className="space-y-4 lg:space-y-6">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
                   <Label htmlFor="isPublished" className="cursor-pointer">Publish Forum</Label>
-                  <p className="text-sm text-muted-foreground">Make visible to students immediately</p>
+                  <p className="text-sm text-muted-foreground break-words">Make visible to students immediately</p>
                 </div>
                 <Switch
                   id="isPublished"
@@ -245,10 +245,10 @@ export default function CreateForumPage() {
                 />
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
                   <Label htmlFor="allowAnonymousPosts" className="cursor-pointer">Allow Anonymous Posts</Label>
-                  <p className="text-sm text-muted-foreground">Students can post without showing their identity</p>
+                  <p className="text-sm text-muted-foreground break-words">Students can post without showing their identity</p>
                 </div>
                 <Switch
                   id="allowAnonymousPosts"
@@ -257,10 +257,10 @@ export default function CreateForumPage() {
                 />
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between min-w-0">
                 <div>
                   <Label htmlFor="requireApproval" className="cursor-pointer">Require Post Approval</Label>
-                  <p className="text-sm text-muted-foreground">New posts must be approved by instructor before appearing</p>
+                  <p className="text-sm text-muted-foreground break-words">New posts must be approved by instructor before appearing</p>
                 </div>
                 <Switch
                   id="requireApproval"
@@ -272,7 +272,7 @@ export default function CreateForumPage() {
           </CardContent>
         </Card>
 
-        <div className="flex justify-end space-x-4">
+        <div className="flex justify-end space-x-4 min-w-0">
           <Button
             variant="outline"
             onClick={() => router.back()}
@@ -283,7 +283,7 @@ export default function CreateForumPage() {
             type="submit"
             onClick={handleSubmit}
             disabled={isLoading}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 min-w-0"
           >
             {isLoading ? 'Creating...' : 'Create Forum'}
             {isLoading && <span className="animate-spin">⏳</span>}

@@ -225,7 +225,7 @@ export default function SessionDetailPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center h-64">
+        <div className="flex justify-center items-center h-64 min-w-0">
           <div className="animate-spin h-12 w-12 border-4 border-teal-600 rounded-full border-t-transparent"></div>
         </div>
       </div>
@@ -236,15 +236,15 @@ export default function SessionDetailPage() {
   if (!sessionDetails) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-sm p-6 text-center">
+        <div className="bg-white rounded-lg shadow-sm p-6 text-center overflow-hidden">
           <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">Session Not Found</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-1 break-words">Session Not Found</h3>
           <p className="text-gray-500 max-w-md mx-auto mb-6">
             The session you are looking for does not exist or you don't have access to view it.
           </p>
           <Link
             href="/dashboard/mentor/sessions"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
           >
             <ChevronLeft className="mr-2 h-4 w-4" />
             Back to Sessions
@@ -259,14 +259,14 @@ export default function SessionDetailPage() {
       <div className="mb-6">
         <Link 
           href="/dashboard/mentor/sessions" 
-          className="inline-flex items-center text-sm text-teal-600 hover:text-teal-800 mb-4"
+          className="inline-flex items-center text-sm text-teal-600 hover:text-teal-800 mb-4 break-words min-w-0"
         >
           <ChevronLeft className="mr-1 h-4 w-4" />
           Back to All Sessions
         </Link>
         
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">{sessionDetails.topic}</h1>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between min-w-0">
+          <h1 className="text-2xl font-bold text-gray-900 break-words">{sessionDetails.topic}</h1>
           
           <div className="mt-2 md:mt-0">
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSessionStatusColor(sessionDetails.status)}`}>
@@ -277,49 +277,49 @@ export default function SessionDetailPage() {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Main Session Information */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div className="lg:col-span-2 space-y-4 lg:space-y-6">
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
             <div className="p-6 border-b border-gray-200 bg-gray-50">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center mr-4">
+              <div className="flex items-center min-w-0">
+                <div className="flex-shrink-0 h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center mr-4 min-w-0">
                   {getSessionTypeIcon(sessionDetails.type)}
                 </div>
                 <div>
-                  <h2 className="text-xl font-medium text-gray-900">{sessionDetails.topic}</h2>
-                  <div className="flex items-center mt-1">
-                    <span className="text-sm text-gray-500">{getSessionTypeLabel(sessionDetails.type)}</span>
+                  <h2 className="text-xl font-medium text-gray-900 break-words">{sessionDetails.topic}</h2>
+                  <div className="flex items-center mt-1 min-w-0">
+                    <span className="text-sm text-gray-500 break-words">{getSessionTypeLabel(sessionDetails.type)}</span>
                     <span className="mx-2 text-gray-300">u2022</span>
-                    <span className="text-sm text-gray-500">{sessionDetails.duration} minutes</span>
+                    <span className="text-sm text-gray-500 break-words">{sessionDetails.duration} minutes</span>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="flex items-start">
+            <div className="p-4 lg:p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6">
+                <div className="flex items-start min-w-0">
                   <Calendar className="h-5 w-5 text-gray-400 mt-0.5 mr-3" />
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">Date</h3>
-                    <p className="text-sm text-gray-500 mt-1">{formatDate(sessionDetails.date)}</p>
+                    <h3 className="text-sm font-medium text-gray-900 break-words">Date</h3>
+                    <p className="text-sm text-gray-500 mt-1 break-words">{formatDate(sessionDetails.date)}</p>
                   </div>
                 </div>
                 
-                <div className="flex items-start">
+                <div className="flex items-start min-w-0">
                   <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-3" />
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">Time</h3>
-                    <p className="text-sm text-gray-500 mt-1">{formatTime(sessionDetails.date)}</p>
+                    <h3 className="text-sm font-medium text-gray-900 break-words">Time</h3>
+                    <p className="text-sm text-gray-500 mt-1 break-words">{formatTime(sessionDetails.date)}</p>
                   </div>
                 </div>
               </div>
               
               {sessionDetails.notes && (
                 <div className="border-t border-gray-200 pt-6">
-                  <h3 className="text-sm font-medium text-gray-900 mb-3">Session Notes</h3>
-                  <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700">
+                  <h3 className="text-sm font-medium text-gray-900 mb-3 break-words">Session Notes</h3>
+                  <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 break-words">
                     {sessionDetails.notes}
                   </div>
                 </div>
@@ -327,7 +327,7 @@ export default function SessionDetailPage() {
               
               {sessionDetails.preparationMaterials && sessionDetails.preparationMaterials.length > 0 && (
                 <div className="border-t border-gray-200 pt-6 mt-6">
-                  <h3 className="text-sm font-medium text-gray-900 mb-3">Preparation Materials</h3>
+                  <h3 className="text-sm font-medium text-gray-900 mb-3 break-words">Preparation Materials</h3>
                   <div className="space-y-3">
                     {sessionDetails.preparationMaterials.map((material) => (
                       <a 
@@ -335,17 +335,17 @@ export default function SessionDetailPage() {
                         href={material.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors min-w-0"
                       >
-                        <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center mr-3">
+                        <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center mr-3 min-w-0">
                           {material.type === 'DOCUMENT' ? (
                             <FileText className="h-5 w-5 text-gray-600" />
                           ) : (
                             <ExternalLink className="h-5 w-5 text-gray-600" />
                           )}
                         </div>
-                        <div className="flex-1">
-                          <h4 className="text-sm font-medium text-gray-900">{material.title}</h4>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-medium text-gray-900 break-words">{material.title}</h4>
                           <p className="text-xs text-gray-500 mt-0.5">{material.type.replace(/_/g, ' ')}</p>
                         </div>
                         <div>
@@ -363,10 +363,10 @@ export default function SessionDetailPage() {
               
               {/* Session Actions */}
               {canModify(sessionDetails.status) && (
-                <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-gray-200">
+                <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-gray-200 min-w-0">
                   <Link
                     href={`/dashboard/mentor/sessions/${sessionDetails.id}/edit`}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
                   >
                     <Edit className="-ml-1 mr-2 h-4 w-4 text-gray-500" />
                     Edit Session
@@ -376,7 +376,7 @@ export default function SessionDetailPage() {
                     <button
                       onClick={handleCancelSession}
                       disabled={cancellingSession}
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 break-words min-w-0"
                     >
                       {cancellingSession ? (
                         <>
@@ -399,7 +399,7 @@ export default function SessionDetailPage() {
                     <button
                       onClick={handleCompleteSession}
                       disabled={completingSession}
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 break-words min-w-0"
                     >
                       {completingSession ? (
                         <>
@@ -424,15 +424,15 @@ export default function SessionDetailPage() {
         </div>
         
         {/* Mentee Information */}
-        <div className="space-y-6">
-          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div className="space-y-4 lg:space-y-6">
+          <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
             <div className="p-6 border-b border-gray-200 bg-gray-50">
-              <h2 className="text-lg font-medium text-gray-900">Mentee Information</h2>
+              <h2 className="text-lg font-medium text-gray-900 break-words">Mentee Information</h2>
             </div>
             
-            <div className="p-6">
-              <div className="flex items-center mb-6">
-                <div className="flex-shrink-0 mr-4">
+            <div className="p-4 lg:p-6">
+              <div className="flex items-center mb-6 min-w-0">
+                <div className="flex-shrink-0 mr-4 min-w-0">
                   {sessionDetails.menteeAvatar ? (
                     <img 
                       src={sessionDetails.menteeAvatar} 
@@ -440,17 +440,17 @@ export default function SessionDetailPage() {
                       className="h-16 w-16 rounded-full border border-gray-200" 
                     />
                   ) : (
-                    <div className="h-16 w-16 rounded-full bg-teal-100 flex items-center justify-center">
+                    <div className="h-16 w-16 rounded-full bg-teal-100 flex items-center justify-center min-w-0">
                       <User className="h-8 w-8 text-teal-600" />
                     </div>
                   )}
                 </div>
                 <div>
-                  <h3 className="text-md font-medium text-gray-900">{sessionDetails.menteeName}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{sessionDetails.menteeEmail}</p>
+                  <h3 className="text-md font-medium text-gray-900 break-words">{sessionDetails.menteeName}</h3>
+                  <p className="text-sm text-gray-500 mt-1 break-words">{sessionDetails.menteeEmail}</p>
                   <a 
                     href={`mailto:${sessionDetails.menteeEmail}`}
-                    className="inline-flex items-center mt-2 text-xs font-medium text-teal-600 hover:text-teal-700"
+                    className="inline-flex items-center mt-2 text-xs font-medium text-teal-600 hover:text-teal-700 break-words min-w-0"
                   >
                     <Mail className="mr-1 h-3 w-3" />
                     Send Email
@@ -460,39 +460,39 @@ export default function SessionDetailPage() {
               
               {sessionDetails.menteeProgress && (
                 <div className="border-t border-gray-200 pt-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-3">Learning Progress</h3>
+                  <h3 className="text-sm font-medium text-gray-900 mb-3 break-words">Learning Progress</h3>
                   
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center">
+                    <div className="flex justify-between items-center min-w-0">
+                      <div className="flex items-center min-w-0">
                         <BookOpen className="h-4 w-4 text-gray-500 mr-2" />
-                        <span className="text-sm text-gray-700">Active Courses</span>
+                        <span className="text-sm text-gray-700 break-words">Active Courses</span>
                       </div>
-                      <span className="text-sm font-medium">{sessionDetails.menteeProgress.activeCourses}</span>
+                      <span className="text-sm font-medium break-words">{sessionDetails.menteeProgress.activeCourses}</span>
                     </div>
                     
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center">
+                    <div className="flex justify-between items-center min-w-0">
+                      <div className="flex items-center min-w-0">
                         <Check className="h-4 w-4 text-gray-500 mr-2" />
-                        <span className="text-sm text-gray-700">Completed Courses</span>
+                        <span className="text-sm text-gray-700 break-words">Completed Courses</span>
                       </div>
-                      <span className="text-sm font-medium">{sessionDetails.menteeProgress.completedCourses}</span>
+                      <span className="text-sm font-medium break-words">{sessionDetails.menteeProgress.completedCourses}</span>
                     </div>
                     
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center">
+                    <div className="flex justify-between items-center min-w-0">
+                      <div className="flex items-center min-w-0">
                         <FileText className="h-4 w-4 text-gray-500 mr-2" />
-                        <span className="text-sm text-gray-700">Average Grade</span>
+                        <span className="text-sm text-gray-700 break-words">Average Grade</span>
                       </div>
-                      <span className="text-sm font-medium">{sessionDetails.menteeProgress.averageGrade}</span>
+                      <span className="text-sm font-medium break-words">{sessionDetails.menteeProgress.averageGrade}</span>
                     </div>
                     
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center">
+                    <div className="flex justify-between items-center min-w-0">
+                      <div className="flex items-center min-w-0">
                         <Clock className="h-4 w-4 text-gray-500 mr-2" />
-                        <span className="text-sm text-gray-700">Last Active</span>
+                        <span className="text-sm text-gray-700 break-words">Last Active</span>
                       </div>
-                      <span className="text-sm font-medium">
+                      <span className="text-sm font-medium break-words">
                         {new Date(sessionDetails.menteeProgress.lastActive).toLocaleDateString()}
                       </span>
                     </div>
@@ -503,7 +503,7 @@ export default function SessionDetailPage() {
               <div className="mt-6">
                 <Link
                   href={`/dashboard/mentor/mentees/${sessionDetails.menteeId}`}
-                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                  className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
                 >
                   View Full Mentee Profile
                 </Link>

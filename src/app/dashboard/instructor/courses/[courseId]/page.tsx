@@ -83,7 +83,7 @@ export default function EnhancedCourseDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 min-w-0">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
       </div>
     );
@@ -91,9 +91,9 @@ export default function EnhancedCourseDashboard() {
 
   if (error || !course) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 min-w-0">
         <div className="text-center">
-          <div className="text-red-500 text-lg mb-4">{error || 'Course not found'}</div>
+          <div className="text-red-500 text-lg mb-4 break-words">{error || 'Course not found'}</div>
           <button 
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
@@ -116,7 +116,7 @@ export default function EnhancedCourseDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 mb-8">
           <Link href={`/dashboard/instructor/courses/${params.courseId}/students?status=active`}>
             <StatsCard
               icon={<Users className="h-6 w-6 text-indigo-600" />}
@@ -166,28 +166,28 @@ export default function EnhancedCourseDashboard() {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Left Column */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-6 lg:space-y-8">
             {/* Recent Activity */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden overflow-hidden">
               <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white break-words">Recent Activity</h2>
               </div>
               <div className="divide-y divide-gray-100 dark:divide-gray-700">
                 {course.recentActivity?.map((activity: any) => (
                   <div key={activity.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center">
+                    <div className="flex items-center min-w-0">
+                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center min-w-0">
                         <span className="text-indigo-600 dark:text-indigo-400">
                           {activity.user.charAt(0)}
                         </span>
                       </div>
-                      <div className="ml-4 flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      <div className="ml-4 flex-1 min-w-0 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate break-words">
                           {activity.title}
                         </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 break-words">
                           {activity.user} • {activity.date}
                         </p>
                       </div>
@@ -201,17 +201,17 @@ export default function EnhancedCourseDashboard() {
             </div>
 
             {/* Course Progress */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-              <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Project Milestones</h2>
-                <button className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 flex items-center">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden overflow-hidden">
+              <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center min-w-0">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white break-words">Project Milestones</h2>
+                <button className="text-sm text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 flex items-center break-words min-w-0">
                   View All Milestones
                   <ChevronRight className="ml-1 h-4 w-4" />
                 </button>
               </div>
-              <div className="p-6">
+              <div className="p-4 lg:p-6">
                 <div className="mb-6">
-                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1 break-words min-w-0">
                     <span>Course Completion</span>
                     <span>{course.completionRate || 0}%</span>
                   </div>
@@ -226,19 +226,19 @@ export default function EnhancedCourseDashboard() {
                 <div className="space-y-4">
                   {course.modules?.map((module: any) => (
                     <div key={module.id} className="border border-gray-100 dark:border-gray-700 rounded-xl p-4">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between min-w-0">
                         <div>
-                          <h3 className="font-medium text-gray-900 dark:text-white">{module.title}</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <h3 className="font-medium text-gray-900 dark:text-white break-words">{module.title}</h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 break-words">
                             {module.lessons} lessons • {module.duration}
                           </p>
                         </div>
                         {module.completed ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200 break-words min-w-0">
                             Completed
                           </span>
                         ) : (
-                          <button className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-900/30 dark:text-indigo-200 dark:hover:bg-indigo-800/50">
+                          <button className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-900/30 dark:text-indigo-200 dark:hover:bg-indigo-800/50 break-words min-w-0">
                             Continue
                           </button>
                         )}
@@ -251,11 +251,11 @@ export default function EnhancedCourseDashboard() {
           </div>
 
           {/* Right Column */}
-          <div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6">
             {/* Project Progress */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-              <div className="p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Project Progress</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden overflow-hidden">
+              <div className="p-4 lg:p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 break-words">Project Progress</h2>
                 <div className="space-y-4">
                   {course.projects && course.projects.length > 0 ? (
                     course.projects.map((project: any, index: number) => {
@@ -264,7 +264,7 @@ export default function EnhancedCourseDashboard() {
                       
                       return (
                         <div key={project.id}>
-                          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1">
+                          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-1 break-words min-w-0">
                             <span>{project.title}</span>
                             <span>{project.progress}%</span>
                           </div>
@@ -280,7 +280,7 @@ export default function EnhancedCourseDashboard() {
                   ) : (
                     <div className="text-center py-8">
                       <div className="text-gray-500 dark:text-gray-400 mb-2">No projects yet</div>
-                      <p className="text-sm text-gray-400 dark:text-gray-500">Create your first project to track progress</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 break-words">Create your first project to track progress</p>
                     </div>
                   )}
                 </div>
@@ -288,30 +288,30 @@ export default function EnhancedCourseDashboard() {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-              <div className="p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden overflow-hidden">
+              <div className="p-4 lg:p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 break-words">Quick Actions</h2>
                 <div className="space-y-3">
-                  <button className="w-full flex items-center justify-between px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-800/50 rounded-lg transition-colors">
-                    <div className="flex items-center">
+                  <button className="w-full flex items-center justify-between px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-800/50 rounded-lg transition-colors min-w-0">
+                    <div className="flex items-center min-w-0">
                       <Edit className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-3" />
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">Edit Course</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white break-words">Edit Course</span>
                     </div>
                     <ChevronRight className="h-5 w-5 text-gray-400" />
                   </button>
                   
-                  <button className="w-full flex items-center justify-between px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-800/50 rounded-lg transition-colors">
-                    <div className="flex items-center">
+                  <button className="w-full flex items-center justify-between px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-800/50 rounded-lg transition-colors min-w-0">
+                    <div className="flex items-center min-w-0">
                       <Eye className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-3" />
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">View Live</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white break-words">View Live</span>
                     </div>
                     <ChevronRight className="h-5 w-5 text-gray-400" />
                   </button>
                   
-                  <button className="w-full flex items-center justify-between px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-800/50 rounded-lg transition-colors">
-                    <div className="flex items-center">
+                  <button className="w-full flex items-center justify-between px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-800/50 rounded-lg transition-colors min-w-0">
+                    <div className="flex items-center min-w-0">
                       <FileText className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-3" />
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">Generate Report</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white break-words">Generate Report</span>
                     </div>
                     <ChevronRight className="h-5 w-5 text-gray-400" />
                   </button>
@@ -320,33 +320,33 @@ export default function EnhancedCourseDashboard() {
             </div>
 
             {/* Course Stats */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-              <div className="p-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Course Stats</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden overflow-hidden">
+              <div className="p-4 lg:p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 break-words">Course Stats</h2>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Total Students</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{course.stats.totalStudents}</span>
+                  <div className="flex items-center justify-between min-w-0">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 break-words">Total Students</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white break-words">{course.stats.totalStudents}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Active Students</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{course.stats.activeStudents}</span>
+                  <div className="flex items-center justify-between min-w-0">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 break-words">Active Students</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white break-words">{course.stats.activeStudents}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Project Completion</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{course.stats.projectCompletion}%</span>
+                  <div className="flex items-center justify-between min-w-0">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 break-words">Project Completion</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white break-words">{course.stats.projectCompletion}%</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Avg. Project Score</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{course.stats.avgProjectScore}</span>
+                  <div className="flex items-center justify-between min-w-0">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 break-words">Avg. Project Score</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white break-words">{course.stats.avgProjectScore}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Mentor Sessions</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{course.stats.mentorSessions}</span>
+                  <div className="flex items-center justify-between min-w-0">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 break-words">Mentor Sessions</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white break-words">{course.stats.mentorSessions}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Code Commits</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{course.stats.codeCommits}</span>
+                  <div className="flex items-center justify-between min-w-0">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 break-words">Code Commits</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white break-words">{course.stats.codeCommits}</span>
                   </div>
                 </div>
               </div>

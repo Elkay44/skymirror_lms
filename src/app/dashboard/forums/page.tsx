@@ -54,14 +54,14 @@ export default function ForumsPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Forums</h1>
-      <div className="mb-4 flex items-center gap-2">
+      <h1 className="text-2xl font-bold mb-4 break-words">Forums</h1>
+      <div className="mb-4 flex items-center gap-2 min-w-0">
         <input type="text" placeholder="Search forums..." className="border rounded px-3 py-2 w-full max-w-md" />
         <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Create New Post</button>
       </div>
       <ul className="space-y-2">
         {forums.map(forum => (
-          <li key={forum.id} className="bg-white p-4 rounded shadow flex justify-between items-center">
+          <li key={forum.id} className="bg-white p-4 rounded shadow flex justify-between items-center min-w-0 overflow-hidden">
             <span>{forum.name}</span>
             <span className="text-xs text-gray-500">{forum.topics} topics</span>
           </li>

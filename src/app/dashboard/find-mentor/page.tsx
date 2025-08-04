@@ -221,7 +221,7 @@ export default function FindMentorPage() {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
+      <div className="min-h-screen bg-gray-50 flex justify-center items-center min-w-0">
         <div className="animate-spin h-10 w-10 border-4 border-blue-600 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -232,9 +232,9 @@ export default function FindMentorPage() {
       {/* Hero section */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="md:flex md:items-center md:justify-between">
+          <div className="md:flex md:items-center md:justify-between min-w-0">
             <div>
-              <h1 className="text-3xl font-bold text-white">
+              <h1 className="text-3xl font-bold text-white break-words">
                 <Users className="inline-block mr-2 h-8 w-8" />
                 Find a Mentor
               </h1>
@@ -251,7 +251,7 @@ export default function FindMentorPage() {
         <div className="block lg:hidden mb-4">
           <button
             type="button"
-            className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 break-words min-w-0"
             onClick={() => setShowMobileFilters(!showMobileFilters)}
           >
             <Filter className="mr-2 h-4 w-4" />
@@ -283,13 +283,13 @@ export default function FindMentorPage() {
           <div className="lg:col-span-3">
             {filteredMentors.length > 0 ? (
               <>
-                <div className="mb-6 flex justify-between items-center">
-                  <p className="text-sm text-gray-500">
-                    Showing <span className="font-medium">{filteredMentors.length}</span> mentors
+                <div className="mb-6 flex justify-between items-center min-w-0">
+                  <p className="text-sm text-gray-500 break-words">
+                    Showing <span className="font-medium break-words">{filteredMentors.length}</span> mentors
                   </p>
-                  <div className="flex space-x-3">
+                  <div className="flex space-x-3 min-w-0">
                     <select
-                      className="block pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                      className="block pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md break-words"
                       defaultValue="relevance"
                     >
                       <option value="relevance">Sort by: Relevance</option>
@@ -300,7 +300,7 @@ export default function FindMentorPage() {
                   </div>
                 </div>
                 
-                <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-4 lg:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
                   {filteredMentors.map(mentor => (
                     <MentorCard
                       key={mentor.id}
@@ -313,12 +313,12 @@ export default function FindMentorPage() {
                 </div>
               </>
             ) : (
-              <div className="bg-white shadow rounded-lg p-8 text-center">
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+              <div className="bg-white shadow rounded-lg p-8 text-center overflow-hidden">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 min-w-0">
                   <Users className="h-6 w-6 text-blue-600" />
                 </div>
-                <h3 className="mt-2 text-lg font-medium text-gray-900">No mentors found</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <h3 className="mt-2 text-lg font-medium text-gray-900 break-words">No mentors found</h3>
+                <p className="mt-1 text-sm text-gray-500 break-words">
                   Try adjusting your filters or search criteria
                 </p>
                 <div className="mt-6">
@@ -329,7 +329,7 @@ export default function FindMentorPage() {
                       minRating: 0,
                       availability: []
                     })}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 break-words min-w-0"
                   >
                     Clear all filters
                   </button>
@@ -344,19 +344,19 @@ export default function FindMentorPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         <div className="bg-blue-700 rounded-lg shadow-lg overflow-hidden">
           <div className="px-6 py-8 sm:p-10 sm:pb-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-center">
               <div className="lg:col-span-2">
-                <h3 className="text-2xl font-extrabold text-white tracking-tight">
+                <h3 className="text-2xl font-extrabold text-white tracking-tight break-words">
                   Want to become a mentor?
                 </h3>
-                <p className="mt-3 text-lg text-blue-100">
+                <p className="mt-3 text-lg text-blue-100 break-words">
                   Share your expertise with students and build your professional network by becoming a SkyMirror Academy mentor.
                 </p>
               </div>
-              <div className="lg:col-span-1 flex justify-center lg:justify-end">
+              <div className="lg:col-span-1 flex justify-center lg:justify-end min-w-0">
                 <a
                   href="/dashboard/become-mentor"
-                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-blue-700"
+                  className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-blue-700 break-words min-w-0"
                 >
                   Apply Now
                   <ArrowRight className="ml-2 h-5 w-5" />

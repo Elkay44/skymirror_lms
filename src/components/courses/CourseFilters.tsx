@@ -42,7 +42,7 @@ export function CourseFilters({
   return (
     <div className="space-y-4">
       <div>
-        <label htmlFor="search" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="search" className="block text-sm font-medium text-gray-700 break-words">
           Search
         </label>
         <input
@@ -55,10 +55,10 @@ export function CourseFilters({
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-gray-700 break-words">
           Category
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 min-w-0">
           {categories.map((category) => (
             <FilterButton
               key={category.id}
@@ -72,10 +72,10 @@ export function CourseFilters({
 
       {levels && (
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 break-words">
             Level
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 min-w-0">
             {levels.map((level) => (
               <FilterButton
                 key={level.id}
@@ -90,10 +90,10 @@ export function CourseFilters({
 
       {durations && (
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 break-words">
             Duration
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 min-w-0">
             {durations.map((duration) => (
               <FilterButton
                 key={duration.id}
@@ -108,10 +108,10 @@ export function CourseFilters({
 
       {sortOptions && (
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 break-words">
             Sort By
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 min-w-0">
             {sortOptions.map((option) => (
               <FilterButton
                 key={option.id}
@@ -128,7 +128,7 @@ export function CourseFilters({
         <div className="pt-2 border-t border-gray-100">
           <button
             onClick={onResetFilters}
-            className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center"
+            className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center break-words min-w-0"
           >
             <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -140,7 +140,7 @@ export function CourseFilters({
             <div className="pt-2 border-t border-gray-100">
               <button
                 onClick={onResetFilters}
-                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center"
+                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center break-words min-w-0"
               >
                 <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

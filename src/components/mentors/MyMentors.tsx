@@ -44,7 +44,7 @@ export function MyMentors() {
       <div className="space-y-4">
         {[...Array(2)].map((_, i) => (
           <Card key={i}>
-            <CardHeader className="flex flex-row items-center gap-4">
+            <CardHeader className="flex flex-row items-center gap-4 min-w-0">
               <Skeleton className="h-12 w-12 rounded-full" />
               <div className="space-y-2">
                 <Skeleton className="h-4 w-32" />
@@ -90,8 +90,8 @@ export function MyMentors() {
     <div className="space-y-4">
       {mentors.map((mentorship) => (
         <Card key={mentorship.id}>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div className="flex items-center gap-4">
+          <CardHeader className="flex flex-row items-center justify-between min-w-0">
+            <div className="flex items-center gap-4 min-w-0">
               <Avatar className="h-12 w-12">
                 <AvatarImage src={mentorship.mentor?.user?.image} />
                 <AvatarFallback>
@@ -99,35 +99,35 @@ export function MyMentors() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <CardTitle className="text-lg">
+                <CardTitle className="text-lg break-words">
                   {mentorship.mentor?.user?.name}
                 </CardTitle>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground break-words">
                   {mentorship.mentor?.specialties?.split(',').slice(0, 2).join(' • ')}
                 </div>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 min-w-0">
               <Button variant="outline" size="sm">Message</Button>
               <Button variant="outline" size="sm">Schedule</Button>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-2 gap-4 text-sm break-words">
               <div>
-                <p className="font-medium">Focus Area</p>
+                <p className="font-medium break-words">Focus Area</p>
                 <p className="text-muted-foreground">
                   {mentorship.focusArea || 'Not specified'}
                 </p>
               </div>
               <div>
-                <p className="font-medium">Status</p>
+                <p className="font-medium break-words">Status</p>
                 <Badge variant={mentorship.status === 'ACTIVE' ? 'default' : 'secondary'}>
                   {mentorship.status || 'PENDING'}
                 </Badge>
               </div>
               <div>
-                <p className="font-medium">Start Date</p>
+                <p className="font-medium break-words">Start Date</p>
                 <p className="text-muted-foreground">
                   {mentorship.startDate 
                     ? new Date(mentorship.startDate).toLocaleDateString() 
@@ -135,7 +135,7 @@ export function MyMentors() {
                 </p>
               </div>
               <div>
-                <p className="font-medium">Next Session</p>
+                <p className="font-medium break-words">Next Session</p>
                 <p className="text-muted-foreground">
                   {mentorship.nextSessionDate 
                     ? new Date(mentorship.nextSessionDate).toLocaleString() 

@@ -12,10 +12,10 @@ interface Step2Props {
 
 export function Step2({ formData, onImageUpload, onChange, setFormData }: Step2Props) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       <div>
         <Label>Course Image *</Label>
-        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md">
+        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md min-w-0">
           <div className="space-y-1 text-center">
             {formData.imagePreview ? (
               <div className="relative">
@@ -33,17 +33,17 @@ export function Step2({ formData, onImageUpload, onChange, setFormData }: Step2P
                       imagePreview: ''
                     }));
                   }}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 flex-shrink-0"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
             ) : (
               <>
-                <div className="flex text-sm text-gray-600 justify-center">
+                <div className="flex text-sm text-gray-600 justify-center break-words min-w-0">
                   <label
                     htmlFor="image-upload"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none"
+                    className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none break-words overflow-hidden"
                   >
                     <span>Upload a file</span>
                     <input
@@ -75,7 +75,7 @@ export function Step2({ formData, onImageUpload, onChange, setFormData }: Step2P
           placeholder="https://www.youtube.com/watch?v=..."
           className="mt-1"
         />
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-gray-500 break-words">
           Add a link to a promotional video for your course (YouTube, Vimeo, etc.)
         </p>
       </div>

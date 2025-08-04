@@ -129,7 +129,7 @@ export default function StudentProfilePage() {
 
   if (loading) {
     return (
-      <div className="p-8 flex justify-center items-center">
+      <div className="p-8 flex justify-center items-center min-w-0">
         <div className="animate-spin h-8 w-8 border-4 border-blue-600 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -139,7 +139,7 @@ export default function StudentProfilePage() {
     return (
       <div className="p-8">
         <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-          <h2 className="text-red-800 font-medium">Profile Not Found</h2>
+          <h2 className="text-red-800 font-medium break-words">Profile Not Found</h2>
           <p className="text-red-600 mt-1">Unable to load your profile information. Please try again later.</p>
         </div>
       </div>
@@ -153,19 +153,19 @@ export default function StudentProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-12 text-white relative">
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="absolute top-4 right-4 bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors"
+              className="absolute top-4 right-4 bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors overflow-hidden flex-shrink-0"
               aria-label={isEditing ? "Cancel editing" : "Edit profile"}
             >
               {isEditing ? <Save className="h-5 w-5" /> : <Edit className="h-5 w-5" />}
             </button>
             
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="w-24 h-24 rounded-full overflow-hidden bg-white/20 flex-shrink-0 flex items-center justify-center">
+            <div className="flex flex-col md:flex-row items-center gap-4 lg:gap-6 min-w-0">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-white/20 flex-shrink-0 flex items-center justify-center min-w-0">
                 {userData.image ? (
                   <Image 
                     src={userData.image} 
@@ -180,14 +180,14 @@ export default function StudentProfilePage() {
               </div>
               
               <div className="text-center md:text-left">
-                <h1 className="text-2xl md:text-3xl font-bold mb-1">{userData.name}</h1>
-                <div className="flex flex-wrap justify-center md:justify-start gap-3 text-sm">
-                  <div className="flex items-center">
+                <h1 className="text-2xl md:text-3xl font-bold mb-1 break-words">{userData.name}</h1>
+                <div className="flex flex-wrap justify-center md:justify-start gap-3 text-sm break-words min-w-0">
+                  <div className="flex items-center min-w-0">
                     <Mail className="h-4 w-4 mr-1" />
                     {userData.email}
                   </div>
                   {userData.location && (
-                    <div className="flex items-center">
+                    <div className="flex items-center min-w-0">
                       <Briefcase className="h-4 w-4 mr-1" />
                       {userData.location}
                     </div>
@@ -199,12 +199,12 @@ export default function StudentProfilePage() {
           
           {/* Profile content */}
           {isEditing ? (
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Edit Your Profile</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="p-4 lg:p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 break-words">Edit Your Profile</h2>
+              <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1 break-words">Name</label>
                     <input
                       type="text"
                       id="name"
@@ -215,7 +215,7 @@ export default function StudentProfilePage() {
                   </div>
                   
                   <div>
-                    <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                    <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1 break-words">Bio</label>
                     <textarea
                       id="bio"
                       value={bio}
@@ -226,7 +226,7 @@ export default function StudentProfilePage() {
                   </div>
                   
                   <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1 break-words">Location</label>
                     <input
                       type="text"
                       id="location"
@@ -238,10 +238,10 @@ export default function StudentProfilePage() {
                 </div>
                 
                 <div className="border-t border-gray-200 pt-4">
-                  <h3 className="text-lg font-medium text-gray-800 mb-3">Learning Preferences</h3>
+                  <h3 className="text-lg font-medium text-gray-800 mb-3 break-words">Learning Preferences</h3>
                   <div className="space-y-4">
                     <div>
-                      <label htmlFor="interests" className="block text-sm font-medium text-gray-700 mb-1">Interests</label>
+                      <label htmlFor="interests" className="block text-sm font-medium text-gray-700 mb-1 break-words">Interests</label>
                       <textarea
                         id="interests"
                         value={interests}
@@ -253,7 +253,7 @@ export default function StudentProfilePage() {
                     </div>
                     
                     <div>
-                      <label htmlFor="goals" className="block text-sm font-medium text-gray-700 mb-1">Learning Goals</label>
+                      <label htmlFor="goals" className="block text-sm font-medium text-gray-700 mb-1 break-words">Learning Goals</label>
                       <textarea
                         id="goals"
                         value={goals}
@@ -265,7 +265,7 @@ export default function StudentProfilePage() {
                     </div>
                     
                     <div>
-                      <label htmlFor="learningStyle" className="block text-sm font-medium text-gray-700 mb-1">Learning Style</label>
+                      <label htmlFor="learningStyle" className="block text-sm font-medium text-gray-700 mb-1 break-words">Learning Style</label>
                       <select
                         id="learningStyle"
                         value={learningStyle}
@@ -283,7 +283,7 @@ export default function StudentProfilePage() {
                   </div>
                 </div>
                 
-                <div className="flex justify-end">
+                <div className="flex justify-end min-w-0">
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
@@ -301,10 +301,10 @@ export default function StudentProfilePage() {
               </form>
             </div>
           ) : (
-            <div className="p-6">
+            <div className="p-4 lg:p-6">
               {/* Bio section */}
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center break-words min-w-0">
                   <UserCircle className="w-5 h-5 mr-2 text-blue-600" />
                   About Me
                 </h2>
@@ -314,33 +314,33 @@ export default function StudentProfilePage() {
               </div>
               
               {/* Learning Preferences */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6 mb-8">
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                  <h3 className="font-medium text-blue-800 mb-2 flex items-center">
+                  <h3 className="font-medium text-blue-800 mb-2 flex items-center break-words min-w-0">
                     <Lightbulb className="w-4 h-4 mr-2" />
                     Interests
                   </h3>
-                  <p className="text-blue-700 text-sm">
+                  <p className="text-blue-700 text-sm break-words">
                     {userData.studentProfile?.interests || "No interests specified yet."}
                   </p>
                 </div>
                 
                 <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-                  <h3 className="font-medium text-indigo-800 mb-2 flex items-center">
+                  <h3 className="font-medium text-indigo-800 mb-2 flex items-center break-words min-w-0">
                     <Target className="w-4 h-4 mr-2" />
                     Learning Goals
                   </h3>
-                  <p className="text-indigo-700 text-sm">
+                  <p className="text-indigo-700 text-sm break-words">
                     {userData.studentProfile?.goals || "No learning goals specified yet."}
                   </p>
                 </div>
                 
                 <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                  <h3 className="font-medium text-purple-800 mb-2 flex items-center">
+                  <h3 className="font-medium text-purple-800 mb-2 flex items-center break-words min-w-0">
                     <BookOpen className="w-4 h-4 mr-2" />
                     Learning Style
                   </h3>
-                  <p className="text-purple-700 text-sm">
+                  <p className="text-purple-700 text-sm break-words">
                     {userData.studentProfile?.preferredLearningStyle 
                       ? formatLearningStyle(userData.studentProfile.preferredLearningStyle)
                       : "No learning style specified yet."}
@@ -350,7 +350,7 @@ export default function StudentProfilePage() {
               
               {/* Achievement Summary */}
               <div className="mt-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center break-words min-w-0">
                   <Award className="w-5 h-5 mr-2 text-blue-600" />
                   Achievement Summary
                 </h2>
@@ -358,21 +358,21 @@ export default function StudentProfilePage() {
                   <p className="text-blue-800 mb-2">
                     You're making great progress on your learning journey!
                   </p>
-                  <div className="flex flex-wrap gap-4 mt-4">
-                    <div className="bg-white px-4 py-3 rounded-lg shadow-sm">
-                      <div className="text-2xl font-bold text-blue-600">{userData.level}</div>
+                  <div className="flex flex-wrap gap-4 mt-4 min-w-0">
+                    <div className="bg-white px-4 py-3 rounded-lg shadow-sm overflow-hidden">
+                      <div className="text-2xl font-bold text-blue-600 break-words">{userData.level}</div>
                       <div className="text-xs text-gray-500">Current Level</div>
                     </div>
-                    <div className="bg-white px-4 py-3 rounded-lg shadow-sm">
-                      <div className="text-2xl font-bold text-indigo-600">{userData.points}</div>
+                    <div className="bg-white px-4 py-3 rounded-lg shadow-sm overflow-hidden">
+                      <div className="text-2xl font-bold text-indigo-600 break-words">{userData.points}</div>
                       <div className="text-xs text-gray-500">XP Points</div>
                     </div>
-                    <div className="bg-white px-4 py-3 rounded-lg shadow-sm">
-                      <div className="text-2xl font-bold text-purple-600">0</div>
+                    <div className="bg-white px-4 py-3 rounded-lg shadow-sm overflow-hidden">
+                      <div className="text-2xl font-bold text-purple-600 break-words">0</div>
                       <div className="text-xs text-gray-500">Certificates</div>
                     </div>
-                    <div className="bg-white px-4 py-3 rounded-lg shadow-sm">
-                      <div className="text-2xl font-bold text-green-600">0</div>
+                    <div className="bg-white px-4 py-3 rounded-lg shadow-sm overflow-hidden">
+                      <div className="text-2xl font-bold text-green-600 break-words">0</div>
                       <div className="text-xs text-gray-500">Completed Courses</div>
                     </div>
                   </div>

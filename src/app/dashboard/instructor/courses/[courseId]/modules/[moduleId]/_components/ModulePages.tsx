@@ -205,16 +205,16 @@ export function ModulePages({ courseId, moduleId, initialPages = [], onPageSelec
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="flex items-center justify-center p-8 min-w-0">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Module Pages</h3>
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex justify-between items-center min-w-0">
+        <h3 className="text-lg font-medium break-words">Module Pages</h3>
         <div className="space-x-2">
           <Button 
             variant="outline" 
@@ -243,7 +243,7 @@ export function ModulePages({ courseId, moduleId, initialPages = [], onPageSelec
         <div className="space-y-2">
           {isReordering ? (
             <div className="space-y-2">
-              <div className="text-sm text-muted-foreground mb-2">
+              <div className="text-sm text-muted-foreground mb-2 break-words">
                 Drag and drop to reorder pages. Click "Done Reordering" when finished.
               </div>
               <DndContext 
@@ -322,7 +322,7 @@ export function ModulePages({ courseId, moduleId, initialPages = [], onPageSelec
                 />
               </div>
               
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 min-w-0">
                 <Switch
                   id="isPublished"
                   checked={isPublished}
@@ -364,8 +364,8 @@ interface PageItemProps {
 
 function PageItem({ page, onEdit, onDelete, isReordering = false, isSavingOrder = false }: PageItemProps) {
   return (
-    <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-      <div className="flex items-center space-x-4">
+    <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors min-w-0">
+      <div className="flex items-center space-x-4 min-w-0">
         {isReordering && (
           <Button 
             variant="ghost" 
@@ -376,7 +376,7 @@ function PageItem({ page, onEdit, onDelete, isReordering = false, isSavingOrder 
           </Button>
         )}
         <div>
-          <h4 className="font-medium">
+          <h4 className="font-medium break-words">
             {page.title}
             {!page.isPublished && (
               <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">
@@ -385,14 +385,14 @@ function PageItem({ page, onEdit, onDelete, isReordering = false, isSavingOrder 
             )}
           </h4>
           {page.description && (
-            <p className="text-sm text-muted-foreground line-clamp-1">
+            <p className="text-sm text-muted-foreground line-clamp-1 break-words">
               {page.description}
             </p>
           )}
         </div>
       </div>
       
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 min-w-0">
         <Button 
           variant="ghost" 
           size="sm" 

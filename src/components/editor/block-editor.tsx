@@ -103,7 +103,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
   // Render a specific block based on type
   const renderBlock = (block: ContentBlock, index: number) => {
     const commonControls = (
-      <div className="flex space-x-1">
+      <div className="flex space-x-1 min-w-0">
         <Button 
           type="button" 
           variant="ghost" 
@@ -140,8 +140,8 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
       case 'text':
         return (
           <Card key={block.id} className="mb-4">
-            <CardHeader className="p-3 flex flex-row items-center justify-between border-b">
-              <div className="flex items-center text-sm font-medium">
+            <CardHeader className="p-3 flex flex-row items-center justify-between border-b min-w-0">
+              <div className="flex items-center text-sm font-medium break-words min-w-0">
                 <FileText className="h-4 w-4 mr-2" />
                 Text Block
               </div>
@@ -161,8 +161,8 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
       case 'image':
         return (
           <Card key={block.id} className="mb-4">
-            <CardHeader className="p-3 flex flex-row items-center justify-between border-b">
-              <div className="flex items-center text-sm font-medium">
+            <CardHeader className="p-3 flex flex-row items-center justify-between border-b min-w-0">
+              <div className="flex items-center text-sm font-medium break-words min-w-0">
                 <Image className="h-4 w-4 mr-2" />
                 Image Block
               </div>
@@ -170,7 +170,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
             </CardHeader>
             <CardContent className="p-3 space-y-3">
               <div className="grid gap-2">
-                <label className="text-sm font-medium">Image URL</label>
+                <label className="text-sm font-medium break-words">Image URL</label>
                 <Input
                   value={block.url || ''}
                   onChange={(e) => updateBlockUrl(block.id, e.target.value)}
@@ -178,7 +178,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
                 />
               </div>
               <div className="grid gap-2">
-                <label className="text-sm font-medium">Caption</label>
+                <label className="text-sm font-medium break-words">Caption</label>
                 <Input
                   value={block.caption || ''}
                   onChange={(e) => updateBlockCaption(block.id, e.target.value)}
@@ -197,8 +197,8 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
       case 'video':
         return (
           <Card key={block.id} className="mb-4">
-            <CardHeader className="p-3 flex flex-row items-center justify-between border-b">
-              <div className="flex items-center text-sm font-medium">
+            <CardHeader className="p-3 flex flex-row items-center justify-between border-b min-w-0">
+              <div className="flex items-center text-sm font-medium break-words min-w-0">
                 <Video className="h-4 w-4 mr-2" />
                 Video Block
               </div>
@@ -206,7 +206,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
             </CardHeader>
             <CardContent className="p-3 space-y-3">
               <div className="grid gap-2">
-                <label className="text-sm font-medium">Video URL</label>
+                <label className="text-sm font-medium break-words">Video URL</label>
                 <Input
                   value={block.url || ''}
                   onChange={(e) => updateBlockUrl(block.id, e.target.value)}
@@ -214,7 +214,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
                 />
               </div>
               <div className="grid gap-2">
-                <label className="text-sm font-medium">Caption</label>
+                <label className="text-sm font-medium break-words">Caption</label>
                 <Input
                   value={block.caption || ''}
                   onChange={(e) => updateBlockCaption(block.id, e.target.value)}
@@ -222,7 +222,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
                 />
               </div>
               {block.url && (
-                <div className="mt-2 border rounded aspect-video flex items-center justify-center">
+                <div className="mt-2 border rounded aspect-video flex items-center justify-center min-w-0">
                   <p className="text-xs text-center text-gray-500">Video embed would appear here</p>
                 </div>
               )}
@@ -233,8 +233,8 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
       case 'code':
         return (
           <Card key={block.id} className="mb-4">
-            <CardHeader className="p-3 flex flex-row items-center justify-between border-b">
-              <div className="flex items-center text-sm font-medium">
+            <CardHeader className="p-3 flex flex-row items-center justify-between border-b min-w-0">
+              <div className="flex items-center text-sm font-medium break-words min-w-0">
                 <Code className="h-4 w-4 mr-2" />
                 Code Block
               </div>
@@ -245,7 +245,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
                 value={block.content}
                 onChange={(e) => updateBlockContent(block.id, e.target.value)}
                 placeholder="Enter your code here..."
-                className="min-h-[150px] font-mono text-sm"
+                className="min-h-[150px] font-mono text-sm break-words"
               />
             </CardContent>
           </Card>
@@ -254,8 +254,8 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
       case 'link':
         return (
           <Card key={block.id} className="mb-4">
-            <CardHeader className="p-3 flex flex-row items-center justify-between border-b">
-              <div className="flex items-center text-sm font-medium">
+            <CardHeader className="p-3 flex flex-row items-center justify-between border-b min-w-0">
+              <div className="flex items-center text-sm font-medium break-words min-w-0">
                 <LinkIcon className="h-4 w-4 mr-2" />
                 Link Block
               </div>
@@ -263,7 +263,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
             </CardHeader>
             <CardContent className="p-3 space-y-3">
               <div className="grid gap-2">
-                <label className="text-sm font-medium">Link Text</label>
+                <label className="text-sm font-medium break-words">Link Text</label>
                 <Input
                   value={block.content}
                   onChange={(e) => updateBlockContent(block.id, e.target.value)}
@@ -271,7 +271,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
                 />
               </div>
               <div className="grid gap-2">
-                <label className="text-sm font-medium">URL</label>
+                <label className="text-sm font-medium break-words">URL</label>
                 <Input
                   value={block.url || ''}
                   onChange={(e) => updateBlockUrl(block.id, e.target.value)}
@@ -299,13 +299,13 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
         )}
       </div>
       
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-2 min-w-0">
         <Button 
           type="button" 
           variant="outline" 
           size="sm" 
           onClick={() => addBlock('text')}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 min-w-0"
         >
           <Plus className="h-3 w-3" /> <FileText className="h-3 w-3" /> Text
         </Button>
@@ -314,7 +314,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
           variant="outline" 
           size="sm" 
           onClick={() => addBlock('image')}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 min-w-0"
         >
           <Plus className="h-3 w-3" /> <Image className="h-3 w-3" /> Image
         </Button>
@@ -323,7 +323,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
           variant="outline" 
           size="sm" 
           onClick={() => addBlock('video')}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 min-w-0"
         >
           <Plus className="h-3 w-3" /> <Video className="h-3 w-3" /> Video
         </Button>
@@ -332,7 +332,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
           variant="outline" 
           size="sm" 
           onClick={() => addBlock('code')}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 min-w-0"
         >
           <Plus className="h-3 w-3" /> <Code className="h-3 w-3" /> Code
         </Button>
@@ -341,7 +341,7 @@ export const BlockEditor: React.FC<BlockEditorProps> = ({
           variant="outline" 
           size="sm" 
           onClick={() => addBlock('link')}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 min-w-0"
         >
           <Plus className="h-3 w-3" /> <LinkIcon className="h-3 w-3" /> Link
         </Button>

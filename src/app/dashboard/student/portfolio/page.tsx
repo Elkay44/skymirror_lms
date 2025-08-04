@@ -139,10 +139,10 @@ export default function StudentPortfolio() {
   if (loading) {
     return (
       <div className="p-6 max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">My Portfolio</h1>
+        <h1 className="text-3xl font-bold mb-8 break-words">My Portfolio</h1>
         <div className="animate-pulse">
           <div className="h-12 bg-gray-200 rounded w-1/3 mb-6"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
             {[1, 2, 3].map(i => (
               <div key={i} className="bg-gray-200 rounded-xl h-80"></div>
             ))}
@@ -154,10 +154,10 @@ export default function StudentPortfolio() {
   
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-        <h1 className="text-3xl font-bold mb-2 md:mb-0">My Portfolio</h1>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 min-w-0">
+        <h1 className="text-3xl font-bold mb-2 md:mb-0 break-words">My Portfolio</h1>
         
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 min-w-0">
           <button
             onClick={() => setEditing(!editing)}
             className={`flex items-center px-4 py-2 rounded-md ${editing 
@@ -170,7 +170,7 @@ export default function StudentPortfolio() {
           
           <button
             onClick={sharePortfolio}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors min-w-0"
           >
             <Share2 className="h-4 w-4 mr-2" />
             Share Portfolio
@@ -180,11 +180,11 @@ export default function StudentPortfolio() {
       
       {/* Skills filter */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3 flex items-center">
+        <h2 className="text-lg font-semibold mb-3 flex items-center break-words min-w-0">
           <Tag className="h-5 w-5 mr-2 text-blue-600" />
           Filter by Skills
         </h2>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 min-w-0">
           {allSkills.map(skill => (
             <button
               key={skill}
@@ -203,7 +203,7 @@ export default function StudentPortfolio() {
           {activeSkills.length > 0 && (
             <button
               onClick={() => setActiveSkills([])}
-              className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 hover:bg-red-200"
+              className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 hover:bg-red-200 break-words"
             >
               Clear Filters
             </button>
@@ -213,12 +213,12 @@ export default function StudentPortfolio() {
       
       {featuredProjects.length > 0 && (
         <section className="mb-12">
-          <h2 className="text-2xl font-semibold mb-6 flex items-center">
+          <h2 className="text-2xl font-semibold mb-6 flex items-center break-words min-w-0">
             <Award className="h-6 w-6 mr-2 text-yellow-500" />
             Featured Projects
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
             {featuredProjects.map((project) => (
               <ProjectCard 
                 key={project.id}
@@ -232,13 +232,13 @@ export default function StudentPortfolio() {
       )}
       
       <section>
-        <h2 className="text-2xl font-semibold mb-6 flex items-center">
+        <h2 className="text-2xl font-semibold mb-6 flex items-center break-words min-w-0">
           <BookOpen className="h-6 w-6 mr-2 text-blue-600" />
           All Projects
         </h2>
         
         {filteredProjects.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
             {filteredProjects.map((project) => (
               <ProjectCard 
                 key={project.id}
@@ -255,7 +255,7 @@ export default function StudentPortfolio() {
                 ? 'No projects match the selected skills. Try different filters.'
                 : 'No completed projects yet. Complete your course projects to build your portfolio.'}
             </p>
-            <Link href="/dashboard/student/projects" className="text-blue-600 hover:text-blue-800 font-medium">
+            <Link href="/dashboard/student/projects" className="text-blue-600 hover:text-blue-800 font-medium break-words">
               View My Projects
             </Link>
           </div>
@@ -264,23 +264,23 @@ export default function StudentPortfolio() {
       
       {/* Share Modal */}
       {shareModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 min-w-0">
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-lg p-6 max-w-md w-full"
+            className="bg-white rounded-lg p-6 max-w-md w-full overflow-hidden"
           >
-            <h3 className="text-xl font-semibold mb-4">Share Your Portfolio</h3>
+            <h3 className="text-xl font-semibold mb-4 break-words">Share Your Portfolio</h3>
             <p className="text-gray-600 mb-4">
               Share this link with potential employers or on your social media profiles.
             </p>
             
-            <div className="flex items-center mb-4">
+            <div className="flex items-center mb-4 min-w-0">
               <input 
                 type="text" 
                 value={shareUrl} 
                 readOnly 
-                className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 bg-gray-50"
+                className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 bg-gray-50 min-w-0"
               />
               <button
                 onClick={copyToClipboard}
@@ -290,7 +290,7 @@ export default function StudentPortfolio() {
               </button>
             </div>
             
-            <div className="flex justify-end">
+            <div className="flex justify-end min-w-0">
               <button
                 onClick={() => setShareModalOpen(false)}
                 className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
@@ -326,8 +326,8 @@ function ProjectCard({ project, editing, toggleFeatured }: {
             className="object-cover"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-blue-50">
-            <div className="text-blue-500 text-xl font-semibold">{project.title.substring(0, 2).toUpperCase()}</div>
+          <div className="absolute inset-0 flex items-center justify-center bg-blue-50 min-w-0">
+            <div className="text-blue-500 text-xl font-semibold break-words">{project.title.substring(0, 2).toUpperCase()}</div>
           </div>
         )}
         
@@ -343,7 +343,7 @@ function ProjectCard({ project, editing, toggleFeatured }: {
         )}
         
         {project.featured && !editing && (
-          <div className="absolute top-2 right-2 bg-yellow-400 text-white px-2 py-1 rounded-md text-xs font-semibold flex items-center">
+          <div className="absolute top-2 right-2 bg-yellow-400 text-white px-2 py-1 rounded-md text-xs font-semibold flex items-center break-words min-w-0 flex-shrink-0">
             <Award className="h-3 w-3 mr-1" />
             Featured
           </div>
@@ -351,15 +351,15 @@ function ProjectCard({ project, editing, toggleFeatured }: {
       </div>
       
       <div className="p-5">
-        <h3 className="text-lg font-semibold mb-2">{project.title}</h3>
-        <p className="text-gray-600 text-sm mb-3">{project.description}</p>
+        <h3 className="text-lg font-semibold mb-2 break-words">{project.title}</h3>
+        <p className="text-gray-600 text-sm mb-3 break-words">{project.description}</p>
         
-        <div className="flex items-center text-sm text-gray-500 mb-3">
+        <div className="flex items-center text-sm text-gray-500 mb-3 break-words min-w-0">
           <Clock className="h-4 w-4 mr-1" />
           <span>Completed {new Date(project.completedAt).toLocaleDateString()}</span>
         </div>
         
-        <div className="flex flex-wrap gap-1 mb-4">
+        <div className="flex flex-wrap gap-1 mb-4 min-w-0">
           {project.skills.map(skill => (
             <span key={skill} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
               {skill}
@@ -367,10 +367,10 @@ function ProjectCard({ project, editing, toggleFeatured }: {
           ))}
         </div>
         
-        <div className="flex justify-between">
+        <div className="flex justify-between min-w-0">
           <Link 
             href={`/dashboard/student/projects/${project.id}`}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center break-words min-w-0"
           >
             View Details
             <ExternalLink className="h-3 w-3 ml-1" />
@@ -381,7 +381,7 @@ function ProjectCard({ project, editing, toggleFeatured }: {
               href={project.repositoryUrl}
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-gray-700 hover:text-gray-900 text-sm font-medium flex items-center"
+              className="text-gray-700 hover:text-gray-900 text-sm font-medium flex items-center break-words min-w-0"
             >
               <Github className="h-4 w-4 mr-1" />
               Repository

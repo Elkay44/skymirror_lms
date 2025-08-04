@@ -8,15 +8,12 @@ import {
   ArrowLeft, 
   Eye, 
   FileText, 
-  LayoutGrid, 
   Loader2, 
   MessageCircle,
   Plus,
   Settings, 
   BookOpen,
-  ClipboardList,
   HelpCircle, 
-  GraduationCap, 
   CheckCircle2, 
   GripVertical, 
   Video, 
@@ -24,7 +21,31 @@ import {
   Code,
   Clock, 
   Calendar, 
-  ListChecks
+  ListChecks,
+  PlayCircle,
+  PenTool,
+  Trophy,
+  Users,
+  Target,
+  Zap,
+  Star,
+  TrendingUp,
+  Award,
+  Bookmark,
+  Monitor,
+  Headphones,
+  FileVideo,
+  Edit3,
+  Brain,
+  Lightbulb,
+  Sparkles,
+  Rocket,
+  Timer,
+  CheckSquare,
+  MessageSquare,
+  FolderOpen,
+  Layers,
+  Activity
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
@@ -326,7 +347,7 @@ export default function ModuleDetailsPage() {
         title="Loading..."
         backHref={`/dashboard/instructor/courses/${courseId}/modules`}
       >
-        <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="flex justify-center items-center min-h-[60vh] min-w-0">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </PageLayout>
@@ -338,10 +359,10 @@ export default function ModuleDetailsPage() {
       title={module?.title || 'Module Details'}
       backHref={`/dashboard/instructor/courses/${courseId}/modules`}
     >
-      <div className="space-y-6">
+      <div className="space-y-4 lg:space-y-6">
         {/* Header with navigation and module info */}
         <div className="border-b pb-4">
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 min-w-0">
             <Button
               variant="ghost"
               onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules`)}
@@ -350,12 +371,12 @@ export default function ModuleDetailsPage() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Modules
             </Button>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold">{module?.title}</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold break-words">{module?.title}</h1>
                 <p className="text-muted-foreground mt-1">{module?.description}</p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <Button variant="outline" size="sm" className="gap-1">
                   <Eye size={16} /> Preview
                 </Button>
@@ -368,37 +389,79 @@ export default function ModuleDetailsPage() {
         </div>
         
         {/* Module tabs and content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="bg-muted/50 p-1">
-            <TabsTrigger value="pages" className="flex items-center gap-1">
-              <LayoutGrid size={16} /> Pages ({pages.length})
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 lg:space-y-6">
+          <TabsList className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 p-1.5 rounded-xl shadow-sm border">
+            <TabsTrigger 
+              value="pages" 
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/80 data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-blue-600 break-words min-w-0 flex-shrink-0"
+            >
+              <div className="p-1 rounded-md bg-blue-100 text-blue-600">
+                <Layers size={14} />
+              </div>
+              <span>Pages</span>
+              <Badge variant="secondary" className="ml-1 bg-blue-50 text-blue-600 border-blue-200">{pages.length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="lessons" className="flex items-center gap-1">
-              <BookOpen size={16} /> Lessons ({lessons.length})
+            <TabsTrigger 
+              value="lessons" 
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/80 data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-600 break-words min-w-0 flex-shrink-0"
+            >
+              <div className="p-1 rounded-md bg-emerald-100 text-emerald-600">
+                <PlayCircle size={14} />
+              </div>
+              <span>Lessons</span>
+              <Badge variant="secondary" className="ml-1 bg-emerald-50 text-emerald-600 border-emerald-200">{lessons.length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="assignments" className="flex items-center gap-1">
-              <ClipboardList size={16} /> Assignments ({assignments.length})
+            <TabsTrigger 
+              value="assignments" 
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/80 data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-amber-600 break-words min-w-0 flex-shrink-0"
+            >
+              <div className="p-1 rounded-md bg-amber-100 text-amber-600">
+                <PenTool size={14} />
+              </div>
+              <span>Assignments</span>
+              <Badge variant="secondary" className="ml-1 bg-amber-50 text-amber-600 border-amber-200">{assignments.length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="quizzes" className="flex items-center gap-1">
-              <HelpCircle size={16} /> Quizzes ({quizzes.length})
+            <TabsTrigger 
+              value="quizzes" 
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/80 data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-purple-600 break-words min-w-0 flex-shrink-0"
+            >
+              <div className="p-1 rounded-md bg-purple-100 text-purple-600">
+                <Brain size={14} />
+              </div>
+              <span>Quizzes</span>
+              <Badge variant="secondary" className="ml-1 bg-purple-50 text-purple-600 border-purple-200">{quizzes.length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="projects" className="flex items-center gap-1">
-              <FileText size={16} /> Projects ({projects.length})
+            <TabsTrigger 
+              value="projects" 
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/80 data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-indigo-600 break-words min-w-0 flex-shrink-0"
+            >
+              <div className="p-1 rounded-md bg-indigo-100 text-indigo-600">
+                <Rocket size={14} />
+              </div>
+              <span>Projects</span>
+              <Badge variant="secondary" className="ml-1 bg-indigo-50 text-indigo-600 border-indigo-200">{projects.length}</Badge>
             </TabsTrigger>
-            <TabsTrigger value="forum" className="flex items-center gap-1">
-              <MessageCircle size={16} /> Discussion ({forumTopics.length})
+            <TabsTrigger 
+              value="forum" 
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 hover:bg-white/80 data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-rose-600 break-words min-w-0 flex-shrink-0"
+            >
+              <div className="p-1 rounded-md bg-rose-100 text-rose-600">
+                <MessageSquare size={14} />
+              </div>
+              <span>Discussion</span>
+              <Badge variant="secondary" className="ml-1 bg-rose-50 text-rose-600 border-rose-200">{forumTopics.length}</Badge>
             </TabsTrigger>
           </TabsList>
           
           {/* Pages Tab */}
           <TabsContent value="pages" className="p-0 border-0">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 lg:gap-6">
               {/* Sidebar with pages */}
               <div className="md:col-span-3 space-y-4">
                 <Card>
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-lg font-medium">Pages</h2>
+                    <div className="flex items-center justify-between mb-4 min-w-0">
+                      <h2 className="text-lg font-medium break-words">Pages</h2>
                       <Badge variant="secondary">{pages.length}</Badge>
                     </div>
                     <ModulePages 
@@ -422,14 +485,14 @@ export default function ModuleDetailsPage() {
               <div className="md:col-span-9 space-y-4">
                 {activePage ? (
                   <Card>
-                    <CardContent className="p-6">
-                      <div className="flex justify-between items-center mb-6">
+                    <CardContent className="p-4 lg:p-6">
+                      <div className="flex justify-between items-center mb-6 min-w-0">
                         <div>
-                          <h2 className="text-xl font-semibold">{activePage.title}</h2>
-                          <p className="text-muted-foreground text-sm">Add and arrange content for this page</p>
+                          <h2 className="text-xl font-semibold break-words">{activePage.title}</h2>
+                          <p className="text-muted-foreground text-sm break-words">Add and arrange content for this page</p>
                         </div>
                         
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 min-w-0">
                           {blocks.length > 1 && (
                             <Button variant="outline" size="sm" className="gap-1">
                               <GripVertical size={16} /> {isSorting ? 'Saving...' : 'Reorder'}
@@ -444,10 +507,10 @@ export default function ModuleDetailsPage() {
                       
                       {blocks.length === 0 ? (
                         <div className="text-center py-12 border border-dashed rounded-lg bg-muted/20">
-                          <div className="flex flex-col items-center gap-2">
+                          <div className="flex flex-col items-center gap-2 min-w-0">
                             <FileText className="h-10 w-10 text-muted-foreground" />
                             <p className="text-muted-foreground mb-4">No content blocks yet</p>
-                            <div className="flex flex-wrap justify-center gap-2">
+                            <div className="flex flex-wrap justify-center gap-2 min-w-0">
                               <Button onClick={() => handleAddBlock('text')} variant="outline" size="sm" 
                                 className="gap-1 hover:bg-blue-50 hover:border-blue-200 transition-colors">
                                 <FileText size={14} className="text-blue-500" /> Text
@@ -496,8 +559,8 @@ export default function ModuleDetailsPage() {
                                 ))
                               }
                               {isSorting && (
-                                <div className="fixed inset-0 bg-black/5 flex items-center justify-center z-50">
-                                  <div className="bg-white p-4 rounded-md shadow-lg flex items-center gap-2">
+                                <div className="fixed inset-0 bg-black/5 flex items-center justify-center z-50 min-w-0">
+                                  <div className="bg-white p-4 rounded-md shadow-lg flex items-center gap-2 min-w-0 overflow-hidden">
                                     <Loader2 className="h-5 w-5 animate-spin text-primary" />
                                     <p>Saving block order...</p>
                                   </div>
@@ -510,7 +573,7 @@ export default function ModuleDetailsPage() {
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-12 border border-dashed rounded-lg bg-muted/20">
+                  <div className="flex flex-col items-center justify-center py-12 border border-dashed rounded-lg bg-muted/20 min-w-0">
                     <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
                     <p className="text-muted-foreground mb-4">
                       {pages.length === 0 
@@ -529,8 +592,8 @@ export default function ModuleDetailsPage() {
                 {/* Optional content guidelines card */}
                 {activePage && (
                   <Card className="bg-muted/20 border-dashed">
-                    <CardContent className="p-4 text-sm">
-                      <div className="flex items-center gap-2 text-muted-foreground">
+                    <CardContent className="p-4 text-sm break-words">
+                      <div className="flex items-center gap-2 text-muted-foreground min-w-0">
                         <CheckCircle2 className="h-5 w-5 text-green-500" />
                         <span>Pro tips: Add multimedia content, keep text sections concise, and use quizzes to reinforce learning.</span>
                       </div>
@@ -543,62 +606,125 @@ export default function ModuleDetailsPage() {
           
           {/* Projects Tab */}
           <TabsContent value="projects" className="p-0 border-0">
-            <div className="space-y-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-medium">Projects</h2>
-                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/project/create`)}>
-                      <Plus className="mr-1 h-4 w-4" /> Add Project
+            <div className="space-y-4 lg:space-y-6">
+              {/* Header Card */}
+              <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50">
+                <CardContent className="p-4 lg:p-6">
+                  <div className="flex items-center justify-between min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-3 rounded-xl bg-indigo-100">
+                        <Rocket className="h-6 w-6 text-indigo-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-semibold text-indigo-900 break-words">Hands-on Projects</h2>
+                        <p className="text-indigo-700 text-sm break-words">Build real-world skills with practical coding challenges</p>
+                      </div>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/project/create`)}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      <Plus className="mr-2 h-4 w-4" /> 
+                      <span>Create Project</span>
                     </Button>
                   </div>
                 </CardContent>
               </Card>
               
-              <div className="grid grid-cols-1 gap-4">
+              {/* Projects Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 {projects.length === 0 ? (
-                  <Card>
-                    <CardContent className="p-6 flex flex-col items-center justify-center text-center">
-                      <FileText className="h-12 w-12 text-muted-foreground mb-3" />
-                      <h3 className="text-lg font-medium mb-2">No projects yet</h3>
-                      <p className="text-muted-foreground text-sm mb-4">Create projects to give hands-on practice to students</p>
-                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/project/create`)}>
-                        <Plus className="mr-1 h-4 w-4" /> Create Project
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <div className="lg:col-span-2">
+                    <Card className="border-dashed border-2 border-indigo-200 bg-indigo-50/30">
+                      <CardContent className="p-12 flex flex-col items-center justify-center text-center min-w-0">
+                        <div className="p-4 rounded-full bg-indigo-100 mb-4">
+                          <Code className="h-12 w-12 text-indigo-600" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-2 text-indigo-900 break-words">Launch your first project</h3>
+                        <p className="text-indigo-700 text-sm mb-6 max-w-md break-words">Projects provide hands-on experience and help students apply their knowledge. Create coding challenges, portfolios, or real-world applications.</p>
+                        <div className="flex flex-col sm:flex-row gap-3 min-w-0">
+                          <Button 
+                            onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/project/create`)}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                          >
+                            <Rocket className="mr-2 h-4 w-4" /> 
+                            Create Project
+                          </Button>
+                          <Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+                            <FolderOpen className="mr-2 h-4 w-4" /> 
+                            Browse Templates
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ) : (
-                  projects.map((project) => (
-                    <Card key={project.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                  projects.map((project, index) => (
+                    <Card key={project.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-indigo-100 hover:border-indigo-200">
                       <CardContent className="p-0">
-                        <div className="bg-primary/5 p-4 border-b">
-                          <div className="flex justify-between items-center">
-                            <h3 className="font-medium">{project.title}</h3>
-                            <Button variant="ghost" size="icon" asChild>
+                        {/* Project Header */}
+                        <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-6 border-b border-indigo-100">
+                          <div className="flex justify-between items-start mb-3 min-w-0">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="p-2 rounded-lg bg-indigo-100 text-indigo-600 flex-shrink-0">
+                                <Code size={16} />
+                              </div>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="text-xs font-medium text-indigo-600 bg-indigo-100 px-2 py-1 rounded-full break-words">
+                                  Project {index + 1}
+                                </span>
+                                <Badge variant={project.isPublished ? 'default' : 'outline'} className="text-xs">
+                                  {project.isPublished ? 'Published' : 'Draft'}
+                                </Badge>
+                              </div>
+                            </div>
+                            <Button variant="ghost" size="icon" asChild className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <Link href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/projects/${project.id}`}>
                                 <Eye className="h-4 w-4" />
                               </Link>
                             </Button>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          <h3 className="font-semibold text-indigo-900 mb-2 line-clamp-1 break-words">{project.title}</h3>
+                          <p className="text-sm text-indigo-700 line-clamp-2 break-words">
                             {project.description || 'No description available'}
                           </p>
                         </div>
-                        <div className="p-4">
-                          <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center">
-                                <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <span>Due {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : 'Not set'}</span>
+                        
+                        {/* Project Stats */}
+                        <div className="p-4 lg:p-6">
+                          <div className="flex items-center justify-between text-sm mb-4 break-words min-w-0">
+                            <div className="flex items-center gap-4 min-w-0">
+                              <div className="flex items-center gap-1 text-indigo-600 min-w-0">
+                                <Calendar size={14} />
+                                <span className="font-medium break-words">
+                                  {project.dueDate ? new Date(project.dueDate).toLocaleDateString() : 'No deadline'}
+                                </span>
                               </div>
-                              <div className="flex items-center">
-                                <ListChecks className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <span>{(project as any)._count?.submissions || 0} Submissions</span>
+                              <div className="flex items-center gap-1 text-slate-600 min-w-0">
+                                <Users size={14} />
+                                <span>{(project as any)._count?.submissions || 0} submissions</span>
                               </div>
                             </div>
-                            <Badge variant={project.isPublished ? 'default' : 'outline'}>
-                              {project.isPublished ? 'Published' : 'Draft'}
-                            </Badge>
+                            <div className="flex items-center gap-1 text-slate-500 min-w-0">
+                              <Trophy size={14} />
+                              <span className="text-xs">{(project as any).difficulty || 'Medium'}</span>
+                            </div>
+                          </div>
+                          
+                          {/* Project Progress */}
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center min-w-0">
+                              <span className="text-xs text-slate-600">Completion Rate</span>
+                              <span className="text-xs font-medium text-indigo-600 break-words">0%</span>
+                            </div>
+                            <div className="w-full bg-slate-200 rounded-full h-2">
+                              <div className="bg-indigo-500 h-2 rounded-full" style={{width: '0%'}}></div>
+                            </div>
+                            <div className="flex justify-between text-xs text-slate-500 min-w-0">
+                              <span>0 completed</span>
+                              <span>0 reviewed</span>
+                            </div>
                           </div>
                         </div>
                       </CardContent>
@@ -611,58 +737,118 @@ export default function ModuleDetailsPage() {
 
           {/* Lessons Tab */}
           <TabsContent value="lessons" className="p-0 border-0">
-            <div className="space-y-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-medium">Lessons</h2>
-                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lesson/create`)}>
-                      <Plus className="mr-1 h-4 w-4" /> Add Lesson
+            <div className="space-y-4 lg:space-y-6">
+              {/* Header Card */}
+              <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50">
+                <CardContent className="p-4 lg:p-6">
+                  <div className="flex items-center justify-between min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-3 rounded-xl bg-emerald-100">
+                        <PlayCircle className="h-6 w-6 text-emerald-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-semibold text-emerald-900 break-words">Video Lessons</h2>
+                        <p className="text-emerald-700 text-sm break-words">Engage students with interactive video content</p>
+                      </div>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lesson/create`)}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      <Plus className="mr-2 h-4 w-4" /> 
+                      <span>Create Lesson</span>
                     </Button>
                   </div>
                 </CardContent>
               </Card>
               
-              <div className="grid grid-cols-1 gap-4">
+              {/* Lessons Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 {!Array.isArray(lessons) || lessons.length === 0 ? (
-                  <Card>
-                    <CardContent className="p-6 flex flex-col items-center justify-center text-center">
-                      <BookOpen className="h-12 w-12 text-muted-foreground mb-3" />
-                      <h3 className="text-lg font-medium mb-2">No lessons yet</h3>
-                      <p className="text-muted-foreground text-sm mb-4">Create lessons to teach students course material</p>
-                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lesson/create`)}>
-                        <Plus className="mr-1 h-4 w-4" /> Create Lesson
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <div className="lg:col-span-2">
+                    <Card className="border-dashed border-2 border-emerald-200 bg-emerald-50/30">
+                      <CardContent className="p-12 flex flex-col items-center justify-center text-center min-w-0">
+                        <div className="p-4 rounded-full bg-emerald-100 mb-4">
+                          <Monitor className="h-12 w-12 text-emerald-600" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-2 text-emerald-900 break-words">Ready to create your first lesson?</h3>
+                        <p className="text-emerald-700 text-sm mb-6 max-w-md break-words">Lessons are the core of your course. Add videos, text content, and interactive elements to engage your students.</p>
+                        <div className="flex flex-col sm:flex-row gap-3 min-w-0">
+                          <Button 
+                            onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lesson/create`)}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                          >
+                            <Sparkles className="mr-2 h-4 w-4" /> 
+                            Create Your First Lesson
+                          </Button>
+                          <Button variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                            <Lightbulb className="mr-2 h-4 w-4" /> 
+                            View Best Practices
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ) : (
-                  lessons.map((lesson) => (
-                    <Card key={lesson.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                  lessons.map((lesson, index) => (
+                    <Card key={lesson.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-emerald-100 hover:border-emerald-200">
                       <CardContent className="p-0">
-                        <div className="bg-primary/5 p-4 border-b">
-                          <div className="flex justify-between items-center">
-                            <h3 className="font-medium">{lesson.title}</h3>
-                            <Button variant="ghost" size="icon" asChild>
+                        {/* Lesson Header */}
+                        <div className="bg-gradient-to-r from-emerald-50 to-green-50 p-6 border-b border-emerald-100">
+                          <div className="flex justify-between items-start mb-3 min-w-0">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="p-2 rounded-lg bg-emerald-100 text-emerald-600 flex-shrink-0">
+                                {lesson.videoUrl ? <FileVideo size={16} /> : <FileText size={16} />}
+                              </div>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full break-words">
+                                  Lesson {index + 1}
+                                </span>
+                                <Badge variant={(lesson as any).isPublished ? 'default' : 'outline'} className="text-xs">
+                                  {(lesson as any).isPublished ? 'Published' : 'Draft'}
+                                </Badge>
+                              </div>
+                            </div>
+                            <Button variant="ghost" size="icon" asChild className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <Link href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/lessons/${lesson.id}`}>
                                 <Eye className="h-4 w-4" />
                               </Link>
                             </Button>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          <h3 className="font-semibold text-emerald-900 mb-2 line-clamp-1 break-words">{lesson.title}</h3>
+                          <p className="text-sm text-emerald-700 line-clamp-2 break-words">
                             {lesson.description || 'No description available'}
                           </p>
                         </div>
-                        <div className="p-4">
-                          <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center">
-                                <Video className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <span>{lesson.videoUrl ? 'Video lesson' : 'Text lesson'}</span>
+                        
+                        {/* Lesson Stats */}
+                        <div className="p-4 lg:p-6">
+                          <div className="flex items-center justify-between text-sm break-words min-w-0">
+                            <div className="flex items-center gap-4 min-w-0">
+                              <div className="flex items-center gap-1 text-emerald-600 min-w-0">
+                                {lesson.videoUrl ? <Headphones size={14} /> : <FileText size={14} />}
+                                <span className="font-medium break-words">{lesson.videoUrl ? 'Video' : 'Text'}</span>
                               </div>
-                              <div className="flex items-center">
-                                <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <span>{lesson.duration ? `${lesson.duration} min` : 'No duration set'}</span>
+                              <div className="flex items-center gap-1 text-slate-600 min-w-0">
+                                <Timer size={14} />
+                                <span>{lesson.duration ? `${lesson.duration} min` : 'No duration'}</span>
                               </div>
+                            </div>
+                            <div className="flex items-center gap-1 text-slate-500 min-w-0">
+                              <Activity size={14} />
+                              <span className="text-xs">0 views</span>
+                            </div>
+                          </div>
+                          
+                          {/* Progress Bar */}
+                          <div className="mt-4">
+                            <div className="flex justify-between items-center mb-2 min-w-0">
+                              <span className="text-xs text-slate-600">Completion Rate</span>
+                              <span className="text-xs font-medium text-emerald-600 break-words">0%</span>
+                            </div>
+                            <div className="w-full bg-slate-200 rounded-full h-2">
+                              <div className="bg-emerald-500 h-2 rounded-full" style={{width: '0%'}}></div>
                             </div>
                           </div>
                         </div>
@@ -676,62 +862,125 @@ export default function ModuleDetailsPage() {
 
           {/* Assignments Tab */}
           <TabsContent value="assignments" className="p-0 border-0">
-            <div className="space-y-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-medium">Assignments</h2>
-                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/assignment/create`)}>
-                      <Plus className="mr-1 h-4 w-4" /> Add Assignment
+            <div className="space-y-4 lg:space-y-6">
+              {/* Header Card */}
+              <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+                <CardContent className="p-4 lg:p-6">
+                  <div className="flex items-center justify-between min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-3 rounded-xl bg-amber-100">
+                        <PenTool className="h-6 w-6 text-amber-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-semibold text-amber-900 break-words">Assignments</h2>
+                        <p className="text-amber-700 text-sm break-words">Assess student understanding with practical tasks</p>
+                      </div>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/assignment/create`)}
+                      className="bg-amber-600 hover:bg-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      <Plus className="mr-2 h-4 w-4" /> 
+                      <span>Create Assignment</span>
                     </Button>
                   </div>
                 </CardContent>
               </Card>
               
-              <div className="grid grid-cols-1 gap-4">
+              {/* Assignments Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 {assignments.length === 0 ? (
-                  <Card>
-                    <CardContent className="p-6 flex flex-col items-center justify-center text-center">
-                      <ClipboardList className="h-12 w-12 text-muted-foreground mb-3" />
-                      <h3 className="text-lg font-medium mb-2">No assignments yet</h3>
-                      <p className="text-muted-foreground text-sm mb-4">Create assignments to assess student learning</p>
-                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/assignment/create`)}>
-                        <Plus className="mr-1 h-4 w-4" /> Create Assignment
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <div className="lg:col-span-2">
+                    <Card className="border-dashed border-2 border-amber-200 bg-amber-50/30">
+                      <CardContent className="p-12 flex flex-col items-center justify-center text-center min-w-0">
+                        <div className="p-4 rounded-full bg-amber-100 mb-4">
+                          <CheckSquare className="h-12 w-12 text-amber-600" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-2 text-amber-900 break-words">Create your first assignment</h3>
+                        <p className="text-amber-700 text-sm mb-6 max-w-md break-words">Assignments help you evaluate student progress and understanding. Set deadlines, rubrics, and provide detailed feedback.</p>
+                        <div className="flex flex-col sm:flex-row gap-3 min-w-0">
+                          <Button 
+                            onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/assignment/create`)}
+                            className="bg-amber-600 hover:bg-amber-700 text-white"
+                          >
+                            <Target className="mr-2 h-4 w-4" /> 
+                            Create Assignment
+                          </Button>
+                          <Button variant="outline" className="border-amber-200 text-amber-700 hover:bg-amber-50">
+                            <Trophy className="mr-2 h-4 w-4" /> 
+                            View Rubric Templates
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ) : (
-                  assignments.map((assignment) => (
-                    <Card key={assignment.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                  assignments.map((assignment, index) => (
+                    <Card key={assignment.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-amber-100 hover:border-amber-200">
                       <CardContent className="p-0">
-                        <div className="bg-primary/5 p-4 border-b">
-                          <div className="flex justify-between items-center">
-                            <h3 className="font-medium">{assignment.title}</h3>
-                            <Button variant="ghost" size="icon" asChild>
+                        {/* Assignment Header */}
+                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-6 border-b border-amber-100">
+                          <div className="flex justify-between items-start mb-3 min-w-0">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="p-2 rounded-lg bg-amber-100 text-amber-600 flex-shrink-0">
+                                <Edit3 size={16} />
+                              </div>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="text-xs font-medium text-amber-600 bg-amber-100 px-2 py-1 rounded-full break-words">
+                                  Assignment {index + 1}
+                                </span>
+                                <Badge variant={assignment.isPublished ? 'default' : 'outline'} className="text-xs">
+                                  {assignment.isPublished ? 'Published' : 'Draft'}
+                                </Badge>
+                              </div>
+                            </div>
+                            <Button variant="ghost" size="icon" asChild className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <Link href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/assignments/${assignment.id}`}>
                                 <Eye className="h-4 w-4" />
                               </Link>
                             </Button>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          <h3 className="font-semibold text-amber-900 mb-2 line-clamp-1 break-words">{assignment.title}</h3>
+                          <p className="text-sm text-amber-700 line-clamp-2 break-words">
                             {assignment.description || 'No description available'}
                           </p>
                         </div>
-                        <div className="p-4">
-                          <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center">
-                                <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <span>Due {assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString() : 'Not set'}</span>
+                        
+                        {/* Assignment Stats */}
+                        <div className="p-4 lg:p-6">
+                          <div className="flex items-center justify-between text-sm mb-4 break-words min-w-0">
+                            <div className="flex items-center gap-4 min-w-0">
+                              <div className="flex items-center gap-1 text-amber-600 min-w-0">
+                                <Calendar size={14} />
+                                <span className="font-medium break-words">
+                                  {assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString() : 'No due date'}
+                                </span>
                               </div>
-                              <div className="flex items-center">
-                                <ListChecks className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <span>{(assignment as any)._count?.submissions || 0} Submissions</span>
+                              <div className="flex items-center gap-1 text-slate-600 min-w-0">
+                                <Users size={14} />
+                                <span>{(assignment as any)._count?.submissions || 0} submissions</span>
                               </div>
                             </div>
-                            <Badge variant={assignment.isPublished ? 'default' : 'outline'}>
-                              {assignment.isPublished ? 'Published' : 'Draft'}
-                            </Badge>
+                            <div className="flex items-center gap-1 text-slate-500 min-w-0">
+                              <Star size={14} />
+                              <span className="text-xs">{(assignment as any).pointsValue || 100} pts</span>
+                            </div>
+                          </div>
+                          
+                          {/* Submission Progress */}
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center min-w-0">
+                              <span className="text-xs text-slate-600">Submission Rate</span>
+                              <span className="text-xs font-medium text-amber-600 break-words">0%</span>
+                            </div>
+                            <div className="w-full bg-slate-200 rounded-full h-2">
+                              <div className="bg-amber-500 h-2 rounded-full" style={{width: '0%'}}></div>
+                            </div>
+                            <div className="flex justify-between text-xs text-slate-500 min-w-0">
+                              <span>0 submitted</span>
+                              <span>0 graded</span>
+                            </div>
                           </div>
                         </div>
                       </CardContent>
@@ -744,62 +993,125 @@ export default function ModuleDetailsPage() {
 
           {/* Quizzes Tab */}
           <TabsContent value="quizzes" className="p-0 border-0">
-            <div className="space-y-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-medium">Quizzes</h2>
-                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/quiz/create`)}>
-                      <Plus className="mr-1 h-4 w-4" /> Add Quiz
+            <div className="space-y-4 lg:space-y-6">
+              {/* Header Card */}
+              <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-violet-50">
+                <CardContent className="p-4 lg:p-6">
+                  <div className="flex items-center justify-between min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-3 rounded-xl bg-purple-100">
+                        <Brain className="h-6 w-6 text-purple-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-semibold text-purple-900 break-words">Knowledge Quizzes</h2>
+                        <p className="text-purple-700 text-sm break-words">Test student understanding with interactive assessments</p>
+                      </div>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/quiz/create`)}
+                      className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      <Plus className="mr-2 h-4 w-4" /> 
+                      <span>Create Quiz</span>
                     </Button>
                   </div>
                 </CardContent>
               </Card>
               
-              <div className="grid grid-cols-1 gap-4">
+              {/* Quizzes Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 {quizzes.length === 0 ? (
-                  <Card>
-                    <CardContent className="p-6 flex flex-col items-center justify-center text-center">
-                      <HelpCircle className="h-12 w-12 text-muted-foreground mb-3" />
-                      <h3 className="text-lg font-medium mb-2">No quizzes yet</h3>
-                      <p className="text-muted-foreground text-sm mb-4">Create quizzes to test student knowledge</p>
-                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/quiz/create`)}>
-                        <Plus className="mr-1 h-4 w-4" /> Create Quiz
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <div className="lg:col-span-2">
+                    <Card className="border-dashed border-2 border-purple-200 bg-purple-50/30">
+                      <CardContent className="p-12 flex flex-col items-center justify-center text-center min-w-0">
+                        <div className="p-4 rounded-full bg-purple-100 mb-4">
+                          <Zap className="h-12 w-12 text-purple-600" />
+                        </div>
+                        <h3 className="text-xl font-semibold mb-2 text-purple-900 break-words">Ready to test knowledge?</h3>
+                        <p className="text-purple-700 text-sm mb-6 max-w-md break-words">Quizzes help reinforce learning and provide instant feedback. Create multiple choice, true/false, or open-ended questions.</p>
+                        <div className="flex flex-col sm:flex-row gap-3 min-w-0">
+                          <Button 
+                            onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/quiz/create`)}
+                            className="bg-purple-600 hover:bg-purple-700 text-white"
+                          >
+                            <Lightbulb className="mr-2 h-4 w-4" /> 
+                            Create Your First Quiz
+                          </Button>
+                          <Button variant="outline" className="border-purple-200 text-purple-700 hover:bg-purple-50">
+                            <Award className="mr-2 h-4 w-4" /> 
+                            View Question Bank
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ) : (
-                  quizzes.map((quiz) => (
-                    <Card key={quiz.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                  quizzes.map((quiz, index) => (
+                    <Card key={quiz.id} className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-purple-100 hover:border-purple-200">
                       <CardContent className="p-0">
-                        <div className="bg-primary/5 p-4 border-b">
-                          <div className="flex justify-between items-center">
-                            <h3 className="font-medium">{quiz.title}</h3>
-                            <Button variant="ghost" size="icon" asChild>
+                        {/* Quiz Header */}
+                        <div className="bg-gradient-to-r from-purple-50 to-violet-50 p-6 border-b border-purple-100">
+                          <div className="flex justify-between items-start mb-3 min-w-0">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="p-2 rounded-lg bg-purple-100 text-purple-600 flex-shrink-0">
+                                <HelpCircle size={16} />
+                              </div>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="text-xs font-medium text-purple-600 bg-purple-100 px-2 py-1 rounded-full break-words">
+                                  Quiz {index + 1}
+                                </span>
+                                <Badge variant={quiz.isPublished ? 'default' : 'outline'} className="text-xs">
+                                  {quiz.isPublished ? 'Published' : 'Draft'}
+                                </Badge>
+                              </div>
+                            </div>
+                            <Button variant="ghost" size="icon" asChild className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <Link href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/quizzes/${quiz.id}`}>
                                 <Eye className="h-4 w-4" />
                               </Link>
                             </Button>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          <h3 className="font-semibold text-purple-900 mb-2 line-clamp-1 break-words">{quiz.title}</h3>
+                          <p className="text-sm text-purple-700 line-clamp-2 break-words">
                             {quiz.description || 'No description available'}
                           </p>
                         </div>
-                        <div className="p-4">
-                          <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center">
-                                <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <span>{quiz.timeLimit ? `${quiz.timeLimit} min` : 'No time limit'}</span>
+                        
+                        {/* Quiz Stats */}
+                        <div className="p-4 lg:p-6">
+                          <div className="flex items-center justify-between text-sm mb-4 break-words min-w-0">
+                            <div className="flex items-center gap-4 min-w-0">
+                              <div className="flex items-center gap-1 text-purple-600 min-w-0">
+                                <Timer size={14} />
+                                <span className="font-medium break-words">
+                                  {quiz.timeLimit ? `${quiz.timeLimit} min` : 'Untimed'}
+                                </span>
                               </div>
-                              <div className="flex items-center">
-                                <GraduationCap className="h-4 w-4 mr-1 text-muted-foreground" />
+                              <div className="flex items-center gap-1 text-slate-600 min-w-0">
+                                <TrendingUp size={14} />
                                 <span>Pass: {quiz.passingScore || 60}%</span>
                               </div>
                             </div>
-                            <Badge variant={quiz.isPublished ? 'default' : 'outline'}>
-                              {quiz.isPublished ? 'Published' : 'Draft'}
-                            </Badge>
+                            <div className="flex items-center gap-1 text-slate-500 min-w-0">
+                              <Bookmark size={14} />
+                              <span className="text-xs">{(quiz as any).questionCount || 0} questions</span>
+                            </div>
+                          </div>
+                          
+                          {/* Quiz Performance */}
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center min-w-0">
+                              <span className="text-xs text-slate-600">Average Score</span>
+                              <span className="text-xs font-medium text-purple-600 break-words">0%</span>
+                            </div>
+                            <div className="w-full bg-slate-200 rounded-full h-2">
+                              <div className="bg-purple-500 h-2 rounded-full" style={{width: '0%'}}></div>
+                            </div>
+                            <div className="flex justify-between text-xs text-slate-500 min-w-0">
+                              <span>0 attempts</span>
+                              <span>0 passed</span>
+                            </div>
                           </div>
                         </div>
                       </CardContent>
@@ -812,62 +1124,128 @@ export default function ModuleDetailsPage() {
           
           {/* Forum/Discussion Tab */}
           <TabsContent value="forum" className="p-0 border-0">
-            <div className="space-y-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-medium">Discussion Forum</h2>
-                    <Button size="sm" onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/forum/new-topic`)}>
-                      <Plus className="mr-1 h-4 w-4" /> Start Discussion
+            <div className="space-y-4 lg:space-y-6">
+              {/* Header Card */}
+              <Card className="border-rose-200 bg-gradient-to-r from-rose-50 to-pink-50">
+                <CardContent className="p-4 lg:p-6">
+                  <div className="flex items-center justify-between min-w-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-3 rounded-xl bg-rose-100">
+                        <MessageSquare className="h-6 w-6 text-rose-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-semibold text-rose-900 break-words">Discussion Forum</h2>
+                        <p className="text-rose-700 text-sm break-words">Foster collaboration and peer learning through discussions</p>
+                      </div>
+                    </div>
+                    <Button 
+                      size="sm" 
+                      onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/forum/new-topic`)}
+                      className="bg-rose-600 hover:bg-rose-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      <Plus className="mr-2 h-4 w-4" /> 
+                      <span>Start Discussion</span>
                     </Button>
                   </div>
                 </CardContent>
               </Card>
               
+              {/* Forum Topics Grid */}
               <div className="grid grid-cols-1 gap-4">
                 {forumTopics.length === 0 ? (
-                  <Card>
-                    <CardContent className="p-6 flex flex-col items-center justify-center text-center">
-                      <MessageCircle className="h-12 w-12 text-muted-foreground mb-3" />
-                      <h3 className="text-lg font-medium mb-2">No discussions yet</h3>
-                      <p className="text-muted-foreground text-sm mb-4">Start a discussion to engage with your students</p>
-                      <Button onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/forum/new-topic`)}>
-                        <Plus className="mr-1 h-4 w-4" /> Start Discussion
-                      </Button>
+                  <Card className="border-dashed border-2 border-rose-200 bg-rose-50/30">
+                    <CardContent className="p-12 flex flex-col items-center justify-center text-center min-w-0">
+                      <div className="p-4 rounded-full bg-rose-100 mb-4">
+                        <Users className="h-12 w-12 text-rose-600" />
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2 text-rose-900 break-words">Start meaningful conversations</h3>
+                      <p className="text-rose-700 text-sm mb-6 max-w-md break-words">Forums encourage peer-to-peer learning and help build a learning community. Start discussions, ask questions, and facilitate knowledge sharing.</p>
+                      <div className="flex flex-col sm:flex-row gap-3 min-w-0">
+                        <Button 
+                          onClick={() => router.push(`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/forum/new-topic`)}
+                          className="bg-rose-600 hover:bg-rose-700 text-white"
+                        >
+                          <MessageSquare className="mr-2 h-4 w-4" /> 
+                          Start First Discussion
+                        </Button>
+                        <Button variant="outline" className="border-rose-200 text-rose-700 hover:bg-rose-50">
+                          <Lightbulb className="mr-2 h-4 w-4" /> 
+                          Discussion Guidelines
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ) : (
-                  forumTopics.map((topic) => (
-                    <Card key={topic.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                  forumTopics.map((topic, index) => (
+                    <Card key={topic.id} className="group overflow-hidden hover:shadow-lg transition-all duration-300 border-rose-100 hover:border-rose-200">
                       <CardContent className="p-0">
-                        <div className="bg-primary/5 p-4 border-b">
-                          <div className="flex justify-between items-center">
-                            <h3 className="font-medium">{topic.title}</h3>
-                            <Button variant="ghost" size="icon" asChild>
+                        {/* Topic Header */}
+                        <div className="bg-gradient-to-r from-rose-50 to-pink-50 p-6 border-b border-rose-100">
+                          <div className="flex justify-between items-start mb-3 min-w-0">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="p-2 rounded-lg bg-rose-100 text-rose-600 flex-shrink-0">
+                                <MessageCircle size={16} />
+                              </div>
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="text-xs font-medium text-rose-600 bg-rose-100 px-2 py-1 rounded-full break-words">
+                                  Topic {index + 1}
+                                </span>
+                                {topic.isPinned && (
+                                  <Badge variant="default" className="text-xs bg-rose-600">
+                                    Pinned
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            <Button variant="ghost" size="icon" asChild className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <Link href={`/dashboard/instructor/courses/${courseId}/modules/${moduleId}/forum/topics/${topic.id}`}>
                                 <Eye className="h-4 w-4" />
                               </Link>
                             </Button>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          <h3 className="font-semibold text-rose-900 mb-2 line-clamp-1 break-words">{topic.title}</h3>
+                          <p className="text-sm text-rose-700 line-clamp-2 break-words">
                             {topic.description || 'No description available'}
                           </p>
                         </div>
-                        <div className="p-4">
-                          <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-4">
-                              <div className="flex items-center">
-                                <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <span>Last activity: {topic.lastActivity ? new Date(topic.lastActivity).toLocaleDateString() : 'None'}</span>
+                        
+                        {/* Topic Stats */}
+                        <div className="p-4 lg:p-6">
+                          <div className="flex items-center justify-between text-sm mb-4 break-words min-w-0">
+                            <div className="flex items-center gap-4 min-w-0">
+                              <div className="flex items-center gap-1 text-rose-600 min-w-0">
+                                <Clock size={14} />
+                                <span className="font-medium break-words">
+                                  {topic.lastActivity ? new Date(topic.lastActivity).toLocaleDateString() : 'No activity'}
+                                </span>
                               </div>
-                              <div className="flex items-center">
-                                <MessageCircle className="h-4 w-4 mr-1 text-muted-foreground" />
-                                <span>{topic.postCount || 0} Posts</span>
+                              <div className="flex items-center gap-1 text-slate-600 min-w-0">
+                                <MessageCircle size={14} />
+                                <span>{topic.postCount || 0} replies</span>
                               </div>
                             </div>
-                            {topic.isPinned && (
-                              <Badge variant="default">Pinned</Badge>
-                            )}
+                            <div className="flex items-center gap-1 text-slate-500 min-w-0">
+                              <Users size={14} />
+                              <span className="text-xs">{(topic as any).participantCount || 0} participants</span>
+                            </div>
+                          </div>
+                          
+                          {/* Engagement Bar */}
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center min-w-0">
+                              <span className="text-xs text-slate-600">Engagement Level</span>
+                              <span className="text-xs font-medium text-rose-600 break-words">
+                                {topic.postCount > 10 ? 'High' : topic.postCount > 5 ? 'Medium' : 'Low'}
+                              </span>
+                            </div>
+                            <div className="w-full bg-slate-200 rounded-full h-2">
+                              <div 
+                                className="bg-rose-500 h-2 rounded-full transition-all duration-300" 
+                                style={{
+                                  width: `${Math.min((topic.postCount || 0) * 10, 100)}%`
+                                }}
+                              ></div>
+                            </div>
                           </div>
                         </div>
                       </CardContent>

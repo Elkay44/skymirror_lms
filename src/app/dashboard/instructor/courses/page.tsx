@@ -167,16 +167,16 @@ export default function InstructorCoursesPage() {
   if (isLoading) {
     return (
       <div className="container mx-auto py-8 px-4">
-        <div className="animate-pulse space-y-6">
+        <div className="animate-pulse space-y-4 lg:space-y-6">
           <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-          <div className="flex space-x-4">
+          <div className="flex space-x-4 min-w-0">
             <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
             <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
             <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
             {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden overflow-hidden">
                 <div className="h-40 bg-gray-300 dark:bg-gray-700 rounded-t"></div>
                 <div className="p-4 space-y-3">
                   <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
@@ -194,9 +194,9 @@ export default function InstructorCoursesPage() {
   return (
     <div className="container mx-auto py-8 px-4">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 min-w-0">
         <div>
-          <h1 className="text-2xl font-bold">My Courses</h1>
+          <h1 className="text-2xl font-bold break-words">My Courses</h1>
           <p className="text-muted-foreground">
             Create, manage, and track all your courses
           </p>
@@ -213,7 +213,7 @@ export default function InstructorCoursesPage() {
       {/* Tabs and filters */}
       <div className="mb-6">
         <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 min-w-0">
             <TabsList>
               <TabsTrigger value="all">
                 All Courses <Badge variant="secondary" className="ml-2">{courses.length}</Badge>
@@ -229,8 +229,8 @@ export default function InstructorCoursesPage() {
               </TabsTrigger>
             </TabsList>
             
-            <div className="flex space-x-2 w-full md:w-auto">
-              <div className="relative flex-1 md:w-64">
+            <div className="flex space-x-2 w-full md:w-auto min-w-0">
+              <div className="relative flex-1 md:w-64 min-w-0">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
@@ -256,9 +256,9 @@ export default function InstructorCoursesPage() {
           <TabsContent value={activeTab} className="mt-6">
             {sortedCourses.length === 0 ? (
               <Card>
-                <CardContent className="flex flex-col items-center justify-center p-10">
+                <CardContent className="flex flex-col items-center justify-center p-10 min-w-0">
                   <BookOpen className="h-10 w-10 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2">
+                  <h3 className="text-lg font-medium mb-2 break-words">
                     {searchTerm 
                       ? 'No matching courses found' 
                       : activeTab === 'published' 
@@ -287,7 +287,7 @@ export default function InstructorCoursesPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 {sortedCourses.map((course) => {
                   // Define status badge color
                   const statusBadge = {
@@ -309,7 +309,7 @@ export default function InstructorCoursesPage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
-                      className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden flex flex-col h-full"
+                      className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden flex flex-col h-full min-w-0 overflow-hidden"
                     >
                       <div className="h-48 bg-gray-200 dark:bg-gray-700 relative">
                         {course.coverImage ? (
@@ -320,7 +320,7 @@ export default function InstructorCoursesPage() {
                             style={{ objectFit: 'cover' }}
                           />
                         ) : (
-                          <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="absolute inset-0 flex items-center justify-center min-w-0">
                             <BookOpen className="h-16 w-16 text-gray-400" />
                           </div>
                         )}
@@ -331,21 +331,21 @@ export default function InstructorCoursesPage() {
                         </div>
                       </div>
                       
-                      <div className="p-4 flex-1 flex flex-col">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{course.title}</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 flex-1">
+                      <div className="p-4 flex-1 flex flex-col min-w-0">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 break-words">{course.title}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 flex-1 break-words min-w-0">
                           {course.description.length > 120 
                             ? `${course.description.substring(0, 120)}...` 
                             : course.description}
                         </p>
                         
-                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                          <div className="flex justify-between items-center mb-1">
-                            <div className="flex items-center">
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-3 break-words">
+                          <div className="flex justify-between items-center mb-1 min-w-0">
+                            <div className="flex items-center min-w-0">
                               <Users className="h-4 w-4 mr-1 text-gray-400" />
                               <span>{course.enrollmentCount} students</span>
                             </div>
-                            <div className="flex items-center">
+                            <div className="flex items-center min-w-0">
                               <Clock className="h-4 w-4 mr-1 text-gray-400" />
                               <span>{new Date(course.lastUpdated).toLocaleDateString()}</span>
                             </div>
@@ -354,7 +354,7 @@ export default function InstructorCoursesPage() {
                           {/* Progress bar for draft courses */}
                           {course.publishStatus === 'draft' && (
                             <div className="mt-2">
-                              <div className="flex items-center justify-between text-xs mb-1">
+                              <div className="flex items-center justify-between text-xs mb-1 min-w-0">
                                 <span>Course progress</span>
                                 <span>{course.progress}%</span>
                               </div>
@@ -368,7 +368,7 @@ export default function InstructorCoursesPage() {
                           )}
                         </div>
                         
-                        <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between">
+                        <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between min-w-0">
                           <Button variant="ghost" size="sm" asChild>
                             <Link href={`/dashboard/instructor/courses/${course.id}`}>
                               Manage Course
@@ -377,19 +377,19 @@ export default function InstructorCoursesPage() {
                           
                           <DropdownMenu>
                             <DropdownMenuTrigger>
-                              <div className="inline-flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+                              <div className="inline-flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 break-words min-w-0">
                                 <MoreVertical className="h-4 w-4" />
                               </div>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                               <DropdownMenuItem>
-                                <Link href={`/dashboard/instructor/courses/${course.id}`} className="flex items-center w-full">
+                                <Link href={`/dashboard/instructor/courses/${course.id}`} className="flex items-center w-full min-w-0">
                                   <Eye className="mr-2 h-4 w-4" />
                                   View
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem>
-                                <Link href={`/dashboard/instructor/courses/${course.id}/preview`} className="flex items-center w-full">
+                                <Link href={`/dashboard/instructor/courses/${course.id}/preview`} className="flex items-center w-full min-w-0">
                                   <Eye className="mr-2 h-4 w-4" />
                                   Preview
                                 </Link>

@@ -71,7 +71,7 @@ export default function LearningPathView() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen min-w-0">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
       </div>
     );
@@ -79,10 +79,10 @@ export default function LearningPathView() {
 
   return (
     <div className="max-w-4xl mx-auto py-8">
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white shadow rounded-lg overflow-hidden overflow-hidden">
         {/* Header */}
         <div className="px-6 py-4 border-b">
-          <h2 className="text-2xl font-bold text-gray-900">Your Learning Path</h2>
+          <h2 className="text-2xl font-bold text-gray-900 break-words">Your Learning Path</h2>
           <p className="mt-1 text-gray-600">
             Personalized recommendations based on your progress and preferences
           </p>
@@ -90,12 +90,12 @@ export default function LearningPathView() {
 
         {/* Learning Preferences Form */}
         <div className="px-6 py-4 bg-gray-50">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 break-words">
             Learning Preferences
           </h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 break-words">
                 Learning Style
               </label>
               <select
@@ -113,7 +113,7 @@ export default function LearningPathView() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 break-words">
                 Preferred Pace
               </label>
               <select
@@ -130,7 +130,7 @@ export default function LearningPathView() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 break-words">
                 Difficulty Level
               </label>
               <select
@@ -151,7 +151,7 @@ export default function LearningPathView() {
 
             <button
               onClick={updatePreferences}
-              className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 break-words"
             >
               Update Preferences
             </button>
@@ -160,15 +160,15 @@ export default function LearningPathView() {
 
         {/* AI Recommendations */}
         {learningPath?.aiRecommendations && (
-          <div className="px-6 py-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="px-4 py-3 lg:px-6 lg:py-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 break-words">
               Personalized Recommendations
             </h3>
             
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               {/* Suggested Courses */}
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-2 break-words">
                   Recommended Courses
                 </h4>
                 <div className="bg-gray-50 rounded-md p-4">
@@ -177,7 +177,7 @@ export default function LearningPathView() {
                       (course, index) => (
                         <li
                           key={index}
-                          className="flex items-center text-gray-700"
+                          className="flex items-center text-gray-700 min-w-0"
                         >
                           <svg
                             className="w-4 h-4 mr-2 text-indigo-500"
@@ -200,7 +200,7 @@ export default function LearningPathView() {
 
               {/* Learning Pace */}
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-2 break-words">
                   Suggested Learning Pace
                 </h4>
                 <p className="bg-gray-50 rounded-md p-4 text-gray-700">
@@ -210,7 +210,7 @@ export default function LearningPathView() {
 
               {/* Practice Areas */}
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">
+                <h4 className="text-sm font-medium text-gray-700 mb-2 break-words">
                   Recommended Practice Areas
                 </h4>
                 <div className="bg-gray-50 rounded-md p-4">
@@ -219,7 +219,7 @@ export default function LearningPathView() {
                       (area, index) => (
                         <li
                           key={index}
-                          className="flex items-center text-gray-700"
+                          className="flex items-center text-gray-700 min-w-0"
                         >
                           <svg
                             className="w-4 h-4 mr-2 text-indigo-500"

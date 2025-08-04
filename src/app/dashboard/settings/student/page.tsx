@@ -112,7 +112,7 @@ export default function StudentSettings() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center h-64 min-w-0">
         <div className="animate-spin h-8 w-8 border-4 border-blue-600 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -122,10 +122,10 @@ export default function StudentSettings() {
     <div>
 
       
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
         <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 break-words">
               Full Name
             </label>
             <input
@@ -133,13 +133,13 @@ export default function StudentSettings() {
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 break-words">
               Email Address
             </label>
             <input
@@ -147,13 +147,13 @@ export default function StudentSettings() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
               required
             />
           </div>
 
           <div className="sm:col-span-2">
-            <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="bio" className="block text-sm font-medium text-gray-700 break-words">
               Bio
             </label>
             <textarea
@@ -161,13 +161,13 @@ export default function StudentSettings() {
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={3}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
               placeholder="Tell us a bit about yourself"
             />
           </div>
 
           <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700 break-words">
               Location
             </label>
             <input
@@ -175,13 +175,13 @@ export default function StudentSettings() {
               id="location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
               placeholder="City, Country"
             />
           </div>
 
           <div>
-            <label htmlFor="profile-image" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="profile-image" className="block text-sm font-medium text-gray-700 break-words">
               Profile Image URL
             </label>
             <input
@@ -189,17 +189,17 @@ export default function StudentSettings() {
               id="profile-image"
               value={image || ''}
               onChange={(e) => setImage(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
               placeholder="https://example.com/image.jpg"
             />
           </div>
         </div>
 
         <div className="pt-5">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Learning Preferences</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4 break-words">Learning Preferences</h3>
           <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="learning-style" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="learning-style" className="block text-sm font-medium text-gray-700 break-words">
                 Preferred Learning Style
               </label>
               <select
@@ -209,7 +209,7 @@ export default function StudentSettings() {
                   ...learningPreferences,
                   preferredLearningStyle: e.target.value
                 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
               >
                 <option value="">Select a learning style</option>
                 <option value="visual">Visual (learn by seeing)</option>
@@ -221,7 +221,7 @@ export default function StudentSettings() {
             </div>
 
             <div>
-              <label htmlFor="course-difficulty" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="course-difficulty" className="block text-sm font-medium text-gray-700 break-words">
                 Preferred Course Difficulty
               </label>
               <select
@@ -231,7 +231,7 @@ export default function StudentSettings() {
                   ...learningPreferences,
                   courseDifficulty: e.target.value
                 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
               >
                 <option value="beginner">Beginner</option>
                 <option value="intermediate">Intermediate</option>
@@ -241,7 +241,7 @@ export default function StudentSettings() {
             </div>
 
             <div className="sm:col-span-2">
-              <label htmlFor="topics-of-interest" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="topics-of-interest" className="block text-sm font-medium text-gray-700 break-words">
                 Topics of Interest
               </label>
               <textarea
@@ -252,13 +252,13 @@ export default function StudentSettings() {
                   topicsOfInterest: e.target.value
                 })}
                 rows={3}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
                 placeholder="e.g. Web Development, Machine Learning, Digital Marketing"
               />
             </div>
 
             <div>
-              <label htmlFor="study-reminder" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="study-reminder" className="block text-sm font-medium text-gray-700 break-words">
                 Study Reminder Frequency
               </label>
               <select
@@ -268,7 +268,7 @@ export default function StudentSettings() {
                   ...learningPreferences,
                   studyReminderFrequency: e.target.value
                 })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm break-words"
               >
                 <option value="daily">Daily</option>
                 <option value="weekdays">Weekdays Only</option>
@@ -280,10 +280,10 @@ export default function StudentSettings() {
         </div>
 
         <div className="pt-5">
-          <div className="flex justify-end">
+          <div className="flex justify-end min-w-0">
             <button
               type="submit"
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 break-words min-w-0"
             >
               <Save className="h-4 w-4 mr-2" />
               Save Settings

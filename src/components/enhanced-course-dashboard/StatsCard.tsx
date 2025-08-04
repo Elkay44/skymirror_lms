@@ -78,8 +78,8 @@ export function StatsCard({
         transition: { duration: 0.2 } 
       }}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-white dark:bg-gray-800 shadow-sm">
+      <div className="flex items-start justify-between min-w-0">
+        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-white dark:bg-gray-800 shadow-sm min-w-0">
           {icon}
         </div>
         {trend && (
@@ -94,10 +94,10 @@ export function StatsCard({
       </div>
       
       <div className="mt-4">
-        <div className="text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="text-3xl font-bold text-gray-900 dark:text-white break-words">
           {value}
         </div>
-        <h3 className="mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">
+        <h3 className="mt-1 text-sm font-medium text-gray-500 dark:text-gray-400 break-words">
           {label}
         </h3>
         

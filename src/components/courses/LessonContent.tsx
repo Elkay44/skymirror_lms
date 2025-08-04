@@ -180,7 +180,7 @@ export default function LessonContent({ courseId, lessonId, onComplete }: Lesson
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center h-64 min-w-0">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
       </div>
     );
@@ -189,16 +189,16 @@ export default function LessonContent({ courseId, lessonId, onComplete }: Lesson
   if (error) {
     return (
       <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
-        <div className="flex items-start">
-          <div className="flex-shrink-0">
+        <div className="flex items-start min-w-0">
+          <div className="flex-shrink-0 min-w-0">
             <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
           <div className="ml-3">
-            <p className="text-sm text-red-700">{error}</p>
+            <p className="text-sm text-red-700 break-words">{error}</p>
             <div className="mt-4">
-              <Link href={`/courses/${courseId}`} className="text-sm font-medium text-red-700 hover:text-red-600">
+              <Link href={`/courses/${courseId}`} className="text-sm font-medium text-red-700 hover:text-red-600 break-words">
                 Go back to course
               </Link>
             </div>
@@ -211,16 +211,16 @@ export default function LessonContent({ courseId, lessonId, onComplete }: Lesson
   if (!lesson) {
     return (
       <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-md">
-        <div className="flex">
-          <div className="flex-shrink-0">
+        <div className="flex min-w-0">
+          <div className="flex-shrink-0 min-w-0">
             <svg className="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
           <div className="ml-3">
-            <p className="text-sm text-yellow-700">Lesson not found.</p>
+            <p className="text-sm text-yellow-700 break-words">Lesson not found.</p>
             <div className="mt-4">
-              <Link href={`/courses/${courseId}`} className="text-sm font-medium text-yellow-700 hover:text-yellow-600">
+              <Link href={`/courses/${courseId}`} className="text-sm font-medium text-yellow-700 hover:text-yellow-600 break-words">
                 Go back to course
               </Link>
             </div>
@@ -233,7 +233,7 @@ export default function LessonContent({ courseId, lessonId, onComplete }: Lesson
   return (
     <div className="w-full">
       {/* Lesson Title */}
-      <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">{lesson.title}</h1>
+      <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 break-words">{lesson.title}</h1>
       
       {/* Video Player (if video exists) */}
       {lesson.videoUrl && (
@@ -249,7 +249,7 @@ export default function LessonContent({ courseId, lessonId, onComplete }: Lesson
       
       {/* Mobile Tabs */}
       {isMobile && (
-        <div className="flex border-b border-gray-200 mb-4">
+        <div className="flex border-b border-gray-200 mb-4 min-w-0">
           <button
             className={`flex-1 py-2 px-4 text-center text-sm font-medium ${activeTab === 'content' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500'}`}
             onClick={() => setActiveTab('content')}
@@ -265,18 +265,18 @@ export default function LessonContent({ courseId, lessonId, onComplete }: Lesson
         </div>
       )}
       
-      <div className="flex flex-col md:flex-row md:space-x-6">
+      <div className="flex flex-col md:flex-row md:space-x-6 min-w-0">
         {/* Lesson Content */}
         <div className={`${isMobile && activeTab !== 'content' ? 'hidden' : 'block'} md:flex-1`}>
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-6 overflow-hidden">
             <div className="prose prose-indigo max-w-none" dangerouslySetInnerHTML={{ __html: lesson.content }} />
             
             {/* Lesson Navigation */}
-            <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+            <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200 min-w-0">
               {prevLesson ? (
                 <Link
                   href={`/courses/${courseId}/lessons/${prevLesson.id}`}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 break-words min-w-0"
                 >
                   <svg className="mr-2 -ml-1 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -291,7 +291,7 @@ export default function LessonContent({ courseId, lessonId, onComplete }: Lesson
                 <button
                   onClick={handleMarkComplete}
                   disabled={isCompleting}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed break-words min-w-0"
                 >
                   {isCompleting ? (
                     <>
@@ -306,7 +306,7 @@ export default function LessonContent({ courseId, lessonId, onComplete }: Lesson
                   )}
                 </button>
               ) : (
-                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                <span className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800 break-words min-w-0">
                   <svg className="-ml-1 mr-1.5 h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
@@ -317,7 +317,7 @@ export default function LessonContent({ courseId, lessonId, onComplete }: Lesson
               {nextLesson ? (
                 <Link
                   href={`/courses/${courseId}/lessons/${nextLesson.id}`}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 break-words min-w-0"
                 >
                   Next Lesson
                   <svg className="ml-2 -mr-1 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -327,7 +327,7 @@ export default function LessonContent({ courseId, lessonId, onComplete }: Lesson
               ) : (
                 <Link
                   href={`/courses/${courseId}`}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 break-words min-w-0"
                 >
                   Complete Course
                   <svg className="ml-2 -mr-1 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

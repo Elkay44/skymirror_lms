@@ -141,8 +141,8 @@ export default function StudentMentorshipPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
+      <div className="space-y-4 lg:space-y-6">
+        <div className="flex justify-between items-center min-w-0">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-10 w-64" />
         </div>
@@ -150,7 +150,7 @@ export default function StudentMentorshipPage() {
           {[1, 2, 3].map((i) => (
             <Card key={i}>
               <CardHeader>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 min-w-0">
                   <Skeleton className="h-12 w-12 rounded-full" />
                   <div className="space-y-2">
                     <Skeleton className="h-4 w-32" />
@@ -170,9 +170,9 @@ export default function StudentMentorshipPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Mentorship Program</h1>
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col space-y-2 min-w-0">
+        <h1 className="text-3xl font-bold tracking-tight break-words">Mentorship Program</h1>
         <p className="text-muted-foreground">
           Connect with experienced mentors to guide you through your learning journey.
         </p>
@@ -183,7 +183,7 @@ export default function StudentMentorshipPage() {
         className="space-y-4"
         onValueChange={(value) => setActiveTab(value as 'find' | 'my' | 'requests')}
       >
-        <div className="flex justify-between items-center flex-wrap gap-4">
+        <div className="flex justify-between items-center flex-wrap gap-4 min-w-0">
           <TabsList>
             <TabsTrigger value="find">Find Mentors</TabsTrigger>
             <TabsTrigger value="my">My Mentors</TabsTrigger>
@@ -218,22 +218,22 @@ export default function StudentMentorshipPage() {
           {filteredMentors.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredMentors.map((mentor) => (
-                <Card key={mentor.id} className="flex flex-col h-full">
+                <Card key={mentor.id} className="flex flex-col h-full min-w-0">
                   <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-4">
+                    <div className="flex items-start justify-between min-w-0">
+                      <div className="flex items-center space-x-4 min-w-0">
                         <Avatar className="h-12 w-12">
                           <AvatarImage src={mentor.image} alt={mentor.name} />
                           <AvatarFallback>{mentor.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <CardTitle className="text-lg">{mentor.name}</CardTitle>
+                          <CardTitle className="text-lg break-words">{mentor.name}</CardTitle>
                           <CardDescription>{mentor.role}</CardDescription>
                         </div>
                       </div>
-                      <div className="flex items-center">
+                      <div className="flex items-center min-w-0">
                         <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                        <span className="ml-1 text-sm font-medium">
+                        <span className="ml-1 text-sm font-medium break-words">
                           {mentor.rating.toFixed(1)}
                           <span className="text-muted-foreground"> ({mentor.reviewCount})</span>
                         </span>
@@ -241,11 +241,11 @@ export default function StudentMentorshipPage() {
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="flex-1">
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{mentor.bio}</p>
+                  <CardContent className="flex-1 min-w-0">
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-3 break-words">{mentor.bio}</p>
                     
                     <div className="space-y-3">
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-1.5 min-w-0">
                         {mentor.specialties.map((specialty) => (
                           <Badge key={specialty} variant="secondary" className="text-xs">
                             {specialty}
@@ -254,7 +254,7 @@ export default function StudentMentorshipPage() {
                       </div>
                       
                       {mentor.sessionRate && (
-                        <div className="flex items-center text-sm font-medium">
+                        <div className="flex items-center text-sm font-medium break-words min-w-0">
                           ${mentor.sessionRate} <span className="text-muted-foreground text-xs ml-1">/ hour</span>
                         </div>
                       )}
@@ -276,11 +276,11 @@ export default function StudentMentorshipPage() {
           ) : (
             <Card>
               <CardContent className="pt-6 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted min-w-0">
                   <User className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <h3 className="mt-4 text-lg font-medium">No mentors found</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <h3 className="mt-4 text-lg font-medium break-words">No mentors found</h3>
+                <p className="mt-2 text-sm text-muted-foreground break-words">
                   {searchTerm 
                     ? `No mentors match your search for "${searchTerm}"`
                     : 'There are no mentors available at the moment.'}
@@ -296,21 +296,21 @@ export default function StudentMentorshipPage() {
               {myMentors.map((mentor) => (
                 <Card key={mentor.id}>
                   <CardHeader>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div className="flex items-center space-x-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 min-w-0">
+                      <div className="flex items-center space-x-4 min-w-0">
                         <Avatar className="h-12 w-12">
                           <AvatarImage src={mentor.image} alt={mentor.name} />
                           <AvatarFallback>{mentor.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                         </Avatar>
                         <div>
                           <CardTitle>{mentor.name}</CardTitle>
-                          <CardDescription className="flex items-center">
+                          <CardDescription className="flex items-center min-w-0">
                             <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500 mr-1" />
                             {mentor.rating.toFixed(1)} · {mentor.role}
                           </CardDescription>
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2 min-w-0">
                         <Button variant="outline" size="sm" className="gap-2">
                           <MessageSquare className="h-4 w-4" />
                           Message
@@ -328,11 +328,11 @@ export default function StudentMentorshipPage() {
           ) : (
             <Card>
               <CardContent className="pt-6 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted min-w-0">
                   <User className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <h3 className="mt-4 text-lg font-medium">No mentors yet</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <h3 className="mt-4 text-lg font-medium break-words">No mentors yet</h3>
+                <p className="mt-2 text-sm text-muted-foreground break-words">
                   You haven't connected with any mentors yet. Browse available mentors and send a request.
                 </p>
                 <Button 
@@ -352,15 +352,15 @@ export default function StudentMentorshipPage() {
               {requests.map((request) => (
                 <Card key={request.id}>
                   <CardHeader className="pb-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                      <div className="flex items-center">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
+                      <div className="flex items-center min-w-0">
                         <Avatar className="h-10 w-10 mr-3">
                           <AvatarImage src={request.mentor.image} alt={request.mentor.name} />
                           <AvatarFallback>{request.mentor.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <h3 className="font-medium">Mentorship Request</h3>
-                          <p className="text-sm text-muted-foreground">
+                          <h3 className="font-medium break-words">Mentorship Request</h3>
+                          <p className="text-sm text-muted-foreground break-words">
                             Requested on {format(request.requestedDate, 'MMM d, yyyy')}
                           </p>
                         </div>
@@ -388,11 +388,11 @@ export default function StudentMentorshipPage() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground break-words">
                       {request.message}
                     </p>
                   </CardContent>
-                  <CardFooter className="flex justify-end gap-2 border-t pt-4">
+                  <CardFooter className="flex justify-end gap-2 border-t pt-4 min-w-0">
                     {request.status === 'accepted' && (
                       <>
                         <Button variant="outline" size="sm">
@@ -418,11 +418,11 @@ export default function StudentMentorshipPage() {
           ) : (
             <Card>
               <CardContent className="pt-6 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted min-w-0">
                   <Clock className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <h3 className="mt-4 text-lg font-medium">No pending requests</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <h3 className="mt-4 text-lg font-medium break-words">No pending requests</h3>
+                <p className="mt-2 text-sm text-muted-foreground break-words">
                   You haven't sent any mentorship requests yet. Find a mentor to get started.
                 </p>
                 <Button 
@@ -440,11 +440,11 @@ export default function StudentMentorshipPage() {
       {/* Request Mentorship Dialog */}
       {selectedMentor && (
         <div className={`fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 ${isRequestDialogOpen ? 'block' : 'hidden'}`}>
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-start mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md overflow-hidden">
+            <div className="flex justify-between items-start mb-4 min-w-0">
               <div>
-                <h3 className="text-lg font-semibold">Request Mentorship</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="text-lg font-semibold break-words">Request Mentorship</h3>
+                <p className="text-sm text-muted-foreground break-words">
                   Send a request to {selectedMentor.name}
                 </p>
               </div>
@@ -458,20 +458,20 @@ export default function StudentMentorshipPage() {
             
             <div className="space-y-4">
               <div>
-                <label htmlFor="message" className="block text-sm font-medium mb-1">
+                <label htmlFor="message" className="block text-sm font-medium mb-1 break-words">
                   Message
                 </label>
                 <textarea
                   id="message"
                   rows={4}
-                  className="w-full px-3 py-2 border rounded-md text-sm"
+                  className="w-full px-3 py-2 border rounded-md text-sm break-words"
                   value={requestMessage}
                   onChange={(e) => setRequestMessage(e.target.value)}
                   placeholder="Write a message to introduce yourself and explain what you'd like to learn..."
                 />
               </div>
               
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-2 min-w-0">
                 <Button 
                   variant="outline" 
                   onClick={() => setIsRequestDialogOpen(false)}

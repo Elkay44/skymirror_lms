@@ -249,7 +249,7 @@ export default function EditCoursePage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-64 min-w-0">
         <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
@@ -276,9 +276,9 @@ export default function EditCoursePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Edit Course</h1>
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex items-center justify-between min-w-0">
+        <h1 className="text-2xl font-bold break-words">Edit Course</h1>
         <Button
           variant="outline"
           onClick={() => router.push(`/dashboard/instructor/courses/${courseId}`)}

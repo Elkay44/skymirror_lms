@@ -57,7 +57,7 @@ const Editor = ({ value, onChange, editable = true, placeholder = "Write somethi
   return (
     <div className="border rounded-md overflow-hidden">
       {editable && (
-        <div className="flex flex-wrap items-center p-2 gap-1 border-b bg-muted/50">
+        <div className="flex flex-wrap items-center p-2 gap-1 border-b bg-muted/50 min-w-0">
           <Button
             type="button"
             variant="ghost"

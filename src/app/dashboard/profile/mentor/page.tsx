@@ -186,7 +186,7 @@ export default function MentorProfilePage() {
 
   if (loading) {
     return (
-      <div className="p-8 flex justify-center items-center">
+      <div className="p-8 flex justify-center items-center min-w-0">
         <div className="animate-spin h-8 w-8 border-4 border-teal-600 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -196,7 +196,7 @@ export default function MentorProfilePage() {
     return (
       <div className="p-8">
         <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-          <h2 className="text-red-800 font-medium">Profile Not Found</h2>
+          <h2 className="text-red-800 font-medium break-words">Profile Not Found</h2>
           <p className="text-red-600 mt-1">Unable to load your profile information. Please try again later.</p>
         </div>
       </div>
@@ -210,19 +210,19 @@ export default function MentorProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-teal-600 to-emerald-700 px-6 py-12 text-white relative">
             <button
               onClick={() => setIsEditing(!isEditing)}
-              className="absolute top-4 right-4 bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors"
+              className="absolute top-4 right-4 bg-white/20 p-2 rounded-full hover:bg-white/30 transition-colors overflow-hidden flex-shrink-0"
               aria-label={isEditing ? "Cancel editing" : "Edit profile"}
             >
               {isEditing ? <Save className="h-5 w-5" /> : <Edit className="h-5 w-5" />}
             </button>
             
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="w-24 h-24 rounded-full overflow-hidden bg-white/20 flex-shrink-0 flex items-center justify-center">
+            <div className="flex flex-col md:flex-row items-center gap-4 lg:gap-6 min-w-0">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-white/20 flex-shrink-0 flex items-center justify-center min-w-0">
                 {userData.image ? (
                   <Image 
                     src={userData.image} 
@@ -237,14 +237,14 @@ export default function MentorProfilePage() {
               </div>
               
               <div className="text-center md:text-left">
-                <h1 className="text-2xl md:text-3xl font-bold mb-1">{userData.name}</h1>
-                <div className="flex flex-wrap justify-center md:justify-start gap-3 text-sm">
-                  <div className="flex items-center">
+                <h1 className="text-2xl md:text-3xl font-bold mb-1 break-words">{userData.name}</h1>
+                <div className="flex flex-wrap justify-center md:justify-start gap-3 text-sm break-words min-w-0">
+                  <div className="flex items-center min-w-0">
                     <Mail className="h-4 w-4 mr-1" />
                     {userData.email}
                   </div>
                   {userData.location && (
-                    <div className="flex items-center">
+                    <div className="flex items-center min-w-0">
                       <Briefcase className="h-4 w-4 mr-1" />
                       {userData.location}
                     </div>
@@ -256,12 +256,12 @@ export default function MentorProfilePage() {
           
           {/* Profile content */}
           {isEditing ? (
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Edit Your Profile</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="p-4 lg:p-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 break-words">Edit Your Profile</h2>
+              <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1 break-words">Name</label>
                     <input
                       type="text"
                       id="name"
@@ -272,7 +272,7 @@ export default function MentorProfilePage() {
                   </div>
                   
                   <div>
-                    <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                    <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1 break-words">Bio</label>
                     <textarea
                       id="bio"
                       value={bio}
@@ -283,7 +283,7 @@ export default function MentorProfilePage() {
                   </div>
                   
                   <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1 break-words">Location</label>
                     <input
                       type="text"
                       id="location"
@@ -295,10 +295,10 @@ export default function MentorProfilePage() {
                 </div>
                 
                 <div className="border-t border-gray-200 pt-4">
-                  <h3 className="text-lg font-medium text-gray-800 mb-3">Mentoring Details</h3>
+                  <h3 className="text-lg font-medium text-gray-800 mb-3 break-words">Mentoring Details</h3>
                   <div className="space-y-4">
                     <div>
-                      <label htmlFor="specialties" className="block text-sm font-medium text-gray-700 mb-1">Specialties</label>
+                      <label htmlFor="specialties" className="block text-sm font-medium text-gray-700 mb-1 break-words">Specialties</label>
                       <textarea
                         id="specialties"
                         value={specialties}
@@ -310,7 +310,7 @@ export default function MentorProfilePage() {
                     </div>
                     
                     <div>
-                      <label htmlFor="experience" className="block text-sm font-medium text-gray-700 mb-1">Experience</label>
+                      <label htmlFor="experience" className="block text-sm font-medium text-gray-700 mb-1 break-words">Experience</label>
                       <textarea
                         id="experience"
                         value={experience}
@@ -322,7 +322,7 @@ export default function MentorProfilePage() {
                     </div>
                     
                     <div>
-                      <label htmlFor="hourlyRate" className="block text-sm font-medium text-gray-700 mb-1">Hourly Rate (USD)</label>
+                      <label htmlFor="hourlyRate" className="block text-sm font-medium text-gray-700 mb-1 break-words">Hourly Rate (USD)</label>
                       <input
                         type="number"
                         id="hourlyRate"
@@ -335,8 +335,8 @@ export default function MentorProfilePage() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Accepting New Mentees</label>
-                      <div className="flex items-center space-x-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1 break-words">Accepting New Mentees</label>
+                      <div className="flex items-center space-x-2 min-w-0">
                         <input
                           type="checkbox"
                           id="isActive"
@@ -351,12 +351,12 @@ export default function MentorProfilePage() {
                 </div>
                 
                 <div className="border-t border-gray-200 pt-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-lg font-medium text-gray-800">Availability Schedule</h3>
+                  <div className="flex justify-between items-center mb-3 min-w-0">
+                    <h3 className="text-lg font-medium text-gray-800 break-words">Availability Schedule</h3>
                     <button
                       type="button"
                       onClick={addAvailabilitySlot}
-                      className="text-sm px-2 py-1 bg-teal-100 text-teal-700 rounded hover:bg-teal-200"
+                      className="text-sm px-2 py-1 bg-teal-100 text-teal-700 rounded hover:bg-teal-200 break-words"
                     >
                       + Add Slot
                     </button>
@@ -364,7 +364,7 @@ export default function MentorProfilePage() {
                   
                   <div className="space-y-3">
                     {availabilitySlots.map((slot, index) => (
-                      <div key={index} className="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                      <div key={index} className="flex flex-wrap items-center gap-2 p-3 bg-gray-50 rounded-lg min-w-0 flex-shrink-0">
                         <div className="w-full sm:w-auto">
                           <label className="text-xs text-gray-500 block sm:hidden">Day</label>
                           <select
@@ -413,7 +413,7 @@ export default function MentorProfilePage() {
                   </div>
                 </div>
                 
-                <div className="flex justify-end">
+                <div className="flex justify-end min-w-0">
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
@@ -431,10 +431,10 @@ export default function MentorProfilePage() {
               </form>
             </div>
           ) : (
-            <div className="p-6">
+            <div className="p-4 lg:p-6">
               {/* Bio section */}
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center break-words min-w-0">
                   <UserCircle className="w-5 h-5 mr-2 text-teal-600" />
                   About Me
                 </h2>
@@ -444,9 +444,9 @@ export default function MentorProfilePage() {
               </div>
               
               {/* Mentor Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-8">
                 <div className="bg-teal-50 p-4 rounded-lg border border-teal-100">
-                  <h3 className="font-medium text-teal-800 mb-3 flex items-center">
+                  <h3 className="font-medium text-teal-800 mb-3 flex items-center break-words min-w-0">
                     <MessageSquare className="w-4 h-4 mr-2" />
                     Specialties
                   </h3>
@@ -456,7 +456,7 @@ export default function MentorProfilePage() {
                 </div>
                 
                 <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
-                  <h3 className="font-medium text-emerald-800 mb-3 flex items-center">
+                  <h3 className="font-medium text-emerald-800 mb-3 flex items-center break-words min-w-0">
                     <Heart className="w-4 h-4 mr-2" />
                     Experience
                   </h3>
@@ -466,7 +466,7 @@ export default function MentorProfilePage() {
                 </div>
                 
                 <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-100">
-                  <h3 className="font-medium text-cyan-800 mb-3 flex items-center">
+                  <h3 className="font-medium text-cyan-800 mb-3 flex items-center break-words min-w-0">
                     <CreditCard className="w-4 h-4 mr-2" />
                     Hourly Rate
                   </h3>
@@ -478,7 +478,7 @@ export default function MentorProfilePage() {
               
               {/* Availability Schedule */}
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center break-words min-w-0">
                   <Calendar className="w-5 h-5 mr-2 text-teal-600" />
                   Availability Schedule
                 </h2>
@@ -487,9 +487,9 @@ export default function MentorProfilePage() {
                   <div className="bg-gradient-to-r from-teal-50 to-emerald-50 p-5 rounded-lg border border-teal-100">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {availabilitySlots.map((slot, index) => (
-                        <div key={index} className="flex items-center space-x-2 bg-white p-3 rounded-lg shadow-sm">
+                        <div key={index} className="flex items-center space-x-2 bg-white p-3 rounded-lg shadow-sm min-w-0 overflow-hidden">
                           <Clock className="w-4 h-4 text-teal-500" />
-                          <span className="font-medium text-gray-700">{slot.day}:</span>
+                          <span className="font-medium text-gray-700 break-words">{slot.day}:</span>
                           <span className="text-gray-600">{slot.startTime} - {slot.endTime}</span>
                         </div>
                       ))}
@@ -504,28 +504,28 @@ export default function MentorProfilePage() {
               
               {/* Mentoring Stats */}
               <div className="mt-8">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center break-words min-w-0">
                   <CheckSquare className="w-5 h-5 mr-2 text-teal-600" />
                   Mentoring Statistics
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                    <div className="text-2xl font-bold text-teal-600">{userData.activeStudents || 0}</div>
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="text-2xl font-bold text-teal-600 break-words">{userData.activeStudents || 0}</div>
                     <div className="text-xs text-gray-500">Active Mentees</div>
                   </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                    <div className="text-2xl font-bold text-emerald-600">{userData.totalSessions || 0}</div>
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="text-2xl font-bold text-emerald-600 break-words">{userData.totalSessions || 0}</div>
                     <div className="text-xs text-gray-500">Total Sessions</div>
                   </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                    <div className="flex items-center">
-                      <span className="text-2xl font-bold text-yellow-500">{userData.averageRating?.toFixed(1) || '0.0'}</span>
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="flex items-center min-w-0">
+                      <span className="text-2xl font-bold text-yellow-500 break-words">{userData.averageRating?.toFixed(1) || '0.0'}</span>
                       <Star className="w-5 h-5 text-yellow-500 ml-1" fill="currentColor" />
                     </div>
                     <div className="text-xs text-gray-500">Average Rating</div>
                   </div>
-                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                    <div className="text-2xl font-bold text-cyan-600">{userData.mentorProfile?.isActive ? 'Yes' : 'No'}</div>
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="text-2xl font-bold text-cyan-600 break-words">{userData.mentorProfile?.isActive ? 'Yes' : 'No'}</div>
                     <div className="text-xs text-gray-500">Accepting Mentees</div>
                   </div>
                 </div>

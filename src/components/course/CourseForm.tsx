@@ -77,16 +77,16 @@ export function CourseForm({ onSubmit, isEditMode = false }: CourseFormProps) {
   const formTitle = isEditMode ? 'Edit Course' : 'Create New Course';
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold">{formTitle}</h1>
+    <div className="space-y-6 lg:space-y-8">
+      <h1 className="text-3xl font-bold break-words">{formTitle}</h1>
       {/* Progress Steps */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8 min-w-0">
         {[1, 2, 3, 4, 5, 6, 7].map((step) => {
           const isActive = currentStep === step;
           const isCompleted = currentStep > step;
           
           return (
-            <div key={step} className="flex flex-col items-center relative flex-1">
+            <div key={step} className="flex flex-col items-center relative flex-1 min-w-0">
               {/* Progress line before */}
               {step > 1 && (
                 <div 
@@ -133,7 +133,7 @@ export function CourseForm({ onSubmit, isEditMode = false }: CourseFormProps) {
       </div>
 
       {/* Form Content */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 overflow-hidden">
         {renderStep()}
       </div>
 

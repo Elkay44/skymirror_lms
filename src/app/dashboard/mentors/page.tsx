@@ -58,32 +58,32 @@ const MentorCard: React.FC<MentorCardProps> = ({ mentor, onRequest, onMessage })
   return (
     <Card className="overflow-hidden transition-shadow hover:shadow-lg">
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-4">
+        <div className="flex items-start justify-between min-w-0">
+          <div className="flex items-center space-x-4 min-w-0">
             <Avatar className="h-12 w-12">
               <AvatarFallback>{getInitials(mentor.name)}</AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="text-lg">{mentor.name}</CardTitle>
-              <p className="text-sm text-muted-foreground">{mentor.role || 'Mentor'}</p>
+              <CardTitle className="text-lg break-words">{mentor.name}</CardTitle>
+              <p className="text-sm text-muted-foreground break-words">{mentor.role || 'Mentor'}</p>
             </div>
           </div>
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1 min-w-0">
             <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
             <span>{(mentor.rating || 0).toFixed(1)}</span>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-2">
-        <div className="flex items-center text-sm text-muted-foreground">
+        <div className="flex items-center text-sm text-muted-foreground break-words min-w-0">
           <Clock className="mr-2 h-4 w-4" />
           <span>Usually responds within 24 hours</span>
         </div>
-        <p className="text-sm text-muted-foreground line-clamp-2">
+        <p className="text-sm text-muted-foreground line-clamp-2 break-words">
           {mentor.bio || 'Experienced mentor with a passion for helping others grow.'}
         </p>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex justify-between min-w-0">
         <Button variant="outline" size="sm" onClick={() => onMessage(mentor)}>
           <MessageSquare className="mr-2 h-4 w-4" />
           Message
@@ -115,13 +115,13 @@ const RequestCard: React.FC<RequestCardProps> = ({ request, onCancel }) => {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+        <div className="flex items-center justify-between min-w-0">
+          <div className="flex items-center space-x-3 min-w-0">
             <Avatar>
               <AvatarFallback>{getInitials(request.mentor?.name || 'M')}</AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="text-lg">{request.mentor?.name || 'Mentor'}</CardTitle>
+              <CardTitle className="text-lg break-words">{request.mentor?.name || 'Mentor'}</CardTitle>
               <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[request.status as keyof typeof statusColors] || 'bg-gray-100'}`}>
                 {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
               </span>
@@ -136,7 +136,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ request, onCancel }) => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-muted-foreground break-words">
           {request.messages.length > 0 ? request.messages[0].content : 'No message provided'}
         </div>
       </CardContent>
@@ -275,7 +275,7 @@ export default function MentorsPage() {
   return (
     <div className="container py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Mentors</h1>
+        <h1 className="text-3xl font-bold break-words">Mentors</h1>
         <p className="text-muted-foreground">Connect with experienced mentors</p>
       </div>
       
@@ -299,11 +299,11 @@ export default function MentorsPage() {
           </div>
           
           {isLoading ? (
-            <div className="flex justify-center py-12">
+            <div className="flex justify-center py-12 min-w-0">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 lg:gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredMentors.map(mentor => (
                 <MentorCard
                   key={mentor.id}

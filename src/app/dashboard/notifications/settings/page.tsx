@@ -58,13 +58,13 @@ export default function NotificationSettingsPage() {
 
   return (
     <div className="px-6 py-8">
-      <h1 className="text-2xl font-bold mb-4">Notification Settings</h1>
+      <h1 className="text-2xl font-bold mb-4 break-words">Notification Settings</h1>
       {loading ? (
         <div>Loading...</div>
       ) : (
         <form className="space-y-4 max-w-lg" onSubmit={handleSubmit}>
           <div>
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 min-w-0">
               <input
                 type="checkbox"
                 className="form-checkbox"
@@ -76,7 +76,7 @@ export default function NotificationSettingsPage() {
             </label>
           </div>
           <div>
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 min-w-0">
               <input
                 type="checkbox"
                 className="form-checkbox"
@@ -88,7 +88,7 @@ export default function NotificationSettingsPage() {
             </label>
           </div>
           <div>
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center space-x-2 min-w-0">
               <input
                 type="checkbox"
                 className="form-checkbox"
@@ -99,8 +99,8 @@ export default function NotificationSettingsPage() {
               <span>SMS Notifications</span>
             </label>
           </div>
-          {error && <div className="text-red-600 text-sm">{error}</div>}
-          {success && <div className="text-green-600 text-sm">Preferences saved!</div>}
+          {error && <div className="text-red-600 text-sm break-words">{error}</div>}
+          {success && <div className="text-green-600 text-sm break-words">Preferences saved!</div>}
           <button
             type="submit"
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"

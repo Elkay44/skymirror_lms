@@ -50,12 +50,12 @@ export default function CommunityPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Community</h1>
+      <h1 className="text-2xl font-bold mb-4 break-words">Community</h1>
       <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Trending Discussions</h2>
+        <h2 className="text-lg font-semibold mb-2 break-words">Trending Discussions</h2>
         <ul className="space-y-2">
           {discussions.map(discussion => (
-            <li key={discussion.id} className="bg-white p-4 rounded shadow flex justify-between items-center">
+            <li key={discussion.id} className="bg-white p-4 rounded shadow flex justify-between items-center min-w-0 overflow-hidden">
               <span>{discussion.title}</span>
               <span className="text-xs text-gray-500">{discussion.replies} replies</span>
             </li>

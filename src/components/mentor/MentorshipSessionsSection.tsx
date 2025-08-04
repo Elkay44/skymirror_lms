@@ -78,13 +78,13 @@ const MentorshipSessionsSection: React.FC<MentorshipSessionsSectionProps> = ({ s
     return (
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
         <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-1">No Sessions Scheduled</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-1 break-words">No Sessions Scheduled</h3>
         <p className="text-gray-500 max-w-md mx-auto mb-6">
           There are no mentorship sessions scheduled or recorded for this mentee yet.
         </p>
         <button
           onClick={() => toast.success('Session scheduling feature coming soon!')}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
         >
           <Plus className="mr-2 h-4 w-4" />
           Schedule a Session
@@ -94,18 +94,18 @@ const MentorshipSessionsSection: React.FC<MentorshipSessionsSectionProps> = ({ s
   }
   
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-3 sm:space-y-0 min-w-0">
         <div>
-          <h3 className="text-lg font-medium text-gray-900">Mentorship Sessions</h3>
-          <p className="text-sm text-gray-500">Track and manage your mentoring sessions</p>
+          <h3 className="text-lg font-medium text-gray-900 break-words">Mentorship Sessions</h3>
+          <p className="text-sm text-gray-500 break-words">Track and manage your mentoring sessions</p>
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 min-w-0">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="pl-3 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            className="pl-3 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent break-words"
           >
             <option value="all">All Sessions</option>
             <option value="scheduled">Upcoming</option>
@@ -115,7 +115,7 @@ const MentorshipSessionsSection: React.FC<MentorshipSessionsSectionProps> = ({ s
           
           <button
             onClick={() => toast.success('Session scheduling feature coming soon!')}
-            className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+            className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
           >
             <Plus className="mr-1 h-4 w-4" />
             New Session
@@ -123,12 +123,12 @@ const MentorshipSessionsSection: React.FC<MentorshipSessionsSectionProps> = ({ s
         </div>
       </div>
       
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden">
         <div className="grid grid-cols-1 divide-y divide-gray-200">
           {Object.keys(groupedSessions).length > 0 ? (
             Object.entries(groupedSessions).map(([monthYear, monthSessions]) => (
               <div key={monthYear} className="space-y-4 p-4">
-                <h4 className="text-md font-medium text-gray-900 sticky top-0 bg-white py-2">{monthYear}</h4>
+                <h4 className="text-md font-medium text-gray-900 sticky top-0 bg-white py-2 break-words">{monthYear}</h4>
                 
                 <div className="space-y-4">
                   {monthSessions.map((session) => {
@@ -140,7 +140,7 @@ const MentorshipSessionsSection: React.FC<MentorshipSessionsSectionProps> = ({ s
                         key={session.id} 
                         className={`flex p-4 rounded-lg border ${session.status === 'completed' ? 'border-green-200 bg-green-50' : session.status === 'cancelled' ? 'border-gray-200 bg-gray-50' : 'border-teal-200 bg-teal-50'}`}
                       >
-                        <div className="flex-shrink-0 mr-4">
+                        <div className="flex-shrink-0 mr-4 min-w-0">
                           <div 
                             className={`flex items-center justify-center h-12 w-12 rounded-lg ${session.status === 'completed' ? 'bg-green-100' : session.status === 'cancelled' ? 'bg-gray-100' : 'bg-teal-100'}`}
                           >
@@ -154,27 +154,27 @@ const MentorshipSessionsSection: React.FC<MentorshipSessionsSectionProps> = ({ s
                           </div>
                         </div>
                         
-                        <div className="flex-1">
-                          <div className="flex flex-col md:flex-row md:justify-between md:items-start">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col md:flex-row md:justify-between md:items-start min-w-0">
                             <div>
-                              <h5 className="text-sm font-medium text-gray-900">
+                              <h5 className="text-sm font-medium text-gray-900 break-words">
                                 {session.topic}
                               </h5>
-                              <div className="mt-1 flex items-center text-sm text-gray-500">
-                                <Calendar className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                              <div className="mt-1 flex items-center text-sm text-gray-500 break-words min-w-0">
+                                <Calendar className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400 min-w-0" />
                                 <span>{formatDate(session.date)} at {formatTime(session.date)}</span>
                                 <span className="mx-2">•</span>
-                                <Clock className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                                <Clock className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400 min-w-0" />
                                 <span>{session.duration} minutes</span>
                               </div>
                             </div>
                             
                             <div className="mt-2 md:mt-0">
-                              <div className="flex space-x-2">
+                              <div className="flex space-x-2 min-w-0">
                                 {isUpcoming && session.status === 'scheduled' && (
                                   <button
                                     onClick={() => toast.success('Join meeting feature coming soon!')}
-                                    className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                                    className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
                                   >
                                     Join Meeting
                                   </button>
@@ -183,7 +183,7 @@ const MentorshipSessionsSection: React.FC<MentorshipSessionsSectionProps> = ({ s
                                 {session.status === 'completed' && !session.feedbackProvided && (
                                   <button
                                     onClick={() => toast.success('Feedback feature coming soon!')}
-                                    className="inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                                    className="inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
                                   >
                                     Provide Feedback
                                   </button>
@@ -192,7 +192,7 @@ const MentorshipSessionsSection: React.FC<MentorshipSessionsSectionProps> = ({ s
                                 {session.recordingUrl && (
                                   <button
                                     onClick={() => window.open(session.recordingUrl, '_blank')}
-                                    className="inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                                    className="inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
                                   >
                                     View Recording
                                   </button>
@@ -202,7 +202,7 @@ const MentorshipSessionsSection: React.FC<MentorshipSessionsSectionProps> = ({ s
                           </div>
                           
                           {session.notes && (
-                            <div className="mt-3 p-3 bg-white border border-gray-200 rounded-md text-sm text-gray-700">
+                            <div className="mt-3 p-3 bg-white border border-gray-200 rounded-md text-sm text-gray-700 break-words overflow-hidden">
                               {session.notes}
                             </div>
                           )}
@@ -222,18 +222,18 @@ const MentorshipSessionsSection: React.FC<MentorshipSessionsSectionProps> = ({ s
       </div>
       
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-700">Session Summary</h4>
+        <h4 className="text-sm font-medium text-gray-700 break-words">Session Summary</h4>
         <div className="mt-2 grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-2xl font-bold text-teal-600">{sessions.filter(s => s.status === 'scheduled').length}</p>
+            <p className="text-2xl font-bold text-teal-600 break-words">{sessions.filter(s => s.status === 'scheduled').length}</p>
             <p className="text-xs text-gray-500">Upcoming</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-green-600">{sessions.filter(s => s.status === 'completed').length}</p>
+            <p className="text-2xl font-bold text-green-600 break-words">{sessions.filter(s => s.status === 'completed').length}</p>
             <p className="text-xs text-gray-500">Completed</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-600">{sessions.filter(s => s.status === 'cancelled').length}</p>
+            <p className="text-2xl font-bold text-gray-600 break-words">{sessions.filter(s => s.status === 'cancelled').length}</p>
             <p className="text-xs text-gray-500">Cancelled</p>
           </div>
         </div>

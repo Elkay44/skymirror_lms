@@ -195,7 +195,7 @@ export default function MenteesPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center h-64">
+        <div className="flex justify-center items-center h-64 min-w-0">
           <div className="animate-spin h-12 w-12 border-4 border-teal-600 rounded-full border-t-transparent"></div>
         </div>
       </div>
@@ -204,9 +204,9 @@ export default function MenteesPage() {
   
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 min-w-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center break-words min-w-0">
             <Users className="mr-2 h-7 w-7 text-teal-600" />
             My Mentees
           </h1>
@@ -215,7 +215,7 @@ export default function MenteesPage() {
           </p>
         </div>
         
-        <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
+        <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3 min-w-0">
           <div className="relative">
             <input
               type="text"
@@ -246,10 +246,10 @@ export default function MenteesPage() {
       </div>
       
       {filteredMentees.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 text-center">
-          <div className="flex flex-col items-center">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 text-center overflow-hidden">
+          <div className="flex flex-col items-center min-w-0">
             <Users className="h-16 w-16 text-gray-300 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-1">
+            <h3 className="text-lg font-medium text-gray-900 mb-1 break-words">
               {searchTerm || pathFilter !== 'all' ? 'No mentees match your search' : 'No mentees assigned yet'}
             </h3>
             <p className="text-gray-500 max-w-md mx-auto">
@@ -260,12 +260,12 @@ export default function MenteesPage() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
           {filteredMentees.map((mentee) => (
-            <div key={mentee.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+            <div key={mentee.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow overflow-hidden">
               <div className="border-b border-gray-200 bg-gradient-to-r from-teal-500 to-teal-600 p-4">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 mr-3">
+                <div className="flex items-center min-w-0">
+                  <div className="flex-shrink-0 mr-3 min-w-0">
                     <Image 
                       src={mentee.avatar} 
                       alt={mentee.name} 
@@ -275,25 +275,25 @@ export default function MenteesPage() {
                     />
                   </div>
                   <div className="text-white">
-                    <h3 className="text-lg font-medium">{mentee.name}</h3>
-                    <p className="text-sm text-white text-opacity-90">{mentee.email}</p>
-                    <div className="mt-1 flex items-center">
+                    <h3 className="text-lg font-medium break-words">{mentee.name}</h3>
+                    <p className="text-sm text-white text-opacity-90 break-words">{mentee.email}</p>
+                    <div className="mt-1 flex items-center min-w-0">
                       <MapPin className="h-4 w-4 mr-1 text-white text-opacity-80" />
-                      <span className="text-sm text-white text-opacity-80">{mentee.learningPath}</span>
+                      <span className="text-sm text-white text-opacity-80 break-words">{mentee.learningPath}</span>
                     </div>
                   </div>
                 </div>
               </div>
               
               <div className="p-4">
-                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Course Progress</h4>
+                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3 break-words">Course Progress</h4>
                 {mentee.enrolledCourses.map((course) => (
                   <div key={course.id} className="mb-3 last:mb-0">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium text-gray-800 truncate max-w-[200px]" title={course.title}>
+                    <div className="flex justify-between items-center mb-1 min-w-0">
+                      <span className="text-sm font-medium text-gray-800 truncate max-w-[200px] break-words" title={course.title}>
                         {course.title}
                       </span>
-                      <span className="text-xs font-medium text-gray-500">{course.progress}%</span>
+                      <span className="text-xs font-medium text-gray-500 break-words">{course.progress}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
@@ -301,9 +301,9 @@ export default function MenteesPage() {
                         style={{ width: `${course.progress}%` }}
                       ></div>
                     </div>
-                    <div className="flex justify-between items-center mt-1 text-xs text-gray-500">
+                    <div className="flex justify-between items-center mt-1 text-xs text-gray-500 min-w-0">
                       <span>Grade: {course.grade}</span>
-                      <span className="flex items-center">
+                      <span className="flex items-center min-w-0">
                         <Clock className="h-3 w-3 mr-1" />
                         {new Date(course.lastActivity).toLocaleDateString()}
                       </span>
@@ -313,19 +313,19 @@ export default function MenteesPage() {
               </div>
               
               <div className="p-4 border-t border-gray-200 bg-gray-50">
-                <div className="flex justify-between items-center mb-3">
-                  <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Next Session</h4>
+                <div className="flex justify-between items-center mb-3 min-w-0">
+                  <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider break-words">Next Session</h4>
                   <span className={`text-xs px-2 py-1 rounded-full ${new Date(mentee.nextSession.date) > new Date() ? 'bg-teal-100 text-teal-800' : 'bg-orange-100 text-orange-800'}`}>
                     {new Date(mentee.nextSession.date) > new Date() ? 'Upcoming' : 'Overdue'}
                   </span>
                 </div>
                 
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 bg-teal-100 rounded-lg p-2 mr-3">
+                <div className="flex items-start min-w-0">
+                  <div className="flex-shrink-0 bg-teal-100 rounded-lg p-2 mr-3 min-w-0">
                     <CalendarIcon className="h-5 w-5 text-teal-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-800">{mentee.nextSession.topic}</p>
+                    <p className="text-sm font-medium text-gray-800 break-words">{mentee.nextSession.topic}</p>
                     <p className="text-xs text-gray-500 mt-1">
                       {formatDate(mentee.nextSession.date)} at {formatTime(mentee.nextSession.date)}
                     </p>
@@ -337,15 +337,15 @@ export default function MenteesPage() {
               </div>
               
               <div className="p-4 border-t border-gray-200">
-                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Upcoming Assignments</h4>
+                <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3 break-words">Upcoming Assignments</h4>
                 
                 {mentee.upcomingAssignments.length > 0 ? (
                   <ul className="divide-y divide-gray-200">
                     {mentee.upcomingAssignments.map((assignment) => (
                       <li key={assignment.id} className="py-2 first:pt-0 last:pb-0">
-                        <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-start min-w-0">
                           <div>
-                            <p className="text-sm font-medium text-gray-800">{assignment.title}</p>
+                            <p className="text-sm font-medium text-gray-800 break-words">{assignment.title}</p>
                             <p className="text-xs text-gray-500 mt-0.5">{assignment.courseName}</p>
                           </div>
                           <div className={`px-2 py-1 rounded-full text-xs font-medium ${assignment.submitted ? 'bg-green-100 text-green-800' : daysUntilDue(assignment.dueDate) <= 2 ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
@@ -356,14 +356,14 @@ export default function MenteesPage() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-gray-500 italic">No upcoming assignments</p>
+                  <p className="text-sm text-gray-500 italic break-words">No upcoming assignments</p>
                 )}
               </div>
               
               <div className="p-4 border-t border-gray-200 bg-gray-50">
                 <Link 
                   href={`/dashboard/mentor/mentees/${mentee.id}`}
-                  className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                  className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
                 >
                   View Full Profile
                   <ChevronRight className="ml-1 h-4 w-4" />

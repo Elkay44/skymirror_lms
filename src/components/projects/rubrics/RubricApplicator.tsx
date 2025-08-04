@@ -191,14 +191,14 @@ export default function RubricApplicator({
   };
   
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-      <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-        <h3 className="text-lg font-semibold">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden overflow-hidden">
+      <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex justify-between items-center min-w-0">
+        <h3 className="text-lg font-semibold break-words">
           {readOnly ? 'View Assessment' : initialAssessment ? 'Edit Assessment' : 'Assess Submission'}
         </h3>
         
         {!readOnly && (
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 min-w-0">
             {onCancel && (
               <button
                 onClick={onCancel}
@@ -221,7 +221,7 @@ export default function RubricApplicator({
       </div>
       
       <div className="border-b border-gray-200">
-        <nav className="flex -mb-px">
+        <nav className="flex -mb-px min-w-0">
           <button
             onClick={() => setActiveTab('assessment')}
             className={`py-4 px-6 font-medium text-sm border-b-2 focus:outline-none ${activeTab === 'assessment' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
@@ -237,21 +237,21 @@ export default function RubricApplicator({
         </nav>
       </div>
       
-      <div className="p-6">
+      <div className="p-4 lg:p-6">
         {activeTab === 'assessment' ? (
           <div>
-            <div className="mb-6 flex justify-between items-center">
+            <div className="mb-6 flex justify-between items-center min-w-0">
               <div>
-                <h4 className="text-lg font-medium text-gray-900">{rubric.title}</h4>
-                <p className="text-sm text-gray-600 mt-1">{rubric.description}</p>
+                <h4 className="text-lg font-medium text-gray-900 break-words">{rubric.title}</h4>
+                <p className="text-sm text-gray-600 mt-1 break-words">{rubric.description}</p>
               </div>
               
               <div className="bg-gray-100 rounded-lg px-4 py-2 text-center">
                 <div className="text-xs text-gray-500 mb-1">Current Score</div>
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-blue-600 break-words">
                   {assessment.totalScore} / {assessment.maxScore}
                 </div>
-                <div className="text-sm font-medium text-gray-700">
+                <div className="text-sm font-medium text-gray-700 break-words">
                   {assessment.percentage}%
                 </div>
               </div>
@@ -260,11 +260,11 @@ export default function RubricApplicator({
             {/* Validation Errors */}
             {validationErrors.length > 0 && !readOnly && (
               <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4">
-                <div className="flex items-start">
+                <div className="flex items-start min-w-0">
                   <AlertTriangle className="h-5 w-5 text-red-500 mr-2 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-medium text-red-800">Please fix the following issues:</h4>
-                    <ul className="mt-1 text-sm text-red-700 list-disc list-inside">
+                    <h4 className="text-sm font-medium text-red-800 break-words">Please fix the following issues:</h4>
+                    <ul className="mt-1 text-sm text-red-700 list-disc list-inside break-words">
                       {validationErrors.map((error, index) => (
                         <li key={index}>{error}</li>
                       ))}
@@ -275,7 +275,7 @@ export default function RubricApplicator({
             )}
             
             {/* Criteria Assessment */}
-            <div className="space-y-6">
+            <div className="space-y-4 lg:space-y-6">
               {rubric.criteria.map((criterion, criterionIndex) => {
                 const criterionAssessment = assessment.criteriaAssessments.find(
                   ca => ca.criterionId === criterion.id
@@ -283,12 +283,12 @@ export default function RubricApplicator({
                 
                 return (
                   <div key={criterion.id} className="border border-gray-200 rounded-lg overflow-hidden">
-                    <div className="bg-gray-50 px-4 py-3 flex items-center justify-between">
-                      <div className="flex items-center">
-                        <span className="bg-blue-100 text-blue-800 font-medium rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">
+                    <div className="bg-gray-50 px-4 py-3 flex items-center justify-between min-w-0">
+                      <div className="flex items-center min-w-0">
+                        <span className="bg-blue-100 text-blue-800 font-medium rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3 break-words min-w-0">
                           {criterionIndex + 1}
                         </span>
-                        <h5 className="font-medium text-gray-900">{criterion.name}</h5>
+                        <h5 className="font-medium text-gray-900 break-words">{criterion.name}</h5>
                         <button
                           onClick={() => toggleCriterionInfo(criterion.id)}
                           className="ml-2 text-gray-500 hover:text-gray-700"
@@ -298,7 +298,7 @@ export default function RubricApplicator({
                       </div>
                       
                       {criterionAssessment && criterionAssessment.levelId && (
-                        <div className="text-sm font-medium text-gray-700">
+                        <div className="text-sm font-medium text-gray-700 break-words">
                           Score: {criterionAssessment.score} / {criterionAssessment.maxScore}
                         </div>
                       )}
@@ -306,7 +306,7 @@ export default function RubricApplicator({
                     
                     {showCriterionInfo === criterion.id && (
                       <div className="px-4 py-3 bg-blue-50 border-t border-b border-blue-200">
-                        <p className="text-sm text-blue-800">{criterion.description}</p>
+                        <p className="text-sm text-blue-800 break-words">{criterion.description}</p>
                       </div>
                     )}
                     
@@ -323,16 +323,16 @@ export default function RubricApplicator({
                                 ? 'border-blue-500 bg-blue-50' 
                                 : 'border-gray-200 hover:bg-gray-50'}`}
                             >
-                              <div className="flex justify-between items-center">
-                                <div className="flex items-center">
+                              <div className="flex justify-between items-center min-w-0">
+                                <div className="flex items-center min-w-0">
                                   <div className={`w-5 h-5 rounded-full border flex items-center justify-center mr-2 ${isSelected ? 'border-blue-500 bg-blue-500' : 'border-gray-300'}`}>
                                     {isSelected && <CheckCircle className="h-4 w-4 text-white" />}
                                   </div>
-                                  <span className="font-medium text-gray-900">{level.name}</span>
+                                  <span className="font-medium text-gray-900 break-words">{level.name}</span>
                                 </div>
-                                <span className="text-sm font-medium text-gray-700">{level.points} points</span>
+                                <span className="text-sm font-medium text-gray-700 break-words">{level.points} points</span>
                               </div>
-                              <p className="mt-1 text-sm text-gray-600 pl-7">{level.description}</p>
+                              <p className="mt-1 text-sm text-gray-600 pl-7 break-words">{level.description}</p>
                             </div>
                           );
                         })}
@@ -341,7 +341,7 @@ export default function RubricApplicator({
                       <div>
                         <label 
                           htmlFor={`comment-${criterion.id}`}
-                          className="block text-sm font-medium text-gray-700 mb-1"
+                          className="block text-sm font-medium text-gray-700 mb-1 break-words"
                         >
                           Specific Feedback (optional)
                         </label>
@@ -363,13 +363,13 @@ export default function RubricApplicator({
             
             {!readOnly && (
               <div className="mt-8">
-                <div className="flex justify-between items-center mb-2">
-                  <label htmlFor="assessment-feedback" className="block text-sm font-medium text-gray-700">
+                <div className="flex justify-between items-center mb-2 min-w-0">
+                  <label htmlFor="assessment-feedback" className="block text-sm font-medium text-gray-700 break-words">
                     Overall Feedback
                   </label>
                   <button
                     onClick={generateFeedback}
-                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                    className="text-sm text-blue-600 hover:text-blue-800 flex items-center break-words min-w-0"
                   >
                     <Clipboard className="h-4 w-4 mr-1" />
                     Auto-generate
@@ -391,18 +391,18 @@ export default function RubricApplicator({
           </div>
         ) : (
           <div>
-            <div className="bg-gray-50 rounded-lg p-4 mb-6 flex items-center justify-between">
+            <div className="bg-gray-50 rounded-lg p-4 mb-6 flex items-center justify-between min-w-0">
               <div>
-                <h4 className="font-medium text-gray-900">Feedback Preview</h4>
-                <p className="text-sm text-gray-600">This is how the feedback will appear to the student</p>
+                <h4 className="font-medium text-gray-900 break-words">Feedback Preview</h4>
+                <p className="text-sm text-gray-600 break-words">This is how the feedback will appear to the student</p>
               </div>
               
-              <div className="bg-white rounded-lg px-4 py-2 shadow-sm">
+              <div className="bg-white rounded-lg px-4 py-2 shadow-sm overflow-hidden">
                 <div className="text-xs text-gray-500 mb-1">Final Score</div>
-                <div className="text-xl font-bold text-blue-600">
+                <div className="text-xl font-bold text-blue-600 break-words">
                   {assessment.totalScore} / {assessment.maxScore}
                 </div>
-                <div className="text-sm font-medium text-gray-700">
+                <div className="text-sm font-medium text-gray-700 break-words">
                   {assessment.percentage}%
                 </div>
               </div>

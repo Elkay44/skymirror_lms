@@ -161,8 +161,8 @@ export default function CreateAssignmentPage() {
 
   return (
     <div className="max-w-5xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
+      <div className="flex items-center justify-between mb-6 min-w-0">
+        <div className="flex items-center min-w-0">
           <Button
             variant="ghost"
             size="icon"
@@ -171,7 +171,7 @@ export default function CreateAssignmentPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-semibold">Create New Assignment</h1>
+          <h1 className="text-2xl font-semibold break-words">Create New Assignment</h1>
         </div>
       </div>
 
@@ -184,12 +184,12 @@ export default function CreateAssignmentPage() {
         <TabsContent value="details">
           <Card>
             <CardHeader className="border-b">
-              <div className="flex items-center">
+              <div className="flex items-center min-w-0">
                 <FileCheck2 className="mr-2 h-5 w-5 text-amber-500" />
-                <h3 className="text-lg font-medium">Assignment Details</h3>
+                <h3 className="text-lg font-medium break-words">Assignment Details</h3>
               </div>
             </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+            <CardContent className="pt-6 space-y-4 lg:space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Title <span className="text-red-500">*</span></Label>
                 <Input
@@ -212,7 +212,7 @@ export default function CreateAssignmentPage() {
                   onChange={handleChange}
                   className="max-w-[300px]"
                 />
-                <p className="text-sm text-muted-foreground">When this assignment is due</p>
+                <p className="text-sm text-muted-foreground break-words">When this assignment is due</p>
               </div>
 
               <div className="space-y-2">
@@ -244,7 +244,7 @@ export default function CreateAssignmentPage() {
                     <SelectItem value="MIXED">Multiple Formats</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-sm text-muted-foreground">How students will submit their work</p>
+                <p className="text-sm text-muted-foreground break-words">How students will submit their work</p>
               </div>
 
               <div className="space-y-2">
@@ -256,7 +256,7 @@ export default function CreateAssignmentPage() {
                     placeholder="Enter detailed instructions for students..."
                   />
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground break-words">
                   Format instructions using markdown. Add details, requirements, and examples.
                 </p>
               </div>
@@ -267,17 +267,17 @@ export default function CreateAssignmentPage() {
         <TabsContent value="settings">
           <Card>
             <CardHeader className="border-b">
-              <div className="flex items-center">
+              <div className="flex items-center min-w-0">
                 <Info className="mr-2 h-5 w-5 text-blue-500" />
-                <h3 className="text-lg font-medium">Assignment Settings</h3>
+                <h3 className="text-lg font-medium break-words">Assignment Settings</h3>
               </div>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
+              <div className="space-y-4 lg:space-y-6">
+                <div className="flex items-center justify-between min-w-0">
                   <div>
                     <Label htmlFor="allowLateSubmissions" className="cursor-pointer">Allow Late Submissions</Label>
-                    <p className="text-sm text-muted-foreground">Students can submit after the due date</p>
+                    <p className="text-sm text-muted-foreground break-words">Students can submit after the due date</p>
                   </div>
                   <Switch
                     id="allowLateSubmissions"
@@ -288,10 +288,10 @@ export default function CreateAssignmentPage() {
                 
                 <Separator />
                 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between min-w-0">
                   <div>
                     <Label htmlFor="isPublished" className="cursor-pointer">Publish Assignment</Label>
-                    <p className="text-sm text-muted-foreground">Make visible to students immediately</p>
+                    <p className="text-sm text-muted-foreground break-words">Make visible to students immediately</p>
                   </div>
                   <Switch
                     id="isPublished"
@@ -302,12 +302,12 @@ export default function CreateAssignmentPage() {
                 
                 <Separator />
                 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <Users size={18} className="text-indigo-500" />
                     <div>
                       <Label htmlFor="allowGroupSubmissions" className="cursor-pointer">Enable Group Submissions</Label>
-                      <p className="text-sm text-muted-foreground">Allow students to submit as groups</p>
+                      <p className="text-sm text-muted-foreground break-words">Allow students to submit as groups</p>
                     </div>
                   </div>
                   <Switch
@@ -331,7 +331,7 @@ export default function CreateAssignmentPage() {
                         onChange={handleNumberChange}
                         className="max-w-[200px]"
                       />
-                      <p className="text-sm text-muted-foreground">Maximum number of students per group</p>
+                      <p className="text-sm text-muted-foreground break-words">Maximum number of students per group</p>
                     </div>
                   </div>
                 )}
@@ -341,7 +341,7 @@ export default function CreateAssignmentPage() {
         </TabsContent>
       </Tabs>
 
-      <div className="flex justify-end mt-6 space-x-4">
+      <div className="flex justify-end mt-6 space-x-4 min-w-0">
         <Button
           variant="outline"
           onClick={() => router.back()}
@@ -352,7 +352,7 @@ export default function CreateAssignmentPage() {
           type="submit"
           onClick={handleSubmit}
           disabled={isLoading}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 min-w-0"
         >
           {isLoading ? 'Creating...' : 'Create Assignment'}
           {isLoading && <span className="animate-spin">⏳</span>}

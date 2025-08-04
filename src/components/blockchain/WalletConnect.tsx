@@ -211,7 +211,7 @@ const WalletConnect = () => {
   
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6 animate-pulse">
+      <div className="bg-white rounded-lg shadow p-6 animate-pulse overflow-hidden">
         <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
         <div className="h-10 bg-gray-200 rounded mb-4"></div>
         <div className="h-4 bg-gray-200 rounded w-1/2"></div>
@@ -220,9 +220,9 @@ const WalletConnect = () => {
   }
   
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900 flex items-center">
+    <div className="bg-white rounded-lg shadow overflow-hidden overflow-hidden">
+      <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center min-w-0">
+        <h3 className="text-lg font-medium text-gray-900 flex items-center break-words min-w-0">
           <Shield className="h-5 w-5 mr-2 text-blue-600" />
           Blockchain Wallet
         </h3>
@@ -231,13 +231,13 @@ const WalletConnect = () => {
       <div className="px-6 py-5 space-y-4">
         {!isMetaMaskInstalled ? (
           <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
+            <div className="flex min-w-0">
+              <div className="flex-shrink-0 min-w-0">
                 <AlertTriangle className="h-5 w-5 text-yellow-400" />
               </div>
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-yellow-800">MetaMask Required</h3>
-                <div className="mt-2 text-sm text-yellow-700">
+                <h3 className="text-sm font-medium text-yellow-800 break-words">MetaMask Required</h3>
+                <div className="mt-2 text-sm text-yellow-700 break-words">
                   <p>
                     To receive blockchain-verified certificates, you need to install MetaMask.
                     MetaMask is a crypto wallet and gateway to blockchain apps.
@@ -247,7 +247,7 @@ const WalletConnect = () => {
                       href="https://metamask.io/download/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-medium text-yellow-800 hover:text-yellow-900 flex items-center w-fit"
+                      className="font-medium text-yellow-800 hover:text-yellow-900 flex items-center w-fit break-words min-w-0"
                     >
                       Install MetaMask
                       <ExternalLink className="ml-1 h-4 w-4" />
@@ -261,13 +261,13 @@ const WalletConnect = () => {
           <>
             {savedWalletAddress ? (
               <div className="bg-green-50 border border-green-200 rounded-md p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
+                <div className="flex min-w-0">
+                  <div className="flex-shrink-0 min-w-0">
                     <Check className="h-5 w-5 text-green-400" />
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-green-800">Wallet Connected</h3>
-                    <div className="mt-2 text-sm text-green-700">
+                    <h3 className="text-sm font-medium text-green-800 break-words">Wallet Connected</h3>
+                    <div className="mt-2 text-sm text-green-700 break-words">
                       <p>
                         Your wallet address <span className="font-mono">{formatAddress(savedWalletAddress)}</span> is connected to your account.
                         You can receive blockchain certificates to this address.
@@ -287,13 +287,13 @@ const WalletConnect = () => {
               </div>
             ) : (
               <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
+                <div className="flex min-w-0">
+                  <div className="flex-shrink-0 min-w-0">
                     <Shield className="h-5 w-5 text-blue-400" />
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-blue-800">Wallet Required</h3>
-                    <div className="mt-2 text-sm text-blue-700">
+                    <h3 className="text-sm font-medium text-blue-800 break-words">Wallet Required</h3>
+                    <div className="mt-2 text-sm text-blue-700 break-words">
                       <p>
                         To receive blockchain-verified certificates, you need to connect your Ethereum wallet.
                         Your certificates will be issued as NFTs to your wallet address.
@@ -306,13 +306,13 @@ const WalletConnect = () => {
             
             {walletState.error && (
               <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
+                <div className="flex min-w-0">
+                  <div className="flex-shrink-0 min-w-0">
                     <AlertTriangle className="h-5 w-5 text-red-400" />
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">Error</h3>
-                    <div className="mt-2 text-sm text-red-700">
+                    <h3 className="text-sm font-medium text-red-800 break-words">Error</h3>
+                    <div className="mt-2 text-sm text-red-700 break-words">
                       <p>{walletState.error}</p>
                     </div>
                   </div>
@@ -322,13 +322,13 @@ const WalletConnect = () => {
             
             {walletState.success && (
               <div className="bg-green-50 border border-green-200 rounded-md p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
+                <div className="flex min-w-0">
+                  <div className="flex-shrink-0 min-w-0">
                     <Check className="h-5 w-5 text-green-400" />
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-green-800">Success</h3>
-                    <div className="mt-2 text-sm text-green-700">
+                    <h3 className="text-sm font-medium text-green-800 break-words">Success</h3>
+                    <div className="mt-2 text-sm text-green-700 break-words">
                       <p>{walletState.success}</p>
                     </div>
                   </div>
@@ -341,16 +341,16 @@ const WalletConnect = () => {
                 <button
                   type="button"
                   onClick={connectWallet}
-                  className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 break-words min-w-0"
                 >
                   Connect MetaMask Wallet
                 </button>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-md">
+                  <div className="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-md min-w-0">
                     <div>
-                      <p className="text-sm font-medium text-gray-500">Connected Wallet</p>
-                      <p className="text-sm font-mono text-gray-900">{walletState.address}</p>
+                      <p className="text-sm font-medium text-gray-500 break-words">Connected Wallet</p>
+                      <p className="text-sm font-mono text-gray-900 break-words">{walletState.address}</p>
                     </div>
                     <a
                       href={`https://etherscan.io/address/${walletState.address}`}
@@ -367,7 +367,7 @@ const WalletConnect = () => {
                       type="button"
                       onClick={saveWalletAddress}
                       disabled={walletState.isSaving}
-                      className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed break-words min-w-0"
                     >
                       {walletState.isSaving ? 'Saving...' : 'Save Wallet Address'}
                     </button>

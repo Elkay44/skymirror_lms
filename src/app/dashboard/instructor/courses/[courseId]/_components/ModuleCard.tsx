@@ -139,9 +139,9 @@ export function ModuleCard({
       
       {/* Header */}
       <div className="p-6 pb-4">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between min-w-0">
           <div 
-            className="flex items-start gap-3 flex-1 cursor-pointer"
+            className="flex items-start gap-3 flex-1 cursor-pointer min-w-0"
             onClick={toggleExpanded}
           >
             {dragHandleProps && (
@@ -154,7 +154,7 @@ export function ModuleCard({
               </button>
             )}
             
-            <div className="flex items-center mt-1 text-gray-500">
+            <div className="flex items-center mt-1 text-gray-500 min-w-0">
               {isExpanded ? (
                 <ChevronDown className="h-5 w-5" />
               ) : (
@@ -162,9 +162,9 @@ export function ModuleCard({
               )}
             </div>
             
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-lg font-semibold text-gray-900 leading-tight">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2 min-w-0">
+                <h3 className="text-lg font-semibold text-gray-900 leading-tight break-words">
                   {module.title}
                 </h3>
                 <Badge 
@@ -177,21 +177,21 @@ export function ModuleCard({
               </div>
               
               {module.description && (
-                <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">
+                <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 break-words">
                   {module.description}
                 </p>
               )}
             </div>
           </div>
           
-          <div className="flex items-center gap-2 relative">
+          <div className="flex items-center gap-2 relative min-w-0">
             <div className="absolute top-0 right-0 z-50 overflow-visible">
               <DropdownMenu>
-                <DropdownMenuTrigger className="h-8 w-8 rounded-md bg-gray-100 text-gray-700 shadow-sm border border-gray-200 transition-all duration-150 inline-flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary/30">
+                <DropdownMenuTrigger className="h-8 w-8 rounded-md bg-gray-100 text-gray-700 shadow-sm border border-gray-200 transition-all duration-150 inline-flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary/30 min-w-0">
                   <MoreHorizontal className="h-4 w-4" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="min-w-[180px] p-1 bg-white rounded-lg shadow-lg border border-gray-200 animate-in fade-in-50 zoom-in-95 z-[100] mt-1">
-                  <DropdownMenuItem onClick={() => onEdit(module)} className="px-3 py-2 text-sm rounded-md hover:bg-gray-50 focus:bg-gray-50 cursor-pointer">
+                <DropdownMenuContent className="min-w-[180px] p-1 bg-white rounded-lg shadow-lg border border-gray-200 animate-in fade-in-50 zoom-in-95 z-[100] mt-1 overflow-hidden">
+                  <DropdownMenuItem onClick={() => onEdit(module)} className="px-3 py-2 text-sm rounded-md hover:bg-gray-50 focus:bg-gray-50 cursor-pointer break-words">
                     <Edit className="h-4 w-4 mr-2" />
                     Edit Module
                   </DropdownMenuItem>
@@ -202,7 +202,7 @@ export function ModuleCard({
                       e.preventDefault();
                       setShowAddOptions(prev => !prev);
                     }} 
-                    className="px-3 py-2 text-sm rounded-md hover:bg-gray-50 focus:bg-gray-50 cursor-pointer relative flex items-center"
+                    className="px-3 py-2 text-sm rounded-md hover:bg-gray-50 focus:bg-gray-50 cursor-pointer relative flex items-center break-words min-w-0"
                     data-add-dropdown="trigger"
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -212,37 +212,37 @@ export function ModuleCard({
                     {showAddOptions && (
                       <div 
                         onClick={(e) => e.stopPropagation()}
-                        className="absolute right-0 top-full mt-1 min-w-[180px] p-1 bg-white rounded-lg shadow-lg border border-gray-200 z-[110]"
+                        className="absolute right-0 top-full mt-1 min-w-[180px] p-1 bg-white rounded-lg shadow-lg border border-gray-200 z-[110] overflow-hidden"
                         data-add-dropdown="menu"
                       >
                         <div className="py-1 text-left">
                           <button
                             onClick={() => handleAddOption('lessons')}
-                            className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50"
+                            className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50 break-words min-w-0 flex-shrink-0"
                           >
                             <Book className="h-4 w-4" /> Lesson
                           </button>
                           <button
                             onClick={() => handleAddOption('quizzes')}
-                            className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50"
+                            className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50 break-words min-w-0 flex-shrink-0"
                           >
                             <Play className="h-4 w-4" /> Quiz
                           </button>
                           <button
                             onClick={() => handleAddOption('resources')}
-                            className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50"
+                            className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50 break-words min-w-0 flex-shrink-0"
                           >
                             <FileText className="h-4 w-4" /> Resource
                           </button>
                           <button
                             onClick={() => handleAddOption('projects')}
-                            className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50"
+                            className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50 break-words min-w-0 flex-shrink-0"
                           >
                             <Target className="h-4 w-4" /> Project
                           </button>
                           <button
                             onClick={() => handleAddOption('forums')}
-                            className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50"
+                            className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50 break-words min-w-0 flex-shrink-0"
                           >
                             <Users className="h-4 w-4" /> Forum
                           </button>
@@ -253,7 +253,7 @@ export function ModuleCard({
                   <div className="border-t my-1 mx-1 border-gray-100"></div>
                   <DropdownMenuItem 
                     onClick={() => onDelete(module.id)}
-                    className="px-3 py-2 text-sm rounded-md hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600 cursor-pointer"
+                    className="px-3 py-2 text-sm rounded-md hover:bg-red-50 focus:bg-red-50 text-red-600 focus:text-red-600 cursor-pointer break-words"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete Module
@@ -267,31 +267,31 @@ export function ModuleCard({
       
       {/* Stats & Info */}
       <div className="px-6 pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6 text-sm text-gray-500">
-            <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-between min-w-0">
+          <div className="flex items-center gap-4 lg:gap-6 text-sm text-gray-500 break-words min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
               <BookOpen className="h-4 w-4" />
-              <span className="font-medium">{lessons.length || 0}</span>
+              <span className="font-medium break-words">{lessons.length || 0}</span>
               <span>lessons</span>
             </div>
             
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
               <Clock className="h-4 w-4" />
-              <span className="font-medium">
+              <span className="font-medium break-words">
                 {Math.floor(module.estimatedDuration / 60)}h {module.estimatedDuration % 60}m
               </span>
             </div>
             
             {module.learningObjectives && module.learningObjectives.length > 0 && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 min-w-0">
                 <Target className="h-4 w-4" />
-                <span className="font-medium">{module.learningObjectives.length}</span>
+                <span className="font-medium break-words">{module.learningObjectives.length}</span>
                 <span>objectives</span>
               </div>
             )}
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             {module.prerequisites && module.prerequisites.length > 0 && (
               <Badge variant="secondary" className="text-xs">
                 <Lock className="h-3 w-3 mr-1" />
@@ -313,42 +313,42 @@ export function ModuleCard({
               
               {showAddOptions && (
                 <div 
-                  className="absolute right-0 bottom-full mb-1 bg-white border border-gray-200 rounded-md shadow-lg z-10 w-36 py-1 overflow-hidden"
+                  className="absolute right-0 bottom-full mb-1 bg-white border border-gray-200 rounded-md shadow-lg z-10 w-36 py-1 overflow-hidden overflow-hidden"
                   data-add-dropdown
                 >
                   <button
                     onClick={() => handleAddOption('lesson')}
-                    className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50"
+                    className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50 break-words min-w-0 flex-shrink-0"
                   >
                     <Book className="h-4 w-4" /> Lesson
                   </button>
                   <button
                     onClick={() => handleAddOption('page')}
-                    className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50"
+                    className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50 break-words min-w-0 flex-shrink-0"
                   >
                     <FileText className="h-4 w-4" /> Page
                   </button>
                   <button
                     onClick={() => handleAddOption('quiz')}
-                    className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50"
+                    className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50 break-words min-w-0 flex-shrink-0"
                   >
                     <Target className="h-4 w-4" /> Quiz
                   </button>
                   <button
                     onClick={() => handleAddOption('assignment')}
-                    className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50"
+                    className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50 break-words min-w-0 flex-shrink-0"
                   >
                     <File className="h-4 w-4" /> Assignment
                   </button>
                   <button
                     onClick={() => handleAddOption('project')}
-                    className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50"
+                    className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50 break-words min-w-0 flex-shrink-0"
                   >
                     <ChevronRight className="h-4 w-4" /> Project
                   </button>
                   <button
                     onClick={() => handleAddOption('forums')}
-                    className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50"
+                    className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-md hover:bg-gray-50 break-words min-w-0 flex-shrink-0"
                   >
                     <Users className="h-4 w-4" /> Forum
                   </button>
@@ -363,7 +363,7 @@ export function ModuleCard({
       {isExpanded && (
         <div className="px-6 pb-6 border-t border-gray-100 pt-4">
           {isLoading ? (
-            <div className="flex items-center justify-center py-6">
+            <div className="flex items-center justify-center py-6 min-w-0">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
             </div>
           ) : (
@@ -390,7 +390,7 @@ export function ModuleCard({
                   {lessons.map((lesson) => (
                     <div 
                       key={`lesson-${lesson.id}`}
-                      className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors cursor-pointer min-w-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         router.push(`/dashboard/instructor/courses/${courseId}/modules/${module.id}/lessons/${lesson.id}`);
@@ -399,8 +399,8 @@ export function ModuleCard({
                       <div className="text-blue-600">
                         <BookText className="h-4 w-4" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{lesson.title}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium break-words">{lesson.title}</p>
                       </div>
                       {/* Lesson badges could be added here if needed */}
                     </div>
@@ -410,7 +410,7 @@ export function ModuleCard({
                   {pages.map((page) => (
                     <div 
                       key={`page-${page.id}`}
-                      className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-50 transition-colors cursor-pointer min-w-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         router.push(`/dashboard/instructor/courses/${courseId}/modules/${module.id}/pages/${page.id}`);
@@ -419,8 +419,8 @@ export function ModuleCard({
                       <div className="text-gray-600">
                         <FileText className="h-4 w-4" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{page.title}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium break-words">{page.title}</p>
                         {page.description && (
                           <p className="text-xs text-gray-500 truncate">{page.description}</p>
                         )}
@@ -443,13 +443,13 @@ export function ModuleCard({
       {!isExpanded && module.learningObjectives && module.learningObjectives.length > 0 && (
         <div className="px-6 pb-6">
           <div className="bg-gray-50 rounded-lg p-3">
-            <h4 className="text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide">
+            <h4 className="text-xs font-medium text-gray-700 mb-2 uppercase tracking-wide break-words">
               Learning Objectives
             </h4>
             <div className="space-y-1">
               {module.learningObjectives.slice(0, 2).map((objective: LearningObjective | string, index: number) => (
-                <div key={index} className="flex items-start gap-2 text-sm text-gray-600">
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0" />
+                <div key={index} className="flex items-start gap-2 text-sm text-gray-600 break-words min-w-0">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0 min-w-0" />
                   <span className="leading-relaxed">
                     {typeof objective === 'string' ? objective : objective.text}
                   </span>

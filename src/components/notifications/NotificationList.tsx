@@ -152,18 +152,18 @@ export default function NotificationList() {
         className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
         aria-label="Notifications"
       >
-        <Bell className="h-6 w-6" />
+        <Bell className="h-5 w-5 lg:h-6 lg:w-6" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+          <span className="absolute top-1 right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full break-words min-w-0">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
       
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50">
-          <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-            <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center min-w-0">
+            <h3 className="text-sm font-semibold text-gray-900 break-words">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
@@ -178,11 +178,11 @@ export default function NotificationList() {
             {isLoading ? (
               <div className="px-4 py-6 text-center text-gray-500">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500 mx-auto"></div>
-                <p className="mt-2 text-sm">Loading notifications...</p>
+                <p className="mt-2 text-sm break-words">Loading notifications...</p>
               </div>
             ) : notifications.length === 0 ? (
               <div className="px-4 py-6 text-center text-gray-500">
-                <p className="text-sm">No notifications yet</p>
+                <p className="text-sm break-words">No notifications yet</p>
               </div>
             ) : (
               <ul className="divide-y divide-gray-200">
@@ -192,15 +192,15 @@ export default function NotificationList() {
                     onClick={() => handleNotificationClick(notification)}
                     className={`px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${!notification.isRead ? 'bg-blue-50' : ''}`}
                   >
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0 pt-0.5">
+                    <div className="flex items-start min-w-0">
+                      <div className="flex-shrink-0 pt-0.5 min-w-0">
                         {getNotificationIcon(notification.type)}
                       </div>
-                      <div className="ml-3 flex-1">
-                        <p className="text-sm font-medium text-gray-900">{notification.title}</p>
-                        <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                        <div className="mt-1 flex items-center justify-between">
-                          <div className="flex items-center text-xs text-gray-500">
+                      <div className="ml-3 flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 break-words">{notification.title}</p>
+                        <p className="text-sm text-gray-600 mt-1 break-words">{notification.message}</p>
+                        <div className="mt-1 flex items-center justify-between min-w-0">
+                          <div className="flex items-center text-xs text-gray-500 min-w-0">
                             <Clock className="h-3 w-3 mr-1" />
                             {formatNotificationTime(notification.createdAt)}
                           </div>
@@ -211,7 +211,7 @@ export default function NotificationList() {
                       </div>
                       <button
                         onClick={(e) => handleDismissNotification(e, notification.id)}
-                        className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500"
+                        className="ml-2 flex-shrink-0 text-gray-400 hover:text-gray-500 min-w-0"
                         aria-label="Dismiss"
                       >
                         <X className="h-4 w-4" />
