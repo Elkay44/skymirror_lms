@@ -185,19 +185,72 @@ export default function NotificationsPage() {
   };
   
   // Handle mark as read
-  const markAsRead = (id: string) => {
-    setNotifications(prevNotifications => 
-      prevNotifications.map(notification => 
-        notification.id === id ? { ...notification, isRead: true } : notification
-      )
-    );
+  const markAsRead = async (id: string) => {
+    try {
+      // Optimistically update UI
+      setNotifications(prevNotifications => 
+        prevNotifications.map(notification => 
+          notification.id === id ? { ...notification, isRead: true } : notification
+        )
+      );
+      
+      // Make API call to persist the change
+      const response = await fetch(`/api/notifications/${id}/read`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to mark notification as read');
+        // Revert the optimistic update on error
+        setNotifications(prevNotifications => 
+          prevNotifications.map(notification => 
+            notification.id === id ? { ...notification, isRead: false } : notification
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      // Revert the optimistic update on error
+      setNotifications(prevNotifications => 
+        prevNotifications.map(notification => 
+          notification.id === id ? { ...notification, isRead: false } : notification
+        )
+      );
+    }
   };
   
   // Handle mark all as read
-  const markAllAsRead = () => {
-    setNotifications(prevNotifications => 
-      prevNotifications.map(notification => ({ ...notification, isRead: true }))
-    );
+  const markAllAsRead = async () => {
+    try {
+      // Store original state for potential revert
+      const originalNotifications = notifications;
+      
+      // Optimistically update UI
+      setNotifications(prevNotifications => 
+        prevNotifications.map(notification => ({ ...notification, isRead: true }))
+      );
+      
+      // Make API call to persist the change
+      const response = await fetch('/api/notifications/read-all', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to mark all notifications as read');
+        // Revert the optimistic update on error
+        setNotifications(originalNotifications);
+      }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      // Revert the optimistic update on error
+      setNotifications(notifications);
+    }
   };
   
   // Handle notification click

@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/prisma-extensions';
 
 // POST endpoint to mark a notification as read
 export async function POST(
@@ -53,8 +53,7 @@ export async function POST(
     const updatedNotification = await prisma.notification.update({
       where: { id: notificationId },
       data: { 
-        read: true,
-        readAt: new Date(),
+        isRead: true,
       },
     });
 

@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/prisma-extensions';
 
 
 // Create a simple getUserById function since the module doesn't exist yet
@@ -55,20 +55,14 @@ export async function createNotification(
   metadata: NotificationMetadata = {}
 ) {
   try {
-    // Ensure we're only passing valid fields to Prisma
-    // Construct notification data based on schema fields using proper Prisma type
+    // Construct notification data based on actual schema fields
     const notificationData = {
-      user: { connect: { id: userId } },
+      userId,
       type,
-      message,
       title: message.substring(0, 100), 
+      message,
       isRead: false,
-      linkUrl: metadata.resourceUrl,
-      relatedId: metadata.courseId || metadata.lessonId || metadata.discussionId || metadata.commentId,
-      relatedType: metadata.courseId ? 'COURSE' : 
-                  metadata.lessonId ? 'LESSON' : 
-                  metadata.discussionId ? 'DISCUSSION' : 
-                  metadata.commentId ? 'COMMENT' : undefined
+      metadata: JSON.stringify(metadata)
     };
     
     const notification = await prisma.notification.create({
@@ -97,36 +91,23 @@ export async function createNotificationForMany(
   try {
     const uniqueUserIds = [...new Set(userIds)];
     
-    // For createMany operations, Prisma expects direct foreign keys, not nested connects
-    // We need to use Promise.all with individual creates instead of createMany
-    // since createMany doesn't support nested relations
-    const createPromises = uniqueUserIds.map(async (userId) => {
-      return prisma.notification.create({
-        data: {
-          user: { connect: { id: userId } },
-          type,
-          message,
-          title: message.substring(0, 100),
-          isRead: false,
-          linkUrl: metadata.resourceUrl,
-          relatedId: metadata.courseId || metadata.lessonId || metadata.discussionId || metadata.commentId,
-          relatedType: metadata.courseId ? 'COURSE' : 
-                      metadata.lessonId ? 'LESSON' : 
-                      metadata.discussionId ? 'DISCUSSION' : 
-                      metadata.commentId ? 'COMMENT' : undefined
-        }
-      }).catch(err => {
-        console.error(`Failed to create notification for user ${userId}:`, err);
-        return null;
-      });
+    // Create notifications for all users using createMany for better performance
+    const notificationsData = uniqueUserIds.map(userId => ({
+      userId,
+      type,
+      title: message.substring(0, 100),
+      message,
+      isRead: false,
+      metadata: JSON.stringify(metadata)
+    }));
+    
+    const result = await prisma.notification.createMany({
+      data: notificationsData
     });
     
-    // Execute all the create promises in parallel
-    const createdNotifications = await Promise.all(createPromises);
-    
-    // Filter out any failed creations (null values)
+    // Return the count from createMany result
     const notifications = {
-      count: createdNotifications.filter(Boolean).length
+      count: result.count
     };
     
     // Invalidate cache for all affected users
