@@ -21,6 +21,7 @@ import {
   Wrench,
   Copy
 } from 'lucide-react';
+import MentorshipRequestsSection from '@/components/mentor/MentorshipRequestsSection';
 
 // Types for the dashboard data
 interface MenteeData {
@@ -92,168 +93,48 @@ export default function MentorDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
 
-  // Use useMemo to prevent recreating the object on every render
+  // Empty placeholder data - will be replaced with real API data
   const placeholderData = useMemo<DashboardData>(() => ({
     mentorName: session?.user?.name || 'Mentor',
-    mentees: [
-      {
-        id: 'mentee1',
-        name: 'Emma Thompson',
-        imageUrl: '/images/mentees/emma.jpg',
-        careerGoal: 'UX Designer',
-        lastSessionDate: '2025-05-18',
-        progressPercentage: 65,
-        upcomingSession: {
-          id: 'session1',
-          date: '2025-05-27',
-          time: '15:00-16:00'
-        },
-        activeMilestones: 4,
-        completedMilestones: 7
-      },
-      {
-        id: 'mentee2',
-        name: 'Daniel Lee',
-        imageUrl: '/images/mentees/daniel.jpg',
-        careerGoal: 'Frontend Developer',
-        lastSessionDate: '2025-05-20',
-        progressPercentage: 42,
-        upcomingSession: {
-          id: 'session2',
-          date: '2025-05-28',
-          time: '11:00-12:00'
-        },
-        activeMilestones: 3,
-        completedMilestones: 2
-      },
-      {
-        id: 'mentee3',
-        name: 'Sofia Martinez',
-        imageUrl: '/images/mentees/sofia.jpg',
-        careerGoal: 'Data Scientist',
-        lastSessionDate: '2025-05-15',
-        progressPercentage: 78,
-        upcomingSession: null,
-        activeMilestones: 2,
-        completedMilestones: 8
-      }
-    ],
-    upcomingSessions: [
-      {
-        id: 'session1',
-        menteeId: 'mentee1',
-        menteeName: 'Emma Thompson',
-        menteeImage: '/images/mentees/emma.jpg',
-        date: '2025-05-27',
-        time: '15:00-16:00',
-        topic: 'UX Portfolio Review',
-        type: 'PROJECT_REVIEW',
-        notes: 'Review portfolio projects and discuss improvements for job applications.'
-      },
-      {
-        id: 'session2',
-        menteeId: 'mentee2',
-        menteeName: 'Daniel Lee',
-        menteeImage: '/images/mentees/daniel.jpg',
-        date: '2025-05-28',
-        time: '11:00-12:00',
-        topic: 'React Advanced Patterns',
-        type: 'ONE_ON_ONE',
-        notes: 'Discuss component design patterns and state management strategies.'
-      },
-      {
-        id: 'session3',
-        menteeId: 'mentee4',
-        menteeName: 'Olivia Wilson',
-        menteeImage: '/images/mentees/olivia.jpg',
-        date: '2025-05-30',
-        time: '14:00-15:00',
-        topic: 'Career Planning Session',
-        type: 'CAREER_PLANNING',
-        notes: 'Discuss long-term career goals and create a development roadmap.'
-      }
-    ],
-    careerPaths: [
-      {
-        id: 'path1',
-        title: 'UX Designer Career Path',
-        description: 'Comprehensive roadmap for becoming a professional UX designer',
-        menteeCount: 4,
-        milestoneCount: 12,
-        averageCompletionRate: 58
-      },
-      {
-        id: 'path2',
-        title: 'Frontend Developer Roadmap',
-        description: 'Step-by-step path to becoming a frontend developer',
-        menteeCount: 6,
-        milestoneCount: 15,
-        averageCompletionRate: 42
-      },
-      {
-        id: 'path3',
-        title: 'Data Science Fundamentals',
-        description: 'Essential skills and knowledge for data science careers',
-        menteeCount: 3,
-        milestoneCount: 18,
-        averageCompletionRate: 35
-      }
-    ],
-    resources: [
-      {
-        id: 'resource1',
-        title: 'UX Design Systems: A Complete Guide',
-        type: 'ARTICLE',
-        url: 'https://example.com/ux-design-systems',
-        tags: ['UX Design', 'Design Systems', 'UI'],
-        shareCount: 12
-      },
-      {
-        id: 'resource2',
-        title: 'React Performance Optimization Techniques',
-        type: 'VIDEO',
-        url: 'https://example.com/react-performance',
-        tags: ['React', 'Web Development', 'Performance'],
-        shareCount: 8
-      },
-      {
-        id: 'resource3',
-        title: 'Career Development Plan Template',
-        type: 'TEMPLATE',
-        url: 'https://example.com/career-template',
-        tags: ['Career Planning', 'Professional Development'],
-        shareCount: 15
-      }
-    ],
+    mentees: [], // TODO: Fetch from /api/mentor/mentees
+    upcomingSessions: [], // TODO: Fetch from /api/mentor/sessions
+    careerPaths: [], // TODO: Fetch from /api/mentor/career-paths
+    resources: [], // TODO: Fetch from /api/mentor/resources
     overallStats: {
-      totalMentees: 9,
-      activeMentees: 7,
-      sessionCompletedThisMonth: 14,
-      averageMenteeRating: 4.8,
-      menteeRetentionRate: 92,
-      totalHoursThisMonth: 18
-    }
-  }), [session]);
+      totalMentees: 0,
+      activeMentees: 0,
+      sessionCompletedThisMonth: 0,
+      averageMenteeRating: 0,
+      menteeRetentionRate: 0,
+      totalHoursThisMonth: 0
+    } // TODO: Fetch from /api/mentor/analytics
+  }), [session?.user?.name]);
 
   useEffect(() => {
     if (!session) return;
     
-    const fetchDashboardData = () => {
+    const fetchDashboardData = async () => {
       setIsLoading(true);
-      // In a production app, we would fetch data from an API endpoint
-      // For now, simulate an API call with setTimeout
-      setTimeout(() => {
-        try {
-          // Simulating successful data fetch
-          setDashboardData(placeholderData);
-        } catch (error) {
-          console.error('Error fetching dashboard data:', error);
-          // Still use placeholder data on error for demo purposes
-          setDashboardData(placeholderData);
-        } finally {
-          setIsLoading(false);
+      try {
+        const response = await fetch('/api/mentor/dashboard', {
+          headers: {
+            'Cache-Control': 'no-store'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-      }, 1000);
+        
+        const data = await response.json();
+        setDashboardData(data);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        // Fallback to empty data on error
+        setDashboardData(placeholderData);
+      } finally {
+        setIsLoading(false);
+      }
     };
     
     fetchDashboardData();
@@ -416,6 +297,9 @@ export default function MentorDashboard() {
               </Link>
             </div>
           </motion.section>
+          
+          {/* Mentorship Requests Section */}
+          <MentorshipRequestsSection />
           
           {/* Upcoming Sessions Section */}
           <motion.section
@@ -599,8 +483,8 @@ export default function MentorDashboard() {
                 <FileText className="h-5 w-5 mr-2 text-indigo-600" />
                 Resource Library
               </h2>
-              <Link href="/mentor/resources" className="text-indigo-600 hover:text-indigo-700 text-sm font-medium break-words">
-                Add Resources
+              <Link href="/resources" className="text-indigo-600 hover:text-indigo-700 text-sm font-medium break-words">
+                View All Resources
               </Link>
             </div>
 

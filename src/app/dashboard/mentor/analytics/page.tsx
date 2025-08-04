@@ -67,118 +67,49 @@ export default function MenteeAnalyticsPage() {
   // Fetch analytics data
   useEffect(() => {
     const fetchAnalyticsData = async () => {
+      setIsLoading(true);
       try {
-        // In a real implementation, this would be an API call with the timeframe parameter
-        // const response = await fetch(`/api/mentor/analytics?timeframe=${timeframe}`);
-        // const data = await response.json();
+        // Fetch real analytics data from API
+        const response = await fetch(`/api/mentor/analytics?timeframe=${timeframe}`, {
+          headers: {
+            'Cache-Control': 'no-store'
+          }
+        });
         
-        // Mock analytics data
-        const mockData: MenteeAnalyticsData = {
-          totalMentees: 12,
-          activeMentees: 9,
-          menteeProgress: {
-            completing: 3,
-            onTrack: 5,
-            needsAttention: 2,
-            inactive: 2
-          },
-          averageSessionsPerMentee: 3.5,
-          totalSessionsCompleted: 42,
-          upcomingSessions: 8,
-          courseCompletionRate: 78,
-          topSkills: [
-            { skill: 'JavaScript', count: 8 },
-            { skill: 'React', count: 7 },
-            { skill: 'Python', count: 6 },
-            { skill: 'Data Analysis', count: 5 },
-            { skill: 'AWS', count: 4 }
-          ],
-          menteeActivityByDay: [
-            { day: 'Monday', count: 32 },
-            { day: 'Tuesday', count: 45 },
-            { day: 'Wednesday', count: 58 },
-            { day: 'Thursday', count: 40 },
-            { day: 'Friday', count: 35 },
-            { day: 'Saturday', count: 20 },
-            { day: 'Sunday', count: 12 }
-          ],
-          mostPopularCourses: [
-            { course: 'Web Development Fundamentals', enrolledMentees: 7 },
-            { course: 'JavaScript Mastery', enrolledMentees: 6 },
-            { course: 'Python for Data Science', enrolledMentees: 5 },
-            { course: 'React Framework', enrolledMentees: 5 },
-            { course: 'Cloud Computing Essentials', enrolledMentees: 4 }
-          ],
-          menteesByCareerPath: [
-            { path: 'Frontend Developer', count: 5 },
-            { path: 'Data Scientist', count: 3 },
-            { path: 'Full Stack Developer', count: 2 },
-            { path: 'Cloud Architect', count: 1 },
-            { path: 'Other', count: 1 }
-          ],
-          menteePerformanceData: [
-            {
-              menteeId: 'mentee_1',
-              menteeName: 'Alex Johnson',
-              menteeAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-              coursesCompleted: 3,
-              activeCourses: 2,
-              lastActive: '2025-05-24T14:30:00Z',
-              averageGrade: 'A-',
-              totalSessions: 6,
-              progress: 85
-            },
-            {
-              menteeId: 'mentee_2',
-              menteeName: 'Sophia Lee',
-              menteeAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-              coursesCompleted: 2,
-              activeCourses: 3,
-              lastActive: '2025-05-25T10:15:00Z',
-              averageGrade: 'B+',
-              totalSessions: 5,
-              progress: 72
-            },
-            {
-              menteeId: 'mentee_3',
-              menteeName: 'Michael Chen',
-              menteeAvatar: 'https://randomuser.me/api/portraits/men/67.jpg',
-              coursesCompleted: 4,
-              activeCourses: 1,
-              lastActive: '2025-05-23T16:45:00Z',
-              averageGrade: 'A',
-              totalSessions: 8,
-              progress: 92
-            },
-            {
-              menteeId: 'mentee_4',
-              menteeName: 'Emma Wilson',
-              menteeAvatar: 'https://randomuser.me/api/portraits/women/22.jpg',
-              coursesCompleted: 1,
-              activeCourses: 3,
-              lastActive: '2025-05-20T11:30:00Z',
-              averageGrade: 'B',
-              totalSessions: 4,
-              progress: 45
-            },
-            {
-              menteeId: 'mentee_5',
-              menteeName: 'James Rodriguez',
-              menteeAvatar: 'https://randomuser.me/api/portraits/men/45.jpg',
-              coursesCompleted: 0,
-              activeCourses: 2,
-              lastActive: '2025-05-15T09:20:00Z',
-              averageGrade: 'C+',
-              totalSessions: 2,
-              progress: 25
-            }
-          ]
-        };
-        
-        setAnalyticsData(mockData);
-        setIsLoading(false);
+        if (response.ok) {
+          const apiData = await response.json();
+          
+          // Use API data directly without mock transformations
+          setAnalyticsData(apiData);
+        } else {
+          throw new Error('Failed to fetch analytics data');
+        }
       } catch (error) {
         console.error('Error fetching analytics data:', error);
+        
+        // Fallback to empty data on error
+        const emptyData: MenteeAnalyticsData = {
+          totalMentees: 0,
+          activeMentees: 0,
+          menteeProgress: {
+            completing: 0,
+            onTrack: 0,
+            needsAttention: 0,
+            inactive: 0
+          },
+          averageSessionsPerMentee: 0,
+          totalSessionsCompleted: 0,
+          upcomingSessions: 0,
+          courseCompletionRate: 0,
+          topSkills: [],
+          menteeActivityByDay: [],
+          mostPopularCourses: [],
+          menteesByCareerPath: [],
+          menteePerformanceData: []
+        };
+        
+        setAnalyticsData(emptyData);
+      } finally {
         setIsLoading(false);
       }
     };

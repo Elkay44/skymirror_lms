@@ -67,8 +67,8 @@ export default function SessionsPage() {
       } catch (error) {
         console.error('Error fetching sessions:', error);
         toast.error('Failed to load sessions. Please try again later.');
-        // For demo purposes, set mock data if API fails
-        setSessions(mockSessions);
+        // Set empty sessions array on API failure
+        setSessions([]);
       } finally {
         setLoading(false);
       }
@@ -529,66 +529,4 @@ export default function SessionsPage() {
   );
 }
 
-// Mock data for testing
-const mockSessions: MentorshipSession[] = [
-  {
-    id: 'session_1',
-    menteeId: 'mentee_1',
-    menteeName: 'Alex Johnson',
-    menteeAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now
-    duration: 45,
-    topic: 'Career Planning Discussion',
-    type: 'CAREER_PLANNING',
-    status: 'SCHEDULED',
-    notes: 'Discuss long-term career goals and create a roadmap for the next 2 years.'
-  },
-  {
-    id: 'session_2',
-    menteeId: 'mentee_2',
-    menteeName: 'Sophia Lee',
-    menteeAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-    date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day from now
-    duration: 30,
-    topic: 'Python Project Review',
-    type: 'PROJECT_REVIEW',
-    status: 'SCHEDULED',
-    notes: 'Review current progress on data analysis project and provide feedback.'
-  },
-  {
-    id: 'session_3',
-    menteeId: 'mentee_1',
-    menteeName: 'Alex Johnson',
-    menteeAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
-    duration: 60,
-    topic: 'JavaScript Fundamentals',
-    type: 'ONE_ON_ONE',
-    status: 'COMPLETED',
-    notes: 'Covered core JavaScript concepts including promises, async/await, and closures.'
-  },
-  {
-    id: 'session_4',
-    menteeId: 'mentee_2',
-    menteeName: 'Sophia Lee',
-    menteeAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-    date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // 10 days ago
-    duration: 20,
-    topic: 'Quick Check-in',
-    type: 'GENERAL_GUIDANCE',
-    status: 'COMPLETED',
-    notes: 'Brief check-in on current progress and answered questions about course material.'
-  },
-  {
-    id: 'session_5',
-    menteeId: 'mentee_1',
-    menteeName: 'Alex Johnson',
-    menteeAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-    duration: 45,
-    topic: 'Resume Review',
-    type: 'CAREER_PLANNING',
-    status: 'CANCELLED',
-    notes: 'Session cancelled due to scheduling conflict.'
-  }
-];
+

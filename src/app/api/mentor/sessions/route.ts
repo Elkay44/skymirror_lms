@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/prisma-extensions';
 
 // GET: Fetch all sessions for the logged-in mentor
 export async function GET(_req: Request) {
@@ -17,72 +18,40 @@ export async function GET(_req: Request) {
       return NextResponse.json({ error: 'Access denied. Only mentors can access this resource.' }, { status: 403 });
     }
     
-    // In a production environment, this would fetch from a database
-    // For now, we'll return mock data
-    const mentorSessions = [
-      {
-        id: 'session_1',
-        menteeId: 'mentee_1',
-        menteeName: 'Alex Johnson',
-        menteeAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-        date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days from now
-        duration: 45,
-        topic: 'Career Planning Discussion',
-        type: 'CAREER_PLANNING',
-        status: 'SCHEDULED',
-        notes: 'Discuss long-term career goals and create a roadmap for the next 2 years.'
+    // Fetch sessions from database
+    const mentorSessions = await prisma.mentorSession.findMany({
+      where: {
+        mentorId: session.user.id
       },
-      {
-        id: 'session_2',
-        menteeId: 'mentee_2',
-        menteeName: 'Sophia Lee',
-        menteeAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-        date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day from now
-        duration: 30,
-        topic: 'Python Project Review',
-        type: 'PROJECT_REVIEW',
-        status: 'SCHEDULED',
-        notes: 'Review current progress on data analysis project and provide feedback.'
+      include: {
+        mentee: {
+          select: {
+            id: true,
+            name: true,
+            image: true
+          }
+        }
       },
-      {
-        id: 'session_3',
-        menteeId: 'mentee_1',
-        menteeName: 'Alex Johnson',
-        menteeAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-        date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
-        duration: 60,
-        topic: 'JavaScript Fundamentals',
-        type: 'ONE_ON_ONE',
-        status: 'COMPLETED',
-        notes: 'Covered core JavaScript concepts including promises, async/await, and closures.'
-      },
-      {
-        id: 'session_4',
-        menteeId: 'mentee_2',
-        menteeName: 'Sophia Lee',
-        menteeAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-        date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // 10 days ago
-        duration: 20,
-        topic: 'Quick Check-in',
-        type: 'GENERAL_GUIDANCE',
-        status: 'COMPLETED',
-        notes: 'Brief check-in on current progress and answered questions about course material.'
-      },
-      {
-        id: 'session_5',
-        menteeId: 'mentee_1',
-        menteeName: 'Alex Johnson',
-        menteeAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-        duration: 45,
-        topic: 'Resume Review',
-        type: 'CAREER_PLANNING',
-        status: 'CANCELLED',
-        notes: 'Session cancelled due to scheduling conflict.'
+      orderBy: {
+        scheduledAt: 'desc'
       }
-    ];
+    });
     
-    return NextResponse.json({ sessions: mentorSessions });
+    // Transform data for frontend
+    const transformedSessions = mentorSessions.map(session => ({
+      id: session.id,
+      menteeId: session.menteeId,
+      menteeName: session.mentee.name || 'Unknown',
+      menteeAvatar: session.mentee.image,
+      date: session.scheduledAt.toISOString(),
+      duration: session.duration,
+      topic: session.title,
+      type: 'ONE_ON_ONE', // Default type since we don't have this field in schema
+      status: session.status,
+      notes: session.notes || ''
+    }));
+    
+    return NextResponse.json({ sessions: transformedSessions });
   } catch (error) {
     console.error('Error fetching mentor sessions:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -106,36 +75,65 @@ export async function POST(req: Request) {
     
     // Parse request body
     const data = await req.json();
-    const { menteeId, date, topic, type, notes, duration } = data;
+    const { menteeId, date, topic, notes, duration } = data;
     
     // Validate required fields
-    if (!menteeId || !date || !topic || !type) {
+    if (!menteeId || !date || !topic) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
     
-    // In a production environment, this would create a session in the database
-    // For now, we'll just return success with the created session data
-    const newSession = {
-      id: `session_${Date.now()}`,
-      menteeId,
-      // In a real application, you would fetch these from the database based on menteeId
-      menteeName: menteeId === 'mentee_1' ? 'Alex Johnson' : 'Sophia Lee',
-      menteeAvatar: menteeId === 'mentee_1' 
-        ? 'https://randomuser.me/api/portraits/men/32.jpg' 
-        : 'https://randomuser.me/api/portraits/women/44.jpg',
-      date,
-      duration: duration || 30, // Default to 30 minutes if not specified
-      topic,
-      type,
-      status: 'SCHEDULED',
-      notes: notes || '',
-      mentorId: session.user.id, // In a real app, this would be the mentor's ID
+    // Validate that the mentee exists
+    const mentee = await prisma.user.findUnique({
+      where: { id: menteeId },
+      select: { id: true, name: true, image: true }
+    });
+    
+    if (!mentee) {
+      return NextResponse.json({ error: 'Mentee not found' }, { status: 404 });
+    }
+    
+    // Create session in database
+    const newSession = await prisma.mentorSession.create({
+      data: {
+        mentorId: session.user.id,
+        menteeId,
+        title: topic,
+        description: notes || '',
+        scheduledAt: new Date(date),
+        duration: duration || 30,
+        status: 'SCHEDULED',
+        notes: notes || ''
+      },
+      include: {
+        mentee: {
+          select: {
+            id: true,
+            name: true,
+            image: true
+          }
+        }
+      }
+    });
+    
+    // Transform for frontend
+    const transformedSession = {
+      id: newSession.id,
+      menteeId: newSession.menteeId,
+      menteeName: newSession.mentee.name || 'Unknown',
+      menteeAvatar: newSession.mentee.image,
+      date: newSession.scheduledAt.toISOString(),
+      duration: newSession.duration,
+      topic: newSession.title,
+      type: 'ONE_ON_ONE',
+      status: newSession.status,
+      notes: newSession.notes || '',
+      mentorId: newSession.mentorId
     };
     
     return NextResponse.json({
       success: true,
       message: 'Session scheduled successfully',
-      session: newSession
+      session: transformedSession
     });
   } catch (error) {
     console.error('Error creating mentorship session:', error);

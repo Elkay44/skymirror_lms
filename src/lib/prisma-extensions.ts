@@ -86,6 +86,50 @@ type CheckIn = {
   updatedAt: Date;
 };
 
+// CareerPath types
+type CareerPath = {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  difficulty: string;
+  estimatedDuration: string | null;
+  tags: string | null;
+  isPublished: boolean;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+  milestones?: CareerPathMilestone[];
+  enrollments?: CareerPathEnrollment[];
+  creator?: any;
+  _count?: {
+    enrollments: number;
+    milestones: number;
+  };
+};
+
+type CareerPathMilestone = {
+  id: string;
+  careerPathId: string;
+  title: string;
+  description: string | null;
+  order: number;
+  isCompleted: boolean;
+  careerPath?: CareerPath;
+};
+
+type CareerPathEnrollment = {
+  id: string;
+  careerPathId: string;
+  userId: string;
+  status: string;
+  progress: number;
+  enrolledAt: Date;
+  completedAt: Date | null;
+  careerPath?: CareerPath;
+  user?: any;
+};
+
 // Mentorship type
 type Mentorship = {
   id: string;
@@ -632,6 +676,11 @@ export type ExtendedPrismaClient = PrismaClient & {
       take?: number;
     }) => Promise<CheckIn[]>;
   };
+  
+  // CareerPath models
+  careerPath: BaseModel<CareerPath>;
+  careerPathMilestone: BaseModel<CareerPathMilestone>;
+  careerPathEnrollment: BaseModel<CareerPathEnrollment>;
   
   // Add other models as needed
 };

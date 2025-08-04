@@ -33,67 +33,8 @@ export default function ResourceLibraryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('ALL');
   
-  // Mock resources data
-  const resources: Resource[] = [
-    {
-      id: 'resource_1',
-      title: 'Effective Mentoring Guide',
-      description: 'A comprehensive guide to effective mentoring techniques and best practices for career development.',
-      type: 'DOCUMENT',
-      url: '/resources/mentoring-guide.pdf',
-      tags: ['mentoring', 'best-practices', 'career-development'],
-      dateAdded: '2025-04-15T10:30:00Z',
-      downloads: 127
-    },
-    {
-      id: 'resource_2',
-      title: 'Mastering One-on-One Meetings',
-      description: 'Learn how to structure and conduct effective one-on-one meetings with your mentees.',
-      type: 'VIDEO',
-      url: 'https://www.youtube.com/watch?v=example1',
-      tags: ['one-on-one', 'meetings', 'communication'],
-      dateAdded: '2025-04-10T14:15:00Z',
-      thumbnail: 'https://img.youtube.com/vi/example1/maxresdefault.jpg'
-    },
-    {
-      id: 'resource_3',
-      title: 'Student Progress Tracking Template',
-      description: 'A spreadsheet template for tracking student progress across different courses and skills.',
-      type: 'DOCUMENT',
-      url: '/resources/progress-tracking.xlsx',
-      tags: ['tracking', 'progress', 'templates'],
-      dateAdded: '2025-04-22T09:45:00Z',
-      downloads: 89
-    },
-    {
-      id: 'resource_4',
-      title: 'Career Path Planning Tools',
-      description: 'Tools and resources for helping mentees plan their career paths in technology.',
-      type: 'LINK',
-      url: 'https://example.com/career-tools',
-      tags: ['career', 'planning', 'tools'],
-      dateAdded: '2025-04-18T11:20:00Z'
-    },
-    {
-      id: 'resource_5',
-      title: 'Advanced Mentoring Techniques Course',
-      description: 'An online course covering advanced mentoring techniques for experienced mentors.',
-      type: 'COURSE',
-      url: '/courses/advanced-mentoring',
-      tags: ['mentoring', 'advanced', 'techniques', 'course'],
-      dateAdded: '2025-04-05T16:30:00Z'
-    },
-    {
-      id: 'resource_6',
-      title: 'Interview Preparation Guide',
-      description: 'Help your mentees prepare for job interviews with this comprehensive guide.',
-      type: 'DOCUMENT',
-      url: '/resources/interview-prep.pdf',
-      tags: ['interview', 'preparation', 'career'],
-      dateAdded: '2025-04-25T13:10:00Z',
-      downloads: 56
-    }
-  ];
+  // TODO: Fetch resources from API
+  const resources: Resource[] = [];
   
   // Filter resources based on search query and selected type
   const filteredResources = resources.filter(resource => {

@@ -54,54 +54,7 @@ interface Mentee {
   mentorshipNotes: string;
 }
 
-// Mock data for mentees
-const mockMentees: Mentee[] = [
-  {
-    id: '1',
-    name: 'Alex Johnson',
-    email: 'alex.johnson@example.com',
-    avatar: '/images/mentees/alex.jpg',
-    learningPath: 'Frontend Development',
-    mentorshipNotes: 'Focusing on React and TypeScript. Needs help with state management.',
-    enrolledCourses: [
-      {
-        id: 'course1',
-        title: 'Advanced React',
-        progress: 65,
-        lastActivity: '2025-07-20',
-        instructor: 'Sarah Chen',
-        grade: 'A-',
-        status: 'In Progress'
-      },
-      {
-        id: 'course2',
-        title: 'TypeScript Fundamentals',
-        progress: 90,
-        lastActivity: '2025-07-22',
-        instructor: 'Mike Johnson',
-        grade: 'A',
-        status: 'Completed'
-      }
-    ],
-    upcomingAssignments: [
-      {
-        id: 'assign1',
-        title: 'React Hooks Project',
-        dueDate: '2025-08-10',
-        courseId: 'course1',
-        courseName: 'Advanced React',
-        submitted: false
-      }
-    ],
-    nextSession: {
-      id: 'sess1',
-      date: '2025-07-28T14:00:00',
-      duration: 60,
-      topic: 'State Management with Redux'
-    }
-  },
-  // Add more mock mentees as needed
-];
+
 
 export default function MenteesPage() {
   const { data: session } = useSession();
@@ -114,29 +67,55 @@ export default function MenteesPage() {
   useEffect(() => {
     const fetchMentees = async () => {
       if (!session?.user) {
-        // If no session, use mock data
-        setMentees(mockMentees);
+        // If no session, set empty mentees
+        setMentees([]);
         setLoading(false);
         return;
       }
       
       setLoading(true);
       try {
-        const response = await fetch('/api/mentees');
+        const response = await fetch('/api/mentor/mentees', {
+          headers: {
+            'Cache-Control': 'no-store'
+          }
+        });
         
         if (response.ok) {
           const data = await response.json();
-          setMentees(data.mentees || mockMentees);
+          // Transform the API data to match the frontend interface
+          const transformedMentees = data.mentees.map((mentee: any) => ({
+            id: mentee.id,
+            name: mentee.name,
+            email: mentee.email,
+            avatar: mentee.imageUrl || '/images/default-avatar.png',
+            learningPath: mentee.careerGoal || 'Career Development',
+            mentorshipNotes: `Progress: ${mentee.progressPercentage}% | Completed: ${mentee.completedMilestones} milestones`,
+            enrolledCourses: [], // We'll populate this with placeholder data for now
+            upcomingAssignments: [], // We'll populate this with placeholder data for now
+            nextSession: mentee.upcomingSession ? {
+              id: mentee.upcomingSession.id,
+              date: mentee.upcomingSession.date + 'T' + mentee.upcomingSession.time.split('-')[0],
+              duration: 60, // Default duration
+              topic: 'Mentorship Session'
+            } : {
+              id: 'no-session',
+              date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // Next week
+              duration: 60,
+              topic: 'Schedule Next Session'
+            }
+          }));
+          setMentees(transformedMentees);
         } else {
-          // If API fails, use mock data
-          console.warn('Using mock data due to API error');
-          setMentees(mockMentees);
+          // If API fails, set empty mentees
+          console.warn('API failed, setting empty mentees');
+          setMentees([]);
         }
       } catch (error) {
         console.error('Error fetching mentees:', error);
-        // Fallback to mock data on error
-        setMentees(mockMentees);
-        toast.error('Using demo data. Some features may be limited.');
+        // Fallback to empty mentees on error
+        setMentees([]);
+        toast.error('Failed to load mentees. Please try again later.');
       } finally {
         setLoading(false);
       }

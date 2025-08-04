@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Link from 'next/link';
 import {
@@ -40,154 +40,46 @@ export default function CareerPathsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [selectedLevel, setSelectedLevel] = useState<string>('ALL');
+  const [careerPaths, setCareerPaths] = useState<CareerPath[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
-  // Mock career paths data
-  const careerPaths: CareerPath[] = [
-    {
-      id: 'path_1',
-      title: 'Frontend Developer',
-      description: 'Complete career path for aspiring frontend developers focusing on modern web technologies.',
-      category: 'WEB_DEVELOPMENT',
-      level: 'BEGINNER',
-      estimatedDuration: '6 months',
-      enrolledMentees: 24,
-      skillsGained: [
-        'HTML5', 'CSS3', 'JavaScript', 'React', 'Responsive Design', 'Web Accessibility', 'Version Control'
-      ],
-      requiredCourses: [
-        { id: 'course_1', title: 'HTML & CSS Fundamentals', status: 'MANDATORY' },
-        { id: 'course_2', title: 'JavaScript Essentials', status: 'MANDATORY' },
-        { id: 'course_3', title: 'React Framework', status: 'MANDATORY' },
-        { id: 'course_4', title: 'Web Accessibility', status: 'RECOMMENDED' }
-      ],
-      jobOpportunities: [
-        'Junior Frontend Developer', 'UI Developer', 'Web Designer'
-      ],
-      certificates: [
-        'Frontend Developer Certification', 'React Specialist'
-      ]
-    },
-    {
-      id: 'path_2',
-      title: 'Data Scientist',
-      description: 'Comprehensive path covering the essential skills needed for a career in data science.',
-      category: 'DATA_SCIENCE',
-      level: 'INTERMEDIATE',
-      estimatedDuration: '9 months',
-      enrolledMentees: 18,
-      skillsGained: [
-        'Python', 'R', 'SQL', 'Machine Learning', 'Data Visualization', 'Statistical Analysis', 'Big Data Technologies'
-      ],
-      requiredCourses: [
-        { id: 'course_5', title: 'Python for Data Science', status: 'MANDATORY' },
-        { id: 'course_6', title: 'Statistical Methods', status: 'MANDATORY' },
-        { id: 'course_7', title: 'Machine Learning Fundamentals', status: 'MANDATORY' },
-        { id: 'course_8', title: 'Big Data with Hadoop & Spark', status: 'RECOMMENDED' }
-      ],
-      jobOpportunities: [
-        'Data Scientist', 'Data Analyst', 'Machine Learning Engineer'
-      ],
-      certificates: [
-        'Data Science Professional', 'Machine Learning Specialist'
-      ]
-    },
-    {
-      id: 'path_3',
-      title: 'Full Stack Developer',
-      description: 'End-to-end developer path covering both frontend and backend technologies.',
-      category: 'WEB_DEVELOPMENT',
-      level: 'ADVANCED',
-      estimatedDuration: '12 months',
-      enrolledMentees: 15,
-      skillsGained: [
-        'JavaScript', 'TypeScript', 'Node.js', 'React', 'Database Design', 'RESTful APIs', 'DevOps Basics'
-      ],
-      requiredCourses: [
-        { id: 'course_9', title: 'Frontend Development', status: 'MANDATORY' },
-        { id: 'course_10', title: 'Backend Development with Node.js', status: 'MANDATORY' },
-        { id: 'course_11', title: 'Database Systems', status: 'MANDATORY' },
-        { id: 'course_12', title: 'DevOps Essentials', status: 'RECOMMENDED' }
-      ],
-      jobOpportunities: [
-        'Full Stack Developer', 'Software Engineer', 'Web Application Developer'
-      ],
-      certificates: [
-        'Full Stack Developer Certification', 'Node.js Expert'
-      ]
-    },
-    {
-      id: 'path_4',
-      title: 'Cloud Solutions Architect',
-      description: 'Specialized path for designing and implementing cloud-based solutions.',
-      category: 'CLOUD_COMPUTING',
-      level: 'ADVANCED',
-      estimatedDuration: '10 months',
-      enrolledMentees: 12,
-      skillsGained: [
-        'AWS', 'Azure', 'Google Cloud', 'Infrastructure as Code', 'Serverless Architecture', 'Cloud Security', 'Microservices'
-      ],
-      requiredCourses: [
-        { id: 'course_13', title: 'Cloud Fundamentals', status: 'MANDATORY' },
-        { id: 'course_14', title: 'AWS Solutions Architect', status: 'MANDATORY' },
-        { id: 'course_15', title: 'Infrastructure as Code', status: 'MANDATORY' },
-        { id: 'course_16', title: 'Cloud Security', status: 'RECOMMENDED' }
-      ],
-      jobOpportunities: [
-        'Cloud Solutions Architect', 'Cloud Engineer', 'DevOps Engineer'
-      ],
-      certificates: [
-        'AWS Certified Solutions Architect', 'Azure Solutions Architect'
-      ]
-    },
-    {
-      id: 'path_5',
-      title: 'Cybersecurity Specialist',
-      description: 'Focused path on cybersecurity principles, tools, and best practices.',
-      category: 'CYBERSECURITY',
-      level: 'INTERMEDIATE',
-      estimatedDuration: '8 months',
-      enrolledMentees: 20,
-      skillsGained: [
-        'Network Security', 'Ethical Hacking', 'Security Auditing', 'Cryptography', 'Incident Response', 'Risk Management'
-      ],
-      requiredCourses: [
-        { id: 'course_17', title: 'Network Security Fundamentals', status: 'MANDATORY' },
-        { id: 'course_18', title: 'Ethical Hacking', status: 'MANDATORY' },
-        { id: 'course_19', title: 'Security Operations', status: 'MANDATORY' },
-        { id: 'course_20', title: 'Digital Forensics', status: 'RECOMMENDED' }
-      ],
-      jobOpportunities: [
-        'Security Analyst', 'Cybersecurity Specialist', 'Security Engineer'
-      ],
-      certificates: [
-        'Certified Ethical Hacker', 'CompTIA Security+'
-      ]
-    },
-    {
-      id: 'path_6',
-      title: 'Mobile App Developer',
-      description: 'Complete path for building native and cross-platform mobile applications.',
-      category: 'MOBILE_DEVELOPMENT',
-      level: 'INTERMEDIATE',
-      estimatedDuration: '7 months',
-      enrolledMentees: 16,
-      skillsGained: [
-        'React Native', 'Flutter', 'iOS Development', 'Android Development', 'Mobile UI/UX', 'App Store Deployment'
-      ],
-      requiredCourses: [
-        { id: 'course_21', title: 'Mobile Development Fundamentals', status: 'MANDATORY' },
-        { id: 'course_22', title: 'React Native', status: 'MANDATORY' },
-        { id: 'course_23', title: 'Flutter Framework', status: 'MANDATORY' },
-        { id: 'course_24', title: 'Mobile UI/UX Design', status: 'RECOMMENDED' }
-      ],
-      jobOpportunities: [
-        'Mobile App Developer', 'iOS Developer', 'Android Developer'
-      ],
-      certificates: [
-        'Mobile App Developer Certification', 'React Native Specialist'
-      ]
-    }
-  ];
+  // Fetch career paths from API
+  useEffect(() => {
+    const fetchCareerPaths = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/mentor/career-paths');
+        if (!response.ok) {
+          throw new Error('Failed to fetch career paths');
+        }
+        const data = await response.json();
+        
+        // Transform API data to match component interface
+        const transformedPaths = data.careerPaths?.map((path: any) => ({
+          id: path.id,
+          title: path.title,
+          description: path.description,
+          category: path.category,
+          level: path.difficulty || 'BEGINNER',
+          estimatedDuration: path.estimatedDuration || 'Not specified',
+          enrolledMentees: path._count?.enrollments || 0,
+          skillsGained: path.tags ? path.tags.split(',').filter(Boolean) : [],
+          requiredCourses: [], // This would need to be added to the API if needed
+          jobOpportunities: [], // This would need to be added to the API if needed
+          certificates: [] // This would need to be added to the API if needed
+        })) || [];
+        
+        setCareerPaths(transformedPaths);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchCareerPaths();
+  }, []);
   
   // Get unique categories
   const categories = Array.from(new Set(careerPaths.map(path => path.category)));
@@ -240,12 +132,13 @@ export default function CareerPathsPage() {
         </div>
         
         <div className="mt-4 md:mt-0">
-          <button
+          <Link
+            href="/dashboard/mentor/career-paths/create"
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 break-words min-w-0"
           >
             <Plus className="-ml-1 mr-2 h-4 w-4" />
             Create Path
-          </button>
+          </Link>
         </div>
       </div>
       
@@ -307,10 +200,31 @@ export default function CareerPathsPage() {
         </div>
       </div>
       
-      {/* Career Paths List */}
-      <div className="space-y-4 lg:space-y-6">
-        {filteredPaths.length > 0 ? (
-          filteredPaths.map((path) => (
+      {/* Loading State */}
+      {loading && (
+        <div className="py-8 text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+          <p className="mt-2 text-sm text-gray-500">Loading career paths...</p>
+        </div>
+      )}
+      
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">Error</h3>
+              <p className="mt-1 text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Career Paths Grid */}
+      {!loading && !error && (
+        <div className="space-y-6">
+          {filteredPaths.length > 0 ? (
+            filteredPaths.map((path) => (
             <div 
               key={path.id} 
               className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-hidden"
@@ -428,7 +342,8 @@ export default function CareerPathsPage() {
             </p>
           </div>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
