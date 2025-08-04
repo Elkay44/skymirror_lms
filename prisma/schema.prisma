@@ -115,6 +115,9 @@ model User {
   sentMessages       Message[]        @relation("MessageSender")
   receivedMessages   Message[]        @relation("MessageReceiver")
   posts              Post[]           // Forum posts by this user
+  codeCommits        CodeCommit[]     @relation("StudentCommits")
+  studentMarks       ProjectMark[]    @relation("StudentMarks")
+  instructorMarks    ProjectMark[]    @relation("InstructorMarks")
   @@map("users")
 }
 
@@ -278,6 +281,8 @@ model Project {
   course           Course            @relation("CourseProjects", fields: [courseId], references: [id], onDelete: Cascade)
   submissions      ProjectSubmission[]
   likes            ProjectLike[]
+  codeCommits      CodeCommit[]
+  marks            ProjectMark[]
 }
 
 model ProjectSubmission {
@@ -309,6 +314,8 @@ model ProjectSubmission {
   
   // Showcase projects
   showcaseProjects ShowcaseProject[]   @relation("SubmissionShowcaseProjects")
+  // Project marks
+  marks            ProjectMark[]
   
   @@unique([projectId, studentId])
   @@map("project_submissions")
@@ -794,4 +801,57 @@ model ActivityLog {
   @@map("activity_logs")
 }
 
+model CodeCommit {
+  id               String            @id @default(cuid())
+  projectId        String
+  studentId        String
+  commitHash       String            // Git commit hash
+  message          String            // Commit message
+  branch           String            @default("main")
+  repositoryUrl    String?           // GitHub/GitLab repository URL
+  filesChanged     Int               @default(0)
+  linesAdded       Int               @default(0)
+  linesDeleted     Int               @default(0)
+  commitDate       DateTime          @default(now())
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relations
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  student          User              @relation("StudentCommits", fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, studentId, commitHash])
+  @@index([projectId])
+  @@index([studentId])
+  @@index([commitDate])
+  @@map("code_commits")
+}
+
+model ProjectMark {
+  id               String            @id @default(cuid())
+  projectId        String
+  studentId        String
+  submissionId     String?           // Link to project submission
+  grade            Float             // Numerical grade (0-100)
+  letterGrade      String?           // Letter grade (A, B, C, etc.)
+  feedback         String?           // Detailed feedback
+  rubricScores     String?           // JSON string of rubric scores
+  markedBy         String            // Instructor who marked it
+  markedAt         DateTime          @default(now())
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relations
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  student          User              @relation("StudentMarks", fields: [studentId], references: [id], onDelete: Cascade)
+  submission       ProjectSubmission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  instructor       User              @relation("InstructorMarks", fields: [markedBy], references: [id], onDelete: Cascade)
+  
+  @@unique([projectId, studentId])
+  @@index([projectId])
+  @@index([studentId])
+  @@index([markedBy])
+  @@index([markedAt])
+  @@map("project_marks")
+}
 

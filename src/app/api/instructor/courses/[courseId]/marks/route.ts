@@ -58,7 +58,26 @@ export async function GET(
       orderBy: { createdAt: 'asc' } // Ensure consistent ordering
     });
 
-    // Get all project submissions for enrolled students
+    // Get project marks from ProjectMark model
+    const projectMarks = await (prisma as any).projectMark.findMany({
+      where: {
+        project: { courseId },
+        studentId: { in: enrollments.map(e => e.userId) }
+      },
+      include: {
+        project: {
+          select: { id: true, title: true, pointsValue: true }
+        },
+        submission: {
+          select: { id: true, status: true, submittedAt: true }
+        },
+        instructor: {
+          select: { id: true, name: true }
+        }
+      }
+    });
+
+    // Get all project submissions for enrolled students (for fallback)
     const projectSubmissions = await prisma.projectSubmission.findMany({
       where: {
         project: { courseId },
@@ -92,16 +111,22 @@ export async function GET(
     const studentsWithGrades = enrollments.map((enrollment) => {
       const studentId = enrollment.user.id;
       
-      // Get all project submissions for this student
+      // Get all project marks for this student
+      const studentProjectMarks = projectMarks.filter((m: any) => m.studentId === studentId);
+      
+      // Get all project submissions for this student (fallback)
       const submissions = projectSubmissions.filter(s => s.studentId === studentId);
       
-      // Calculate project grades (average of all project grades)
-      const projectGrades = submissions
-        .filter(s => s.grade !== null && s.grade !== undefined)
-        .map(s => (s.grade || 0));
+      // Calculate project grades (prefer marks over submission grades)
+      const projectGrades = studentProjectMarks.length > 0
+        ? studentProjectMarks.map((m: any) => m.grade).filter((grade: number | null | undefined) => grade !== null && grade !== undefined)
+        : submissions
+            .filter(s => s.grade !== null && s.grade !== undefined)
+            .map(s => (s.grade || 0));
       
-      const projectAverage = projectGrades.length > 0 
-        ? projectGrades.reduce((sum, grade) => sum + grade, 0) / projectGrades.length 
+      const validProjectGrades = projectGrades.filter((grade: number) => grade !== null && grade !== undefined);
+      const projectAverage = validProjectGrades.length > 0 
+        ? validProjectGrades.reduce((sum: number, grade: number) => sum + grade, 0) / validProjectGrades.length 
         : 0;
 
       // Get quiz attempts for this student

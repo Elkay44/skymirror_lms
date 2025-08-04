@@ -35,8 +35,34 @@ export async function GET(
       );
     }
 
-    // Get project submissions which represent "commits" in our system
-    // In a real system, this would connect to a Git provider API
+    // Get real code commits for this course
+    const codeCommits = await (prisma as any).codeCommit.findMany({
+      where: {
+        project: {
+          courseId: courseId,
+        },
+      },
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        project: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+      orderBy: {
+        commitDate: 'desc',
+      },
+    });
+
+    // Get project submissions as fallback for mock commits
     const projectSubmissions = await prisma.projectSubmission.findMany({
       where: {
         project: {
@@ -44,7 +70,7 @@ export async function GET(
         },
       },
       include: {
-        user: {
+        student: {
           select: {
             id: true,
             name: true,
@@ -63,15 +89,31 @@ export async function GET(
       },
     });
 
-    // Transform submissions into commit-like data
-    const commits = projectSubmissions.map((submission) => {
-      // Generate mock commit data based on submission
+    // Combine real commits and mock commits from submissions
+    const realCommits = codeCommits.map((commit: any) => ({
+      id: commit.commitHash.slice(0, 7),
+      message: commit.message,
+      author: commit.student.name || 'Unknown Student',
+      branch: commit.branch,
+      timestamp: formatTimeAgo(commit.commitDate),
+      changes: commit.filesChanged,
+      additions: commit.linesAdded,
+      deletions: commit.linesDeleted,
+      pullRequest: undefined,
+      projectTitle: commit.project.title,
+      projectId: commit.project.id,
+      studentId: commit.student.id,
+      repositoryUrl: commit.repositoryUrl,
+    }));
+
+    // Transform submissions into mock commit data for projects without real commits
+    const mockCommits = projectSubmissions.map((submission) => {
       const commitId = submission.id.slice(0, 7);
       const message = `Submit ${submission.project.title}`;
-      const author = submission.user.name || 'Unknown Student';
+      const author = submission.student.name || 'Unknown Student';
       const timestamp = formatTimeAgo(submission.submittedAt);
       
-      // Mock git-like data (in a real system, this would come from Git API)
+      // Mock git-like data
       const mockChanges = Math.floor(Math.random() * 20) + 1;
       const mockAdditions = Math.floor(Math.random() * 500) + 50;
       const mockDeletions = Math.floor(Math.random() * 200) + 10;
@@ -80,18 +122,26 @@ export async function GET(
         id: commitId,
         message,
         author,
-        branch: 'main', // Default branch
+        branch: 'main',
         timestamp,
         changes: mockChanges,
         additions: mockAdditions,
         deletions: mockDeletions,
-        pullRequest: undefined, // No PR system in our LMS
+        pullRequest: undefined,
+        projectTitle: submission.project.title,
+        projectId: submission.project.id,
+        studentId: submission.student.id,
+        repositoryUrl: null,
       };
     });
 
+    // Combine and sort all commits by timestamp
+    const allCommits = [...realCommits, ...mockCommits]
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
     return NextResponse.json({
-      commits,
-      totalCommits: commits.length,
+      commits: allCommits,
+      totalCommits: allCommits.length,
     });
   } catch (error) {
     console.error('Error fetching course commits:', error);

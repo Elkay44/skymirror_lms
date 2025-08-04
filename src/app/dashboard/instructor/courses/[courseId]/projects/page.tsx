@@ -35,7 +35,7 @@ export default function ProjectsPage() {
   }, [courseId]);
 
   const handleCreateProject = () => {
-    router.push(`/dashboard/instructor/courses/${courseId}/project/new`);
+    router.push(`/dashboard/instructor/courses/${courseId}/projects/new`);
   };
 
   const getStatusBadge = (status: string) => {
