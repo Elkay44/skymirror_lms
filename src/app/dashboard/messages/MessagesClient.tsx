@@ -339,12 +339,15 @@ const MessagesClient = () => {
     try {
       setIsSubmitting(true);
       
+      // Store the message content before clearing the input
+      const messageContent = messageInput.trim();
+      
       // Create message object
       const newMessage: Message = {
         id: 'temp-' + Date.now(), // Temporary ID that will be replaced by server
-        content: messageInput,
+        content: messageContent,
         senderId: session.user.id,
-        sentAt: new Date().toISOString(),
+        sentAt: '', // Empty sentAt to show "Sending..." until confirmed
         senderName: session.user.name || 'You',
         senderAvatar: session.user.image || null,
         senderRole: session.user.role || 'STUDENT',
@@ -377,7 +380,7 @@ const MessagesClient = () => {
           'Cache-Control': 'no-store'
         },
         body: JSON.stringify({
-          content: messageInput,
+          content: messageContent,
         }),
       });
       
@@ -395,13 +398,33 @@ const MessagesClient = () => {
       
       // Update with server response if needed
       const data = await response.json();
+      console.log('Server response for message:', data);
       const sentMessage = data.message; // Extract the message from the response
       
       if (sentMessage) {
+        console.log('Replacing temporary message with server message:', {
+          tempId: newMessage.id,
+          serverMessage: sentMessage
+        });
         // Replace the temporary message with the one from the server
         setMessages(prev => 
           prev.map(msg => 
-            msg.id === newMessage.id ? sentMessage : msg
+            msg.id === newMessage.id ? {
+              ...sentMessage,
+              id: sentMessage.id,
+              sentAt: sentMessage.sentAt || new Date().toISOString()
+            } : msg
+          )
+        );
+      } else {
+        console.warn('No message in server response:', data);
+        // If no message in response, just update the sentAt to remove "Sending..."
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === newMessage.id ? {
+              ...msg,
+              sentAt: new Date().toISOString()
+            } : msg
           )
         );
       }

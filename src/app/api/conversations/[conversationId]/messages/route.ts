@@ -76,7 +76,7 @@ export async function GET(
       senderName: message.sender?.name || 'Unknown',
       senderAvatar: message.sender?.image || null,
       senderRole: message.sender?.role || 'STUDENT',
-      createdAt: message.sentAt.toISOString(),
+      sentAt: message.sentAt.toISOString(),
       isRead: message.isRead,
     }));
     
@@ -172,7 +172,7 @@ export async function POST(
       senderName: message.sender?.name || session.user.name || 'Unknown',
       senderAvatar: message.sender?.image || null,
       senderRole: message.sender?.role || 'STUDENT',
-      createdAt: message.sentAt.toISOString(),
+      sentAt: message.sentAt.toISOString(),
       isRead: message.isRead,
     };
     
