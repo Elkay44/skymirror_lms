@@ -134,11 +134,11 @@ export default function StudentLessonPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <Link 
-                href={`/dashboard/student/courses/${courseId}/modules/${moduleId}`}
+                href={`/dashboard/student/courses/${courseId}`}
                 className="inline-flex items-center text-gray-600 hover:text-gray-800"
               >
                 <ArrowLeft className="h-5 w-5 mr-2" />
-                Back to Module
+                Back
               </Link>
               <div className="flex items-center gap-4">
                 <button
@@ -229,10 +229,10 @@ export default function StudentLessonPage() {
               <h3 className="text-sm font-medium text-gray-900 mb-3 break-words">Quick Links</h3>
               <div className="space-y-2">
                 <Link
-                  href={`/dashboard/student/courses/${courseId}/modules/${moduleId}`}
+                  href={`/dashboard/student/courses/${courseId}`}
                   className="block text-sm text-blue-600 hover:text-blue-800 break-words"
                 >
-                  Back to Module
+                  Back
                 </Link>
                 <Link
                   href={`/dashboard/student/courses/${courseId}`}
