@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import dynamic from 'next/dynamic';
+import { forwardRef, useImperativeHandle } from 'react';
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
+import { Editor } from '@tiptap/core';
 
-// Dynamically import ReactQuill to avoid SSR issues
-const ReactQuill = dynamic(() => import('react-quill'), { 
-  ssr: false,
-  loading: () => <div className="h-32 bg-gray-50 animate-pulse rounded-md"></div>
-});
 
-import 'react-quill/dist/quill.snow.css';
+
 
 interface RichTextEditorProps {
   value: string;
@@ -23,107 +21,82 @@ interface RichTextEditorProps {
 export interface RichTextEditorRef {
   focus: () => void;
   blur: () => void;
-  getEditor: () => any;
+  getEditor: () => Editor | null;
 }
 
 const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(
   ({ value, onChange, placeholder = "Start writing...", className = "", disabled = false, height = "200px" }, ref) => {
-    const quillRef = useRef<any>(null);
+    const editor = useEditor({
+      extensions: [
+        StarterKit,
+        Image,
+      ],
+      content: value,
+      editorProps: {
+        attributes: {
+          class: 'prose prose-sm max-w-none'
+        }
+      },
+      editable: !disabled,
+      onUpdate: ({ editor }) => {
+        onChange(editor.getHTML());
+      }
+    }) as Editor | null;
 
     useImperativeHandle(ref, () => ({
       focus: () => {
-        if (quillRef.current) {
-          quillRef.current.focus();
+        if (editor) {
+          editor.chain().focus().run();
         }
       },
       blur: () => {
-        if (quillRef.current) {
-          quillRef.current.blur();
+        if (editor) {
+          editor.chain().blur().run();
         }
       },
       getEditor: () => {
-        return quillRef.current?.getEditor();
+        return editor;
       }
     }));
-
-    const modules = {
-      toolbar: [
-        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ 'color': [] }, { 'background': [] }],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        [{ 'indent': '-1'}, { 'indent': '+1' }],
-        [{ 'align': [] }],
-        ['blockquote', 'code-block'],
-        ['link', 'image', 'video'],
-        ['clean']
-      ],
-      clipboard: {
-        matchVisual: false,
-      }
-    };
-
-    const formats = [
-      'header', 'font', 'size',
-      'bold', 'italic', 'underline', 'strike', 'blockquote',
-      'list', 'bullet', 'indent',
-      'link', 'image', 'video',
-      'color', 'background',
-      'align', 'code-block'
-    ];
 
     return (
       <div className={`rich-text-editor ${className}`}>
         <style jsx global>{`
-          .ql-editor {
+          .ProseMirror {
             min-height: ${height};
             font-family: inherit;
             font-size: 14px;
             line-height: 1.6;
-          }
-          
-          .ql-toolbar {
-            border-top: 1px solid #e5e7eb;
-            border-left: 1px solid #e5e7eb;
-            border-right: 1px solid #e5e7eb;
-            border-bottom: none;
-            border-radius: 0.375rem 0.375rem 0 0;
-            background: #f9fafb;
-          }
-          
-          .ql-container {
-            border-bottom: 1px solid #e5e7eb;
-            border-left: 1px solid #e5e7eb;
-            border-right: 1px solid #e5e7eb;
-            border-top: none;
-            border-radius: 0 0 0.375rem 0.375rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
             background: white;
+            padding: 1rem;
           }
           
-          .ql-editor.ql-blank::before {
+          .ProseMirror:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+          }
+          
+          .ProseMirror p.is-empty::before {
+            content: attr(data-placeholder);
+            float: left;
             color: #9ca3af;
-            font-style: normal;
+            pointer-events: none;
+            height: 0;
           }
           
-          .ql-snow .ql-tooltip {
-            z-index: 1000;
-          }
-          
-          .rich-text-editor .ql-disabled .ql-toolbar {
+          .ProseMirror.is-disabled {
             opacity: 0.6;
             pointer-events: none;
           }
         `}</style>
         
-        <ReactQuill
-          ref={quillRef}
-          theme="snow"
-          value={value}
-          onChange={onChange}
-          modules={modules}
-          formats={formats}
-          placeholder={placeholder}
-          readOnly={disabled}
+        <EditorContent 
+          editor={editor} 
+          data-placeholder={placeholder}
+          className={`min-h-[${height}] ${className}`}
         />
       </div>
     );

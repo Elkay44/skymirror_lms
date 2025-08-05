@@ -228,11 +228,11 @@ export default function StudentProjectDetail({ projectId }: StudentProjectDetail
           <div className="py-6">
             <div className="flex items-center space-x-3">
               <Link
-                href="/dashboard/student/projects"
+                href={`/dashboard/student/courses/${project.courseId}`}
                 className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
-                Back to Projects
+                Back
               </Link>
             </div>
             <div className="mt-4">
