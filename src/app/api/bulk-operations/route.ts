@@ -1,205 +1,325 @@
+import { PrismaClient } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { parseCSV } from '@/lib/utils/csv';
+
+const prisma = new PrismaClient();
+
+interface AssignmentCSVRow {
+  title: string;
+  description: string;
+  points: number; // Matches Prisma's Int type
+  dueDate: string;
+  moduleId: string;
+}
+
+interface LessonCSVRow {
+  title: string;
+  description: string;
+  moduleId: string;
+}
+
+interface QuizCSVRow {
+  title: string;
+  description: string;
+  moduleId: string;
+  passingScore: number; // Matches Prisma's Int type
+  points: number;      // Matches Prisma's Int type
+  timeLimit: number;   // Matches Prisma's Int type
+}
+
+// Type guard for operation
+const supportedOperations = ['create-assignments', 'create-lessons', 'create-quizzes', 'bulk-grades'] as const;
+type SupportedOperation = typeof supportedOperations[number];
+
+const isValidOperation = (operation: SupportedOperation | null): boolean => {
+  return operation !== null;
+};
+
+
 
 export async function POST(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  const session = await getServerSession(authOptions);
 
-    // Check if user has permission for bulk operations
-    if (!['admin', 'instructor'].includes(session.user.role || '')) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
-    }
-
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const operation = formData.get('operation') as string;
-    const courseId = formData.get('courseId') as string;
-
-    if (!file || !operation) {
-      return NextResponse.json(
-        { error: 'File and operation type are required' },
-        { status: 400 }
-      );
-    }
-
-    // Validate file type
-    const allowedTypes = [
-      'text/csv',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    ];
-
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: 'Unsupported file type. Please use CSV or Excel files.' },
-        { status: 400 }
-      );
-    }
-
-    // Read file content
-    const fileContent = await file.text();
-    const lines = fileContent.split('\n').filter(line => line.trim());
-
-    if (lines.length < 2) {
-      return NextResponse.json(
-        { error: 'File must contain at least a header row and one data row' },
-        { status: 400 }
-      );
-    }
-
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-    const dataRows = lines.slice(1).map(line => 
-      line.split(',').map(cell => cell.trim().replace(/"/g, ''))
+  if (!session?.user) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
     );
+  }
 
-    let result = {
-      success: 0,
-      failed: 0,
-      errors: [] as string[],
-      warnings: [] as string[],
-      data: [] as any[]
-    };
+  try {
+    const formData = await request.formData();
+    const operation = formData.get('operation') as SupportedOperation | null;
+    const courseId = formData.get('courseId') as string | null;
+    const file = formData.get('file') as File | null;
 
-    // Process based on operation type
-    switch (operation) {
-      case 'enrollment':
-        result = await processBulkEnrollment(dataRows, headers, courseId, session.user.email);
-        break;
-      case 'grades':
-        result = await processBulkGrades(dataRows, headers, courseId, session.user.email);
-        break;
-      case 'users':
-        result = await processBulkUsers(dataRows, headers, session.user.email);
-        break;
-      case 'emails':
-        result = await processBulkEmails(dataRows, headers, courseId, session.user.email);
-        break;
-      case 'certificates':
-        result = await processBulkCertificates(dataRows, headers, courseId, session.user.email);
-        break;
+    if (!operation || !isValidOperation(operation)) {
+      return NextResponse.json(
+        { error: 'Invalid operation type' },
+        { status: 400 }
+      );
+    }
+
+    if (!courseId) {
+      return NextResponse.json(
+        { error: 'Course ID is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!file) {
+      return NextResponse.json(
+        { error: 'File is required' },
+        { status: 400 }
+      );
+    }
+
+    const validOperation = operation as SupportedOperation;
+    const validCourseId = courseId as string;
+    const validFile = file as File;
+
+    // Verify user owns the course
+    const course = await prisma.course.findUnique({
+      where: { id: validCourseId },
+      select: { instructorId: true }
+    });
+
+    if (!course || course.instructorId !== session.user.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Course not found or you do not own this course' },
+        { status: 403 }
+      );
+    }
+
+    switch (validOperation) {
+      case 'create-assignments':
+        const assignments = await processAssignments(validFile, validCourseId, session);
+        return NextResponse.json({
+          success: true,
+          message: 'Assignments created successfully',
+          assignments
+        });
+      case 'create-lessons':
+        const lessons = await processLessons(validFile, validCourseId, session);
+        return NextResponse.json({
+          success: true,
+          message: 'Lessons created successfully',
+          lessons
+        });
+      case 'create-quizzes':
+        const quizzes = await processQuizzes(validFile, validCourseId, session);
+        return NextResponse.json({
+          success: true,
+          message: 'Quizzes created successfully',
+          quizzes
+        });
+      case 'bulk-grades':
+        if (!session?.user?.email) {
+          return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+          );
+        }
+        const { data: csvData, headers } = await parseCSV(validFile);
+        const result = await processBulkGrades(
+          csvData,
+          headers,
+          session.user.email,
+          session
+        );
+        return NextResponse.json({
+          success: true,
+          message: 'Grades processed successfully',
+          result
+        });
       default:
         return NextResponse.json(
-          { error: 'Unsupported operation type' },
+          { error: 'Unsupported operation' },
           { status: 400 }
         );
     }
-
-    return NextResponse.json(result);
-
   } catch (error) {
-    console.error('Error processing bulk operation:', error);
+    console.error('Bulk operations error:', error);
     return NextResponse.json(
-      { error: 'Failed to process bulk operation' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
-async function processBulkEnrollment(
-  dataRows: string[][],
-  headers: string[],
-  courseId: string,
-  userEmail: string
-) {
-  const result = {
-    success: 0,
-    failed: 0,
-    errors: [] as string[],
-    warnings: [] as string[],
-    data: [] as any[]
-  };
-
-  // Expected headers: email, firstName, lastName, role (optional)
-  const emailIndex = headers.findIndex(h => h.toLowerCase().includes('email'));
-  const firstNameIndex = headers.findIndex(h => h.toLowerCase().includes('firstname') || h.toLowerCase().includes('first'));
-  const lastNameIndex = headers.findIndex(h => h.toLowerCase().includes('lastname') || h.toLowerCase().includes('last'));
-
-  if (emailIndex === -1) {
-    result.errors.push('Email column is required');
-    return result;
-  }
-
-  for (let i = 0; i < dataRows.length; i++) {
-    const row = dataRows[i];
-    const email = row[emailIndex];
-    const firstName = firstNameIndex !== -1 ? row[firstNameIndex] : '';
-    const lastName = lastNameIndex !== -1 ? row[lastNameIndex] : '';
-
-    try {
-      if (!email || !email.includes('@')) {
-        result.errors.push(`Row ${i + 2}: Invalid email address`);
-        result.failed++;
-        continue;
-      }
-
-      // Check if user exists
-      let user = await prisma.user.findUnique({
-        where: { email }
-      });
-
-      // Create user if doesn't exist
-      if (!user) {
-        user = await prisma.user.create({
+async function processAssignments(file: File, courseId: string, session: any) {
+  try {
+    const { data: assignmentsData } = await parseCSV<AssignmentCSVRow>(file);
+    const assignments = await Promise.all(
+      assignmentsData.map((assignment) => {
+        const dueDate = new Date(assignment.dueDate);
+        return prisma.assignment.create({
           data: {
-            email,
-            name: `${firstName} ${lastName}`.trim() || email.split('@')[0],
-            role: 'STUDENT'
-          }
-        });
-        result.warnings.push(`Row ${i + 2}: Created new user account for ${email}`);
-      }
-
-      // Enroll in course if courseId provided
-      if (courseId) {
-        const existingEnrollment = await prisma.enrollment.findUnique({
-          where: {
-            userId_courseId: {
-              userId: user.id,
-              courseId: courseId
+            title: assignment.title,
+            description: assignment.description,
+            points: assignment.points,
+            dueDate: dueDate,
+            moduleId: assignment.moduleId,
+          },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            points: true,
+            dueDate: true,
+            module: {
+              select: {
+                id: true,
+                course: {
+                  select: {
+                    id: true
+                  }
+                }
+              }
             }
           }
         });
+      })
+    );
 
-        if (!existingEnrollment) {
-          await prisma.enrollment.create({
-            data: {
-              userId: user.id,
-              courseId: courseId,
-              status: 'ACTIVE'
-            }
-          });
-        } else {
-          result.warnings.push(`Row ${i + 2}: User ${email} already enrolled in course`);
-        }
+    await prisma.auditLog.create({
+      data: {
+        userId: session?.user.id,
+        userEmail: session?.user.email,
+        action: 'BULK_CREATE_ASSIGNMENTS',
+        entityType: 'ASSIGNMENT',
+        entityId: courseId,
+        details: `Created ${assignments.length} assignments in course ${courseId}`
       }
+    });
 
-      result.success++;
-      result.data.push({
-        email,
-        name: user.name,
-        status: 'enrolled'
-      });
-
-    } catch (error) {
-      result.errors.push(`Row ${i + 2}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      result.failed++;
-    }
+    return assignments;
+  } catch (error) {
+    console.error('Error processing assignments:', error);
+    throw new Error('Failed to process assignments');
   }
+}
 
-  return result;
+async function processLessons(file: File, courseId: string, session: any) {
+  try {
+    const { data: lessonsData } = await parseCSV<LessonCSVRow>(file);
+    const lessons = await Promise.all(
+      lessonsData.map((lesson) => {
+        return prisma.lesson.create({
+          data: {
+            title: lesson.title,
+            description: lesson.description,
+            moduleId: lesson.moduleId,
+          },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            module: {
+              select: {
+                id: true,
+                course: {
+                  select: {
+                    id: true
+                  }
+                }
+              }
+            }
+          }
+        });
+      })
+    );
+
+    await prisma.auditLog.create({
+      data: {
+        userId: session?.user.id,
+        userEmail: session?.user.email,
+        action: 'BULK_CREATE_LESSONS',
+        entityType: 'LESSON',
+        entityId: courseId,
+        details: `Created ${lessons.length} lessons in course ${courseId}`
+      }
+    });
+
+    return lessons;
+  } catch (error) {
+    console.error('Error processing lessons:', error);
+    throw new Error('Failed to process lessons');
+  }
+}
+
+async function processQuizzes(file: File, courseId: string, session: any) {
+  try {
+    const { data: quizzesData } = await parseCSV<QuizCSVRow>(file);
+    const quizzes = await Promise.all(
+      quizzesData.map((quiz) => {
+        return prisma.quiz.create({
+          data: {
+            title: quiz.title,
+            description: quiz.description,
+            passingScore: quiz.passingScore,
+            timeLimit: quiz.timeLimit,
+            moduleId: quiz.moduleId,
+          },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            passingScore: true,
+            timeLimit: true,
+            module: {
+              select: {
+                id: true,
+                course: {
+                  select: {
+                    id: true
+                  }
+                }
+              }
+            }
+          }
+        });
+      })
+    );
+
+    await prisma.auditLog.create({
+      data: {
+        userId: session?.user.id,
+        userEmail: session?.user.email,
+        action: 'BULK_CREATE_QUIZZES',
+        entityType: 'QUIZ',
+        entityId: courseId,
+        details: `Created ${quizzes.length} quizzes in course ${courseId}`
+      }
+    });
+
+    return quizzes;
+  } catch (error) {
+    console.error('Error processing quizzes:', error);
+    throw new Error('Failed to process quizzes');
+  }
 }
 
 async function processBulkGrades(
-  dataRows: string[][],
+  dataRows: Record<string, any>[],
   headers: string[],
-  courseId: string,
-  userEmail: string
-) {
+  userEmail: string,
+  session: any
+): Promise<{
+  success: number;
+  failed: number;
+  errors: string[];
+  warnings: string[];
+  data: Array<{
+    email: string;
+    assignmentId: string;
+    grade: number;
+    feedback: string;
+    status: string;
+  }>;
+}> {
   const result = {
     success: 0,
     failed: 0,
@@ -208,26 +328,27 @@ async function processBulkGrades(
     data: [] as any[]
   };
 
-  // Expected headers: email, assignmentId, grade, feedback (optional)
-  const emailIndex = headers.findIndex(h => h.toLowerCase().includes('email'));
-  const assignmentIndex = headers.findIndex(h => h.toLowerCase().includes('assignment'));
-  const gradeIndex = headers.findIndex(h => h.toLowerCase().includes('grade'));
-  const feedbackIndex = headers.findIndex(h => h.toLowerCase().includes('feedback'));
+  // Verify required headers exist
+  const requiredHeaders = ['email', 'assignmentId', 'grade'];
+  const missingHeaders = requiredHeaders.filter(header => 
+    !headers.some(h => h?.toLowerCase().includes(header))
+  );
 
-  if (emailIndex === -1 || gradeIndex === -1) {
-    result.errors.push('Email and grade columns are required');
+  if (missingHeaders.length > 0) {
+    result.errors.push(`Missing required columns: ${missingHeaders.join(', ')}`);
     return result;
   }
 
   for (let i = 0; i < dataRows.length; i++) {
     const row = dataRows[i];
-    const email = row[emailIndex];
-    const grade = parseFloat(row[gradeIndex]);
-    const feedback = feedbackIndex !== -1 ? row[feedbackIndex] : '';
+    const email = row.email || '';
+    const assignmentId = row.assignmentId || '';
+    const grade = parseFloat(row.grade || '0');
+    const feedback = row.feedback || '';
 
     try {
-      if (!email || isNaN(grade)) {
-        result.errors.push(`Row ${i + 2}: Invalid email or grade`);
+      if (!email.trim() || !assignmentId.trim() || isNaN(grade)) {
+        result.errors.push(`Row ${i + 2}: Invalid email, assignmentId, or grade`);
         result.failed++;
         continue;
       }
@@ -242,228 +363,51 @@ async function processBulkGrades(
         continue;
       }
 
-      // For demo purposes, we'll just log the grade
-      // In a real system, you'd update assignment grades
-      console.log(`Would update grade for ${email}: ${grade}`);
+      // Find the submission to update
+      const submission = await prisma.assignmentSubmission.findFirst({
+        where: {
+          userId: user.id,
+          assignmentId,
+          status: 'SUBMITTED'
+        }
+      });
+
+      if (!submission) {
+        result.errors.push(`Row ${i + 2}: No submitted assignment found for ${email} and assignment ${assignmentId}`);
+        result.failed++;
+        continue;
+      }
+
+      // Update the submission with grade and feedback
+      await prisma.assignmentSubmission.update({
+        where: { id: submission.id },
+        data: {
+          grade,
+          feedback,
+          status: 'GRADED',
+          gradedAt: new Date()
+        }
+      });
+
+      // Create audit log
+      await prisma.auditLog.create({
+        data: {
+          userId: session?.user?.id,
+          userEmail: session?.user?.email,
+          action: 'BULK_GRADE_ASSIGNMENT',
+          entityType: 'ASSIGNMENT_SUBMISSION',
+          entityId: submission.id,
+          details: `Assignment ${assignmentId} graded with ${grade} points by ${userEmail}`
+        }
+      });
 
       result.success++;
       result.data.push({
         email,
+        assignmentId,
         grade,
         feedback,
-        status: 'updated'
-      });
-
-    } catch (error) {
-      result.errors.push(`Row ${i + 2}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      result.failed++;
-    }
-  }
-
-  return result;
-}
-
-async function processBulkUsers(
-  dataRows: string[][],
-  headers: string[],
-  userEmail: string
-) {
-  const result = {
-    success: 0,
-    failed: 0,
-    errors: [] as string[],
-    warnings: [] as string[],
-    data: [] as any[]
-  };
-
-  // Expected headers: email, firstName, lastName, role
-  const emailIndex = headers.findIndex(h => h.toLowerCase().includes('email'));
-  const firstNameIndex = headers.findIndex(h => h.toLowerCase().includes('firstname') || h.toLowerCase().includes('first'));
-  const lastNameIndex = headers.findIndex(h => h.toLowerCase().includes('lastname') || h.toLowerCase().includes('last'));
-  const roleIndex = headers.findIndex(h => h.toLowerCase().includes('role'));
-
-  if (emailIndex === -1) {
-    result.errors.push('Email column is required');
-    return result;
-  }
-
-  for (let i = 0; i < dataRows.length; i++) {
-    const row = dataRows[i];
-    const email = row[emailIndex];
-    const firstName = firstNameIndex !== -1 ? row[firstNameIndex] : '';
-    const lastName = lastNameIndex !== -1 ? row[lastNameIndex] : '';
-    const role = roleIndex !== -1 ? row[roleIndex].toUpperCase() : 'STUDENT';
-
-    try {
-      if (!email || !email.includes('@')) {
-        result.errors.push(`Row ${i + 2}: Invalid email address`);
-        result.failed++;
-        continue;
-      }
-
-      if (!['STUDENT', 'INSTRUCTOR', 'MENTOR', 'ADMIN'].includes(role)) {
-        result.errors.push(`Row ${i + 2}: Invalid role: ${role}`);
-        result.failed++;
-        continue;
-      }
-
-      const existingUser = await prisma.user.findUnique({
-        where: { email }
-      });
-
-      if (existingUser) {
-        // Update existing user
-        await prisma.user.update({
-          where: { email },
-          data: {
-            name: `${firstName} ${lastName}`.trim() || existingUser.name,
-            role: role as any
-          }
-        });
-        result.warnings.push(`Row ${i + 2}: Updated existing user: ${email}`);
-      } else {
-        // Create new user
-        await prisma.user.create({
-          data: {
-            email,
-            name: `${firstName} ${lastName}`.trim() || email.split('@')[0],
-            role: role as any
-          }
-        });
-      }
-
-      result.success++;
-      result.data.push({
-        email,
-        name: `${firstName} ${lastName}`.trim(),
-        role,
-        status: existingUser ? 'updated' : 'created'
-      });
-
-    } catch (error) {
-      result.errors.push(`Row ${i + 2}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      result.failed++;
-    }
-  }
-
-  return result;
-}
-
-async function processBulkEmails(
-  dataRows: string[][],
-  headers: string[],
-  courseId: string,
-  userEmail: string
-) {
-  const result = {
-    success: 0,
-    failed: 0,
-    errors: [] as string[],
-    warnings: [] as string[],
-    data: [] as any[]
-  };
-
-  // Expected headers: email, subject, message
-  const emailIndex = headers.findIndex(h => h.toLowerCase().includes('email'));
-  const subjectIndex = headers.findIndex(h => h.toLowerCase().includes('subject'));
-  const messageIndex = headers.findIndex(h => h.toLowerCase().includes('message'));
-
-  if (emailIndex === -1 || subjectIndex === -1 || messageIndex === -1) {
-    result.errors.push('Email, subject, and message columns are required');
-    return result;
-  }
-
-  for (let i = 0; i < dataRows.length; i++) {
-    const row = dataRows[i];
-    const email = row[emailIndex];
-    const subject = row[subjectIndex];
-    const message = row[messageIndex];
-
-    try {
-      if (!email || !subject || !message) {
-        result.errors.push(`Row ${i + 2}: Missing required fields`);
-        result.failed++;
-        continue;
-      }
-
-      // For demo purposes, we'll just log the email
-      // In a real system, you'd send the actual email
-      console.log(`Would send email to ${email}: ${subject}`);
-
-      result.success++;
-      result.data.push({
-        email,
-        subject,
-        message,
-        status: 'sent'
-      });
-
-    } catch (error) {
-      result.errors.push(`Row ${i + 2}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      result.failed++;
-    }
-  }
-
-  return result;
-}
-
-async function processBulkCertificates(
-  dataRows: string[][],
-  headers: string[],
-  courseId: string,
-  userEmail: string
-) {
-  const result = {
-    success: 0,
-    failed: 0,
-    errors: [] as string[],
-    warnings: [] as string[],
-    data: [] as any[]
-  };
-
-  // Expected headers: email, courseName, completionDate
-  const emailIndex = headers.findIndex(h => h.toLowerCase().includes('email'));
-  const courseNameIndex = headers.findIndex(h => h.toLowerCase().includes('course'));
-  const completionDateIndex = headers.findIndex(h => h.toLowerCase().includes('completion') || h.toLowerCase().includes('date'));
-
-  if (emailIndex === -1) {
-    result.errors.push('Email column is required');
-    return result;
-  }
-
-  for (let i = 0; i < dataRows.length; i++) {
-    const row = dataRows[i];
-    const email = row[emailIndex];
-    const courseName = courseNameIndex !== -1 ? row[courseNameIndex] : 'Course';
-    const completionDate = completionDateIndex !== -1 ? row[completionDateIndex] : new Date().toISOString();
-
-    try {
-      if (!email) {
-        result.errors.push(`Row ${i + 2}: Email is required`);
-        result.failed++;
-        continue;
-      }
-
-      const user = await prisma.user.findUnique({
-        where: { email }
-      });
-
-      if (!user) {
-        result.errors.push(`Row ${i + 2}: User not found: ${email}`);
-        result.failed++;
-        continue;
-      }
-
-      // For demo purposes, we'll just log the certificate generation
-      // In a real system, you'd generate and send the certificate
-      console.log(`Would generate certificate for ${email}: ${courseName}`);
-
-      result.success++;
-      result.data.push({
-        email,
-        courseName,
-        completionDate,
-        status: 'generated'
+        status: 'graded'
       });
 
     } catch (error) {

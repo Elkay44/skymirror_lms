@@ -3,19 +3,17 @@
 import { useState, useRef } from 'react';
 import { 
   Upload, 
-  Download, 
   Users, 
   FileSpreadsheet, 
   CheckSquare, 
-  Trash2, 
   Mail, 
   GraduationCap,
   Loader2,
   AlertTriangle,
   CheckCircle,
+  Download,
   X
-} from 'lucide-react';
-import { useSession } from 'next-auth/react';
+} from "lucide-react";
 import toast from 'react-hot-toast';
 
 interface BulkOperation {
@@ -49,7 +47,7 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
   courseId,
   userRole,
   onOperationComplete
-}) => {
+}: BulkOperationsProps) => {
   const [selectedOperation, setSelectedOperation] = useState<BulkOperation | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -57,7 +55,6 @@ const BulkOperations: React.FC<BulkOperationsProps> = ({
   const [showModal, setShowModal] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { data: session } = useSession();
 
   const bulkOperations: BulkOperation[] = [
     {

@@ -4,8 +4,11 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(
-  { params }: { params: { lessonId: string } }
+  _request: Request,
+  { params }: { params: Promise<{ lessonId: string }> }
 ) {
+  const resolvedParams = await params;
+  const lessonId = resolvedParams.lessonId;
   try {
     const session = await getServerSession(authOptions);
     
@@ -20,7 +23,7 @@ export async function GET(
       where: {
         userId_lessonId: {
           userId: session.user.id,
-          lessonId: params.lessonId
+          lessonId
         }
       },
       select: {
@@ -46,8 +49,11 @@ export async function GET(
 }
 
 export async function POST(
-  { params }: { params: { lessonId: string } }
+  _request: Request,
+  { params }: { params: Promise<{ lessonId: string }> }
 ) {
+  const resolvedParams = await params;
+  const lessonId = resolvedParams.lessonId;
   try {
     const session = await getServerSession(authOptions);
     
@@ -60,7 +66,7 @@ export async function POST(
 
     // Check if the user is enrolled in the course
     const lesson = await prisma.lesson.findUnique({
-      where: { id: params.lessonId },
+      where: { id: lessonId },
       include: {
         module: {
           include: {
@@ -92,21 +98,64 @@ export async function POST(
       );
     }
 
+    // First, record the lesson view
+    const view = await prisma.lessonView.upsert({
+      where: {
+        userId_lessonId: {
+          userId: session.user.id,
+          lessonId
+        }
+      },
+      update: {
+        viewCount: {
+          increment: 1
+        },
+        lastViewed: new Date()
+      },
+      create: {
+        userId: session.user.id,
+        lessonId,
+        viewCount: 1,
+        lastViewed: new Date()
+      }
+    });
+
+    // Record activity log for lesson view
+    await prisma.activityLog.create({
+      data: {
+        userId: session.user.id,
+        action: 'VIEW_LESSON',
+        entityType: 'LESSON',
+        entityId: lessonId,
+        details: JSON.stringify({
+          courseId: lesson.module.courseId,
+          moduleId: lesson.module.id,
+          lessonId,
+          title: lesson.title
+        })
+      }
+    });
+
     // Check if lesson is already completed
     const existingProgress = await prisma.lessonProgress.findUnique({
       where: {
         userId_lessonId: {
           userId: session.user.id,
-          lessonId: params.lessonId
+          lessonId
         }
       }
     });
 
     if (existingProgress?.completed) {
-      return NextResponse.json(
-        { error: 'Lesson already completed' },
-        { status: 400 }
-      );
+      return NextResponse.json({
+        success: true,
+        data: {
+          completed: true,
+          completedAt: existingProgress.completedAt,
+          viewCount: view.viewCount,
+          lastViewed: view.lastViewed
+        }
+      });
     }
 
     // Create or update progress
@@ -114,7 +163,7 @@ export async function POST(
       where: {
         userId_lessonId: {
           userId: session.user.id,
-          lessonId: params.lessonId
+          lessonId
         }
       },
       update: {
@@ -123,9 +172,25 @@ export async function POST(
       },
       create: {
         userId: session.user.id,
-        lessonId: params.lessonId,
+        lessonId,
         completed: true,
         completedAt: new Date()
+      }
+    });
+
+    // Record activity log for lesson completion
+    await prisma.activityLog.create({
+      data: {
+        userId: session.user.id,
+        action: 'COMPLETE_LESSON',
+        entityType: 'LESSON',
+        entityId: lessonId,
+        details: JSON.stringify({
+          courseId: lesson.module.courseId,
+          moduleId: lesson.module.id,
+          lessonId,
+          title: lesson.title
+        })
       }
     });
 
@@ -148,6 +213,20 @@ export async function POST(
           level: {
             increment: 1
           }
+        }
+      });
+
+      // Record activity log for level up
+      await prisma.activityLog.create({
+        data: {
+          userId: session.user.id,
+          action: 'LEVEL_UP',
+          entityType: 'USER',
+          entityId: session.user.id,
+          details: JSON.stringify({
+            level: points.level + 1,
+            points: points.points
+          })
         }
       });
     }

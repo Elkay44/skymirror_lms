@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
+// Export AuditLog type
 // Base model type with common CRUD operations
 type BaseModel<T = any> = {
   findMany: (args?: {
@@ -42,6 +43,23 @@ type BaseModel<T = any> = {
   }) => Promise<T>;
   [key: string]: any; // Allow additional methods
 };
+
+// AuditLog type
+interface AuditLog {
+  id: string;
+  userId: string;
+  userEmail: string;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  details: string;
+  createdAt: Date;
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+  };
+}
 
 // Mentor session type
 type MentorSession = {
@@ -326,6 +344,20 @@ export type ExtendedPrismaClient = PrismaClient & {
     options?: { maxWait?: number; timeout?: number }
   ) => Promise<T>;
 
+  // Add custom models and methods here
+  auditLog: {
+    create: (args: {
+      data: {
+        userId: string;
+        userEmail: string;
+        action: string;
+        entityType: string;
+        entityId?: string;
+        details: string;
+      }
+    }) => Promise<AuditLog>
+  }
+
   // Add your custom models here
   mentorSession: BaseModel<MentorSession> & {
     // Add any custom methods specific to mentorSession
@@ -381,6 +413,9 @@ export type ExtendedPrismaClient = PrismaClient & {
   }> & {
     upsert: (args: {
       where: { name: string };
+  auditLog: BaseModel<AuditLog> & {
+    create: (args: { data: AuditLog }) => Promise<AuditLog>;
+  };
       create: { name: string };
       update: {};
     }) => Promise<{

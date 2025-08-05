@@ -1,14 +1,15 @@
 /* eslint-disable */
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import OpenAI from 'openai';
+import { Configuration, OpenAIApi } from 'openai';
 import { getServerSession } from 'next-auth';
 import { ExtendedPrismaClient } from '@/lib/prisma-extensions';
 
 const prisma = new PrismaClient() as unknown as ExtendedPrismaClient;
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({
+const configuration = process.env.OPENAI_API_KEY ? new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 }) : null;
+const openai = configuration ? new OpenAIApi(configuration) : undefined;
 
 export async function GET() {
   try {
@@ -95,7 +96,7 @@ export async function POST(request: Request) {
           ...user,
           quizAttempts
         }, userPreferences);
-        const chatCompletion = await openai!.chat.completions.create({
+        const chatCompletion = await openai!.createChatCompletion({
           model: 'gpt-3.5-turbo',
           messages: [{ role: 'user', content: prompt }],
           max_tokens: 1000,

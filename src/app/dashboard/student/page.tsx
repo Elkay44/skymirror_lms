@@ -186,7 +186,7 @@ export default function StudentDashboardPage() {
               <div className="space-y-4">
                 {dashboardData.recentCourses.map((course) => (
                   <div key={course.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg min-w-0">
-                    <div className="flex items-center gap-4 min-w-0">
+                    <Link href={`/dashboard/student/courses/${course.id}`} className="flex items-center gap-4 min-w-0 hover:bg-gray-100 transition-colors rounded-lg p-2">
                       <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center min-w-0">
                         {course.imageUrl && (
                           <img 
@@ -203,7 +203,7 @@ export default function StudentDashboardPage() {
                         <p className="text-sm text-gray-600 break-words">Status: {course.status}</p>
                         <p className="text-sm text-gray-600 break-words">Enrollment: {course.enrollmentCount}</p>
                       </div>
-                    </div>
+                    </Link>
                   </div>
                 ))}
               </div>

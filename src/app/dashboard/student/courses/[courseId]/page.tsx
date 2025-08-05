@@ -350,7 +350,7 @@ export default function StudentCourseDashboard() {
                       <div className="flex items-center">
                         <FileText className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-3" />
                         <div className="text-left">
-                          <span className="text-sm font-medium text-gray-900 dark:text-white block">View Assignments</span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white block">View Projects</span>
                           {overviewData?.quickActions?.pendingAssignments > 0 && (
                             <span className="text-xs text-gray-500 dark:text-gray-400">
                               {overviewData.quickActions.pendingAssignments} pending
@@ -368,7 +368,7 @@ export default function StudentCourseDashboard() {
                       <div className="flex items-center">
                         <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-3" />
                         <div className="text-left">
-                          <span className="text-sm font-medium text-gray-900 dark:text-white block">Join Discussion</span>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white block">Forums</span>
                           {overviewData?.quickActions?.activeForums > 0 && (
                             <span className="text-xs text-gray-500 dark:text-gray-400">
                               {overviewData.quickActions.activeForums} active topics

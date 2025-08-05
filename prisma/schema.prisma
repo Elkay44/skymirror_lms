@@ -4,7 +4,42 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  INACTIVE
+  COMPLETED
+  DROPPED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum ProjectEnrollmentStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  DRAFT
+}
+
+enum SubmissionType {
+  TEXT
+  FILE
+  REPOSITORY
+}
+
+enum SubmissionStatus {
+  PENDING
+  SUBMITTED
+  GRADING
+  GRADED
+  REJECTED
 }
 
 model Account {
@@ -126,48 +161,42 @@ model User {
   menteePayments        MentorEarning[]       @relation("MenteePayments")
   instructorRevenues    InstructorRevenue[]   @relation("InstructorRevenues")
   payouts               Payout[]
+  auditLogs             AuditLog[]
 
   @@map("users")
 }
 
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  description String
+  metadata  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("audit_logs")
+}
+
 model Course {
-  id               String          @id @default(cuid())
-  title            String
-  description      String?
-  shortDescription String?
-  slug             String          @unique
-  image            String?
-  isPublished      Boolean         @default(false)
-  isPrivate        Boolean         @default(false)
-  price            Float?          @default(0)
-  discountPrice    Float?          @default(0)
-  level            String?
-  category         String?
-  language         String?         @default("en")
-  totalHours       Float?          @default(0)
-  totalLectures    Int?            @default(0)
-  totalQuizzes     Int?            @default(0)
-  totalProjects    Int?            @default(0)
-  totalStudents    Int?            @default(0)
-  averageRating    Float?          @default(0)
-  totalReviews     Int?            @default(0)
-  instructorId     String
-  status           String          @default("DRAFT")
-  featured         Boolean         @default(false)
-  requirements     String?
-  learningOutcomes String?
-  targetAudience   String?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  projects         Project[]       @relation("CourseProjects")
-  activityLogs     ActivityLog[]
-  certifications   Certification[]
-  conversations    Conversation[]
-  instructor       User            @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
-  enrollments      Enrollment[]
-  modules          Module[]
-  invitations      CourseInvitation[]
-  instructorRevenues InstructorRevenue[]
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  instructorId String
+  instructor   User     @relation("InstructorCourses", fields: [instructorId], references: [id])
+  assignments  Assignment[] @relation("CourseAssignments")
+  lessons      Lesson[] @relation("CourseLessons")
+  quizzes      Quiz[] @relation("CourseQuizzes")
+  modules      Module[] @relation("CourseModules")
+  enrollments  Enrollment[] @relation("CourseEnrollments")
+  invitations  CourseInvitation[] @relation("CourseInvitations")
+  revenues     InstructorRevenue[] @relation("CourseInstructorRevenues")
+  certifications Certification[] @relation("CourseCertifications")
+  activityLogs ActivityLog[] @relation("CourseActivityLogs")
+  conversations Conversation[] @relation("CourseConversations")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("courses")
 }
@@ -200,11 +229,11 @@ model Module {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   projects     Project[]
-  activityLogs ActivityLog[]
+  activityLogs ActivityLog[] @relation("ModuleActivityLogs")
   assignments  Assignment[]
   forums       Forum[]
   lessons      Lesson[]
-  course       Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course       Course        @relation("CourseModules", fields: [courseId], references: [id], onDelete: Cascade)
   pages        Page[]
   quizzes      Quiz[]
 
@@ -212,170 +241,57 @@ model Module {
 }
 
 model Lesson {
-  id           String           @id @default(cuid())
-  title        String
-  description  String?
-  videoUrl     String?
-  duration     Int?
-  order        Int              @default(0)
-  isPublished  Boolean          @default(false)
-  isPreview    Boolean          @default(false)
-  moduleId     String
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  content      String?
-  activityLogs ActivityLog[]
-  progress     LessonProgress[]
-  views        LessonView[]
-  module       Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  moduleId    String
+  courseId    String
+  module      Module   @relation(fields: [moduleId], references: [id])
+  course      Course   @relation("CourseLessons", fields: [courseId], references: [id])
+  views       LessonView[]
+  progress    LessonProgress[]
+  activityLogs ActivityLog[] @relation("LessonActivityLogs")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("lessons")
 }
 
-model LessonView {
-  id         String   @id @default(cuid())
-  lessonId   String
-  userId     String
-  viewCount  Int      @default(1)
-  lastViewed DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson     Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-
-  @@unique([lessonId, userId])
-  @@map("lesson_views")
-}
-
-model LessonProgress {
-  id             String    @id @default(cuid())
-  lessonId       String
-  userId         String
-  completed      Boolean   @default(false)
-  completedAt    DateTime?
-  lastAccessedAt DateTime  @default(now())
-  timeSpent      Int       @default(0)
-  progress       Int       @default(0)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson         Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-
-  @@unique([lessonId, userId])
-  @@map("lesson_progress")
-}
-
-model Project {
-  id                         String              @id @default(cuid())
-  title                      String
-  description                String?
-  instructions               String?
-  dueDate                    DateTime?
-  pointsValue                Int                 @default(10)
-  isPublished                Boolean             @default(false)
-  courseId                   String
-  moduleId                   String?
-  isRequiredForCertification Boolean             @default(true)
-  createdAt                  DateTime            @default(now())
-  updatedAt                  DateTime            @updatedAt
-  course                     Course              @relation("CourseProjects", fields: [courseId], references: [id], onDelete: Cascade)
-  module                     Module?             @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  codeCommits                CodeCommit[]
-  likes                      ProjectLike[]
-  marks                      ProjectMark[]
-  submissions                ProjectSubmission[]
-}
-
-model ProjectSubmission {
-  id               String              @id @default(cuid())
-  projectId        String
-  studentId        String
-  submissionUrl    String?
-  submissionText   String?
-  submissionFiles  String?
-  status           String              @default("SUBMITTED")
-  grade            Int?
-  feedback         String?
-  reviewerId       String?
-  revisionCount    Int                 @default(0)
-  submittedAt      DateTime            @default(now())
-  reviewedAt       DateTime?
-  updatedAt        DateTime            @updatedAt
-  certification    Certification?      @relation("CertificationToProjectSubmission")
-  marks            ProjectMark[]
-  student          User                @relation("StudentSubmissions", fields: [studentId], references: [id], onDelete: Cascade)
-  project          Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  showcaseProjects ShowcaseProject[]   @relation("SubmissionShowcaseProjects")
-  response         SubmissionResponse?
-
-  @@unique([projectId, studentId])
-  @@map("project_submissions")
-}
-
-model SubmissionResponse {
-  id                String            @id @default(cuid())
-  submissionId      String            @unique
-  responseText      String
-  resubmissionUrl   String?
-  resubmissionFiles String?
-  status            String            @default("PENDING")
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  submission        ProjectSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-
-  @@map("submission_responses")
-}
-
-model ShowcaseProject {
-  id            String            @id @default(cuid())
-  title         String
-  description   String
-  featuredImage String?
-  demoUrl       String?
-  sourceCodeUrl String?
-  tags          String?
-  isPublished   Boolean           @default(false)
-  submissionId  String
-  studentId     String
-  likes         Int               @default(0)
-  views         Int               @default(0)
-  featuredAt    DateTime?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  student       User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  submission    ProjectSubmission @relation("SubmissionShowcaseProjects", fields: [submissionId], references: [id], onDelete: Cascade)
-
-  @@map("showcase_projects")
-}
-
-model ProjectLike {
-  id        String   @id @default(cuid())
-  userId    String
-  projectId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, projectId])
-  @@map("project_likes")
-}
-
 model Assignment {
-  id          String                 @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
   description String?
-  content     String?
-  dueDate     DateTime?
-  points      Int                    @default(100)
-  isPublished Boolean                @default(false)
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
-  moduleId    String?
-  rubricId    String?
+  points      Int      @default(0)
+  moduleId    String
+  courseId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  module      Module   @relation(fields: [moduleId], references: [id])
+  course      Course   @relation("CourseAssignments", fields: [courseId], references: [id])
   submissions AssignmentSubmission[]
-  rubric      Rubric?                @relation(fields: [rubricId], references: [id])
-  module      Module?                @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  rubricId    String?
+  rubric      Rubric?   @relation(fields: [rubricId], references: [id])
+  activityLogs ActivityLog[] @relation("AssignmentActivityLogs")
 
   @@map("assignments")
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  passingScore Int      @default(0)
+  points      Int      @default(0)
+  moduleId    String
+  courseId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  module      Module   @relation(fields: [moduleId], references: [id])
+  course      Course   @relation("CourseQuizzes", fields: [courseId], references: [id])
+  attempts    QuizAttempt[]
+  activityLogs ActivityLog[] @relation("QuizActivityLogs")
+
+  @@map("quizzes")
 }
 
 model Forum {
@@ -541,22 +457,28 @@ model UserAchievement {
 }
 
 model Enrollment {
-  id              String         @id @default(cuid())
-  userId          String
-  courseId        String
-  status          String         @default("ACTIVE")
-  progress        Int            @default(0)
-  completedAt     DateTime?
-  enrolledAt      DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  certificationId String?        @unique
-  activityLogs    ActivityLog[]
+  id          String              @id @default(cuid())
+  courseId    String
+  userId      String
+  status      EnrollmentStatus    @default(ACTIVE)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
   certification   Certification? @relation("EnrollmentCertification")
-  course          Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course          Course         @relation("CourseEnrollments", fields: [courseId], references: [id], onDelete: Cascade)
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectEnrollments ProjectEnrollment[]
+}
 
-  @@unique([userId, courseId])
-  @@map("enrollments")
+model ProjectEnrollment {
+  id              String              @id @default(cuid())
+  projectId       String
+  enrollmentId    String
+  status          ProjectEnrollmentStatus @default(NOT_STARTED)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  project         Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  enrollment      Enrollment          @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  submissions     ProjectSubmission[]
 }
 
 model Certification {
@@ -564,19 +486,11 @@ model Certification {
   userId              String
   courseId            String
   enrollmentId        String             @unique
-  projectSubmissionId String?            @unique
-  issuedAt            DateTime           @default(now())
-  expiresAt           DateTime?
-  verificationUrl     String?
-  credentialId        String?
-  metadata            String?
-  projectSubmission   ProjectSubmission? @relation("CertificationToProjectSubmission", fields: [projectSubmissionId], references: [id], onDelete: Cascade)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
   enrollment          Enrollment         @relation("EnrollmentCertification", fields: [enrollmentId], references: [id])
-  course              Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course              Course             @relation("CourseCertifications", fields: [courseId], references: [id], onDelete: Cascade)
   user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, courseId])
-  @@map("certifications")
 }
 
 model MentorSession {
@@ -599,7 +513,6 @@ model MentorSession {
 
   @@index([mentorId])
   @@index([menteeId])
-  @@map("mentor_sessions")
 }
 
 model Quiz {
@@ -640,18 +553,14 @@ model Question {
 }
 
 model Conversation {
-  id           String                    @id @default(cuid())
-  isGroupChat  Boolean                   @default(false)
-  courseId     String?
+  id          String              @id @default(cuid())
+  title       String
+  courseId    String?
   mentorshipId String?
-  createdAt    DateTime                  @default(now())
-  updatedAt    DateTime                  @updatedAt
-  participants ConversationParticipant[]
   mentorship   MentorSession?            @relation(fields: [mentorshipId], references: [id])
-  course       Course?                   @relation(fields: [courseId], references: [id])
+  course       Course?                   @relation("CourseConversations", fields: [courseId], references: [id])
   messages     Message[]
-
-  @@map("conversations")
+  participants ConversationParticipant[]
 }
 
 model ConversationParticipant {
@@ -667,7 +576,6 @@ model ConversationParticipant {
   conversation      Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@unique([conversationId, userId])
-  @@map("conversation_participants")
 }
 
 model Message {
@@ -738,30 +646,23 @@ model UserAnswer {
 }
 
 model ActivityLog {
-  id           String      @id @default(cuid())
-  userId       String
-  courseId     String?
-  moduleId     String?
-  lessonId     String?
-  enrollmentId String?
-  quizId       String?
-  type         String
-  details      String?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  quiz         Quiz?       @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  lesson       Lesson?     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  module       Module?     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  course       Course?     @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String   @id @default(cuid())
+  userId        String
+  action        String
+  details       Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  moduleId      String?
+  quizId        String?
+  projectId     String?
+  lessonId      String?
+  assignmentId  String?
+  quiz          Quiz?    @relation("QuizActivityLogs", fields: [quizId], references: [id], onDelete: Cascade)
+  project       Project? @relation("ProjectActivityLogs", fields: [projectId], references: [id], onDelete: Cascade)
+  lesson        Lesson?  @relation("LessonActivityLogs", fields: [lessonId], references: [id], onDelete: Cascade)
+  assignment    Assignment? @relation("AssignmentActivityLogs", fields: [assignmentId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-  @@index([courseId])
-  @@index([moduleId])
-  @@index([lessonId])
-  @@index([enrollmentId])
-  @@index([type])
   @@map("activity_logs")
 }
 
@@ -783,35 +684,107 @@ model CodeCommit {
   project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, studentId, commitHash])
-  @@index([projectId])
-  @@index([studentId])
-  @@index([commitDate])
-  @@map("code_commits")
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  moduleId    String
+  courseId    String
+  duration    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  module      Module   @relation(fields: [moduleId], references: [id])
+  course      Course   @relation("CourseLessons", fields: [courseId], references: [id])
+  views       LessonView[]
+  progress    LessonProgress[]
+  activityLogs ActivityLog[] @relation("LessonActivityLogs")
+
+  @@map("lessons")
+}
+
+model LessonView {
+  id        String   @id @default(cuid())
+  lessonId  String
+  studentId String
+  viewedAt  DateTime @default(now())
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, studentId])
+  @@map("lesson_views")
+}
+
+model LessonProgress {
+  id          String   @id @default(cuid())
+  lessonId    String
+  studentId   String
+  completed   Boolean  @default(false)
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, studentId])
+  @@map("lesson_progress")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  moduleId    String
+  courseId    String
+  points      Int      @default(0)
+  dueDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  module      Module   @relation(fields: [moduleId], references: [id])
+  course      Course   @relation("CourseProjects", fields: [courseId], references: [id])
+  submissions ProjectSubmission[]
+  activityLogs ActivityLog[] @relation("ProjectActivityLogs")
+
+  @@map("projects")
+}
+
+model ProjectSubmission {
+  id          String   @id @default(cuid())
+  projectId   String
+  studentId   String
+  submissionType SubmissionType
+  content     Json
+  grade       Float?
+  feedback    String?
+  status      SubmissionStatus
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  activityLogs ActivityLog[] @relation("ProjectSubmissionActivityLogs")
+
+  @@map("project_submissions")
 }
 
 model ProjectMark {
-  id           String             @id @default(cuid())
+  id           String    @id @default(cuid())
   projectId    String
   studentId    String
   submissionId String?
+  instructorId String
   grade        Float
   letterGrade  String?
   feedback     String?
-  rubricScores String?
-  markedBy     String
-  markedAt     DateTime           @default(now())
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  instructor   User               @relation("InstructorMarks", fields: [markedBy], references: [id], onDelete: Cascade)
-  submission   ProjectSubmission? @relation(fields: [submissionId], references: [id])
-  student      User               @relation("StudentMarks", fields: [studentId], references: [id], onDelete: Cascade)
-  project      Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  rubricScores Json?
+  markedAt     DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  student     User              @relation("StudentMarks", fields: [studentId], references: [id], onDelete: Cascade)
+  submission  ProjectSubmission? @relation(fields: [submissionId], references: [id])
+  instructor  User              @relation("InstructorMarks", fields: [instructorId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, studentId])
-  @@index([projectId])
-  @@index([studentId])
-  @@index([markedBy])
-  @@index([markedAt])
   @@map("project_marks")
 }
 
@@ -821,20 +794,12 @@ model CourseInvitation {
   courseId   String
   invitedBy  String
   message    String?
-  status     String   @default("PENDING") // PENDING, ACCEPTED, DECLINED, EXPIRED
-  invitedAt  DateTime @default(now())
-  respondedAt DateTime?
+  status     InvitationStatus @default(PENDING)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  
-  course        Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course        Course @relation("CourseInvitations", fields: [courseId], references: [id], onDelete: Cascade)
   invitedByUser User   @relation("CourseInvitations", fields: [invitedBy], references: [id], onDelete: Cascade)
-  
-  @@unique([email, courseId])
-  @@index([courseId])
-  @@index([email])
-  @@index([status])
-  @@map("course_invitations")
+  enrollment  Enrollment?
 }
 
 model CareerPath {
@@ -943,6 +908,8 @@ model PaymentMethod {
   @@index([userId])
   @@map("payment_methods")
 }
+
+
 
 model Invoice {
   id              String   @id @default(cuid())
