@@ -23,7 +23,7 @@ export async function GET(
     const userId = session.user.id;
     const role = session.user.role;
     
-    // Find the project with appropriate data based on role
+    // Find the project with basic data
     const project = await prisma.project.findUnique({
       where: { id: projectId },
       include: {
@@ -31,49 +31,16 @@ export async function GET(
           select: {
             id: true,
             title: true,
-            instructorId: true,
-            enrollments: role === 'STUDENT' ? {
-              where: { userId },
-              select: { id: true }
-            } : undefined
+            instructorId: true
           }
         },
-        author: {
+        module: {
           select: {
             id: true,
-            name: true,
-            email: true,
-            image: true,
-          },
-        },
-        collaborators: {
-          select: {
-            id: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
-              },
-            },
-            role: true,
-            joinedAt: true,
-          },
-        },
-        skills: {
-          select: {
-            id: true,
-            name: true,
-            level: true,
-          },
-        },
-        _count: {
-          select: {
-            likes: true,
-            comments: true,
-          },
-        },
+            title: true,
+            order: true
+          }
+        }
       },
     });
     
@@ -84,43 +51,50 @@ export async function GET(
       );
     }
     
-    // Check if user has access to this project
-    const isAuthor = project.authorId === userId;
-    const isCollaborator = project.collaborators.some((c: { user: { id: string } }) => c.user.id === userId);
-    const isInstructor = project.course?.instructorId === userId;
-    const isEnrolled = project.course?.enrollments?.length > 0;
-    
-    if (role === 'STUDENT' && !isAuthor && !isCollaborator && !isEnrolled) {
+    // Check if user has access to this project based on role
+    if (role === 'STUDENT') {
+      // Check if student is enrolled in the course
+      const enrollment = await prisma.enrollment.findFirst({
+        where: {
+          userId: userId,
+          courseId: project.courseId,
+          status: 'ACTIVE'
+        }
+      });
+      
+      if (!enrollment) {
+        return NextResponse.json(
+          { error: 'You are not enrolled in this course' },
+          { status: 403 }
+        );
+      }
+    } else if (role === 'INSTRUCTOR') {
+      // Instructors can access projects in their courses
+      if (project.course.instructorId !== userId) {
+        return NextResponse.json(
+          { error: 'You do not have permission to access this project' },
+          { status: 403 }
+        );
+      }
+    } else if (role === 'MENTOR') {
+      // Mentors can access projects in their courses
+      if (project.course.instructorId !== userId) {
+        return NextResponse.json(
+          { error: 'You do not have permission to access this project' },
+          { status: 403 }
+        );
+      }
+    } else if (role === 'ADMIN') {
+      // Admins can access all projects
+    } else {
       return NextResponse.json(
-        { error: 'Access denied' },
+        { error: 'You do not have permission to access this project' },
         { status: 403 }
       );
     }
     
-    // Add user-specific data
-    const projectWithUserData = {
-      ...project,
-      isLiked: false, // Will be updated below if user is authenticated
-      isOwner: isAuthor,
-      isCollaborator,
-      canEdit: isAuthor || isCollaborator || isInstructor,
-    };
-    
-    // Check if user has liked this project
-    if (userId) {
-      const like = await prisma.projectLike.findUnique({
-        where: {
-          userId_projectId: {
-            userId,
-            projectId,
-          },
-        },
-      });
-      
-      projectWithUserData.isLiked = !!like;
-    }
-    
-    return NextResponse.json(projectWithUserData);
+    // Return the project data
+    return NextResponse.json({ project });
   } catch (error) {
     console.error('Error fetching project:', error);
     return NextResponse.json(

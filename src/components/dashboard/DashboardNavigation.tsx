@@ -16,7 +16,8 @@ import {
   Home,
   Calendar,
   Database,
-  Target
+  Target,
+  Zap
 } from 'lucide-react';
 
 interface DashboardNavigationProps {
@@ -181,6 +182,15 @@ export default function DashboardNavigation({ unreadNotificationsCount = 0 }: Da
       >
         <BookMarked className={`mr-3 h-5 w-5 ${iconColorClass('INSTRUCTOR')}`} />
         My Courses
+      </Link>
+      
+      {/* Quick Features - New quick-win features */}
+      <Link
+        href="/dashboard/instructor/quick-features"
+        className={linkClass}
+      >
+        <Zap className={`mr-3 h-5 w-5 ${iconColorClass('INSTRUCTOR')}`} />
+        Quick Features
       </Link>
       
       {/* Certificates - Access to certificate management */}

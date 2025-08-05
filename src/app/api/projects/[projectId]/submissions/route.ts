@@ -22,15 +22,19 @@ export async function GET(
     const userId = session.user.id;
     const { projectId } = await params;
 
-    // Check if project exists using direct SQL query since this model might not be in the ExtendedPrismaClient
-    const projects = await prisma.$queryRaw<any[]>`
-      SELECT p.*, c.title as course_title 
-      FROM "Project" p
-      JOIN "Course" c ON p."courseId" = c.id
-      WHERE p.id = ${projectId}
-    `;
-    
-    const project = projects.length > 0 ? projects[0] : null;
+    // Check if project exists
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        course: {
+          select: {
+            id: true,
+            title: true,
+            instructorId: true
+          }
+        }
+      }
+    });
     
     if (!project) {
       return NextResponse.json(
@@ -39,83 +43,81 @@ export async function GET(
       );
     }
 
-    // Check if user is instructor or mentor for this course
-    const courseAccess = await prisma.$queryRaw<{is_instructor: number, is_mentor: number}[]>`
-      SELECT 
-        COUNT(CASE WHEN e.role = 'INSTRUCTOR' THEN 1 END) as is_instructor,
-        COUNT(CASE WHEN e.role = 'MENTOR' THEN 1 END) as is_mentor
-      FROM "Enrollment" e
-      WHERE e."courseId" = ${project.courseId} 
-      AND e."userId" = ${userId}
-      GROUP BY e."userId"
-    `;
-
-    const isInstructor = courseAccess.length > 0 && courseAccess[0].is_instructor > 0;
-    const isMentor = courseAccess.length > 0 && courseAccess[0].is_mentor > 0;
-    const isAdmin = session.user.role === 'ADMIN';
-    const isAuthor = project.authorId === userId;
-
-    // Only allow access to instructors, mentors, admins, or the project author
-    if (!isInstructor && !isMentor && !isAdmin && !isAuthor) {
+    // Check user permissions
+    const userRole = session.user.role;
+    const isInstructor = project.course.instructorId === userId;
+    const isStudent = userRole === 'STUDENT';
+    const isAdmin = userRole === 'ADMIN';
+    
+    // Check if student is enrolled
+    if (isStudent) {
+      const enrollment = await prisma.enrollment.findFirst({
+        where: {
+          userId: userId,
+          courseId: project.courseId,
+          status: 'ACTIVE'
+        }
+      });
+      
+      if (!enrollment) {
+        return NextResponse.json(
+          { error: 'You are not enrolled in this course' },
+          { status: 403 }
+        );
+      }
+    }
+    
+    if (!isInstructor && !isStudent && !isAdmin) {
       return NextResponse.json(
         { error: 'Access denied' },
         { status: 403 }
       );
     }
 
-    // Get all submissions for this project
-    const submissions = await prisma.$queryRaw<any[]>`
-      SELECT 
-        ps.*,
-        u.id as student_id,
-        u.name as student_name,
-        u.email as student_email,
-        u.image as student_image,
-        r.id as reviewer_id,
-        r.name as reviewer_name,
-        r.email as reviewer_email
-      FROM "ProjectSubmission" ps
-      JOIN "User" u ON ps."studentId" = u.id
-      LEFT JOIN "User" r ON ps."reviewerId" = r.id
-      WHERE ps."projectId" = ${projectId}
-      ORDER BY ps."submittedAt" DESC
-    `;
-
-    // Format the response
-    const formattedSubmissions = submissions.map(sub => ({
-      id: sub.id,
-      projectId: sub.projectId,
-      student: {
-        id: sub.student_id,
-        name: sub.student_name,
-        email: sub.student_email,
-        image: sub.student_image,
+    // Get submissions - students only see their own, others see all
+    const submissions = await prisma.projectSubmission.findMany({
+      where: {
+        projectId: projectId,
+        ...(isStudent ? { studentId: userId } : {})
       },
-      submissionNotes: sub.submissionNotes,
-      attachments: sub.attachments || [],
-      status: sub.status,
-      grade: sub.grade,
-      reviewNotes: sub.reviewNotes,
-      reviewer: sub.reviewer_id ? {
-        id: sub.reviewer_id,
-        name: sub.reviewer_name,
-        email: sub.reviewer_email,
-      } : null,
-      submittedAt: sub.submittedAt,
-      reviewedAt: sub.reviewedAt,
-      createdAt: sub.createdAt,
-      updatedAt: sub.updatedAt,
-    }));
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true
+          }
+        }
+      },
+      orderBy: {
+        submittedAt: 'desc'
+      }
+    });
 
+    // Return the submissions data
     return NextResponse.json({
       success: true,
       project: {
         id: project.id,
         title: project.title,
         courseId: project.courseId,
-        courseTitle: project.course_title,
+        courseTitle: project.course.title,
       },
-      submissions: formattedSubmissions,
+      submissions: submissions.map(sub => ({
+        id: sub.id,
+        projectId: sub.projectId,
+        student: sub.student,
+        status: sub.status,
+        grade: sub.grade,
+        feedback: sub.feedback,
+        submittedAt: sub.submittedAt,
+        reviewedAt: sub.reviewedAt,
+        submissionUrl: sub.submissionUrl,
+        submissionText: sub.submissionText,
+        submissionFiles: sub.submissionFiles,
+        type: 'file' // Default type for now
+      })),
     });
   } catch (error) {
     console.error('Error fetching project submissions:', error);

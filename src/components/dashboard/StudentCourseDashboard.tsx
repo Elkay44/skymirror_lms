@@ -134,7 +134,7 @@ export default function StudentCourseDashboard({ courses = [] }: { courses: Cour
                   <div className="flex flex-col space-y-1 min-w-0">
                     <h2 className="text-sm font-semibold leading-none break-words">{project.title}</h2>
                   </div>
-                  <Button variant="outline" className="h-8 w-8 p-0" onClick={() => router.push(`/dashboard/projects/${project.id}`)}>
+                  <Button variant="outline" className="h-8 w-8 p-0" onClick={() => router.push(`/dashboard/student/projects/${project.id}`)}>
                     <Users className="h-4 w-4" />
                   </Button>
                 </CardHeader>

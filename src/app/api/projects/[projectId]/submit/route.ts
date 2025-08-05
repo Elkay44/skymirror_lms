@@ -29,8 +29,47 @@ export async function POST(
     const { projectId } = await params;
     const userId = session.user.id;
     
-    // Get submission data from request body
-    const { submissionNotes, attachments } = await req.json();
+    // Handle different content types (form data for files, JSON for text/code)
+    let submissionData: any = {};
+    let files: File[] = [];
+    
+    const contentType = req.headers.get('content-type');
+    
+    if (contentType?.includes('multipart/form-data')) {
+      // Handle file uploads
+      const formData = await req.formData();
+      const type = formData.get('type') as string;
+      
+      if (type === 'file') {
+        const fileCount = parseInt(formData.get('fileCount') as string || '0');
+        for (let i = 0; i < fileCount; i++) {
+          const file = formData.get(`file_${i}`) as File;
+          if (file) files.push(file);
+        }
+        submissionData = {
+          type: 'file',
+          fileCount: files.length,
+          fileNames: files.map(f => f.name),
+          fileSizes: files.map(f => f.size)
+        };
+      } else if (type === 'code') {
+        submissionData = {
+          type: 'code',
+          repositoryUrl: formData.get('repositoryUrl') as string,
+          commitHash: formData.get('commitHash') as string,
+          branch: formData.get('branch') as string || 'main'
+        };
+      } else if (type === 'text') {
+        submissionData = {
+          type: 'text',
+          submissionText: formData.get('submissionText') as string
+        };
+      }
+    } else {
+      // Handle JSON data (legacy support)
+      const { submissionNotes, attachments } = await req.json();
+      submissionData = { submissionNotes, attachments, type: 'legacy' };
+    }
     
     // Verify the project exists and user is enrolled in the course
     const project = await prisma.project.findUnique({
@@ -43,7 +82,7 @@ export async function POST(
             enrollments: {
               where: { 
                 userId,
-                role: 'STUDENT',
+                status: 'ACTIVE'
               },
               select: { id: true },
             },
@@ -85,15 +124,15 @@ export async function POST(
       submission = await prisma.projectSubmission.update({
         where: { id: existingSubmission.id },
         data: {
-          submissionNotes,
-          attachments,
+          submissionText: submissionData.type === 'text' ? submissionData.submissionText : null,
+          submissionFiles: files.length > 0 ? JSON.stringify(files.map(f => ({ name: f.name, size: f.size }))) : JSON.stringify(submissionData),
           status: 'SUBMITTED',
           submittedAt: new Date(),
           updatedAt: new Date(),
           // Reset review fields when resubmitting
           reviewedAt: null,
           reviewerId: null,
-          reviewNotes: null,
+          feedback: null,
           grade: null,
         },
       });
@@ -103,23 +142,13 @@ export async function POST(
         data: {
           projectId,
           studentId: userId,
-          courseId: project.course.id,
-          submissionNotes,
-          attachments,
+          submissionText: submissionData.type === 'text' ? submissionData.submissionText : null,
+          submissionFiles: files.length > 0 ? JSON.stringify(files.map(f => ({ name: f.name, size: f.size }))) : JSON.stringify(submissionData),
           status: 'SUBMITTED',
           submittedAt: new Date(),
         },
       });
     }
-    
-    // Update project status
-    await prisma.project.update({
-      where: { id: projectId },
-      data: {
-        status: 'SUBMITTED',
-        updatedAt: new Date(),
-      },
-    });
     
     return NextResponse.json({
       success: true,
