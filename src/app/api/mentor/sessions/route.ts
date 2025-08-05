@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma-extensions';
+import prisma from '@/lib/prisma';
 
 // GET: Fetch all sessions for the logged-in mentor
 export async function GET(_req: Request) {

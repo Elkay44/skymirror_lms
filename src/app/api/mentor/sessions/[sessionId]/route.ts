@@ -149,31 +149,29 @@ export async function PATCH(
         id: sessionId,
         mentorId: session.user.id // Ensure the session belongs to this mentor
       },
-      data: filteredUpdates,
-      include: {
-        mentee: {
-          select: {
-            id: true,
-            name: true,
-            email: true
+      data: {
+        ...filteredUpdates,
+        ...(filteredUpdates.status === 'CANCELLED' && {
+          cancelledAt: new Date(),
+          cancelledBy: session.user.id
+        })
+      }
+    });
+
+    if (filteredUpdates.status) {
+      await prisma.activityLog.create({
+        data: {
+          userId: session.user.id,
+          action: filteredUpdates.status === 'CANCELLED' ? 'CANCEL_MENTOR_SESSION' : 'UPDATE_MENTOR_SESSION',
+          entityType: 'MENTOR_SESSION',
+          entityId: sessionId,
+          details: {
+            updatedFields: Object.keys(filteredUpdates)
           }
         }
-      }
-    });
-    
-    // Log the update activity
-    await prisma.activityLog.create({
-      data: {
-        userId: session.user.id,
-        action: 'UPDATE_MENTOR_SESSION',
-        entityType: 'MENTOR_SESSION',
-        entityId: sessionId,
-        details: {
-          updatedFields: Object.keys(filteredUpdates)
-        }
-      }
-    });
-    
+      });
+    }
+
     return NextResponse.json(updatedSession);
   } catch (error) {
     console.error('Error updating mentor session:', error);

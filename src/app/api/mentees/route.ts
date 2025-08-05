@@ -26,7 +26,7 @@ export async function GET(_req: Request) {
     }
     
     // Fetch all students
-    const mentees = await prisma.user.findMany({
+    const students = await prisma.user.findMany({
       where: { 
         role: 'STUDENT'
       },
@@ -34,22 +34,20 @@ export async function GET(_req: Request) {
         id: true,
         name: true,
         email: true,
-        role: true,
-        points: true,
-        level: true,
-        studentProfile: {
-          select: {
-            bio: true,
-            learningGoals: true
-          }
-        },
-        createdAt: true,
-        updatedAt: true
+        image: true
       },
       orderBy: { name: 'asc' }
     });
 
-    return NextResponse.json(mentees);
+    // Transform the data to match the frontend's expected format
+    const mentees = students.map(student => ({
+      id: student.id,
+      name: student.name,
+      email: student.email,
+      avatar: student.image || '/avatars/default.png'
+    }));
+
+    return NextResponse.json({ mentees });
   } catch (error) {
     console.error('Error fetching mentees:', error);
     return NextResponse.json(
